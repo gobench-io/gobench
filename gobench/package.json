@@ -1,5 +1,5 @@
 {
-  "name": "gobench-ui",
+  "name": "gobench",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

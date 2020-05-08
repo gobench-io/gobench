@@ -1,6 +1,6 @@
 {
-  "short_name": "Go Bench UI",
-  "name": "Go Bench UI",
+  "short_name": "Gobench",
+  "name": "Gobench",
   "icons": [
     {
       "src": "favicon.ico",
