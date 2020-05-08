@@ -12,5 +12,5 @@
  
  ### To use with Gobench
  - ``npm run build``
- - ``copy all files that generated from ./build folder to ../public`` 
- - ``make statik``
+ - ``statik -src=./web/ui/react-app/build -f``
+ 
