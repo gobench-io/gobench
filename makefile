@@ -33,4 +33,4 @@ ent:
 
 # generate statik file for web ui
 statik:
-	statik -src=./public -f
+	statik -src=./web/ui/react-app/build -f
