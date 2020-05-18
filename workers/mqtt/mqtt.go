@@ -288,6 +288,11 @@ func NewMqttClient(ctx *context.Context, opts *ClientOptions) (MqttClient, error
 	return mqttClient, nil
 }
 
+func (c *MqttClient) toSelfTopic(prefix string) string {
+	or := c.client.OptionsReader()
+	return prefix + or.ClientID()
+}
+
 func (c *MqttClient) Connect(ctx *context.Context) error {
 	begin := time.Now()
 
@@ -331,6 +336,10 @@ func (c *MqttClient) Publish(ctx *context.Context, topic string, qos byte, data 
 	return nil
 }
 
+func (c *MqttClient) PublishToSelf(ctx *context.Context, topic string, qos byte, data []byte) error {
+}
+
+// Subscribe starts a new subscription. Provide a topic and qos
 func (c *MqttClient) Subscribe(ctx *context.Context, topic string, qos byte) error {
 	begin := time.Now()
 	token := c.client.Subscribe(topic, qos, nil)
@@ -348,6 +357,16 @@ func (c *MqttClient) Subscribe(ctx *context.Context, topic string, qos byte) err
 	return nil
 }
 
+// SubscribeToSelf starts a new subscription. Topic is the concat of prefix
+// and clientID. Provide a prefix and qos
+func (c *MqttClient) SubscribeToSelf(ctx *context.Context, prefix string, qos byte) error {
+	topic := c.toSelfTopic(prefix)
+	return c.Subscribe(ctx, topic, qos)
+}
+
+// Unsubscribe will end the subscription from each of the topics provided.
+// Messages published to those topics from other clients will no longer be
+// received.
 func (c *MqttClient) Unsubscribe(ctx *context.Context, topics ...string) error {
 	begin := time.Now()
 
@@ -365,6 +384,7 @@ func (c *MqttClient) Unsubscribe(ctx *context.Context, topics ...string) error {
 	return nil
 }
 
+// Disconnect will end the connection with the server
 func (c *MqttClient) Disconnect(ctx *context.Context) error {
 	c.client.Disconnect(500)
 	gobench.Notify(conTotal, -1)

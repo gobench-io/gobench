@@ -49,29 +49,27 @@ func main() {
 func vuPool(i int, donewg, poolSignal *sync.WaitGroup) {
 	ctx := context.Background()
 
-	// mqtt opts
 	defer donewg.Done()
 
 	host := "127.0.0.1:1883"
 
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(host)
+
 	client, err := mqtt.NewMqttClient(&ctx, opts)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	// wait for all worker finish the connect step
-	poolSignal.Done()
-	poolSignal.Wait()
 
 	if err = client.Connect(&ctx); err != nil {
 		log.Println(err)
 		return
 	}
 
-	// wait 1 sec
-	gobench.SleepLinear(1)
+	// wait for all worker finish the connect step
+	poolSignal.Done()
+	poolSignal.Wait()
 
 	// subscribe_to_self("prefix/clients/", 0)
 	_ = client.Subscribe(&ctx, "hello/"+strconv.Itoa(i), 0)
