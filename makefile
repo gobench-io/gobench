@@ -21,7 +21,7 @@ build:
 
 examples:
 	go build -o ./.bin/github.com/gobench-io/gobench/examples/http github.com/gobench-io/gobench/examples/http
-	go build -o ./.bin/github.com/gobench-io/gobench/examples/mqtt github.com/gobench-io/gobench/examples/mqtt
+	go build -o ./.bin/github.com/gobench-io/gobench/examples/mqtt/1_to_1/1_to_1.go github.com/gobench-io/gobench/examples/mqtt/1_to_1/1_to_1.go
 	go build -o ./.bin/github.com/gobench-io/gobench/examples/nats github.com/gobench-io/gobench/examples/nats
 
 tools:
