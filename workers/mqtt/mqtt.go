@@ -336,7 +336,11 @@ func (c *MqttClient) Publish(ctx *context.Context, topic string, qos byte, data 
 	return nil
 }
 
-func (c *MqttClient) PublishToSelf(ctx *context.Context, topic string, qos byte, data []byte) error {
+// PublishToSelf starts a new publish. Topic is the concat of prefix
+// and clientID. Provide a prefix, qos, and data
+func (c *MqttClient) PublishToSelf(ctx *context.Context, prefix string, qos byte, data []byte) error {
+	topic := c.toSelfTopic(prefix)
+	return c.Publish(ctx, topic, qos, data)
 }
 
 // Subscribe starts a new subscription. Provide a topic and qos

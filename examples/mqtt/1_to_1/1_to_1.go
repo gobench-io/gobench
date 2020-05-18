@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"log"
-	"strconv"
 	"sync"
 	"time"
 
@@ -24,7 +23,7 @@ func main() {
 	go web.Serve(bench, 3001)
 	go benchclient.InternalMonitor()
 
-	vu := 1000
+	vu := 1
 
 	var donewg, poolSignal sync.WaitGroup
 	donewg.Add(vu)
@@ -67,19 +66,18 @@ func vuPool(i int, donewg, poolSignal *sync.WaitGroup) {
 		return
 	}
 
-	// wait for all worker finish the connect step
+	// wait for all other workers finish the connect step
 	poolSignal.Done()
 	poolSignal.Wait()
 
-	// subscribe_to_self("prefix/clients/", 0)
-	_ = client.Subscribe(&ctx, "hello/"+strconv.Itoa(i), 0)
+	_ = client.SubscribeToSelf(&ctx, "prefix/clients/", 0)
 
-	// loop(time = 5 min, rate = 1 rps)
-	rate := 1.0
+	rate := 1.0 // rps
 	for j := 0; j < 60; j++ {
-		gobench.SleepLinear(rate)
-		_ = client.Publish(&ctx, "hello/"+strconv.Itoa(i), 0, []byte("hello world"))
+		gobench.SleepPoisson(rate)
+		_ = client.PublishToSelf(&ctx, "prefix/clients/", 0, []byte("hello world"))
 	}
+
 	// finally
 	_ = client.Disconnect(&ctx)
 }
