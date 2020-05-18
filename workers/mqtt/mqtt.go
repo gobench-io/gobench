@@ -250,7 +250,6 @@ func NewMqttClient(ctx *context.Context, opts *ClientOptions) (MqttClient, error
 	if clientID == "" {
 		clientID = gobench.RandomString(32)
 	}
-
 	opts.ClientOptions.SetClientID(clientID)
 
 	// be called when the client is connected.

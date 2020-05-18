@@ -23,7 +23,7 @@ func main() {
 	go web.Serve(bench, 3001)
 	go benchclient.InternalMonitor()
 
-	vu := 1
+	vu := 10000
 
 	var donewg, poolSignal sync.WaitGroup
 	donewg.Add(vu)
@@ -41,7 +41,7 @@ func main() {
 	time.Sleep(1 * time.Second)
 
 	if err := bench.Finish(); err != nil {
-		log.Printf("finish error %s\n", err.Error())
+		log.Printf("finish error %v\n", err)
 	}
 }
 
@@ -50,10 +50,8 @@ func vuPool(i int, donewg, poolSignal *sync.WaitGroup) {
 
 	defer donewg.Done()
 
-	host := "127.0.0.1:1883"
-
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker(host)
+	opts.AddBroker("192.168.2.29:1883")
 
 	client, err := mqtt.NewMqttClient(&ctx, opts)
 	if err != nil {
@@ -74,7 +72,7 @@ func vuPool(i int, donewg, poolSignal *sync.WaitGroup) {
 
 	rate := 1.0 // rps
 	for j := 0; j < 60; j++ {
-		gobench.SleepPoisson(rate)
+		gobench.SleepLinear(rate)
 		_ = client.PublishToSelf(&ctx, "prefix/clients/", 0, []byte("hello world"))
 	}
 
