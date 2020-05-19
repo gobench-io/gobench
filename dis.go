@@ -42,11 +42,20 @@ func SleepLinear(rps float64) int64 {
 	return nextTimeUs
 }
 
-// RandomString return a random string with length
-func RandomString(length int) string {
+func randomRune(length int) []rune {
 	b := make([]rune, length)
 	for i := range b {
 		b[i] = letterRunes[rand.Intn(len(letterRunes))]
 	}
-	return string(b)
+	return b
+}
+
+// RandomString return a random string with length
+func RandomString(length int) string {
+	return string(randomRune(length))
+}
+
+// RandomByte returns a random byte array with length
+func RandomByte(length int) []byte {
+	return []byte(randomRune(length))
 }

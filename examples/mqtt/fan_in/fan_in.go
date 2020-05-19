@@ -1,12 +1,3 @@
-//
-// 1_to_1 Scenario:
-// 2k clients subscribe to an exclusive topic: "prefix/clients/{clientID}"
-// The same 2k clients send messages on that topic to themselves
-// Overall Msg rate: 2k msg/s
-// Message Size: 150 random bytes
-// Runtime: 5 min
-//
-
 package main
 
 import (
@@ -32,7 +23,7 @@ func main() {
 	go web.Serve(bench, 3001)
 	go benchclient.InternalMonitor()
 
-	vu := 2000
+	vu := 10000
 
 	var donewg, poolSignal sync.WaitGroup
 	donewg.Add(vu)
@@ -80,9 +71,9 @@ func vuPool(i int, donewg, poolSignal *sync.WaitGroup) {
 	_ = client.SubscribeToSelf(&ctx, "prefix/clients/", 0)
 
 	rate := 1.0 // rps
-	for j := 0; j < 60*5; j++ {
+	for j := 0; j < 60; j++ {
 		gobench.SleepLinear(rate)
-		_ = client.PublishToSelf(&ctx, "prefix/clients/", 0, gobench.RandomByte(150))
+		_ = client.PublishToSelf(&ctx, "prefix/clients/", 0, []byte("hello world"))
 	}
 
 	// finally
