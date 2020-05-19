@@ -14,7 +14,7 @@ import (
 
 func main() {
 	bench := gobench.NewBench()
-	bench.Name("mqtts benchmark example")
+	bench.Name("mqtt 1-to-1 benchmark example")
 
 	if err := bench.Start(); err != nil {
 		log.Fatalln(err)
