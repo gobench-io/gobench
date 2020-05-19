@@ -57,5 +57,5 @@ func RandomString(length int) string {
 
 // RandomByte returns a random byte array with length
 func RandomByte(length int) []byte {
-	return []byte(randomRune(length))
+	return []byte(RandomString(length))
 }
