@@ -1,6 +1,7 @@
 GO ?= go
 
 PACKAGES := $(shell go list ./...)
+EXAMPLES := $(shell go list ./... | grep "examples")
 
 .PHONY: lint build examples tools ent statik
 
@@ -20,9 +21,7 @@ build:
 	go build -o gobench ./
 
 examples:
-	go build -o ./.bin/github.com/gobench-io/gobench/examples/http github.com/gobench-io/gobench/examples/http
-	go build -o ./.bin/github.com/gobench-io/gobench/examples/mqtt github.com/gobench-io/gobench/examples/mqtt
-	go build -o ./.bin/github.com/gobench-io/gobench/examples/nats github.com/gobench-io/gobench/examples/nats
+	$(foreach var, $(EXAMPLES), go build -o ./.bin/${var} $(var);)
 
 tools:
 	go build -o ./.bin/github.com/gobench-io/gobench/tools/gobench-viewer github.com/gobench-io/gobench/tools/gobench-viewer

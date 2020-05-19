@@ -1,9 +1,17 @@
+//
+// 1_to_1 Scenario:
+// 2k clients subscribe to an exclusive topic: "prefix/clients/{clientID}"
+// The same 2k clients send messages on that topic to themselves
+// Overall Msg rate: 2k msg/s
+// Message Size: 150 random bytes
+// Runtime: 5 min
+//
+
 package main
 
 import (
 	"context"
 	"log"
-	"strconv"
 	"sync"
 	"time"
 
@@ -15,7 +23,7 @@ import (
 
 func main() {
 	bench := gobench.NewBench()
-	bench.Name("mqtts benchmark example")
+	bench.Name("mqtt 1-to-1 benchmark example")
 
 	if err := bench.Start(); err != nil {
 		log.Fatalln(err)
@@ -24,7 +32,7 @@ func main() {
 	go web.Serve(bench, 3001)
 	go benchclient.InternalMonitor()
 
-	vu := 1000
+	vu := 2000
 
 	var donewg, poolSignal sync.WaitGroup
 	donewg.Add(vu)
@@ -42,46 +50,41 @@ func main() {
 	time.Sleep(1 * time.Second)
 
 	if err := bench.Finish(); err != nil {
-		log.Printf("finish error %s\n", err.Error())
+		log.Printf("finish error %v\n", err)
 	}
 }
 
 func vuPool(i int, donewg, poolSignal *sync.WaitGroup) {
 	ctx := context.Background()
 
-	// mqtt opts
 	defer donewg.Done()
 
-	host := "127.0.0.1:1883"
-
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker(host)
+	opts.AddBroker("192.168.2.29:1883")
+
 	client, err := mqtt.NewMqttClient(&ctx, opts)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	// wait for all worker finish the connect step
-	poolSignal.Done()
-	poolSignal.Wait()
 
 	if err = client.Connect(&ctx); err != nil {
 		log.Println(err)
 		return
 	}
 
-	// wait 1 sec
-	gobench.SleepLinear(1)
+	// wait for all other workers finish the connect step
+	poolSignal.Done()
+	poolSignal.Wait()
 
-	// subscribe_to_self("prefix/clients/", 0)
-	_ = client.Subscribe(&ctx, "hello/"+strconv.Itoa(i), 0)
+	_ = client.SubscribeToSelf(&ctx, "prefix/clients/", 0)
 
-	// loop(time = 5 min, rate = 1 rps)
-	rate := 1.0
-	for j := 0; j < 60; j++ {
-		gobench.SleepLinear(rate)
-		_ = client.Publish(&ctx, "hello/"+strconv.Itoa(i), 0, []byte("hello world"))
+	rate := 1.0 // rps
+	for j := 0; j < 60*5; j++ {
+		gobench.SleepPoisson(rate)
+		_ = client.PublishToSelf(&ctx, "prefix/clients/", 0, gobench.RandomByte(150))
 	}
+
 	// finally
 	_ = client.Disconnect(&ctx)
 }
