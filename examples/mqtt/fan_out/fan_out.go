@@ -1,7 +1,7 @@
 //
-// fan in scenario:
-// A single subscriber reading from "prefix/clients/#" topic filter
-// 1k publisher publishing to exclusive topic "prefix/clients/{client_id}"
+// fan out (broadcast) scenario:
+// 1k subscribers reading from the same topic "fixed/broadcast/topic"
+// 1 publisher sending 1 msg/s to topic "fixed/broadcast/topic"
 // Overall Msg rate: 1k msg/s
 // Message Size: 150 random bytes
 // Runtime: 5 min
@@ -22,7 +22,7 @@ import (
 
 func main() {
 	bench := gobench.NewBench()
-	bench.Name("mqtt fan in benchmark example")
+	bench.Name("mqtt fan out benchmark example")
 
 	if err := bench.Start(); err != nil {
 		log.Fatalln(err)
@@ -31,8 +31,8 @@ func main() {
 	go web.Serve(bench, 3001)
 	go benchclient.InternalMonitor()
 
-	subVu := 1
-	pubVu := 1000
+	subVu := 1000
+	pubVu := 1
 
 	var donewg sync.WaitGroup
 	donewg.Add(pubVu + subVu)
@@ -77,7 +77,7 @@ func subVuPool(i int, donewg *sync.WaitGroup) {
 		return
 	}
 
-	_ = client.Subscribe(&ctx, "prefix/clients/#", 0)
+	_ = client.Subscribe(&ctx, "fixed/broadcast/topic", 0)
 
 	// finally
 	// _ = client.Disconnect(&ctx)
@@ -105,7 +105,7 @@ func pubVuPool(i int, donewg *sync.WaitGroup) {
 	rate := 1.0 // rps
 	for j := 0; j < 60*5; j++ {
 		gobench.SleepLinear(rate)
-		_ = client.PublishToSelf(&ctx, "prefix/clients/", 0, gobench.RandomByte(150))
+		_ = client.Publish(&ctx, "fixed/broadcast/topic", 0, gobench.RandomByte(150))
 	}
 
 	// finally
