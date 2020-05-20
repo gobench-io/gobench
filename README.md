@@ -6,7 +6,6 @@ A distributed benchmark tool with Golang
 ![](https://img.shields.io/badge/license-MIT-blue.svg)
 ![](https://img.shields.io/badge/status-unstable-red.svg)
 
-
 ## Why gobench
 
 Targets: Supporting more than HTTP like MQTT, Websocket, graphQL. It can scale to support up to 1 million connection concurrently. It could support scriptable tool.
@@ -27,9 +26,9 @@ Get histogram metric from a timestamp (ms)
 
 http://localhost:1234/api/metrics/55/histograms?from=1586320159476&end=1586320169476
 
-## Tool gobench-review
+## Tool gobench-reviewer
 
-TBA
+![gobench_viewer screenshoot](https://github.com/gobench-io/gobench/blob/master/docs/images/gobench_viewer.png)
 
 ## How to write a new worker
 
