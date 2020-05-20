@@ -28,7 +28,7 @@ http://localhost:1234/api/metrics/55/histograms?from=1586320159476&end=158632016
 
 ## Tool gobench-reviewer
 
-![gobench_viewer screenshoot](https://github.com/gobench-io/gobench/blob/master/docs/images/gobench_viewer.png)
+<a href="https://github.com/gobench-io/gobench/blob/master/docs/images/gobench_viewer.png"><img src="./docs/images/gobench_viewer.png" width="500"></a>
 
 ## How to write a new worker
 
@@ -52,4 +52,4 @@ See `workers/http` for HTTP worker example.
 
 ## Sponsor
 
-<a href="http://veriksystems.com"><img src="https://verik-static.s3-us-west-2.amazonaws.com/logo/verik_logo.svg"></a>
+<a href="http://veriksystems.com"><img src="https://verik-static.s3-us-west-2.amazonaws.com/logo/verik_logo.svg" width="200"></a>
