@@ -11,7 +11,7 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/gobench-io/gobench"
 	"github.com/gobench-io/gobench/ent"
-	_ "github.com/gobench-io/gobench/statik"
+	_ "github.com/gobench-io/gobench/web/statik"
 	"github.com/rakyll/statik/fs"
 )
 
