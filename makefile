@@ -32,4 +32,4 @@ ent:
 
 # generate statik file for web ui
 statik:
-	statik -src=./web/ui/react-app/build -f
+	statik -src=./web/ui/react-app/build -dest=./web -f
