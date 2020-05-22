@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	mqtt "github.com/eclipse/paho.mqtt.golang"
+	paho "github.com/eclipse/paho.mqtt.golang"
 	"github.com/gobench-io/gobench"
 	"github.com/gobench-io/gobench/metrics"
 )
@@ -35,17 +35,17 @@ const msgConsumedTotal string = "mqtt.message.consumed.total"
 type ContextKey string
 
 type ClientOptions struct {
-	*mqtt.ClientOptions
+	*paho.ClientOptions
 }
 
 func NewClientOptions() *ClientOptions {
-	t := mqtt.NewClientOptions()
+	t := paho.NewClientOptions()
 	o := &ClientOptions{ClientOptions: t}
 	return o
 }
 
 type MqttClient struct {
-	client mqtt.Client
+	client paho.Client
 }
 
 func groups() []metrics.Group {
@@ -279,7 +279,7 @@ func NewMqttClient(ctx *context.Context, opts *ClientOptions) (MqttClient, error
 	// be called when the client is connected.
 	// Both at initial connection time and upon automatic reconnect.
 	OnConnect := opts.OnConnect
-	opts.SetOnConnectHandler(func(c mqtt.Client) {
+	opts.SetOnConnectHandler(func(c paho.Client) {
 		gobench.Notify(conTotal, 1)
 		if OnConnect != nil {
 			OnConnect(c)
@@ -288,7 +288,7 @@ func NewMqttClient(ctx *context.Context, opts *ClientOptions) (MqttClient, error
 
 	// be executed in the case where the client unexpectedly loses connection with the MQTT broker.
 	OnConnectionLost := opts.OnConnectionLost
-	opts.SetConnectionLostHandler(func(c mqtt.Client, e error) {
+	opts.SetConnectionLostHandler(func(c paho.Client, e error) {
 		gobench.Notify(conTotal, -1)
 		if OnConnectionLost != nil {
 			OnConnectionLost(c, e)
@@ -297,14 +297,14 @@ func NewMqttClient(ctx *context.Context, opts *ClientOptions) (MqttClient, error
 
 	// be executed prior to the client attempting a reconnect to the MQTT broker.
 	OnReconnecting := opts.OnReconnecting
-	opts.SetReconnectingHandler(func(c mqtt.Client, o *mqtt.ClientOptions) {
+	opts.SetReconnectingHandler(func(c paho.Client, o *paho.ClientOptions) {
 		gobench.Notify(conReconnect, 1)
 		if OnReconnecting != nil {
 			OnReconnecting(c, o)
 		}
 	})
 
-	client := mqtt.NewClient(opts.ClientOptions)
+	client := paho.NewClient(opts.ClientOptions)
 
 	mqttClient.client = client
 
@@ -380,10 +380,10 @@ func (c *MqttClient) Subscribe(
 	ctx *context.Context,
 	topic string,
 	qos byte,
-	callback mqtt.MessageHandler,
+	callback paho.MessageHandler,
 ) error {
 	begin := time.Now()
-	token := c.client.Subscribe(topic, qos, func(c mqtt.Client, m mqtt.Message) {
+	token := c.client.Subscribe(topic, qos, func(c paho.Client, m paho.Message) {
 		gobench.Notify(msgConsumedTotal, 1)
 		if callback != nil {
 			callback(c, m)
@@ -413,7 +413,7 @@ func (c *MqttClient) SubscribeToSelf(
 	ctx *context.Context,
 	prefix string,
 	qos byte,
-	callback mqtt.MessageHandler,
+	callback paho.MessageHandler,
 ) error {
 	topic := c.toSelfTopic(prefix)
 	return c.Subscribe(ctx, topic, qos, callback)
