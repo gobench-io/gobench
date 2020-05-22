@@ -28,6 +28,9 @@ const subError string = "mqtt.subscriber.suback.error"
 const unsubLatency string = "mqtt.subscriber.unsuback.latency"
 const unsubError string = "mqtt.subscriber.unsuback.error"
 
+const msgPublishedTotal string = "mqtt.message.published.total"
+const msgConsumedTotal string = "mqtt.message.consumed.total"
+
 // ContextKey is the type for context
 type ContextKey string
 
@@ -221,12 +224,40 @@ func groups() []metrics.Group {
 			},
 		},
 	}
+
+	msgGroup := metrics.Group{
+		Name: "MQTT Messages",
+		Graphs: []metrics.Graph{
+			{
+				Title: "Total Published Messages",
+				Unit:  "N",
+				Metrics: []metrics.Metric{
+					{
+						Title: msgPublishedTotal,
+						Type:  metrics.Counter,
+					},
+				},
+			},
+			{
+				Title: "Total Consumed Messages",
+				Unit:  "N",
+				Metrics: []metrics.Metric{
+					{
+						Title: msgConsumedTotal,
+						Type:  metrics.Counter,
+					},
+				},
+			},
+		},
+	}
+
 	return []metrics.Group{
 		conGroup,
 		qos0PubGroup,
 		qos1PubGroup,
 		qos2PubGroup,
 		consumerGroup,
+		msgGroup,
 	}
 }
 
