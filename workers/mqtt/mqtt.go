@@ -323,6 +323,9 @@ func (c *MqttClient) toSelfTopic(prefix string) string {
 	return prefix + or.ClientID()
 }
 
+// Connect will create a connection to the message broker, by default
+// it will attempt to connect at v3.1.1 and auto retry at v3.1 if that
+// fails
 func (c *MqttClient) Connect(ctx *context.Context) error {
 	begin := time.Now()
 
@@ -341,12 +344,13 @@ func (c *MqttClient) Connect(ctx *context.Context) error {
 	return nil
 }
 
+// Publish will publish a message with the specified QoS and content
+// to the specified topic.
 func (c *MqttClient) Publish(ctx *context.Context, topic string, qos byte, data []byte) error {
 	begin := time.Now()
 	token := c.client.Publish(topic, qos, false, data)
 	token.WaitTimeout(3 * time.Second)
 	if err := token.Error(); err != nil {
-		// todo: log the publish error
 		log.Printf("mqtt publish fail: %s\n", err.Error())
 		return err
 	}
@@ -362,6 +366,8 @@ func (c *MqttClient) Publish(ctx *context.Context, topic string, qos byte, data 
 		gobench.Notify(pubQos2Total, 1)
 		gobench.Notify(pubQos2Latency, time.Since(begin).Microseconds())
 	}
+
+	gobench.Notify(msgPublishedTotal, 1)
 
 	return nil
 }
