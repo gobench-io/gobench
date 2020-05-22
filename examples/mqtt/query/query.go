@@ -96,8 +96,10 @@ func clientVuPool(i int, donewg *sync.WaitGroup) {
 	for j := 0; j < int(60*5*rate); j++ {
 		gobench.SleepPoisson(rate)
 
-		topic := fmt.Sprintf("prefix/servers/server-%d", rand.Intn(1000))
-		_ = client.Publish(&ctx, topic, 2, gobench.RandomByte(150))
+		go func() {
+			topic := fmt.Sprintf("prefix/servers/server-%d", rand.Intn(1000))
+			_ = client.Publish(&ctx, topic, 2, gobench.RandomByte(150))
+		}()
 	}
 
 	// finally
