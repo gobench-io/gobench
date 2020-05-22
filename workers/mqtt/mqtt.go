@@ -261,13 +261,6 @@ func groups() []metrics.Group {
 	}
 }
 
-func Init(client mqtt.Client) MqttClient {
-	mqttClient := MqttClient{client}
-	mqttClient.client = client
-
-	return mqttClient
-}
-
 func NewMqttClient(ctx *context.Context, opts *ClientOptions) (MqttClient, error) {
 	mqttClient := MqttClient{}
 
@@ -379,10 +372,24 @@ func (c *MqttClient) PublishToSelf(ctx *context.Context, prefix string, qos byte
 	return c.Publish(ctx, topic, qos, data)
 }
 
-// Subscribe starts a new subscription. Provide a topic and qos
-func (c *MqttClient) Subscribe(ctx *context.Context, topic string, qos byte) error {
+// Subscribe starts a new subscription. Provide a MessageHandler to be executed when
+// a message is published on the topic provided.
+// One different from the original paho is that when callback is nil the message will
+// not be forwarded to the default handler.
+func (c *MqttClient) Subscribe(
+	ctx *context.Context,
+	topic string,
+	qos byte,
+	callback mqtt.MessageHandler,
+) error {
 	begin := time.Now()
-	token := c.client.Subscribe(topic, qos, nil)
+	token := c.client.Subscribe(topic, qos, func(c mqtt.Client, m mqtt.Message) {
+		gobench.Notify(msgConsumedTotal, 1)
+		if callback != nil {
+			callback(c, m)
+		}
+	})
+
 	token.WaitTimeout(3 * time.Second)
 
 	if err := token.Error(); err != nil {
@@ -398,10 +405,18 @@ func (c *MqttClient) Subscribe(ctx *context.Context, topic string, qos byte) err
 }
 
 // SubscribeToSelf starts a new subscription. Topic is the concat of prefix
-// and clientID. Provide a prefix and qos
-func (c *MqttClient) SubscribeToSelf(ctx *context.Context, prefix string, qos byte) error {
+// and clientID. Provide a MessageHandler to be executed when a message is
+// published on the topic provided. One different from the original paho is
+// that when callback is nil the message will not be forwarded to the default
+// handler.
+func (c *MqttClient) SubscribeToSelf(
+	ctx *context.Context,
+	prefix string,
+	qos byte,
+	callback mqtt.MessageHandler,
+) error {
 	topic := c.toSelfTopic(prefix)
-	return c.Subscribe(ctx, topic, qos)
+	return c.Subscribe(ctx, topic, qos, callback)
 }
 
 // Unsubscribe will end the subscription from each of the topics provided.
