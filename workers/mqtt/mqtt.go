@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	mqtt "github.com/eclipse/paho.mqtt.golang"
+	paho "github.com/eclipse/paho.mqtt.golang"
 	"github.com/gobench-io/gobench"
 	"github.com/gobench-io/gobench/metrics"
 )
@@ -28,21 +28,24 @@ const subError string = "mqtt.subscriber.suback.error"
 const unsubLatency string = "mqtt.subscriber.unsuback.latency"
 const unsubError string = "mqtt.subscriber.unsuback.error"
 
+const msgPublishedTotal string = "mqtt.message.published.total"
+const msgConsumedTotal string = "mqtt.message.consumed.total"
+
 // ContextKey is the type for context
 type ContextKey string
 
 type ClientOptions struct {
-	*mqtt.ClientOptions
+	*paho.ClientOptions
 }
 
 func NewClientOptions() *ClientOptions {
-	t := mqtt.NewClientOptions()
+	t := paho.NewClientOptions()
 	o := &ClientOptions{ClientOptions: t}
 	return o
 }
 
 type MqttClient struct {
-	client mqtt.Client
+	client paho.Client
 }
 
 func groups() []metrics.Group {
@@ -221,20 +224,41 @@ func groups() []metrics.Group {
 			},
 		},
 	}
+
+	msgGroup := metrics.Group{
+		Name: "MQTT Messages",
+		Graphs: []metrics.Graph{
+			{
+				Title: "Total Published Messages",
+				Unit:  "N",
+				Metrics: []metrics.Metric{
+					{
+						Title: msgPublishedTotal,
+						Type:  metrics.Counter,
+					},
+				},
+			},
+			{
+				Title: "Total Consumed Messages",
+				Unit:  "N",
+				Metrics: []metrics.Metric{
+					{
+						Title: msgConsumedTotal,
+						Type:  metrics.Counter,
+					},
+				},
+			},
+		},
+	}
+
 	return []metrics.Group{
 		conGroup,
 		qos0PubGroup,
 		qos1PubGroup,
 		qos2PubGroup,
 		consumerGroup,
+		msgGroup,
 	}
-}
-
-func Init(client mqtt.Client) MqttClient {
-	mqttClient := MqttClient{client}
-	mqttClient.client = client
-
-	return mqttClient
 }
 
 func NewMqttClient(ctx *context.Context, opts *ClientOptions) (MqttClient, error) {
@@ -255,7 +279,7 @@ func NewMqttClient(ctx *context.Context, opts *ClientOptions) (MqttClient, error
 	// be called when the client is connected.
 	// Both at initial connection time and upon automatic reconnect.
 	OnConnect := opts.OnConnect
-	opts.SetOnConnectHandler(func(c mqtt.Client) {
+	opts.SetOnConnectHandler(func(c paho.Client) {
 		gobench.Notify(conTotal, 1)
 		if OnConnect != nil {
 			OnConnect(c)
@@ -264,7 +288,7 @@ func NewMqttClient(ctx *context.Context, opts *ClientOptions) (MqttClient, error
 
 	// be executed in the case where the client unexpectedly loses connection with the MQTT broker.
 	OnConnectionLost := opts.OnConnectionLost
-	opts.SetConnectionLostHandler(func(c mqtt.Client, e error) {
+	opts.SetConnectionLostHandler(func(c paho.Client, e error) {
 		gobench.Notify(conTotal, -1)
 		if OnConnectionLost != nil {
 			OnConnectionLost(c, e)
@@ -273,14 +297,14 @@ func NewMqttClient(ctx *context.Context, opts *ClientOptions) (MqttClient, error
 
 	// be executed prior to the client attempting a reconnect to the MQTT broker.
 	OnReconnecting := opts.OnReconnecting
-	opts.SetReconnectingHandler(func(c mqtt.Client, o *mqtt.ClientOptions) {
+	opts.SetReconnectingHandler(func(c paho.Client, o *paho.ClientOptions) {
 		gobench.Notify(conReconnect, 1)
 		if OnReconnecting != nil {
 			OnReconnecting(c, o)
 		}
 	})
 
-	client := mqtt.NewClient(opts.ClientOptions)
+	client := paho.NewClient(opts.ClientOptions)
 
 	mqttClient.client = client
 
@@ -292,6 +316,9 @@ func (c *MqttClient) toSelfTopic(prefix string) string {
 	return prefix + or.ClientID()
 }
 
+// Connect will create a connection to the message broker, by default
+// it will attempt to connect at v3.1.1 and auto retry at v3.1 if that
+// fails
 func (c *MqttClient) Connect(ctx *context.Context) error {
 	begin := time.Now()
 
@@ -310,12 +337,13 @@ func (c *MqttClient) Connect(ctx *context.Context) error {
 	return nil
 }
 
+// Publish will publish a message with the specified QoS and content
+// to the specified topic.
 func (c *MqttClient) Publish(ctx *context.Context, topic string, qos byte, data []byte) error {
 	begin := time.Now()
 	token := c.client.Publish(topic, qos, false, data)
 	token.WaitTimeout(3 * time.Second)
 	if err := token.Error(); err != nil {
-		// todo: log the publish error
 		log.Printf("mqtt publish fail: %s\n", err.Error())
 		return err
 	}
@@ -332,6 +360,8 @@ func (c *MqttClient) Publish(ctx *context.Context, topic string, qos byte, data 
 		gobench.Notify(pubQos2Latency, time.Since(begin).Microseconds())
 	}
 
+	gobench.Notify(msgPublishedTotal, 1)
+
 	return nil
 }
 
@@ -342,10 +372,24 @@ func (c *MqttClient) PublishToSelf(ctx *context.Context, prefix string, qos byte
 	return c.Publish(ctx, topic, qos, data)
 }
 
-// Subscribe starts a new subscription. Provide a topic and qos
-func (c *MqttClient) Subscribe(ctx *context.Context, topic string, qos byte) error {
+// Subscribe starts a new subscription. Provide a MessageHandler to be executed when
+// a message is published on the topic provided.
+// One different from the original paho is that when callback is nil the message will
+// not be forwarded to the default handler.
+func (c *MqttClient) Subscribe(
+	ctx *context.Context,
+	topic string,
+	qos byte,
+	callback paho.MessageHandler,
+) error {
 	begin := time.Now()
-	token := c.client.Subscribe(topic, qos, nil)
+	token := c.client.Subscribe(topic, qos, func(c paho.Client, m paho.Message) {
+		gobench.Notify(msgConsumedTotal, 1)
+		if callback != nil {
+			callback(c, m)
+		}
+	})
+
 	token.WaitTimeout(3 * time.Second)
 
 	if err := token.Error(); err != nil {
@@ -361,10 +405,18 @@ func (c *MqttClient) Subscribe(ctx *context.Context, topic string, qos byte) err
 }
 
 // SubscribeToSelf starts a new subscription. Topic is the concat of prefix
-// and clientID. Provide a prefix and qos
-func (c *MqttClient) SubscribeToSelf(ctx *context.Context, prefix string, qos byte) error {
+// and clientID. Provide a MessageHandler to be executed when a message is
+// published on the topic provided. One different from the original paho is
+// that when callback is nil the message will not be forwarded to the default
+// handler.
+func (c *MqttClient) SubscribeToSelf(
+	ctx *context.Context,
+	prefix string,
+	qos byte,
+	callback paho.MessageHandler,
+) error {
 	topic := c.toSelfTopic(prefix)
-	return c.Subscribe(ctx, topic, qos)
+	return c.Subscribe(ctx, topic, qos, callback)
 }
 
 // Unsubscribe will end the subscription from each of the topics provided.

@@ -77,7 +77,7 @@ func vuPool(i int, donewg, poolSignal *sync.WaitGroup) {
 	poolSignal.Done()
 	poolSignal.Wait()
 
-	_ = client.SubscribeToSelf(&ctx, "prefix/clients/", 0)
+	_ = client.SubscribeToSelf(&ctx, "prefix/clients/", 0, nil)
 
 	rate := 1.0 // rps
 	for j := 0; j < 60*5; j++ {

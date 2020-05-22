@@ -77,7 +77,7 @@ func subVuPool(i int, donewg *sync.WaitGroup) {
 		return
 	}
 
-	_ = client.Subscribe(&ctx, "prefix/clients/#", 0)
+	_ = client.Subscribe(&ctx, "prefix/clients/#", 0, nil)
 
 	// finally
 	// _ = client.Disconnect(&ctx)
