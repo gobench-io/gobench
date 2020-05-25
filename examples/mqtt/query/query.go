@@ -26,6 +26,11 @@ import (
 	"github.com/gobench-io/gobench/workers/mqtt"
 )
 
+const (
+	clientNum = 1
+	serverNum = 1000
+)
+
 func main() {
 	bench := gobench.NewBench()
 	bench.Name("mqtt fan in benchmark example")
@@ -37,8 +42,8 @@ func main() {
 	go web.Serve(bench, 3001)
 	go benchclient.InternalMonitor()
 
-	clientVu := 1
-	serverVu := 1000
+	clientVu := clientNum
+	serverVu := serverNum
 
 	var donewg sync.WaitGroup
 	donewg.Add(serverVu + clientVu)
@@ -97,7 +102,7 @@ func clientVuPool(i int, donewg *sync.WaitGroup) {
 		gobench.SleepPoisson(rate)
 
 		go func() {
-			topic := fmt.Sprintf("prefix/servers/server-%d", rand.Intn(1000))
+			topic := fmt.Sprintf("prefix/servers/server-%d", rand.Intn(serverNum))
 			_ = client.Publish(&ctx, topic, 2, gobench.RandomByte(150))
 		}()
 	}
