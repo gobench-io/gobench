@@ -103,9 +103,11 @@ func pubVuPool(i int, donewg *sync.WaitGroup) {
 	}
 
 	rate := 1.0 // rps
-	for j := 0; j < 60*5; j++ {
+	for j := 0; j < int(60*5*rate); j++ {
 		gobench.SleepPoisson(rate)
-		_ = client.PublishToSelf(&ctx, "prefix/clients/", 0, gobench.RandomByte(150))
+		go func() {
+			_ = client.PublishToSelf(&ctx, "prefix/clients/", 0, gobench.RandomByte(150))
+		}()
 	}
 
 	// finally
