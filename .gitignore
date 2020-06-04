@@ -19,3 +19,4 @@
 *.sqlite3-journal
 
 .bin/
+.idea/
