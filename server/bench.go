@@ -36,7 +36,7 @@ type unit struct {
 }
 
 type Collect struct {
-	sync.Mutex
+	mu         sync.Mutex
 	units      map[string]unit
 	smtp       smtp.Service
 	dbFilename string
@@ -75,8 +75,8 @@ func Setup(groups []metrics.Group) error {
 	units := make(map[string]unit)
 	ctx := context.Background()
 
-	benchCollect.Lock()
-	defer benchCollect.Unlock()
+	benchCollect.mu.Lock()
+	defer benchCollect.mu.Unlock()
 
 	for _, group := range groups {
 		// create new group if not existed
