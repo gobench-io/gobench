@@ -1,4 +1,4 @@
-package gobench
+package server
 
 import (
 	"context"

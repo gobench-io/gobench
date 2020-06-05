@@ -9,8 +9,8 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
-	"github.com/gobench-io/gobench"
 	"github.com/gobench-io/gobench/ent"
+	"github.com/gobench-io/gobench/server"
 	_ "github.com/gobench-io/gobench/web/statik"
 	"github.com/rakyll/statik/fs"
 )
@@ -102,7 +102,7 @@ func New(db *ent.Client) *chi.Mux {
 
 // Serve start a web server at given port
 // should be run in a go routine
-func Serve(collect *gobench.Collect, port int) {
+func Serve(collect *server.Collect, port int) {
 	r := New(collect.DB)
 
 	portS := fmt.Sprintf(":%d", port)
