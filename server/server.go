@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/gobench-io/gobench/ent"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type app struct {
@@ -32,11 +33,15 @@ func init() {
 	server = Server{}
 }
 
+// New returns the singleton instance of the server
+func New() (*Server, error) {
+	return &server, nil
+}
+
 // Start begin a gobench server
 func (s *Server) Start() error {
-	// setup db
 	// default db name
-	dbFilename := "./gobench.sqlite3"
+	dbFilename := "./.gobench.sqlite3"
 	if err := server.setupDb(dbFilename); err != nil {
 		return err
 	}

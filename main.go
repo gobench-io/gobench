@@ -4,19 +4,25 @@ import (
 	"log"
 
 	"github.com/gobench-io/gobench/server"
-	"github.com/gobench-io/gobench/web"
-	"github.com/gobench-io/gobench/workers/benchclient"
 )
 
+// func main() {
+// 	bench := server.NewBench()
+
+// 	bench.Name("mqtt fan out benchmark example")
+
+// 	if err := bench.Start(); err != nil {
+// 		log.Fatalln(err)
+// 	}
+
+// 	go benchclient.InternalMonitor()
+// 	web.Serve(bench, 3001)
+// }
+
 func main() {
-	bench := server.NewBench()
+	server, _ := server.New()
 
-	bench.Name("mqtt fan out benchmark example")
-
-	if err := bench.Start(); err != nil {
-		log.Fatalln(err)
+	if err := server.Start(); err != nil {
+		log.Fatalf("failed to start the server: %v", err)
 	}
-
-	go benchclient.InternalMonitor()
-	web.Serve(bench, 3001)
 }
