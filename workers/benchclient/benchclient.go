@@ -6,8 +6,8 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/gobench-io/gobench"
 	"github.com/gobench-io/gobench/metrics"
+	"github.com/gobench-io/gobench/server"
 )
 
 // cpu
@@ -365,7 +365,7 @@ func groups() []metrics.Group {
 func NewInternalClient(ctx *context.Context) (InternalClient, error) {
 	client := InternalClient{}
 
-	if err := gobench.Setup(groups()); err != nil {
+	if err := server.Setup(groups()); err != nil {
 		return client, err
 	}
 	return client, nil
@@ -397,41 +397,41 @@ func (c *InternalClient) operate() error {
 		if !c.run {
 			break
 		}
-		gobench.Notify(cpuCount, int64(runtime.NumCPU()))
-		gobench.Notify(cpuCgoCall, int64(runtime.NumCgoCall()))
-		gobench.Notify(cpuGoroutines, int64(runtime.NumGoroutine()))
+		server.Notify(cpuCount, int64(runtime.NumCPU()))
+		server.Notify(cpuCgoCall, int64(runtime.NumCgoCall()))
+		server.Notify(cpuGoroutines, int64(runtime.NumGoroutine()))
 
 		var stats runtime.MemStats
 		runtime.ReadMemStats(&stats)
-		gobench.Notify(memAlloc, int64(stats.Alloc))
-		gobench.Notify(memFrees, int64(stats.Frees))
-		gobench.Notify(memGcCount, int64(stats.NumGC))
-		gobench.Notify(memGcLast, int64(stats.LastGC))
-		gobench.Notify(memGcNext, int64(stats.NextGC))
-		// gobench.Notify(memGcPause, int64(stats.PauseNs))
-		gobench.Notify(memGcPauseTotal, int64(stats.PauseTotalNs))
+		server.Notify(memAlloc, int64(stats.Alloc))
+		server.Notify(memFrees, int64(stats.Frees))
+		server.Notify(memGcCount, int64(stats.NumGC))
+		server.Notify(memGcLast, int64(stats.LastGC))
+		server.Notify(memGcNext, int64(stats.NextGC))
+		// server.Notify(memGcPause, int64(stats.PauseNs))
+		server.Notify(memGcPauseTotal, int64(stats.PauseTotalNs))
 
-		gobench.Notify(memLookups, int64(stats.Lookups))
-		gobench.Notify(memMalloc, int64(stats.Mallocs))
-		gobench.Notify(memOthersys, int64(stats.OtherSys))
-		gobench.Notify(memSys, int64(stats.Sys))
-		gobench.Notify(memTotalalloc, int64(stats.TotalAlloc))
+		server.Notify(memLookups, int64(stats.Lookups))
+		server.Notify(memMalloc, int64(stats.Mallocs))
+		server.Notify(memOthersys, int64(stats.OtherSys))
+		server.Notify(memSys, int64(stats.Sys))
+		server.Notify(memTotalalloc, int64(stats.TotalAlloc))
 
 		// heap
-		gobench.Notify(memHeapAlloc, int64(stats.HeapAlloc))
-		gobench.Notify(memHeapIdle, int64(stats.HeapIdle))
-		gobench.Notify(memHeapInuse, int64(stats.HeapInuse))
-		gobench.Notify(memHeapObjects, int64(stats.HeapObjects))
-		gobench.Notify(memHeapReleased, int64(stats.HeapReleased))
-		gobench.Notify(memHeapSys, int64(stats.HeapReleased))
+		server.Notify(memHeapAlloc, int64(stats.HeapAlloc))
+		server.Notify(memHeapIdle, int64(stats.HeapIdle))
+		server.Notify(memHeapInuse, int64(stats.HeapInuse))
+		server.Notify(memHeapObjects, int64(stats.HeapObjects))
+		server.Notify(memHeapReleased, int64(stats.HeapReleased))
+		server.Notify(memHeapSys, int64(stats.HeapReleased))
 
 		// stack
-		gobench.Notify(memStackInuse, int64(stats.StackInuse))
-		gobench.Notify(memStackSys, int64(stats.StackSys))
-		gobench.Notify(memStackMcacheInuse, int64(stats.MCacheInuse))
-		gobench.Notify(memStackMcacheSys, int64(stats.MCacheSys))
-		gobench.Notify(memStackMspanInuse, int64(stats.MSpanInuse))
-		gobench.Notify(memStackMspanSys, int64(stats.MSpanSys))
+		server.Notify(memStackInuse, int64(stats.StackInuse))
+		server.Notify(memStackSys, int64(stats.StackSys))
+		server.Notify(memStackMcacheInuse, int64(stats.MCacheInuse))
+		server.Notify(memStackMcacheSys, int64(stats.MCacheSys))
+		server.Notify(memStackMspanInuse, int64(stats.MSpanInuse))
+		server.Notify(memStackMspanSys, int64(stats.MSpanSys))
 	}
 
 	return nil
