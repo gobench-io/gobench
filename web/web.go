@@ -87,11 +87,13 @@ func New(db *ent.Client) *chi.Mux {
 		})
 
 		// get the application
-		r.Get("/applications", func(r chi.Router) {
-			r.Get("/", getApplications)    // GET /applications
+		r.Route("/applications", func(r chi.Router) {
+			r.Get("/", listApplications)   // GET /applications
 			r.Post("/", createApplication) // POST /applications
 
 			r.Route("/{applicationID}", func(r chi.Router) {
+				r.Use(applicationCtx)
+
 				r.Get("/", getApplication)
 				r.Get("/groups", getApplicationGroups)
 			})
