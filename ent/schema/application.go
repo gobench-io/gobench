@@ -18,8 +18,11 @@ func (Application) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name"),
 		field.String("status"),
-		field.Time("created_at").Default(time.Now),
-		field.Time("finished_at").Optional(),
+		field.Time("created_at").
+			Default(time.Now),
+		field.Time("updated_at").
+			Default(time.Now).
+			UpdateDefault(time.Now),
 		field.Text("scenario"),
 	}
 }
