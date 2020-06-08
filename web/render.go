@@ -30,6 +30,15 @@ func ErrInternalServer(err error) render.Renderer {
 	}
 }
 
+func ErrInvalidRequest(err error) render.Renderer {
+	return &ErrResponse{
+		Err:            err,
+		HTTPStatusCode: 400,
+		StatusText:     "Invalid request.",
+		ErrorText:      err.Error(),
+	}
+}
+
 func ErrRender(err error) render.Renderer {
 	return &ErrResponse{
 		Err:            err,
@@ -40,6 +49,15 @@ func ErrRender(err error) render.Renderer {
 }
 
 // application response
+type applicationRequest struct {
+	*ent.Application
+	ProtectedID int `json:"id"`
+}
+
+func (a *applicationRequest) Bind(r *http.Request) error {
+	return nil
+}
+
 type applicationResponse struct {
 	*ent.Application
 	Edges *struct{} `json:"edges,omitempty"`
