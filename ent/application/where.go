@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/facebookincubator/ent/dialect/sql"
+	"github.com/facebookincubator/ent/dialect/sql/sqlgraph"
 	"github.com/gobench-io/gobench/ent/predicate"
 )
 
@@ -117,6 +118,13 @@ func CreatedAt(v time.Time) predicate.Application {
 func FinishedAt(v time.Time) predicate.Application {
 	return predicate.Application(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldFinishedAt), v))
+	})
+}
+
+// Scenario applies equality check predicate on the "scenario" field. It's identical to ScenarioEQ.
+func Scenario(v string) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldScenario), v))
 	})
 }
 
@@ -505,6 +513,145 @@ func FinishedAtIsNil() predicate.Application {
 func FinishedAtNotNil() predicate.Application {
 	return predicate.Application(func(s *sql.Selector) {
 		s.Where(sql.NotNull(s.C(FieldFinishedAt)))
+	})
+}
+
+// ScenarioEQ applies the EQ predicate on the "scenario" field.
+func ScenarioEQ(v string) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldScenario), v))
+	})
+}
+
+// ScenarioNEQ applies the NEQ predicate on the "scenario" field.
+func ScenarioNEQ(v string) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldScenario), v))
+	})
+}
+
+// ScenarioIn applies the In predicate on the "scenario" field.
+func ScenarioIn(vs ...string) predicate.Application {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Application(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(vs) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldScenario), v...))
+	})
+}
+
+// ScenarioNotIn applies the NotIn predicate on the "scenario" field.
+func ScenarioNotIn(vs ...string) predicate.Application {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Application(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(vs) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldScenario), v...))
+	})
+}
+
+// ScenarioGT applies the GT predicate on the "scenario" field.
+func ScenarioGT(v string) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldScenario), v))
+	})
+}
+
+// ScenarioGTE applies the GTE predicate on the "scenario" field.
+func ScenarioGTE(v string) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldScenario), v))
+	})
+}
+
+// ScenarioLT applies the LT predicate on the "scenario" field.
+func ScenarioLT(v string) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldScenario), v))
+	})
+}
+
+// ScenarioLTE applies the LTE predicate on the "scenario" field.
+func ScenarioLTE(v string) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldScenario), v))
+	})
+}
+
+// ScenarioContains applies the Contains predicate on the "scenario" field.
+func ScenarioContains(v string) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldScenario), v))
+	})
+}
+
+// ScenarioHasPrefix applies the HasPrefix predicate on the "scenario" field.
+func ScenarioHasPrefix(v string) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldScenario), v))
+	})
+}
+
+// ScenarioHasSuffix applies the HasSuffix predicate on the "scenario" field.
+func ScenarioHasSuffix(v string) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldScenario), v))
+	})
+}
+
+// ScenarioEqualFold applies the EqualFold predicate on the "scenario" field.
+func ScenarioEqualFold(v string) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldScenario), v))
+	})
+}
+
+// ScenarioContainsFold applies the ContainsFold predicate on the "scenario" field.
+func ScenarioContainsFold(v string) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldScenario), v))
+	})
+}
+
+// HasGroups applies the HasEdge predicate on the "groups" edge.
+func HasGroups() predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(GroupsTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, GroupsTable, GroupsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasGroupsWith applies the HasEdge predicate on the "groups" edge with a given conditions (other predicates).
+func HasGroupsWith(preds ...predicate.Graph) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(GroupsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, GroupsTable, GroupsColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
 	})
 }
 

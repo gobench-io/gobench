@@ -10,14 +10,25 @@ const (
 	// Label holds the string label denoting the application type in the database.
 	Label = "application"
 	// FieldID holds the string denoting the id field in the database.
-	FieldID         = "id"         // FieldName holds the string denoting the name vertex property in the database.
-	FieldName       = "name"       // FieldStatus holds the string denoting the status vertex property in the database.
-	FieldStatus     = "status"     // FieldCreatedAt holds the string denoting the created_at vertex property in the database.
-	FieldCreatedAt  = "created_at" // FieldFinishedAt holds the string denoting the finished_at vertex property in the database.
-	FieldFinishedAt = "finished_at"
+	FieldID         = "id"          // FieldName holds the string denoting the name vertex property in the database.
+	FieldName       = "name"        // FieldStatus holds the string denoting the status vertex property in the database.
+	FieldStatus     = "status"      // FieldCreatedAt holds the string denoting the created_at vertex property in the database.
+	FieldCreatedAt  = "created_at"  // FieldFinishedAt holds the string denoting the finished_at vertex property in the database.
+	FieldFinishedAt = "finished_at" // FieldScenario holds the string denoting the scenario vertex property in the database.
+	FieldScenario   = "scenario"
+
+	// EdgeGroups holds the string denoting the groups edge name in mutations.
+	EdgeGroups = "groups"
 
 	// Table holds the table name of the application in the database.
 	Table = "applications"
+	// GroupsTable is the table the holds the groups relation/edge.
+	GroupsTable = "graphs"
+	// GroupsInverseTable is the table name for the Graph entity.
+	// It exists in this package in order to avoid circular dependency with the "graph" package.
+	GroupsInverseTable = "graphs"
+	// GroupsColumn is the table column denoting the groups relation/edge.
+	GroupsColumn = "application_groups"
 )
 
 // Columns holds all SQL columns for application fields.
@@ -27,6 +38,7 @@ var Columns = []string{
 	FieldStatus,
 	FieldCreatedAt,
 	FieldFinishedAt,
+	FieldScenario,
 }
 
 var (

@@ -235,6 +235,22 @@ func (c *ApplicationClient) GetX(ctx context.Context, id int) *Application {
 	return a
 }
 
+// QueryGroups queries the groups edge of a Application.
+func (c *ApplicationClient) QueryGroups(a *Application) *GraphQuery {
+	query := &GraphQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(application.Table, application.FieldID, id),
+			sqlgraph.To(graph.Table, graph.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, application.GroupsTable, application.GroupsColumn),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ApplicationClient) Hooks() []Hook {
 	return c.hooks.Application
