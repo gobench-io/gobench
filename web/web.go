@@ -63,7 +63,7 @@ func New(db *ent.Client) *chi.Mux {
 
 		// rest for graphs
 		r.Route("/graphs", func(r chi.Router) {
-			r.Get("/", listGraphs) // GET /groups
+			r.Get("/", listGraphs) // GET /graphs
 
 			r.Route("/{graphID}", func(r chi.Router) {
 				r.Use(graphCtx)
@@ -74,7 +74,7 @@ func New(db *ent.Client) *chi.Mux {
 
 		// rest for metrics
 		r.Route("/metrics", func(r chi.Router) {
-			r.Get("/", listMetrics) // GET /groups
+			r.Get("/", listMetrics) // GET /metrics
 
 			r.Route("/{metricID}", func(r chi.Router) {
 				r.Use(metricCtx, timeCtx)
@@ -87,7 +87,15 @@ func New(db *ent.Client) *chi.Mux {
 		})
 
 		// get the application
-		r.Get("/application", getApplication)
+		r.Get("/applications", func(r chi.Router) {
+			r.Get("/", getApplications)    // GET /applications
+			r.Post("/", createApplication) // POST /applications
+
+			r.Route("/{applicationID}", func(r chi.Router) {
+				r.Get("/", getApplication)
+				r.Get("/groups", getApplicationGroups)
+			})
+		})
 	})
 
 	statikFS, err := fs.New()
