@@ -48,7 +48,10 @@ type ApplicationMutation struct {
 	status        *string
 	created_at    *time.Time
 	finished_at   *time.Time
+	scenario      *string
 	clearedFields map[string]struct{}
+	groups        map[int]struct{}
+	removedgroups map[int]struct{}
 	done          bool
 	oldValue      func(context.Context) (*Application, error)
 }
@@ -293,6 +296,85 @@ func (m *ApplicationMutation) ResetFinishedAt() {
 	delete(m.clearedFields, application.FieldFinishedAt)
 }
 
+// SetScenario sets the scenario field.
+func (m *ApplicationMutation) SetScenario(s string) {
+	m.scenario = &s
+}
+
+// Scenario returns the scenario value in the mutation.
+func (m *ApplicationMutation) Scenario() (r string, exists bool) {
+	v := m.scenario
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldScenario returns the old scenario value of the Application.
+// If the Application object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *ApplicationMutation) OldScenario(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldScenario is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldScenario requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldScenario: %w", err)
+	}
+	return oldValue.Scenario, nil
+}
+
+// ResetScenario reset all changes of the "scenario" field.
+func (m *ApplicationMutation) ResetScenario() {
+	m.scenario = nil
+}
+
+// AddGroupIDs adds the groups edge to Graph by ids.
+func (m *ApplicationMutation) AddGroupIDs(ids ...int) {
+	if m.groups == nil {
+		m.groups = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.groups[ids[i]] = struct{}{}
+	}
+}
+
+// RemoveGroupIDs removes the groups edge to Graph by ids.
+func (m *ApplicationMutation) RemoveGroupIDs(ids ...int) {
+	if m.removedgroups == nil {
+		m.removedgroups = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removedgroups[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedGroups returns the removed ids of groups.
+func (m *ApplicationMutation) RemovedGroupsIDs() (ids []int) {
+	for id := range m.removedgroups {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// GroupsIDs returns the groups ids in the mutation.
+func (m *ApplicationMutation) GroupsIDs() (ids []int) {
+	for id := range m.groups {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetGroups reset all changes of the "groups" edge.
+func (m *ApplicationMutation) ResetGroups() {
+	m.groups = nil
+	m.removedgroups = nil
+}
+
 // Op returns the operation name.
 func (m *ApplicationMutation) Op() Op {
 	return m.op
@@ -307,7 +389,7 @@ func (m *ApplicationMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *ApplicationMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.name != nil {
 		fields = append(fields, application.FieldName)
 	}
@@ -319,6 +401,9 @@ func (m *ApplicationMutation) Fields() []string {
 	}
 	if m.finished_at != nil {
 		fields = append(fields, application.FieldFinishedAt)
+	}
+	if m.scenario != nil {
+		fields = append(fields, application.FieldScenario)
 	}
 	return fields
 }
@@ -336,6 +421,8 @@ func (m *ApplicationMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case application.FieldFinishedAt:
 		return m.FinishedAt()
+	case application.FieldScenario:
+		return m.Scenario()
 	}
 	return nil, false
 }
@@ -353,6 +440,8 @@ func (m *ApplicationMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldCreatedAt(ctx)
 	case application.FieldFinishedAt:
 		return m.OldFinishedAt(ctx)
+	case application.FieldScenario:
+		return m.OldScenario(ctx)
 	}
 	return nil, fmt.Errorf("unknown Application field %s", name)
 }
@@ -389,6 +478,13 @@ func (m *ApplicationMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetFinishedAt(v)
+		return nil
+	case application.FieldScenario:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetScenario(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Application field %s", name)
@@ -461,6 +557,9 @@ func (m *ApplicationMutation) ResetField(name string) error {
 	case application.FieldFinishedAt:
 		m.ResetFinishedAt()
 		return nil
+	case application.FieldScenario:
+		m.ResetScenario()
+		return nil
 	}
 	return fmt.Errorf("unknown Application field %s", name)
 }
@@ -468,45 +567,71 @@ func (m *ApplicationMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this
 // mutation.
 func (m *ApplicationMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.groups != nil {
+		edges = append(edges, application.EdgeGroups)
+	}
 	return edges
 }
 
 // AddedIDs returns all ids (to other nodes) that were added for
 // the given edge name.
 func (m *ApplicationMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case application.EdgeGroups:
+		ids := make([]ent.Value, 0, len(m.groups))
+		for id := range m.groups {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this
 // mutation.
 func (m *ApplicationMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.removedgroups != nil {
+		edges = append(edges, application.EdgeGroups)
+	}
 	return edges
 }
 
 // RemovedIDs returns all ids (to other nodes) that were removed for
 // the given edge name.
 func (m *ApplicationMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case application.EdgeGroups:
+		ids := make([]ent.Value, 0, len(m.removedgroups))
+		for id := range m.removedgroups {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this
 // mutation.
 func (m *ApplicationMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
 	return edges
 }
 
 // EdgeCleared returns a boolean indicates if this edge was
 // cleared in this mutation.
 func (m *ApplicationMutation) EdgeCleared(name string) bool {
+	switch name {
+	}
 	return false
 }
 
 // ClearEdge clears the value for the given name. It returns an
 // error if the edge name is not defined in the schema.
 func (m *ApplicationMutation) ClearEdge(name string) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown Application unique edge %s", name)
 }
 
@@ -514,6 +639,11 @@ func (m *ApplicationMutation) ClearEdge(name string) error {
 // given edge name. It returns an error if the edge is not
 // defined in the schema.
 func (m *ApplicationMutation) ResetEdge(name string) error {
+	switch name {
+	case application.EdgeGroups:
+		m.ResetGroups()
+		return nil
+	}
 	return fmt.Errorf("unknown Application edge %s", name)
 }
 

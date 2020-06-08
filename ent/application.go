@@ -24,6 +24,29 @@ type Application struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// FinishedAt holds the value of the "finished_at" field.
 	FinishedAt time.Time `json:"finished_at,omitempty"`
+	// Scenario holds the value of the "scenario" field.
+	Scenario string `json:"scenario,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the ApplicationQuery when eager-loading is set.
+	Edges ApplicationEdges `json:"edges"`
+}
+
+// ApplicationEdges holds the relations/edges for other nodes in the graph.
+type ApplicationEdges struct {
+	// Groups holds the value of the groups edge.
+	Groups []*Graph
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// GroupsOrErr returns the Groups value or an error if the edge
+// was not loaded in eager-loading.
+func (e ApplicationEdges) GroupsOrErr() ([]*Graph, error) {
+	if e.loadedTypes[0] {
+		return e.Groups, nil
+	}
+	return nil, &NotLoadedError{edge: "groups"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -34,6 +57,7 @@ func (*Application) scanValues() []interface{} {
 		&sql.NullString{}, // status
 		&sql.NullTime{},   // created_at
 		&sql.NullTime{},   // finished_at
+		&sql.NullString{}, // scenario
 	}
 }
 
@@ -69,7 +93,17 @@ func (a *Application) assignValues(values ...interface{}) error {
 	} else if value.Valid {
 		a.FinishedAt = value.Time
 	}
+	if value, ok := values[4].(*sql.NullString); !ok {
+		return fmt.Errorf("unexpected type %T for field scenario", values[4])
+	} else if value.Valid {
+		a.Scenario = value.String
+	}
 	return nil
+}
+
+// QueryGroups queries the groups edge of the Application.
+func (a *Application) QueryGroups() *GraphQuery {
+	return (&ApplicationClient{config: a.config}).QueryGroups(a)
 }
 
 // Update returns a builder for updating this Application.
@@ -103,6 +137,8 @@ func (a *Application) String() string {
 	builder.WriteString(a.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", finished_at=")
 	builder.WriteString(a.FinishedAt.Format(time.ANSIC))
+	builder.WriteString(", scenario=")
+	builder.WriteString(a.Scenario)
 	builder.WriteByte(')')
 	return builder.String()
 }

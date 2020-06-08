@@ -11,6 +11,7 @@ import (
 	"github.com/facebookincubator/ent/dialect/sql/sqlgraph"
 	"github.com/facebookincubator/ent/schema/field"
 	"github.com/gobench-io/gobench/ent/application"
+	"github.com/gobench-io/gobench/ent/graph"
 )
 
 // ApplicationCreate is the builder for creating a Application entity.
@@ -60,6 +61,27 @@ func (ac *ApplicationCreate) SetNillableFinishedAt(t *time.Time) *ApplicationCre
 	return ac
 }
 
+// SetScenario sets the scenario field.
+func (ac *ApplicationCreate) SetScenario(s string) *ApplicationCreate {
+	ac.mutation.SetScenario(s)
+	return ac
+}
+
+// AddGroupIDs adds the groups edge to Graph by ids.
+func (ac *ApplicationCreate) AddGroupIDs(ids ...int) *ApplicationCreate {
+	ac.mutation.AddGroupIDs(ids...)
+	return ac
+}
+
+// AddGroups adds the groups edges to Graph.
+func (ac *ApplicationCreate) AddGroups(g ...*Graph) *ApplicationCreate {
+	ids := make([]int, len(g))
+	for i := range g {
+		ids[i] = g[i].ID
+	}
+	return ac.AddGroupIDs(ids...)
+}
+
 // Save creates the Application in the database.
 func (ac *ApplicationCreate) Save(ctx context.Context) (*Application, error) {
 	if _, ok := ac.mutation.Name(); !ok {
@@ -71,6 +93,9 @@ func (ac *ApplicationCreate) Save(ctx context.Context) (*Application, error) {
 	if _, ok := ac.mutation.CreatedAt(); !ok {
 		v := application.DefaultCreatedAt()
 		ac.mutation.SetCreatedAt(v)
+	}
+	if _, ok := ac.mutation.Scenario(); !ok {
+		return nil, errors.New("ent: missing required field \"scenario\"")
 	}
 	var (
 		err  error
@@ -150,6 +175,33 @@ func (ac *ApplicationCreate) sqlSave(ctx context.Context) (*Application, error) 
 			Column: application.FieldFinishedAt,
 		})
 		a.FinishedAt = value
+	}
+	if value, ok := ac.mutation.Scenario(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: application.FieldScenario,
+		})
+		a.Scenario = value
+	}
+	if nodes := ac.mutation.GroupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   application.GroupsTable,
+			Columns: []string{application.GroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: graph.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if err := sqlgraph.CreateNode(ctx, ac.driver, _spec); err != nil {
 		if cerr, ok := isSQLConstraintError(err); ok {

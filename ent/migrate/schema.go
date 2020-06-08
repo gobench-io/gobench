@@ -15,6 +15,7 @@ var (
 		{Name: "status", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "finished_at", Type: field.TypeTime, Nullable: true},
+		{Name: "scenario", Type: field.TypeString, Size: 2147483647},
 	}
 	// ApplicationsTable holds the schema information for the "applications" table.
 	ApplicationsTable = &schema.Table{
@@ -72,6 +73,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "title", Type: field.TypeString},
 		{Name: "unit", Type: field.TypeString},
+		{Name: "application_groups", Type: field.TypeInt, Nullable: true},
 		{Name: "group_graphs", Type: field.TypeInt, Nullable: true},
 	}
 	// GraphsTable holds the schema information for the "graphs" table.
@@ -81,8 +83,15 @@ var (
 		PrimaryKey: []*schema.Column{GraphsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "graphs_groups_graphs",
+				Symbol:  "graphs_applications_groups",
 				Columns: []*schema.Column{GraphsColumns[3]},
+
+				RefColumns: []*schema.Column{ApplicationsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:  "graphs_groups_graphs",
+				Columns: []*schema.Column{GraphsColumns[4]},
 
 				RefColumns: []*schema.Column{GroupsColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -169,7 +178,8 @@ var (
 func init() {
 	CountersTable.ForeignKeys[0].RefTable = MetricsTable
 	GaugesTable.ForeignKeys[0].RefTable = MetricsTable
-	GraphsTable.ForeignKeys[0].RefTable = GroupsTable
+	GraphsTable.ForeignKeys[0].RefTable = ApplicationsTable
+	GraphsTable.ForeignKeys[1].RefTable = GroupsTable
 	HistogramsTable.ForeignKeys[0].RefTable = MetricsTable
 	MetricsTable.ForeignKeys[0].RefTable = GraphsTable
 }
