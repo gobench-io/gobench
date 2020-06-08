@@ -41,10 +41,11 @@ func New() (*Server, error) {
 // Start begin a gobench server
 func (s *Server) Start() error {
 	// default db name
-	dbFilename := "./.gobench.sqlite3"
+	dbFilename := "./gobench.sqlite3"
 	if err := server.setupDb(dbFilename); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -80,4 +81,9 @@ func (s *Server) setupDb(filename string) error {
 	s.mu.Unlock()
 
 	return nil
+}
+
+// DB retuns the db client
+func (s *Server) DB() *ent.Client {
+	return s.db
 }
