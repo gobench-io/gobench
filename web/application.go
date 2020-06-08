@@ -64,4 +64,22 @@ func getApplication(w http.ResponseWriter, r *http.Request) {
 }
 
 func getApplicationGroups(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	app, ok := ctx.Value(webKey("application")).(*ent.Application)
+	if !ok {
+		http.Error(w, http.StatusText(422), 422)
+		return
+	}
+
+	gs, err := app.QueryGroups().All(ctx)
+
+	if err != nil {
+		render.Render(w, r, ErrInternalServer(err))
+		return
+	}
+
+	if err := render.RenderList(w, r, newGroupListResponse(gs)); err != nil {
+		render.Render(w, r, ErrRender(err))
+		return
+	}
 }
