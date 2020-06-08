@@ -8,7 +8,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 	"github.com/gobench-io/gobench/ent"
-	"github.com/gobench-io/gobench/ent/app"
+	"github.com/gobench-io/gobench/ent/application"
 )
 
 func applicationCtx(next http.Handler) http.Handler {
@@ -21,7 +21,7 @@ func applicationCtx(next http.Handler) http.Handler {
 
 		app, err := db.Application.
 			Query().
-			Where(app.ID(appID)).
+			Where(application.ID(appID)).
 			Only(r.Context())
 
 		if err != nil {
