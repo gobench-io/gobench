@@ -102,8 +102,8 @@ func New(db *ent.Client) *chi.Mux {
 
 // Serve start a web server at given port
 // should be run in a go routine
-func Serve(collect *server.Collect, port int) {
-	r := New(collect.DB)
+func Serve(s *server.Server, port int) {
+	r := New(s.DB())
 
 	portS := fmt.Sprintf(":%d", port)
 

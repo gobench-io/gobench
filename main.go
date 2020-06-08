@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/gobench-io/gobench/server"
+	"github.com/gobench-io/gobench/web"
 )
 
 // func main() {
@@ -25,4 +26,6 @@ func main() {
 	if err := server.Start(); err != nil {
 		log.Fatalf("failed to start the server: %v", err)
 	}
+
+	web.Serve(server, 3001)
 }
