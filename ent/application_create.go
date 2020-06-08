@@ -11,7 +11,7 @@ import (
 	"github.com/facebookincubator/ent/dialect/sql/sqlgraph"
 	"github.com/facebookincubator/ent/schema/field"
 	"github.com/gobench-io/gobench/ent/application"
-	"github.com/gobench-io/gobench/ent/graph"
+	"github.com/gobench-io/gobench/ent/group"
 )
 
 // ApplicationCreate is the builder for creating a Application entity.
@@ -67,14 +67,14 @@ func (ac *ApplicationCreate) SetScenario(s string) *ApplicationCreate {
 	return ac
 }
 
-// AddGroupIDs adds the groups edge to Graph by ids.
+// AddGroupIDs adds the groups edge to Group by ids.
 func (ac *ApplicationCreate) AddGroupIDs(ids ...int) *ApplicationCreate {
 	ac.mutation.AddGroupIDs(ids...)
 	return ac
 }
 
-// AddGroups adds the groups edges to Graph.
-func (ac *ApplicationCreate) AddGroups(g ...*Graph) *ApplicationCreate {
+// AddGroups adds the groups edges to Group.
+func (ac *ApplicationCreate) AddGroups(g ...*Group) *ApplicationCreate {
 	ids := make([]int, len(g))
 	for i := range g {
 		ids[i] = g[i].ID
@@ -194,7 +194,7 @@ func (ac *ApplicationCreate) sqlSave(ctx context.Context) (*Application, error) 
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: graph.FieldID,
+					Column: group.FieldID,
 				},
 			},
 		}

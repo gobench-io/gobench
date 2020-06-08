@@ -73,7 +73,6 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "title", Type: field.TypeString},
 		{Name: "unit", Type: field.TypeString},
-		{Name: "application_groups", Type: field.TypeInt, Nullable: true},
 		{Name: "group_graphs", Type: field.TypeInt, Nullable: true},
 	}
 	// GraphsTable holds the schema information for the "graphs" table.
@@ -83,15 +82,8 @@ var (
 		PrimaryKey: []*schema.Column{GraphsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:  "graphs_applications_groups",
-				Columns: []*schema.Column{GraphsColumns[3]},
-
-				RefColumns: []*schema.Column{ApplicationsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
 				Symbol:  "graphs_groups_graphs",
-				Columns: []*schema.Column{GraphsColumns[4]},
+				Columns: []*schema.Column{GraphsColumns[3]},
 
 				RefColumns: []*schema.Column{GroupsColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -102,13 +94,22 @@ var (
 	GroupsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "application_groups", Type: field.TypeInt, Nullable: true},
 	}
 	// GroupsTable holds the schema information for the "groups" table.
 	GroupsTable = &schema.Table{
-		Name:        "groups",
-		Columns:     GroupsColumns,
-		PrimaryKey:  []*schema.Column{GroupsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "groups",
+		Columns:    GroupsColumns,
+		PrimaryKey: []*schema.Column{GroupsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "groups_applications_groups",
+				Columns: []*schema.Column{GroupsColumns[2]},
+
+				RefColumns: []*schema.Column{ApplicationsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// HistogramsColumns holds the columns for the "histograms" table.
 	HistogramsColumns = []*schema.Column{
@@ -178,8 +179,8 @@ var (
 func init() {
 	CountersTable.ForeignKeys[0].RefTable = MetricsTable
 	GaugesTable.ForeignKeys[0].RefTable = MetricsTable
-	GraphsTable.ForeignKeys[0].RefTable = ApplicationsTable
-	GraphsTable.ForeignKeys[1].RefTable = GroupsTable
+	GraphsTable.ForeignKeys[0].RefTable = GroupsTable
+	GroupsTable.ForeignKeys[0].RefTable = ApplicationsTable
 	HistogramsTable.ForeignKeys[0].RefTable = MetricsTable
 	MetricsTable.ForeignKeys[0].RefTable = GraphsTable
 }

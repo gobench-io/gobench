@@ -34,7 +34,7 @@ type Application struct {
 // ApplicationEdges holds the relations/edges for other nodes in the graph.
 type ApplicationEdges struct {
 	// Groups holds the value of the groups edge.
-	Groups []*Graph
+	Groups []*Group
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
@@ -42,7 +42,7 @@ type ApplicationEdges struct {
 
 // GroupsOrErr returns the Groups value or an error if the edge
 // was not loaded in eager-loading.
-func (e ApplicationEdges) GroupsOrErr() ([]*Graph, error) {
+func (e ApplicationEdges) GroupsOrErr() ([]*Group, error) {
 	if e.loadedTypes[0] {
 		return e.Groups, nil
 	}
@@ -102,7 +102,7 @@ func (a *Application) assignValues(values ...interface{}) error {
 }
 
 // QueryGroups queries the groups edge of the Application.
-func (a *Application) QueryGroups() *GraphQuery {
+func (a *Application) QueryGroups() *GroupQuery {
 	return (&ApplicationClient{config: a.config}).QueryGroups(a)
 }
 

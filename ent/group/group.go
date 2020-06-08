@@ -28,3 +28,8 @@ var Columns = []string{
 	FieldID,
 	FieldName,
 }
+
+// ForeignKeys holds the SQL foreign-keys that are owned by the Group type.
+var ForeignKeys = []string{
+	"application_groups",
+}
