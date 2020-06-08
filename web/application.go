@@ -2,6 +2,7 @@ package web
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -48,6 +49,18 @@ func listApplications(w http.ResponseWriter, r *http.Request) {
 }
 
 func createApplication(w http.ResponseWriter, r *http.Request) {
+	data := &applicationRequest{}
+
+	if err := render.Bind(r, data); err != nil {
+		render.Render(w, r, ErrInvalidRequest(err))
+		return
+	}
+
+	app := data.Application
+	log.Printf("created application: %+v\n", app)
+
+	render.Status(r, http.StatusCreated)
+	render.Render(w, r, newApplicationResponse(app))
 }
 
 func getApplication(w http.ResponseWriter, r *http.Request) {
