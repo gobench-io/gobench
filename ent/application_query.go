@@ -13,7 +13,7 @@ import (
 	"github.com/facebookincubator/ent/dialect/sql/sqlgraph"
 	"github.com/facebookincubator/ent/schema/field"
 	"github.com/gobench-io/gobench/ent/application"
-	"github.com/gobench-io/gobench/ent/graph"
+	"github.com/gobench-io/gobench/ent/group"
 	"github.com/gobench-io/gobench/ent/predicate"
 )
 
@@ -26,7 +26,7 @@ type ApplicationQuery struct {
 	unique     []string
 	predicates []predicate.Application
 	// eager-loading edges.
-	withGroups *GraphQuery
+	withGroups *GroupQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -57,15 +57,15 @@ func (aq *ApplicationQuery) Order(o ...OrderFunc) *ApplicationQuery {
 }
 
 // QueryGroups chains the current query on the groups edge.
-func (aq *ApplicationQuery) QueryGroups() *GraphQuery {
-	query := &GraphQuery{config: aq.config}
+func (aq *ApplicationQuery) QueryGroups() *GroupQuery {
+	query := &GroupQuery{config: aq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := aq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(application.Table, application.FieldID, aq.sqlQuery()),
-			sqlgraph.To(graph.Table, graph.FieldID),
+			sqlgraph.To(group.Table, group.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, application.GroupsTable, application.GroupsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
@@ -255,8 +255,8 @@ func (aq *ApplicationQuery) Clone() *ApplicationQuery {
 
 //  WithGroups tells the query-builder to eager-loads the nodes that are connected to
 // the "groups" edge. The optional arguments used to configure the query builder of the edge.
-func (aq *ApplicationQuery) WithGroups(opts ...func(*GraphQuery)) *ApplicationQuery {
-	query := &GraphQuery{config: aq.config}
+func (aq *ApplicationQuery) WithGroups(opts ...func(*GroupQuery)) *ApplicationQuery {
+	query := &GroupQuery{config: aq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -363,7 +363,7 @@ func (aq *ApplicationQuery) sqlAll(ctx context.Context) ([]*Application, error) 
 			nodeids[nodes[i].ID] = nodes[i]
 		}
 		query.withFKs = true
-		query.Where(predicate.Graph(func(s *sql.Selector) {
+		query.Where(predicate.Group(func(s *sql.Selector) {
 			s.Where(sql.InValues(application.GroupsColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)

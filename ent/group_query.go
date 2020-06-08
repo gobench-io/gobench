@@ -27,6 +27,7 @@ type GroupQuery struct {
 	predicates []predicate.Group
 	// eager-loading edges.
 	withGraphs *GraphQuery
+	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -329,15 +330,22 @@ func (gq *GroupQuery) prepareQuery(ctx context.Context) error {
 func (gq *GroupQuery) sqlAll(ctx context.Context) ([]*Group, error) {
 	var (
 		nodes       = []*Group{}
+		withFKs     = gq.withFKs
 		_spec       = gq.querySpec()
 		loadedTypes = [1]bool{
 			gq.withGraphs != nil,
 		}
 	)
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, group.ForeignKeys...)
+	}
 	_spec.ScanValues = func() []interface{} {
 		node := &Group{config: gq.config}
 		nodes = append(nodes, node)
 		values := node.scanValues()
+		if withFKs {
+			values = append(values, node.fkValues()...)
+		}
 		return values
 	}
 	_spec.Assign = func(values ...interface{}) error {

@@ -23,10 +23,10 @@ const (
 	// Table holds the table name of the application in the database.
 	Table = "applications"
 	// GroupsTable is the table the holds the groups relation/edge.
-	GroupsTable = "graphs"
-	// GroupsInverseTable is the table name for the Graph entity.
-	// It exists in this package in order to avoid circular dependency with the "graph" package.
-	GroupsInverseTable = "graphs"
+	GroupsTable = "groups"
+	// GroupsInverseTable is the table name for the Group entity.
+	// It exists in this package in order to avoid circular dependency with the "group" package.
+	GroupsInverseTable = "groups"
 	// GroupsColumn is the table column denoting the groups relation/edge.
 	GroupsColumn = "application_groups"
 )

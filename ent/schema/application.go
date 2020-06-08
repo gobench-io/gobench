@@ -27,6 +27,6 @@ func (Application) Fields() []ent.Field {
 // Edges of the Application.
 func (Application) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("groups", Graph.Type),
+		edge.To("groups", Group.Type),
 	}
 }

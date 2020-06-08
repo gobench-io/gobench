@@ -640,7 +640,7 @@ func HasGroups() predicate.Application {
 }
 
 // HasGroupsWith applies the HasEdge predicate on the "groups" edge with a given conditions (other predicates).
-func HasGroupsWith(preds ...predicate.Graph) predicate.Application {
+func HasGroupsWith(preds ...predicate.Group) predicate.Application {
 	return predicate.Application(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),

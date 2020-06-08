@@ -11,7 +11,7 @@ import (
 	"github.com/facebookincubator/ent/dialect/sql/sqlgraph"
 	"github.com/facebookincubator/ent/schema/field"
 	"github.com/gobench-io/gobench/ent/application"
-	"github.com/gobench-io/gobench/ent/graph"
+	"github.com/gobench-io/gobench/ent/group"
 	"github.com/gobench-io/gobench/ent/predicate"
 )
 
@@ -81,14 +81,14 @@ func (au *ApplicationUpdate) SetScenario(s string) *ApplicationUpdate {
 	return au
 }
 
-// AddGroupIDs adds the groups edge to Graph by ids.
+// AddGroupIDs adds the groups edge to Group by ids.
 func (au *ApplicationUpdate) AddGroupIDs(ids ...int) *ApplicationUpdate {
 	au.mutation.AddGroupIDs(ids...)
 	return au
 }
 
-// AddGroups adds the groups edges to Graph.
-func (au *ApplicationUpdate) AddGroups(g ...*Graph) *ApplicationUpdate {
+// AddGroups adds the groups edges to Group.
+func (au *ApplicationUpdate) AddGroups(g ...*Group) *ApplicationUpdate {
 	ids := make([]int, len(g))
 	for i := range g {
 		ids[i] = g[i].ID
@@ -96,14 +96,14 @@ func (au *ApplicationUpdate) AddGroups(g ...*Graph) *ApplicationUpdate {
 	return au.AddGroupIDs(ids...)
 }
 
-// RemoveGroupIDs removes the groups edge to Graph by ids.
+// RemoveGroupIDs removes the groups edge to Group by ids.
 func (au *ApplicationUpdate) RemoveGroupIDs(ids ...int) *ApplicationUpdate {
 	au.mutation.RemoveGroupIDs(ids...)
 	return au
 }
 
-// RemoveGroups removes groups edges to Graph.
-func (au *ApplicationUpdate) RemoveGroups(g ...*Graph) *ApplicationUpdate {
+// RemoveGroups removes groups edges to Group.
+func (au *ApplicationUpdate) RemoveGroups(g ...*Group) *ApplicationUpdate {
 	ids := make([]int, len(g))
 	for i := range g {
 		ids[i] = g[i].ID
@@ -232,7 +232,7 @@ func (au *ApplicationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: graph.FieldID,
+					Column: group.FieldID,
 				},
 			},
 		}
@@ -251,7 +251,7 @@ func (au *ApplicationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: graph.FieldID,
+					Column: group.FieldID,
 				},
 			},
 		}
@@ -330,14 +330,14 @@ func (auo *ApplicationUpdateOne) SetScenario(s string) *ApplicationUpdateOne {
 	return auo
 }
 
-// AddGroupIDs adds the groups edge to Graph by ids.
+// AddGroupIDs adds the groups edge to Group by ids.
 func (auo *ApplicationUpdateOne) AddGroupIDs(ids ...int) *ApplicationUpdateOne {
 	auo.mutation.AddGroupIDs(ids...)
 	return auo
 }
 
-// AddGroups adds the groups edges to Graph.
-func (auo *ApplicationUpdateOne) AddGroups(g ...*Graph) *ApplicationUpdateOne {
+// AddGroups adds the groups edges to Group.
+func (auo *ApplicationUpdateOne) AddGroups(g ...*Group) *ApplicationUpdateOne {
 	ids := make([]int, len(g))
 	for i := range g {
 		ids[i] = g[i].ID
@@ -345,14 +345,14 @@ func (auo *ApplicationUpdateOne) AddGroups(g ...*Graph) *ApplicationUpdateOne {
 	return auo.AddGroupIDs(ids...)
 }
 
-// RemoveGroupIDs removes the groups edge to Graph by ids.
+// RemoveGroupIDs removes the groups edge to Group by ids.
 func (auo *ApplicationUpdateOne) RemoveGroupIDs(ids ...int) *ApplicationUpdateOne {
 	auo.mutation.RemoveGroupIDs(ids...)
 	return auo
 }
 
-// RemoveGroups removes groups edges to Graph.
-func (auo *ApplicationUpdateOne) RemoveGroups(g ...*Graph) *ApplicationUpdateOne {
+// RemoveGroups removes groups edges to Group.
+func (auo *ApplicationUpdateOne) RemoveGroups(g ...*Group) *ApplicationUpdateOne {
 	ids := make([]int, len(g))
 	for i := range g {
 		ids[i] = g[i].ID
@@ -479,7 +479,7 @@ func (auo *ApplicationUpdateOne) sqlSave(ctx context.Context) (a *Application, e
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: graph.FieldID,
+					Column: group.FieldID,
 				},
 			},
 		}
@@ -498,7 +498,7 @@ func (auo *ApplicationUpdateOne) sqlSave(ctx context.Context) (a *Application, e
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
-					Column: graph.FieldID,
+					Column: group.FieldID,
 				},
 			},
 		}

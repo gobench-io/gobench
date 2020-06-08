@@ -42,6 +42,5 @@ var Columns = []string{
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the Graph type.
 var ForeignKeys = []string{
-	"application_groups",
 	"group_graphs",
 }

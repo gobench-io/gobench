@@ -333,7 +333,7 @@ func (m *ApplicationMutation) ResetScenario() {
 	m.scenario = nil
 }
 
-// AddGroupIDs adds the groups edge to Graph by ids.
+// AddGroupIDs adds the groups edge to Group by ids.
 func (m *ApplicationMutation) AddGroupIDs(ids ...int) {
 	if m.groups == nil {
 		m.groups = make(map[int]struct{})
@@ -343,7 +343,7 @@ func (m *ApplicationMutation) AddGroupIDs(ids ...int) {
 	}
 }
 
-// RemoveGroupIDs removes the groups edge to Graph by ids.
+// RemoveGroupIDs removes the groups edge to Group by ids.
 func (m *ApplicationMutation) RemoveGroupIDs(ids ...int) {
 	if m.removedgroups == nil {
 		m.removedgroups = make(map[int]struct{})

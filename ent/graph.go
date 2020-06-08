@@ -22,9 +22,8 @@ type Graph struct {
 	Unit string `json:"unit"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the GraphQuery when eager-loading is set.
-	Edges              GraphEdges `json:"edges"`
-	application_groups *int
-	group_graphs       *int
+	Edges        GraphEdges `json:"edges"`
+	group_graphs *int
 }
 
 // GraphEdges holds the relations/edges for other nodes in the graph.
@@ -73,7 +72,6 @@ func (*Graph) scanValues() []interface{} {
 // fkValues returns the types for scanning foreign-keys values from sql.Rows.
 func (*Graph) fkValues() []interface{} {
 	return []interface{}{
-		&sql.NullInt64{}, // application_groups
 		&sql.NullInt64{}, // group_graphs
 	}
 }
@@ -103,12 +101,6 @@ func (gr *Graph) assignValues(values ...interface{}) error {
 	values = values[2:]
 	if len(values) == len(graph.ForeignKeys) {
 		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field application_groups", value)
-		} else if value.Valid {
-			gr.application_groups = new(int)
-			*gr.application_groups = int(value.Int64)
-		}
-		if value, ok := values[1].(*sql.NullInt64); !ok {
 			return fmt.Errorf("unexpected type %T for edge-field group_graphs", value)
 		} else if value.Valid {
 			gr.group_graphs = new(int)
