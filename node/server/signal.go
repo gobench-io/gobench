@@ -14,7 +14,7 @@ func (c *Collect) handleSignals() {
 		for sig := range sc {
 			switch sig {
 			case syscall.SIGINT:
-				c.finish(statusCancel)
+				c.finish(StatusCancel)
 				os.Exit(0)
 			}
 		}
