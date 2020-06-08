@@ -25,7 +25,7 @@ type MetricQuery struct {
 	config
 	limit      *int
 	offset     *int
-	order      []Order
+	order      []OrderFunc
 	unique     []string
 	predicates []predicate.Metric
 	// eager-loading edges.
@@ -34,8 +34,9 @@ type MetricQuery struct {
 	withCounters   *CounterQuery
 	withGauges     *GaugeQuery
 	withFKs        bool
-	// intermediate query.
-	sql *sql.Selector
+	// intermediate query (i.e. traversal path).
+	sql  *sql.Selector
+	path func(context.Context) (*sql.Selector, error)
 }
 
 // Where adds a new predicate for the builder.
@@ -57,7 +58,7 @@ func (mq *MetricQuery) Offset(offset int) *MetricQuery {
 }
 
 // Order adds an order step to the query.
-func (mq *MetricQuery) Order(o ...Order) *MetricQuery {
+func (mq *MetricQuery) Order(o ...OrderFunc) *MetricQuery {
 	mq.order = append(mq.order, o...)
 	return mq
 }
@@ -65,48 +66,72 @@ func (mq *MetricQuery) Order(o ...Order) *MetricQuery {
 // QueryGraph chains the current query on the graph edge.
 func (mq *MetricQuery) QueryGraph() *GraphQuery {
 	query := &GraphQuery{config: mq.config}
-	step := sqlgraph.NewStep(
-		sqlgraph.From(metric.Table, metric.FieldID, mq.sqlQuery()),
-		sqlgraph.To(graph.Table, graph.FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, metric.GraphTable, metric.GraphColumn),
-	)
-	query.sql = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := mq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(metric.Table, metric.FieldID, mq.sqlQuery()),
+			sqlgraph.To(graph.Table, graph.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, metric.GraphTable, metric.GraphColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
+		return fromU, nil
+	}
 	return query
 }
 
 // QueryHistograms chains the current query on the histograms edge.
 func (mq *MetricQuery) QueryHistograms() *HistogramQuery {
 	query := &HistogramQuery{config: mq.config}
-	step := sqlgraph.NewStep(
-		sqlgraph.From(metric.Table, metric.FieldID, mq.sqlQuery()),
-		sqlgraph.To(histogram.Table, histogram.FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, metric.HistogramsTable, metric.HistogramsColumn),
-	)
-	query.sql = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := mq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(metric.Table, metric.FieldID, mq.sqlQuery()),
+			sqlgraph.To(histogram.Table, histogram.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, metric.HistogramsTable, metric.HistogramsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
+		return fromU, nil
+	}
 	return query
 }
 
 // QueryCounters chains the current query on the counters edge.
 func (mq *MetricQuery) QueryCounters() *CounterQuery {
 	query := &CounterQuery{config: mq.config}
-	step := sqlgraph.NewStep(
-		sqlgraph.From(metric.Table, metric.FieldID, mq.sqlQuery()),
-		sqlgraph.To(counter.Table, counter.FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, metric.CountersTable, metric.CountersColumn),
-	)
-	query.sql = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := mq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(metric.Table, metric.FieldID, mq.sqlQuery()),
+			sqlgraph.To(counter.Table, counter.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, metric.CountersTable, metric.CountersColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
+		return fromU, nil
+	}
 	return query
 }
 
 // QueryGauges chains the current query on the gauges edge.
 func (mq *MetricQuery) QueryGauges() *GaugeQuery {
 	query := &GaugeQuery{config: mq.config}
-	step := sqlgraph.NewStep(
-		sqlgraph.From(metric.Table, metric.FieldID, mq.sqlQuery()),
-		sqlgraph.To(gauge.Table, gauge.FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, metric.GaugesTable, metric.GaugesColumn),
-	)
-	query.sql = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := mq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(metric.Table, metric.FieldID, mq.sqlQuery()),
+			sqlgraph.To(gauge.Table, gauge.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, metric.GaugesTable, metric.GaugesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
+		return fromU, nil
+	}
 	return query
 }
 
@@ -206,6 +231,9 @@ func (mq *MetricQuery) OnlyXID(ctx context.Context) int {
 
 // All executes the query and returns a list of Metrics.
 func (mq *MetricQuery) All(ctx context.Context) ([]*Metric, error) {
+	if err := mq.prepareQuery(ctx); err != nil {
+		return nil, err
+	}
 	return mq.sqlAll(ctx)
 }
 
@@ -238,6 +266,9 @@ func (mq *MetricQuery) IDsX(ctx context.Context) []int {
 
 // Count returns the count of the given query.
 func (mq *MetricQuery) Count(ctx context.Context) (int, error) {
+	if err := mq.prepareQuery(ctx); err != nil {
+		return 0, err
+	}
 	return mq.sqlCount(ctx)
 }
 
@@ -252,6 +283,9 @@ func (mq *MetricQuery) CountX(ctx context.Context) int {
 
 // Exist returns true if the query has elements in the graph.
 func (mq *MetricQuery) Exist(ctx context.Context) (bool, error) {
+	if err := mq.prepareQuery(ctx); err != nil {
+		return false, err
+	}
 	return mq.sqlExist(ctx)
 }
 
@@ -271,11 +305,12 @@ func (mq *MetricQuery) Clone() *MetricQuery {
 		config:     mq.config,
 		limit:      mq.limit,
 		offset:     mq.offset,
-		order:      append([]Order{}, mq.order...),
+		order:      append([]OrderFunc{}, mq.order...),
 		unique:     append([]string{}, mq.unique...),
 		predicates: append([]predicate.Metric{}, mq.predicates...),
 		// clone intermediate query.
-		sql: mq.sql.Clone(),
+		sql:  mq.sql.Clone(),
+		path: mq.path,
 	}
 }
 
@@ -341,7 +376,12 @@ func (mq *MetricQuery) WithGauges(opts ...func(*GaugeQuery)) *MetricQuery {
 func (mq *MetricQuery) GroupBy(field string, fields ...string) *MetricGroupBy {
 	group := &MetricGroupBy{config: mq.config}
 	group.fields = append([]string{field}, fields...)
-	group.sql = mq.sqlQuery()
+	group.path = func(ctx context.Context) (prev *sql.Selector, err error) {
+		if err := mq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		return mq.sqlQuery(), nil
+	}
 	return group
 }
 
@@ -360,8 +400,24 @@ func (mq *MetricQuery) GroupBy(field string, fields ...string) *MetricGroupBy {
 func (mq *MetricQuery) Select(field string, fields ...string) *MetricSelect {
 	selector := &MetricSelect{config: mq.config}
 	selector.fields = append([]string{field}, fields...)
-	selector.sql = mq.sqlQuery()
+	selector.path = func(ctx context.Context) (prev *sql.Selector, err error) {
+		if err := mq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		return mq.sqlQuery(), nil
+	}
 	return selector
+}
+
+func (mq *MetricQuery) prepareQuery(ctx context.Context) error {
+	if mq.path != nil {
+		prev, err := mq.path(ctx)
+		if err != nil {
+			return err
+		}
+		mq.sql = prev
+	}
+	return nil
 }
 
 func (mq *MetricQuery) sqlAll(ctx context.Context) ([]*Metric, error) {
@@ -596,19 +652,25 @@ func (mq *MetricQuery) sqlQuery() *sql.Selector {
 type MetricGroupBy struct {
 	config
 	fields []string
-	fns    []Aggregate
-	// intermediate query.
-	sql *sql.Selector
+	fns    []AggregateFunc
+	// intermediate query (i.e. traversal path).
+	sql  *sql.Selector
+	path func(context.Context) (*sql.Selector, error)
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (mgb *MetricGroupBy) Aggregate(fns ...Aggregate) *MetricGroupBy {
+func (mgb *MetricGroupBy) Aggregate(fns ...AggregateFunc) *MetricGroupBy {
 	mgb.fns = append(mgb.fns, fns...)
 	return mgb
 }
 
 // Scan applies the group-by query and scan the result into the given value.
 func (mgb *MetricGroupBy) Scan(ctx context.Context, v interface{}) error {
+	query, err := mgb.path(ctx)
+	if err != nil {
+		return err
+	}
+	mgb.sql = query
 	return mgb.sqlScan(ctx, v)
 }
 
@@ -727,12 +789,18 @@ func (mgb *MetricGroupBy) sqlQuery() *sql.Selector {
 type MetricSelect struct {
 	config
 	fields []string
-	// intermediate queries.
-	sql *sql.Selector
+	// intermediate query (i.e. traversal path).
+	sql  *sql.Selector
+	path func(context.Context) (*sql.Selector, error)
 }
 
 // Scan applies the selector query and scan the result into the given value.
 func (ms *MetricSelect) Scan(ctx context.Context, v interface{}) error {
+	query, err := ms.path(ctx)
+	if err != nil {
+		return err
+	}
+	ms.sql = query
 	return ms.sqlScan(ctx, v)
 }
 

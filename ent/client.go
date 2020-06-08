@@ -101,6 +101,28 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	}, nil
 }
 
+// BeginTx returns a transactional client with options.
+func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) {
+	if _, ok := c.driver.(*txDriver); ok {
+		return nil, fmt.Errorf("ent: cannot start a transaction within a transaction")
+	}
+	tx, err := c.driver.(*sql.Driver).BeginTx(ctx, opts)
+	if err != nil {
+		return nil, fmt.Errorf("ent: starting a transaction: %v", err)
+	}
+	cfg := config{driver: &txDriver{tx: tx, drv: c.driver}, log: c.log, debug: c.debug, hooks: c.hooks}
+	return &Tx{
+		config:      cfg,
+		Application: NewApplicationClient(cfg),
+		Counter:     NewCounterClient(cfg),
+		Gauge:       NewGaugeClient(cfg),
+		Graph:       NewGraphClient(cfg),
+		Group:       NewGroupClient(cfg),
+		Histogram:   NewHistogramClient(cfg),
+		Metric:      NewMetricClient(cfg),
+	}, nil
+}
+
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
@@ -165,13 +187,13 @@ func (c *ApplicationClient) Update() *ApplicationUpdate {
 
 // UpdateOne returns an update builder for the given entity.
 func (c *ApplicationClient) UpdateOne(a *Application) *ApplicationUpdateOne {
-	return c.UpdateOneID(a.ID)
+	mutation := newApplicationMutation(c.config, OpUpdateOne, withApplication(a))
+	return &ApplicationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
 func (c *ApplicationClient) UpdateOneID(id int) *ApplicationUpdateOne {
-	mutation := newApplicationMutation(c.config, OpUpdateOne)
-	mutation.id = &id
+	mutation := newApplicationMutation(c.config, OpUpdateOne, withApplicationID(id))
 	return &ApplicationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
@@ -248,13 +270,13 @@ func (c *CounterClient) Update() *CounterUpdate {
 
 // UpdateOne returns an update builder for the given entity.
 func (c *CounterClient) UpdateOne(co *Counter) *CounterUpdateOne {
-	return c.UpdateOneID(co.ID)
+	mutation := newCounterMutation(c.config, OpUpdateOne, withCounter(co))
+	return &CounterUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
 func (c *CounterClient) UpdateOneID(id int) *CounterUpdateOne {
-	mutation := newCounterMutation(c.config, OpUpdateOne)
-	mutation.id = &id
+	mutation := newCounterMutation(c.config, OpUpdateOne, withCounterID(id))
 	return &CounterUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
@@ -299,14 +321,16 @@ func (c *CounterClient) GetX(ctx context.Context, id int) *Counter {
 // QueryMetric queries the metric edge of a Counter.
 func (c *CounterClient) QueryMetric(co *Counter) *MetricQuery {
 	query := &MetricQuery{config: c.config}
-	id := co.ID
-	step := sqlgraph.NewStep(
-		sqlgraph.From(counter.Table, counter.FieldID, id),
-		sqlgraph.To(metric.Table, metric.FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, counter.MetricTable, counter.MetricColumn),
-	)
-	query.sql = sqlgraph.Neighbors(co.driver.Dialect(), step)
-
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := co.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(counter.Table, counter.FieldID, id),
+			sqlgraph.To(metric.Table, metric.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, counter.MetricTable, counter.MetricColumn),
+		)
+		fromV = sqlgraph.Neighbors(co.driver.Dialect(), step)
+		return fromV, nil
+	}
 	return query
 }
 
@@ -345,13 +369,13 @@ func (c *GaugeClient) Update() *GaugeUpdate {
 
 // UpdateOne returns an update builder for the given entity.
 func (c *GaugeClient) UpdateOne(ga *Gauge) *GaugeUpdateOne {
-	return c.UpdateOneID(ga.ID)
+	mutation := newGaugeMutation(c.config, OpUpdateOne, withGauge(ga))
+	return &GaugeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
 func (c *GaugeClient) UpdateOneID(id int) *GaugeUpdateOne {
-	mutation := newGaugeMutation(c.config, OpUpdateOne)
-	mutation.id = &id
+	mutation := newGaugeMutation(c.config, OpUpdateOne, withGaugeID(id))
 	return &GaugeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
@@ -396,14 +420,16 @@ func (c *GaugeClient) GetX(ctx context.Context, id int) *Gauge {
 // QueryMetric queries the metric edge of a Gauge.
 func (c *GaugeClient) QueryMetric(ga *Gauge) *MetricQuery {
 	query := &MetricQuery{config: c.config}
-	id := ga.ID
-	step := sqlgraph.NewStep(
-		sqlgraph.From(gauge.Table, gauge.FieldID, id),
-		sqlgraph.To(metric.Table, metric.FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, gauge.MetricTable, gauge.MetricColumn),
-	)
-	query.sql = sqlgraph.Neighbors(ga.driver.Dialect(), step)
-
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ga.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(gauge.Table, gauge.FieldID, id),
+			sqlgraph.To(metric.Table, metric.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, gauge.MetricTable, gauge.MetricColumn),
+		)
+		fromV = sqlgraph.Neighbors(ga.driver.Dialect(), step)
+		return fromV, nil
+	}
 	return query
 }
 
@@ -442,13 +468,13 @@ func (c *GraphClient) Update() *GraphUpdate {
 
 // UpdateOne returns an update builder for the given entity.
 func (c *GraphClient) UpdateOne(gr *Graph) *GraphUpdateOne {
-	return c.UpdateOneID(gr.ID)
+	mutation := newGraphMutation(c.config, OpUpdateOne, withGraph(gr))
+	return &GraphUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
 func (c *GraphClient) UpdateOneID(id int) *GraphUpdateOne {
-	mutation := newGraphMutation(c.config, OpUpdateOne)
-	mutation.id = &id
+	mutation := newGraphMutation(c.config, OpUpdateOne, withGraphID(id))
 	return &GraphUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
@@ -493,28 +519,32 @@ func (c *GraphClient) GetX(ctx context.Context, id int) *Graph {
 // QueryGroup queries the group edge of a Graph.
 func (c *GraphClient) QueryGroup(gr *Graph) *GroupQuery {
 	query := &GroupQuery{config: c.config}
-	id := gr.ID
-	step := sqlgraph.NewStep(
-		sqlgraph.From(graph.Table, graph.FieldID, id),
-		sqlgraph.To(group.Table, group.FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, graph.GroupTable, graph.GroupColumn),
-	)
-	query.sql = sqlgraph.Neighbors(gr.driver.Dialect(), step)
-
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := gr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(graph.Table, graph.FieldID, id),
+			sqlgraph.To(group.Table, group.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, graph.GroupTable, graph.GroupColumn),
+		)
+		fromV = sqlgraph.Neighbors(gr.driver.Dialect(), step)
+		return fromV, nil
+	}
 	return query
 }
 
 // QueryMetrics queries the metrics edge of a Graph.
 func (c *GraphClient) QueryMetrics(gr *Graph) *MetricQuery {
 	query := &MetricQuery{config: c.config}
-	id := gr.ID
-	step := sqlgraph.NewStep(
-		sqlgraph.From(graph.Table, graph.FieldID, id),
-		sqlgraph.To(metric.Table, metric.FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, graph.MetricsTable, graph.MetricsColumn),
-	)
-	query.sql = sqlgraph.Neighbors(gr.driver.Dialect(), step)
-
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := gr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(graph.Table, graph.FieldID, id),
+			sqlgraph.To(metric.Table, metric.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, graph.MetricsTable, graph.MetricsColumn),
+		)
+		fromV = sqlgraph.Neighbors(gr.driver.Dialect(), step)
+		return fromV, nil
+	}
 	return query
 }
 
@@ -553,13 +583,13 @@ func (c *GroupClient) Update() *GroupUpdate {
 
 // UpdateOne returns an update builder for the given entity.
 func (c *GroupClient) UpdateOne(gr *Group) *GroupUpdateOne {
-	return c.UpdateOneID(gr.ID)
+	mutation := newGroupMutation(c.config, OpUpdateOne, withGroup(gr))
+	return &GroupUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
 func (c *GroupClient) UpdateOneID(id int) *GroupUpdateOne {
-	mutation := newGroupMutation(c.config, OpUpdateOne)
-	mutation.id = &id
+	mutation := newGroupMutation(c.config, OpUpdateOne, withGroupID(id))
 	return &GroupUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
@@ -604,14 +634,16 @@ func (c *GroupClient) GetX(ctx context.Context, id int) *Group {
 // QueryGraphs queries the graphs edge of a Group.
 func (c *GroupClient) QueryGraphs(gr *Group) *GraphQuery {
 	query := &GraphQuery{config: c.config}
-	id := gr.ID
-	step := sqlgraph.NewStep(
-		sqlgraph.From(group.Table, group.FieldID, id),
-		sqlgraph.To(graph.Table, graph.FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, group.GraphsTable, group.GraphsColumn),
-	)
-	query.sql = sqlgraph.Neighbors(gr.driver.Dialect(), step)
-
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := gr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(group.Table, group.FieldID, id),
+			sqlgraph.To(graph.Table, graph.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, group.GraphsTable, group.GraphsColumn),
+		)
+		fromV = sqlgraph.Neighbors(gr.driver.Dialect(), step)
+		return fromV, nil
+	}
 	return query
 }
 
@@ -650,13 +682,13 @@ func (c *HistogramClient) Update() *HistogramUpdate {
 
 // UpdateOne returns an update builder for the given entity.
 func (c *HistogramClient) UpdateOne(h *Histogram) *HistogramUpdateOne {
-	return c.UpdateOneID(h.ID)
+	mutation := newHistogramMutation(c.config, OpUpdateOne, withHistogram(h))
+	return &HistogramUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
 func (c *HistogramClient) UpdateOneID(id int) *HistogramUpdateOne {
-	mutation := newHistogramMutation(c.config, OpUpdateOne)
-	mutation.id = &id
+	mutation := newHistogramMutation(c.config, OpUpdateOne, withHistogramID(id))
 	return &HistogramUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
@@ -701,14 +733,16 @@ func (c *HistogramClient) GetX(ctx context.Context, id int) *Histogram {
 // QueryMetric queries the metric edge of a Histogram.
 func (c *HistogramClient) QueryMetric(h *Histogram) *MetricQuery {
 	query := &MetricQuery{config: c.config}
-	id := h.ID
-	step := sqlgraph.NewStep(
-		sqlgraph.From(histogram.Table, histogram.FieldID, id),
-		sqlgraph.To(metric.Table, metric.FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, histogram.MetricTable, histogram.MetricColumn),
-	)
-	query.sql = sqlgraph.Neighbors(h.driver.Dialect(), step)
-
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := h.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(histogram.Table, histogram.FieldID, id),
+			sqlgraph.To(metric.Table, metric.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, histogram.MetricTable, histogram.MetricColumn),
+		)
+		fromV = sqlgraph.Neighbors(h.driver.Dialect(), step)
+		return fromV, nil
+	}
 	return query
 }
 
@@ -747,13 +781,13 @@ func (c *MetricClient) Update() *MetricUpdate {
 
 // UpdateOne returns an update builder for the given entity.
 func (c *MetricClient) UpdateOne(m *Metric) *MetricUpdateOne {
-	return c.UpdateOneID(m.ID)
+	mutation := newMetricMutation(c.config, OpUpdateOne, withMetric(m))
+	return &MetricUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
 func (c *MetricClient) UpdateOneID(id int) *MetricUpdateOne {
-	mutation := newMetricMutation(c.config, OpUpdateOne)
-	mutation.id = &id
+	mutation := newMetricMutation(c.config, OpUpdateOne, withMetricID(id))
 	return &MetricUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
@@ -798,56 +832,64 @@ func (c *MetricClient) GetX(ctx context.Context, id int) *Metric {
 // QueryGraph queries the graph edge of a Metric.
 func (c *MetricClient) QueryGraph(m *Metric) *GraphQuery {
 	query := &GraphQuery{config: c.config}
-	id := m.ID
-	step := sqlgraph.NewStep(
-		sqlgraph.From(metric.Table, metric.FieldID, id),
-		sqlgraph.To(graph.Table, graph.FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, metric.GraphTable, metric.GraphColumn),
-	)
-	query.sql = sqlgraph.Neighbors(m.driver.Dialect(), step)
-
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(metric.Table, metric.FieldID, id),
+			sqlgraph.To(graph.Table, graph.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, metric.GraphTable, metric.GraphColumn),
+		)
+		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
+		return fromV, nil
+	}
 	return query
 }
 
 // QueryHistograms queries the histograms edge of a Metric.
 func (c *MetricClient) QueryHistograms(m *Metric) *HistogramQuery {
 	query := &HistogramQuery{config: c.config}
-	id := m.ID
-	step := sqlgraph.NewStep(
-		sqlgraph.From(metric.Table, metric.FieldID, id),
-		sqlgraph.To(histogram.Table, histogram.FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, metric.HistogramsTable, metric.HistogramsColumn),
-	)
-	query.sql = sqlgraph.Neighbors(m.driver.Dialect(), step)
-
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(metric.Table, metric.FieldID, id),
+			sqlgraph.To(histogram.Table, histogram.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, metric.HistogramsTable, metric.HistogramsColumn),
+		)
+		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
+		return fromV, nil
+	}
 	return query
 }
 
 // QueryCounters queries the counters edge of a Metric.
 func (c *MetricClient) QueryCounters(m *Metric) *CounterQuery {
 	query := &CounterQuery{config: c.config}
-	id := m.ID
-	step := sqlgraph.NewStep(
-		sqlgraph.From(metric.Table, metric.FieldID, id),
-		sqlgraph.To(counter.Table, counter.FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, metric.CountersTable, metric.CountersColumn),
-	)
-	query.sql = sqlgraph.Neighbors(m.driver.Dialect(), step)
-
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(metric.Table, metric.FieldID, id),
+			sqlgraph.To(counter.Table, counter.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, metric.CountersTable, metric.CountersColumn),
+		)
+		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
+		return fromV, nil
+	}
 	return query
 }
 
 // QueryGauges queries the gauges edge of a Metric.
 func (c *MetricClient) QueryGauges(m *Metric) *GaugeQuery {
 	query := &GaugeQuery{config: c.config}
-	id := m.ID
-	step := sqlgraph.NewStep(
-		sqlgraph.From(metric.Table, metric.FieldID, id),
-		sqlgraph.To(gauge.Table, gauge.FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, metric.GaugesTable, metric.GaugesColumn),
-	)
-	query.sql = sqlgraph.Neighbors(m.driver.Dialect(), step)
-
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(metric.Table, metric.FieldID, id),
+			sqlgraph.To(gauge.Table, gauge.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, metric.GaugesTable, metric.GaugesColumn),
+		)
+		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
+		return fromV, nil
+	}
 	return query
 }
 

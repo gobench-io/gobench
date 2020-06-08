@@ -89,6 +89,7 @@ func (gc *GraphCreate) Save(ctx context.Context) (*Graph, error) {
 			}
 			gc.mutation = mutation
 			node, err = gc.sqlSave(ctx)
+			mutation.done = true
 			return node, err
 		})
 		for i := len(gc.hooks) - 1; i >= 0; i-- {

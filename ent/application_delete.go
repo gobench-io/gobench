@@ -43,6 +43,7 @@ func (ad *ApplicationDelete) Exec(ctx context.Context) (int, error) {
 			}
 			ad.mutation = mutation
 			affected, err = ad.sqlExec(ctx)
+			mutation.done = true
 			return affected, err
 		})
 		for i := len(ad.hooks) - 1; i >= 0; i-- {

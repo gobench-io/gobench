@@ -21,14 +21,15 @@ type HistogramQuery struct {
 	config
 	limit      *int
 	offset     *int
-	order      []Order
+	order      []OrderFunc
 	unique     []string
 	predicates []predicate.Histogram
 	// eager-loading edges.
 	withMetric *MetricQuery
 	withFKs    bool
-	// intermediate query.
-	sql *sql.Selector
+	// intermediate query (i.e. traversal path).
+	sql  *sql.Selector
+	path func(context.Context) (*sql.Selector, error)
 }
 
 // Where adds a new predicate for the builder.
@@ -50,7 +51,7 @@ func (hq *HistogramQuery) Offset(offset int) *HistogramQuery {
 }
 
 // Order adds an order step to the query.
-func (hq *HistogramQuery) Order(o ...Order) *HistogramQuery {
+func (hq *HistogramQuery) Order(o ...OrderFunc) *HistogramQuery {
 	hq.order = append(hq.order, o...)
 	return hq
 }
@@ -58,12 +59,18 @@ func (hq *HistogramQuery) Order(o ...Order) *HistogramQuery {
 // QueryMetric chains the current query on the metric edge.
 func (hq *HistogramQuery) QueryMetric() *MetricQuery {
 	query := &MetricQuery{config: hq.config}
-	step := sqlgraph.NewStep(
-		sqlgraph.From(histogram.Table, histogram.FieldID, hq.sqlQuery()),
-		sqlgraph.To(metric.Table, metric.FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, histogram.MetricTable, histogram.MetricColumn),
-	)
-	query.sql = sqlgraph.SetNeighbors(hq.driver.Dialect(), step)
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := hq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(histogram.Table, histogram.FieldID, hq.sqlQuery()),
+			sqlgraph.To(metric.Table, metric.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, histogram.MetricTable, histogram.MetricColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(hq.driver.Dialect(), step)
+		return fromU, nil
+	}
 	return query
 }
 
@@ -163,6 +170,9 @@ func (hq *HistogramQuery) OnlyXID(ctx context.Context) int {
 
 // All executes the query and returns a list of Histograms.
 func (hq *HistogramQuery) All(ctx context.Context) ([]*Histogram, error) {
+	if err := hq.prepareQuery(ctx); err != nil {
+		return nil, err
+	}
 	return hq.sqlAll(ctx)
 }
 
@@ -195,6 +205,9 @@ func (hq *HistogramQuery) IDsX(ctx context.Context) []int {
 
 // Count returns the count of the given query.
 func (hq *HistogramQuery) Count(ctx context.Context) (int, error) {
+	if err := hq.prepareQuery(ctx); err != nil {
+		return 0, err
+	}
 	return hq.sqlCount(ctx)
 }
 
@@ -209,6 +222,9 @@ func (hq *HistogramQuery) CountX(ctx context.Context) int {
 
 // Exist returns true if the query has elements in the graph.
 func (hq *HistogramQuery) Exist(ctx context.Context) (bool, error) {
+	if err := hq.prepareQuery(ctx); err != nil {
+		return false, err
+	}
 	return hq.sqlExist(ctx)
 }
 
@@ -228,11 +244,12 @@ func (hq *HistogramQuery) Clone() *HistogramQuery {
 		config:     hq.config,
 		limit:      hq.limit,
 		offset:     hq.offset,
-		order:      append([]Order{}, hq.order...),
+		order:      append([]OrderFunc{}, hq.order...),
 		unique:     append([]string{}, hq.unique...),
 		predicates: append([]predicate.Histogram{}, hq.predicates...),
 		// clone intermediate query.
-		sql: hq.sql.Clone(),
+		sql:  hq.sql.Clone(),
+		path: hq.path,
 	}
 }
 
@@ -265,7 +282,12 @@ func (hq *HistogramQuery) WithMetric(opts ...func(*MetricQuery)) *HistogramQuery
 func (hq *HistogramQuery) GroupBy(field string, fields ...string) *HistogramGroupBy {
 	group := &HistogramGroupBy{config: hq.config}
 	group.fields = append([]string{field}, fields...)
-	group.sql = hq.sqlQuery()
+	group.path = func(ctx context.Context) (prev *sql.Selector, err error) {
+		if err := hq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		return hq.sqlQuery(), nil
+	}
 	return group
 }
 
@@ -284,8 +306,24 @@ func (hq *HistogramQuery) GroupBy(field string, fields ...string) *HistogramGrou
 func (hq *HistogramQuery) Select(field string, fields ...string) *HistogramSelect {
 	selector := &HistogramSelect{config: hq.config}
 	selector.fields = append([]string{field}, fields...)
-	selector.sql = hq.sqlQuery()
+	selector.path = func(ctx context.Context) (prev *sql.Selector, err error) {
+		if err := hq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		return hq.sqlQuery(), nil
+	}
 	return selector
+}
+
+func (hq *HistogramQuery) prepareQuery(ctx context.Context) error {
+	if hq.path != nil {
+		prev, err := hq.path(ctx)
+		if err != nil {
+			return err
+		}
+		hq.sql = prev
+	}
+	return nil
 }
 
 func (hq *HistogramQuery) sqlAll(ctx context.Context) ([]*Histogram, error) {
@@ -433,19 +471,25 @@ func (hq *HistogramQuery) sqlQuery() *sql.Selector {
 type HistogramGroupBy struct {
 	config
 	fields []string
-	fns    []Aggregate
-	// intermediate query.
-	sql *sql.Selector
+	fns    []AggregateFunc
+	// intermediate query (i.e. traversal path).
+	sql  *sql.Selector
+	path func(context.Context) (*sql.Selector, error)
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (hgb *HistogramGroupBy) Aggregate(fns ...Aggregate) *HistogramGroupBy {
+func (hgb *HistogramGroupBy) Aggregate(fns ...AggregateFunc) *HistogramGroupBy {
 	hgb.fns = append(hgb.fns, fns...)
 	return hgb
 }
 
 // Scan applies the group-by query and scan the result into the given value.
 func (hgb *HistogramGroupBy) Scan(ctx context.Context, v interface{}) error {
+	query, err := hgb.path(ctx)
+	if err != nil {
+		return err
+	}
+	hgb.sql = query
 	return hgb.sqlScan(ctx, v)
 }
 
@@ -564,12 +608,18 @@ func (hgb *HistogramGroupBy) sqlQuery() *sql.Selector {
 type HistogramSelect struct {
 	config
 	fields []string
-	// intermediate queries.
-	sql *sql.Selector
+	// intermediate query (i.e. traversal path).
+	sql  *sql.Selector
+	path func(context.Context) (*sql.Selector, error)
 }
 
 // Scan applies the selector query and scan the result into the given value.
 func (hs *HistogramSelect) Scan(ctx context.Context, v interface{}) error {
+	query, err := hs.path(ctx)
+	if err != nil {
+		return err
+	}
+	hs.sql = query
 	return hs.sqlScan(ctx, v)
 }
 

@@ -154,6 +154,7 @@ func (hc *HistogramCreate) Save(ctx context.Context) (*Histogram, error) {
 			}
 			hc.mutation = mutation
 			node, err = hc.sqlSave(ctx)
+			mutation.done = true
 			return node, err
 		})
 		for i := len(hc.hooks) - 1; i >= 0; i-- {

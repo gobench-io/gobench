@@ -20,11 +20,12 @@ type ApplicationQuery struct {
 	config
 	limit      *int
 	offset     *int
-	order      []Order
+	order      []OrderFunc
 	unique     []string
 	predicates []predicate.Application
-	// intermediate query.
-	sql *sql.Selector
+	// intermediate query (i.e. traversal path).
+	sql  *sql.Selector
+	path func(context.Context) (*sql.Selector, error)
 }
 
 // Where adds a new predicate for the builder.
@@ -46,7 +47,7 @@ func (aq *ApplicationQuery) Offset(offset int) *ApplicationQuery {
 }
 
 // Order adds an order step to the query.
-func (aq *ApplicationQuery) Order(o ...Order) *ApplicationQuery {
+func (aq *ApplicationQuery) Order(o ...OrderFunc) *ApplicationQuery {
 	aq.order = append(aq.order, o...)
 	return aq
 }
@@ -147,6 +148,9 @@ func (aq *ApplicationQuery) OnlyXID(ctx context.Context) int {
 
 // All executes the query and returns a list of Applications.
 func (aq *ApplicationQuery) All(ctx context.Context) ([]*Application, error) {
+	if err := aq.prepareQuery(ctx); err != nil {
+		return nil, err
+	}
 	return aq.sqlAll(ctx)
 }
 
@@ -179,6 +183,9 @@ func (aq *ApplicationQuery) IDsX(ctx context.Context) []int {
 
 // Count returns the count of the given query.
 func (aq *ApplicationQuery) Count(ctx context.Context) (int, error) {
+	if err := aq.prepareQuery(ctx); err != nil {
+		return 0, err
+	}
 	return aq.sqlCount(ctx)
 }
 
@@ -193,6 +200,9 @@ func (aq *ApplicationQuery) CountX(ctx context.Context) int {
 
 // Exist returns true if the query has elements in the graph.
 func (aq *ApplicationQuery) Exist(ctx context.Context) (bool, error) {
+	if err := aq.prepareQuery(ctx); err != nil {
+		return false, err
+	}
 	return aq.sqlExist(ctx)
 }
 
@@ -212,11 +222,12 @@ func (aq *ApplicationQuery) Clone() *ApplicationQuery {
 		config:     aq.config,
 		limit:      aq.limit,
 		offset:     aq.offset,
-		order:      append([]Order{}, aq.order...),
+		order:      append([]OrderFunc{}, aq.order...),
 		unique:     append([]string{}, aq.unique...),
 		predicates: append([]predicate.Application{}, aq.predicates...),
 		// clone intermediate query.
-		sql: aq.sql.Clone(),
+		sql:  aq.sql.Clone(),
+		path: aq.path,
 	}
 }
 
@@ -238,7 +249,12 @@ func (aq *ApplicationQuery) Clone() *ApplicationQuery {
 func (aq *ApplicationQuery) GroupBy(field string, fields ...string) *ApplicationGroupBy {
 	group := &ApplicationGroupBy{config: aq.config}
 	group.fields = append([]string{field}, fields...)
-	group.sql = aq.sqlQuery()
+	group.path = func(ctx context.Context) (prev *sql.Selector, err error) {
+		if err := aq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		return aq.sqlQuery(), nil
+	}
 	return group
 }
 
@@ -257,8 +273,24 @@ func (aq *ApplicationQuery) GroupBy(field string, fields ...string) *Application
 func (aq *ApplicationQuery) Select(field string, fields ...string) *ApplicationSelect {
 	selector := &ApplicationSelect{config: aq.config}
 	selector.fields = append([]string{field}, fields...)
-	selector.sql = aq.sqlQuery()
+	selector.path = func(ctx context.Context) (prev *sql.Selector, err error) {
+		if err := aq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		return aq.sqlQuery(), nil
+	}
 	return selector
+}
+
+func (aq *ApplicationQuery) prepareQuery(ctx context.Context) error {
+	if aq.path != nil {
+		prev, err := aq.path(ctx)
+		if err != nil {
+			return err
+		}
+		aq.sql = prev
+	}
+	return nil
 }
 
 func (aq *ApplicationQuery) sqlAll(ctx context.Context) ([]*Application, error) {
@@ -366,19 +398,25 @@ func (aq *ApplicationQuery) sqlQuery() *sql.Selector {
 type ApplicationGroupBy struct {
 	config
 	fields []string
-	fns    []Aggregate
-	// intermediate query.
-	sql *sql.Selector
+	fns    []AggregateFunc
+	// intermediate query (i.e. traversal path).
+	sql  *sql.Selector
+	path func(context.Context) (*sql.Selector, error)
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (agb *ApplicationGroupBy) Aggregate(fns ...Aggregate) *ApplicationGroupBy {
+func (agb *ApplicationGroupBy) Aggregate(fns ...AggregateFunc) *ApplicationGroupBy {
 	agb.fns = append(agb.fns, fns...)
 	return agb
 }
 
 // Scan applies the group-by query and scan the result into the given value.
 func (agb *ApplicationGroupBy) Scan(ctx context.Context, v interface{}) error {
+	query, err := agb.path(ctx)
+	if err != nil {
+		return err
+	}
+	agb.sql = query
 	return agb.sqlScan(ctx, v)
 }
 
@@ -497,12 +535,18 @@ func (agb *ApplicationGroupBy) sqlQuery() *sql.Selector {
 type ApplicationSelect struct {
 	config
 	fields []string
-	// intermediate queries.
-	sql *sql.Selector
+	// intermediate query (i.e. traversal path).
+	sql  *sql.Selector
+	path func(context.Context) (*sql.Selector, error)
 }
 
 // Scan applies the selector query and scan the result into the given value.
 func (as *ApplicationSelect) Scan(ctx context.Context, v interface{}) error {
+	query, err := as.path(ctx)
+	if err != nil {
+		return err
+	}
+	as.sql = query
 	return as.sqlScan(ctx, v)
 }
 
