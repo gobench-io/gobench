@@ -17,13 +17,13 @@ import (
 
 var ErrIdNotFound = errors.New("id not found")
 
-type benchStatus string
+type BenchStatus string
 
 const (
-	statusInit     benchStatus = "init"
-	statusRunning  benchStatus = "running"
-	statusFinished benchStatus = "finished"
-	statusCancel   benchStatus = "cancel"
+	StatusInit     BenchStatus = "init"
+	StatusRunning  BenchStatus = "running"
+	StatusFinished BenchStatus = "finished"
+	StatusCancel   BenchStatus = "cancel"
 )
 
 type unit struct {
@@ -42,7 +42,7 @@ type Collect struct {
 	dbFilename string
 
 	name       string
-	status     benchStatus
+	status     BenchStatus
 	createdAt  time.Time
 	finishedAt time.Time
 
@@ -54,7 +54,7 @@ var benchCollect Collect
 func init() {
 	benchCollect = Collect{
 		units:     make(map[string]unit),
-		status:    statusInit,
+		status:    StatusInit,
 		createdAt: time.Now(),
 	}
 }
@@ -190,7 +190,7 @@ func Notify(title string, value int64) error {
 func (c *Collect) Start() error {
 	log.Println("benchmark starting")
 
-	c.status = statusRunning
+	c.status = StatusRunning
 
 	filename := time.Now().Format("2006-01-02-15-04-05") + ".sqlite3"
 	if err := c.setupDb(filename); err != nil {
@@ -209,7 +209,7 @@ func (c *Collect) Start() error {
 	return nil
 }
 
-func (c *Collect) finish(s benchStatus) error {
+func (c *Collect) finish(s BenchStatus) error {
 	log.Println("benchmark is shutting down")
 
 	c.status = s
@@ -237,7 +237,7 @@ func (c *Collect) finish(s benchStatus) error {
 // Finish closes the db connection
 // and trigger services
 func (c *Collect) Finish() error {
-	return c.finish(statusFinished)
+	return c.finish(StatusFinished)
 }
 
 func timestampMs() int64 {
