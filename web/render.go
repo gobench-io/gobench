@@ -39,6 +39,29 @@ func ErrRender(err error) render.Renderer {
 	}
 }
 
+// application response
+type applicationResponse struct {
+	*ent.Application
+	Edges *struct{} `json:"edges,omitempty"`
+}
+
+func (ar *applicationResponse) Render(w http.ResponseWriter, r *http.Request) error {
+	return nil
+}
+func newApplicationResponse(a *ent.Application) *applicationResponse {
+	return &applicationResponse{
+		a,
+		nil,
+	}
+}
+func newApplicationListResponse(aps []*ent.Application) []render.Renderer {
+	list := []render.Renderer{}
+	for _, ap := range aps {
+		list = append(list, newApplicationResponse(ap))
+	}
+	return list
+}
+
 // group response
 type groupResponse struct {
 	*ent.Group
