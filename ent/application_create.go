@@ -86,6 +86,7 @@ func (ac *ApplicationCreate) Save(ctx context.Context) (*Application, error) {
 			}
 			ac.mutation = mutation
 			node, err = ac.sqlSave(ctx)
+			mutation.done = true
 			return node, err
 		})
 		for i := len(ac.hooks) - 1; i >= 0; i-- {

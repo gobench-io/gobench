@@ -213,6 +213,7 @@ func (hu *HistogramUpdate) Save(ctx context.Context) (int, error) {
 			}
 			hu.mutation = mutation
 			affected, err = hu.sqlSave(ctx)
+			mutation.done = true
 			return affected, err
 		})
 		for i := len(hu.hooks) - 1; i >= 0; i-- {
@@ -657,6 +658,7 @@ func (huo *HistogramUpdateOne) Save(ctx context.Context) (*Histogram, error) {
 			}
 			huo.mutation = mutation
 			node, err = huo.sqlSave(ctx)
+			mutation.done = true
 			return node, err
 		})
 		for i := len(huo.hooks) - 1; i >= 0; i-- {

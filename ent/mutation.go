@@ -3,7 +3,9 @@
 package ent
 
 import (
+	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/gobench-io/gobench/ent/application"
@@ -47,17 +49,58 @@ type ApplicationMutation struct {
 	created_at    *time.Time
 	finished_at   *time.Time
 	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*Application, error)
 }
 
 var _ ent.Mutation = (*ApplicationMutation)(nil)
 
+// applicationOption allows to manage the mutation configuration using functional options.
+type applicationOption func(*ApplicationMutation)
+
 // newApplicationMutation creates new mutation for $n.Name.
-func newApplicationMutation(c config, op Op) *ApplicationMutation {
-	return &ApplicationMutation{
+func newApplicationMutation(c config, op Op, opts ...applicationOption) *ApplicationMutation {
+	m := &ApplicationMutation{
 		config:        c,
 		op:            op,
 		typ:           TypeApplication,
 		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withApplicationID sets the id field of the mutation.
+func withApplicationID(id int) applicationOption {
+	return func(m *ApplicationMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Application
+		)
+		m.oldValue = func(ctx context.Context) (*Application, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Application.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withApplication sets the old Application of the mutation.
+func withApplication(node *Application) applicationOption {
+	return func(m *ApplicationMutation) {
+		m.oldValue = func(context.Context) (*Application, error) {
+			return node, nil
+		}
+		m.id = &node.ID
 	}
 }
 
@@ -103,7 +146,25 @@ func (m *ApplicationMutation) Name() (r string, exists bool) {
 	return *v, true
 }
 
-// ResetName reset all changes of the name field.
+// OldName returns the old name value of the Application.
+// If the Application object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *ApplicationMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldName is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName reset all changes of the "name" field.
 func (m *ApplicationMutation) ResetName() {
 	m.name = nil
 }
@@ -122,7 +183,25 @@ func (m *ApplicationMutation) Status() (r string, exists bool) {
 	return *v, true
 }
 
-// ResetStatus reset all changes of the status field.
+// OldStatus returns the old status value of the Application.
+// If the Application object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *ApplicationMutation) OldStatus(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldStatus is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus reset all changes of the "status" field.
 func (m *ApplicationMutation) ResetStatus() {
 	m.status = nil
 }
@@ -141,7 +220,25 @@ func (m *ApplicationMutation) CreatedAt() (r time.Time, exists bool) {
 	return *v, true
 }
 
-// ResetCreatedAt reset all changes of the created_at field.
+// OldCreatedAt returns the old created_at value of the Application.
+// If the Application object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *ApplicationMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldCreatedAt is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt reset all changes of the "created_at" field.
 func (m *ApplicationMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
@@ -160,6 +257,24 @@ func (m *ApplicationMutation) FinishedAt() (r time.Time, exists bool) {
 	return *v, true
 }
 
+// OldFinishedAt returns the old finished_at value of the Application.
+// If the Application object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *ApplicationMutation) OldFinishedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldFinishedAt is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldFinishedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFinishedAt: %w", err)
+	}
+	return oldValue.FinishedAt, nil
+}
+
 // ClearFinishedAt clears the value of finished_at.
 func (m *ApplicationMutation) ClearFinishedAt() {
 	m.finished_at = nil
@@ -172,7 +287,7 @@ func (m *ApplicationMutation) FinishedAtCleared() bool {
 	return ok
 }
 
-// ResetFinishedAt reset all changes of the finished_at field.
+// ResetFinishedAt reset all changes of the "finished_at" field.
 func (m *ApplicationMutation) ResetFinishedAt() {
 	m.finished_at = nil
 	delete(m.clearedFields, application.FieldFinishedAt)
@@ -223,6 +338,23 @@ func (m *ApplicationMutation) Field(name string) (ent.Value, bool) {
 		return m.FinishedAt()
 	}
 	return nil, false
+}
+
+// OldField returns the old value of the field from the database.
+// An error is returned if the mutation operation is not UpdateOne,
+// or the query to the database was failed.
+func (m *ApplicationMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case application.FieldName:
+		return m.OldName(ctx)
+	case application.FieldStatus:
+		return m.OldStatus(ctx)
+	case application.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case application.FieldFinishedAt:
+		return m.OldFinishedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown Application field %s", name)
 }
 
 // SetField sets the value for the given name. It returns an
@@ -343,8 +475,6 @@ func (m *ApplicationMutation) AddedEdges() []string {
 // AddedIDs returns all ids (to other nodes) that were added for
 // the given edge name.
 func (m *ApplicationMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	}
 	return nil
 }
 
@@ -358,8 +488,6 @@ func (m *ApplicationMutation) RemovedEdges() []string {
 // RemovedIDs returns all ids (to other nodes) that were removed for
 // the given edge name.
 func (m *ApplicationMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	}
 	return nil
 }
 
@@ -373,8 +501,6 @@ func (m *ApplicationMutation) ClearedEdges() []string {
 // EdgeCleared returns a boolean indicates if this edge was
 // cleared in this mutation.
 func (m *ApplicationMutation) EdgeCleared(name string) bool {
-	switch name {
-	}
 	return false
 }
 
@@ -388,8 +514,6 @@ func (m *ApplicationMutation) ClearEdge(name string) error {
 // given edge name. It returns an error if the edge is not
 // defined in the schema.
 func (m *ApplicationMutation) ResetEdge(name string) error {
-	switch name {
-	}
 	return fmt.Errorf("unknown Application edge %s", name)
 }
 
@@ -407,17 +531,58 @@ type CounterMutation struct {
 	clearedFields map[string]struct{}
 	metric        *int
 	clearedmetric bool
+	done          bool
+	oldValue      func(context.Context) (*Counter, error)
 }
 
 var _ ent.Mutation = (*CounterMutation)(nil)
 
+// counterOption allows to manage the mutation configuration using functional options.
+type counterOption func(*CounterMutation)
+
 // newCounterMutation creates new mutation for $n.Name.
-func newCounterMutation(c config, op Op) *CounterMutation {
-	return &CounterMutation{
+func newCounterMutation(c config, op Op, opts ...counterOption) *CounterMutation {
+	m := &CounterMutation{
 		config:        c,
 		op:            op,
 		typ:           TypeCounter,
 		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withCounterID sets the id field of the mutation.
+func withCounterID(id int) counterOption {
+	return func(m *CounterMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Counter
+		)
+		m.oldValue = func(ctx context.Context) (*Counter, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Counter.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withCounter sets the old Counter of the mutation.
+func withCounter(node *Counter) counterOption {
+	return func(m *CounterMutation) {
+		m.oldValue = func(context.Context) (*Counter, error) {
+			return node, nil
+		}
+		m.id = &node.ID
 	}
 }
 
@@ -464,6 +629,24 @@ func (m *CounterMutation) Time() (r int64, exists bool) {
 	return *v, true
 }
 
+// OldTime returns the old time value of the Counter.
+// If the Counter object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *CounterMutation) OldTime(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldTime is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTime: %w", err)
+	}
+	return oldValue.Time, nil
+}
+
 // AddTime adds i to time.
 func (m *CounterMutation) AddTime(i int64) {
 	if m.addtime != nil {
@@ -482,7 +665,7 @@ func (m *CounterMutation) AddedTime() (r int64, exists bool) {
 	return *v, true
 }
 
-// ResetTime reset all changes of the time field.
+// ResetTime reset all changes of the "time" field.
 func (m *CounterMutation) ResetTime() {
 	m.time = nil
 	m.addtime = nil
@@ -503,6 +686,24 @@ func (m *CounterMutation) Count() (r int64, exists bool) {
 	return *v, true
 }
 
+// OldCount returns the old count value of the Counter.
+// If the Counter object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *CounterMutation) OldCount(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldCount is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCount: %w", err)
+	}
+	return oldValue.Count, nil
+}
+
 // AddCount adds i to count.
 func (m *CounterMutation) AddCount(i int64) {
 	if m.addcount != nil {
@@ -521,7 +722,7 @@ func (m *CounterMutation) AddedCount() (r int64, exists bool) {
 	return *v, true
 }
 
-// ResetCount reset all changes of the count field.
+// ResetCount reset all changes of the "count" field.
 func (m *CounterMutation) ResetCount() {
 	m.count = nil
 	m.addcount = nil
@@ -560,7 +761,7 @@ func (m *CounterMutation) MetricIDs() (ids []int) {
 	return
 }
 
-// ResetMetric reset all changes of the metric edge.
+// ResetMetric reset all changes of the "metric" edge.
 func (m *CounterMutation) ResetMetric() {
 	m.metric = nil
 	m.clearedmetric = false
@@ -601,6 +802,19 @@ func (m *CounterMutation) Field(name string) (ent.Value, bool) {
 		return m.Count()
 	}
 	return nil, false
+}
+
+// OldField returns the old value of the field from the database.
+// An error is returned if the mutation operation is not UpdateOne,
+// or the query to the database was failed.
+func (m *CounterMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case counter.FieldTime:
+		return m.OldTime(ctx)
+	case counter.FieldCount:
+		return m.OldCount(ctx)
+	}
+	return nil, fmt.Errorf("unknown Counter field %s", name)
 }
 
 // SetField sets the value for the given name. It returns an
@@ -803,17 +1017,58 @@ type GaugeMutation struct {
 	clearedFields map[string]struct{}
 	metric        *int
 	clearedmetric bool
+	done          bool
+	oldValue      func(context.Context) (*Gauge, error)
 }
 
 var _ ent.Mutation = (*GaugeMutation)(nil)
 
+// gaugeOption allows to manage the mutation configuration using functional options.
+type gaugeOption func(*GaugeMutation)
+
 // newGaugeMutation creates new mutation for $n.Name.
-func newGaugeMutation(c config, op Op) *GaugeMutation {
-	return &GaugeMutation{
+func newGaugeMutation(c config, op Op, opts ...gaugeOption) *GaugeMutation {
+	m := &GaugeMutation{
 		config:        c,
 		op:            op,
 		typ:           TypeGauge,
 		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withGaugeID sets the id field of the mutation.
+func withGaugeID(id int) gaugeOption {
+	return func(m *GaugeMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Gauge
+		)
+		m.oldValue = func(ctx context.Context) (*Gauge, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Gauge.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withGauge sets the old Gauge of the mutation.
+func withGauge(node *Gauge) gaugeOption {
+	return func(m *GaugeMutation) {
+		m.oldValue = func(context.Context) (*Gauge, error) {
+			return node, nil
+		}
+		m.id = &node.ID
 	}
 }
 
@@ -860,6 +1115,24 @@ func (m *GaugeMutation) Time() (r int64, exists bool) {
 	return *v, true
 }
 
+// OldTime returns the old time value of the Gauge.
+// If the Gauge object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *GaugeMutation) OldTime(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldTime is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTime: %w", err)
+	}
+	return oldValue.Time, nil
+}
+
 // AddTime adds i to time.
 func (m *GaugeMutation) AddTime(i int64) {
 	if m.addtime != nil {
@@ -878,7 +1151,7 @@ func (m *GaugeMutation) AddedTime() (r int64, exists bool) {
 	return *v, true
 }
 
-// ResetTime reset all changes of the time field.
+// ResetTime reset all changes of the "time" field.
 func (m *GaugeMutation) ResetTime() {
 	m.time = nil
 	m.addtime = nil
@@ -899,6 +1172,24 @@ func (m *GaugeMutation) Value() (r int64, exists bool) {
 	return *v, true
 }
 
+// OldValue returns the old value value of the Gauge.
+// If the Gauge object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *GaugeMutation) OldValue(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldValue is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldValue requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldValue: %w", err)
+	}
+	return oldValue.Value, nil
+}
+
 // AddValue adds i to value.
 func (m *GaugeMutation) AddValue(i int64) {
 	if m.addvalue != nil {
@@ -917,7 +1208,7 @@ func (m *GaugeMutation) AddedValue() (r int64, exists bool) {
 	return *v, true
 }
 
-// ResetValue reset all changes of the value field.
+// ResetValue reset all changes of the "value" field.
 func (m *GaugeMutation) ResetValue() {
 	m.value = nil
 	m.addvalue = nil
@@ -956,7 +1247,7 @@ func (m *GaugeMutation) MetricIDs() (ids []int) {
 	return
 }
 
-// ResetMetric reset all changes of the metric edge.
+// ResetMetric reset all changes of the "metric" edge.
 func (m *GaugeMutation) ResetMetric() {
 	m.metric = nil
 	m.clearedmetric = false
@@ -997,6 +1288,19 @@ func (m *GaugeMutation) Field(name string) (ent.Value, bool) {
 		return m.Value()
 	}
 	return nil, false
+}
+
+// OldField returns the old value of the field from the database.
+// An error is returned if the mutation operation is not UpdateOne,
+// or the query to the database was failed.
+func (m *GaugeMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case gauge.FieldTime:
+		return m.OldTime(ctx)
+	case gauge.FieldValue:
+		return m.OldValue(ctx)
+	}
+	return nil, fmt.Errorf("unknown Gauge field %s", name)
 }
 
 // SetField sets the value for the given name. It returns an
@@ -1199,17 +1503,58 @@ type GraphMutation struct {
 	clearedgroup   bool
 	metrics        map[int]struct{}
 	removedmetrics map[int]struct{}
+	done           bool
+	oldValue       func(context.Context) (*Graph, error)
 }
 
 var _ ent.Mutation = (*GraphMutation)(nil)
 
+// graphOption allows to manage the mutation configuration using functional options.
+type graphOption func(*GraphMutation)
+
 // newGraphMutation creates new mutation for $n.Name.
-func newGraphMutation(c config, op Op) *GraphMutation {
-	return &GraphMutation{
+func newGraphMutation(c config, op Op, opts ...graphOption) *GraphMutation {
+	m := &GraphMutation{
 		config:        c,
 		op:            op,
 		typ:           TypeGraph,
 		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withGraphID sets the id field of the mutation.
+func withGraphID(id int) graphOption {
+	return func(m *GraphMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Graph
+		)
+		m.oldValue = func(ctx context.Context) (*Graph, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Graph.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withGraph sets the old Graph of the mutation.
+func withGraph(node *Graph) graphOption {
+	return func(m *GraphMutation) {
+		m.oldValue = func(context.Context) (*Graph, error) {
+			return node, nil
+		}
+		m.id = &node.ID
 	}
 }
 
@@ -1255,7 +1600,25 @@ func (m *GraphMutation) Title() (r string, exists bool) {
 	return *v, true
 }
 
-// ResetTitle reset all changes of the title field.
+// OldTitle returns the old title value of the Graph.
+// If the Graph object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *GraphMutation) OldTitle(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldTitle is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldTitle requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTitle: %w", err)
+	}
+	return oldValue.Title, nil
+}
+
+// ResetTitle reset all changes of the "title" field.
 func (m *GraphMutation) ResetTitle() {
 	m.title = nil
 }
@@ -1274,7 +1637,25 @@ func (m *GraphMutation) Unit() (r string, exists bool) {
 	return *v, true
 }
 
-// ResetUnit reset all changes of the unit field.
+// OldUnit returns the old unit value of the Graph.
+// If the Graph object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *GraphMutation) OldUnit(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldUnit is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldUnit requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUnit: %w", err)
+	}
+	return oldValue.Unit, nil
+}
+
+// ResetUnit reset all changes of the "unit" field.
 func (m *GraphMutation) ResetUnit() {
 	m.unit = nil
 }
@@ -1312,7 +1693,7 @@ func (m *GraphMutation) GroupIDs() (ids []int) {
 	return
 }
 
-// ResetGroup reset all changes of the group edge.
+// ResetGroup reset all changes of the "group" edge.
 func (m *GraphMutation) ResetGroup() {
 	m.group = nil
 	m.clearedgroup = false
@@ -1354,7 +1735,7 @@ func (m *GraphMutation) MetricsIDs() (ids []int) {
 	return
 }
 
-// ResetMetrics reset all changes of the metrics edge.
+// ResetMetrics reset all changes of the "metrics" edge.
 func (m *GraphMutation) ResetMetrics() {
 	m.metrics = nil
 	m.removedmetrics = nil
@@ -1395,6 +1776,19 @@ func (m *GraphMutation) Field(name string) (ent.Value, bool) {
 		return m.Unit()
 	}
 	return nil, false
+}
+
+// OldField returns the old value of the field from the database.
+// An error is returned if the mutation operation is not UpdateOne,
+// or the query to the database was failed.
+func (m *GraphMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case graph.FieldTitle:
+		return m.OldTitle(ctx)
+	case graph.FieldUnit:
+		return m.OldUnit(ctx)
+	}
+	return nil, fmt.Errorf("unknown Graph field %s", name)
 }
 
 // SetField sets the value for the given name. It returns an
@@ -1588,17 +1982,58 @@ type GroupMutation struct {
 	clearedFields map[string]struct{}
 	graphs        map[int]struct{}
 	removedgraphs map[int]struct{}
+	done          bool
+	oldValue      func(context.Context) (*Group, error)
 }
 
 var _ ent.Mutation = (*GroupMutation)(nil)
 
+// groupOption allows to manage the mutation configuration using functional options.
+type groupOption func(*GroupMutation)
+
 // newGroupMutation creates new mutation for $n.Name.
-func newGroupMutation(c config, op Op) *GroupMutation {
-	return &GroupMutation{
+func newGroupMutation(c config, op Op, opts ...groupOption) *GroupMutation {
+	m := &GroupMutation{
 		config:        c,
 		op:            op,
 		typ:           TypeGroup,
 		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withGroupID sets the id field of the mutation.
+func withGroupID(id int) groupOption {
+	return func(m *GroupMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Group
+		)
+		m.oldValue = func(ctx context.Context) (*Group, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Group.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withGroup sets the old Group of the mutation.
+func withGroup(node *Group) groupOption {
+	return func(m *GroupMutation) {
+		m.oldValue = func(context.Context) (*Group, error) {
+			return node, nil
+		}
+		m.id = &node.ID
 	}
 }
 
@@ -1644,7 +2079,25 @@ func (m *GroupMutation) Name() (r string, exists bool) {
 	return *v, true
 }
 
-// ResetName reset all changes of the name field.
+// OldName returns the old name value of the Group.
+// If the Group object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *GroupMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldName is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName reset all changes of the "name" field.
 func (m *GroupMutation) ResetName() {
 	m.name = nil
 }
@@ -1685,7 +2138,7 @@ func (m *GroupMutation) GraphsIDs() (ids []int) {
 	return
 }
 
-// ResetGraphs reset all changes of the graphs edge.
+// ResetGraphs reset all changes of the "graphs" edge.
 func (m *GroupMutation) ResetGraphs() {
 	m.graphs = nil
 	m.removedgraphs = nil
@@ -1721,6 +2174,17 @@ func (m *GroupMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	}
 	return nil, false
+}
+
+// OldField returns the old value of the field from the database.
+// An error is returned if the mutation operation is not UpdateOne,
+// or the query to the database was failed.
+func (m *GroupMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case group.FieldName:
+		return m.OldName(ctx)
+	}
+	return nil, fmt.Errorf("unknown Group field %s", name)
 }
 
 // SetField sets the value for the given name. It returns an
@@ -1907,17 +2371,58 @@ type HistogramMutation struct {
 	clearedFields map[string]struct{}
 	metric        *int
 	clearedmetric bool
+	done          bool
+	oldValue      func(context.Context) (*Histogram, error)
 }
 
 var _ ent.Mutation = (*HistogramMutation)(nil)
 
+// histogramOption allows to manage the mutation configuration using functional options.
+type histogramOption func(*HistogramMutation)
+
 // newHistogramMutation creates new mutation for $n.Name.
-func newHistogramMutation(c config, op Op) *HistogramMutation {
-	return &HistogramMutation{
+func newHistogramMutation(c config, op Op, opts ...histogramOption) *HistogramMutation {
+	m := &HistogramMutation{
 		config:        c,
 		op:            op,
 		typ:           TypeHistogram,
 		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withHistogramID sets the id field of the mutation.
+func withHistogramID(id int) histogramOption {
+	return func(m *HistogramMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Histogram
+		)
+		m.oldValue = func(ctx context.Context) (*Histogram, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Histogram.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withHistogram sets the old Histogram of the mutation.
+func withHistogram(node *Histogram) histogramOption {
+	return func(m *HistogramMutation) {
+		m.oldValue = func(context.Context) (*Histogram, error) {
+			return node, nil
+		}
+		m.id = &node.ID
 	}
 }
 
@@ -1964,6 +2469,24 @@ func (m *HistogramMutation) Time() (r int64, exists bool) {
 	return *v, true
 }
 
+// OldTime returns the old time value of the Histogram.
+// If the Histogram object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *HistogramMutation) OldTime(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldTime is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTime: %w", err)
+	}
+	return oldValue.Time, nil
+}
+
 // AddTime adds i to time.
 func (m *HistogramMutation) AddTime(i int64) {
 	if m.addtime != nil {
@@ -1982,7 +2505,7 @@ func (m *HistogramMutation) AddedTime() (r int64, exists bool) {
 	return *v, true
 }
 
-// ResetTime reset all changes of the time field.
+// ResetTime reset all changes of the "time" field.
 func (m *HistogramMutation) ResetTime() {
 	m.time = nil
 	m.addtime = nil
@@ -2003,6 +2526,24 @@ func (m *HistogramMutation) Count() (r int64, exists bool) {
 	return *v, true
 }
 
+// OldCount returns the old count value of the Histogram.
+// If the Histogram object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *HistogramMutation) OldCount(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldCount is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCount: %w", err)
+	}
+	return oldValue.Count, nil
+}
+
 // AddCount adds i to count.
 func (m *HistogramMutation) AddCount(i int64) {
 	if m.addcount != nil {
@@ -2021,7 +2562,7 @@ func (m *HistogramMutation) AddedCount() (r int64, exists bool) {
 	return *v, true
 }
 
-// ResetCount reset all changes of the count field.
+// ResetCount reset all changes of the "count" field.
 func (m *HistogramMutation) ResetCount() {
 	m.count = nil
 	m.addcount = nil
@@ -2042,6 +2583,24 @@ func (m *HistogramMutation) Min() (r int64, exists bool) {
 	return *v, true
 }
 
+// OldMin returns the old min value of the Histogram.
+// If the Histogram object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *HistogramMutation) OldMin(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldMin is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldMin requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMin: %w", err)
+	}
+	return oldValue.Min, nil
+}
+
 // AddMin adds i to min.
 func (m *HistogramMutation) AddMin(i int64) {
 	if m.addmin != nil {
@@ -2060,7 +2619,7 @@ func (m *HistogramMutation) AddedMin() (r int64, exists bool) {
 	return *v, true
 }
 
-// ResetMin reset all changes of the min field.
+// ResetMin reset all changes of the "min" field.
 func (m *HistogramMutation) ResetMin() {
 	m.min = nil
 	m.addmin = nil
@@ -2081,6 +2640,24 @@ func (m *HistogramMutation) Max() (r int64, exists bool) {
 	return *v, true
 }
 
+// OldMax returns the old max value of the Histogram.
+// If the Histogram object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *HistogramMutation) OldMax(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldMax is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldMax requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMax: %w", err)
+	}
+	return oldValue.Max, nil
+}
+
 // AddMax adds i to max.
 func (m *HistogramMutation) AddMax(i int64) {
 	if m.addmax != nil {
@@ -2099,7 +2676,7 @@ func (m *HistogramMutation) AddedMax() (r int64, exists bool) {
 	return *v, true
 }
 
-// ResetMax reset all changes of the max field.
+// ResetMax reset all changes of the "max" field.
 func (m *HistogramMutation) ResetMax() {
 	m.max = nil
 	m.addmax = nil
@@ -2120,6 +2697,24 @@ func (m *HistogramMutation) Mean() (r float64, exists bool) {
 	return *v, true
 }
 
+// OldMean returns the old mean value of the Histogram.
+// If the Histogram object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *HistogramMutation) OldMean(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldMean is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldMean requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMean: %w", err)
+	}
+	return oldValue.Mean, nil
+}
+
 // AddMean adds f to mean.
 func (m *HistogramMutation) AddMean(f float64) {
 	if m.addmean != nil {
@@ -2138,7 +2733,7 @@ func (m *HistogramMutation) AddedMean() (r float64, exists bool) {
 	return *v, true
 }
 
-// ResetMean reset all changes of the mean field.
+// ResetMean reset all changes of the "mean" field.
 func (m *HistogramMutation) ResetMean() {
 	m.mean = nil
 	m.addmean = nil
@@ -2159,6 +2754,24 @@ func (m *HistogramMutation) Stddev() (r float64, exists bool) {
 	return *v, true
 }
 
+// OldStddev returns the old stddev value of the Histogram.
+// If the Histogram object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *HistogramMutation) OldStddev(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldStddev is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldStddev requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStddev: %w", err)
+	}
+	return oldValue.Stddev, nil
+}
+
 // AddStddev adds f to stddev.
 func (m *HistogramMutation) AddStddev(f float64) {
 	if m.addstddev != nil {
@@ -2177,7 +2790,7 @@ func (m *HistogramMutation) AddedStddev() (r float64, exists bool) {
 	return *v, true
 }
 
-// ResetStddev reset all changes of the stddev field.
+// ResetStddev reset all changes of the "stddev" field.
 func (m *HistogramMutation) ResetStddev() {
 	m.stddev = nil
 	m.addstddev = nil
@@ -2198,6 +2811,24 @@ func (m *HistogramMutation) Median() (r float64, exists bool) {
 	return *v, true
 }
 
+// OldMedian returns the old median value of the Histogram.
+// If the Histogram object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *HistogramMutation) OldMedian(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldMedian is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldMedian requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMedian: %w", err)
+	}
+	return oldValue.Median, nil
+}
+
 // AddMedian adds f to median.
 func (m *HistogramMutation) AddMedian(f float64) {
 	if m.addmedian != nil {
@@ -2216,7 +2847,7 @@ func (m *HistogramMutation) AddedMedian() (r float64, exists bool) {
 	return *v, true
 }
 
-// ResetMedian reset all changes of the median field.
+// ResetMedian reset all changes of the "median" field.
 func (m *HistogramMutation) ResetMedian() {
 	m.median = nil
 	m.addmedian = nil
@@ -2237,6 +2868,24 @@ func (m *HistogramMutation) P75() (r float64, exists bool) {
 	return *v, true
 }
 
+// OldP75 returns the old p75 value of the Histogram.
+// If the Histogram object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *HistogramMutation) OldP75(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldP75 is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldP75 requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldP75: %w", err)
+	}
+	return oldValue.P75, nil
+}
+
 // AddP75 adds f to p75.
 func (m *HistogramMutation) AddP75(f float64) {
 	if m.addp75 != nil {
@@ -2255,7 +2904,7 @@ func (m *HistogramMutation) AddedP75() (r float64, exists bool) {
 	return *v, true
 }
 
-// ResetP75 reset all changes of the p75 field.
+// ResetP75 reset all changes of the "p75" field.
 func (m *HistogramMutation) ResetP75() {
 	m.p75 = nil
 	m.addp75 = nil
@@ -2276,6 +2925,24 @@ func (m *HistogramMutation) P95() (r float64, exists bool) {
 	return *v, true
 }
 
+// OldP95 returns the old p95 value of the Histogram.
+// If the Histogram object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *HistogramMutation) OldP95(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldP95 is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldP95 requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldP95: %w", err)
+	}
+	return oldValue.P95, nil
+}
+
 // AddP95 adds f to p95.
 func (m *HistogramMutation) AddP95(f float64) {
 	if m.addp95 != nil {
@@ -2294,7 +2961,7 @@ func (m *HistogramMutation) AddedP95() (r float64, exists bool) {
 	return *v, true
 }
 
-// ResetP95 reset all changes of the p95 field.
+// ResetP95 reset all changes of the "p95" field.
 func (m *HistogramMutation) ResetP95() {
 	m.p95 = nil
 	m.addp95 = nil
@@ -2315,6 +2982,24 @@ func (m *HistogramMutation) P99() (r float64, exists bool) {
 	return *v, true
 }
 
+// OldP99 returns the old p99 value of the Histogram.
+// If the Histogram object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *HistogramMutation) OldP99(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldP99 is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldP99 requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldP99: %w", err)
+	}
+	return oldValue.P99, nil
+}
+
 // AddP99 adds f to p99.
 func (m *HistogramMutation) AddP99(f float64) {
 	if m.addp99 != nil {
@@ -2333,7 +3018,7 @@ func (m *HistogramMutation) AddedP99() (r float64, exists bool) {
 	return *v, true
 }
 
-// ResetP99 reset all changes of the p99 field.
+// ResetP99 reset all changes of the "p99" field.
 func (m *HistogramMutation) ResetP99() {
 	m.p99 = nil
 	m.addp99 = nil
@@ -2354,6 +3039,24 @@ func (m *HistogramMutation) P999() (r float64, exists bool) {
 	return *v, true
 }
 
+// OldP999 returns the old p999 value of the Histogram.
+// If the Histogram object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *HistogramMutation) OldP999(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldP999 is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldP999 requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldP999: %w", err)
+	}
+	return oldValue.P999, nil
+}
+
 // AddP999 adds f to p999.
 func (m *HistogramMutation) AddP999(f float64) {
 	if m.addp999 != nil {
@@ -2372,7 +3075,7 @@ func (m *HistogramMutation) AddedP999() (r float64, exists bool) {
 	return *v, true
 }
 
-// ResetP999 reset all changes of the p999 field.
+// ResetP999 reset all changes of the "p999" field.
 func (m *HistogramMutation) ResetP999() {
 	m.p999 = nil
 	m.addp999 = nil
@@ -2411,7 +3114,7 @@ func (m *HistogramMutation) MetricIDs() (ids []int) {
 	return
 }
 
-// ResetMetric reset all changes of the metric edge.
+// ResetMetric reset all changes of the "metric" edge.
 func (m *HistogramMutation) ResetMetric() {
 	m.metric = nil
 	m.clearedmetric = false
@@ -2497,6 +3200,37 @@ func (m *HistogramMutation) Field(name string) (ent.Value, bool) {
 		return m.P999()
 	}
 	return nil, false
+}
+
+// OldField returns the old value of the field from the database.
+// An error is returned if the mutation operation is not UpdateOne,
+// or the query to the database was failed.
+func (m *HistogramMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case histogram.FieldTime:
+		return m.OldTime(ctx)
+	case histogram.FieldCount:
+		return m.OldCount(ctx)
+	case histogram.FieldMin:
+		return m.OldMin(ctx)
+	case histogram.FieldMax:
+		return m.OldMax(ctx)
+	case histogram.FieldMean:
+		return m.OldMean(ctx)
+	case histogram.FieldStddev:
+		return m.OldStddev(ctx)
+	case histogram.FieldMedian:
+		return m.OldMedian(ctx)
+	case histogram.FieldP75:
+		return m.OldP75(ctx)
+	case histogram.FieldP95:
+		return m.OldP95(ctx)
+	case histogram.FieldP99:
+		return m.OldP99(ctx)
+	case histogram.FieldP999:
+		return m.OldP999(ctx)
+	}
+	return nil, fmt.Errorf("unknown Histogram field %s", name)
 }
 
 // SetField sets the value for the given name. It returns an
@@ -2901,17 +3635,58 @@ type MetricMutation struct {
 	removedcounters   map[int]struct{}
 	gauges            map[int]struct{}
 	removedgauges     map[int]struct{}
+	done              bool
+	oldValue          func(context.Context) (*Metric, error)
 }
 
 var _ ent.Mutation = (*MetricMutation)(nil)
 
+// metricOption allows to manage the mutation configuration using functional options.
+type metricOption func(*MetricMutation)
+
 // newMetricMutation creates new mutation for $n.Name.
-func newMetricMutation(c config, op Op) *MetricMutation {
-	return &MetricMutation{
+func newMetricMutation(c config, op Op, opts ...metricOption) *MetricMutation {
+	m := &MetricMutation{
 		config:        c,
 		op:            op,
 		typ:           TypeMetric,
 		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withMetricID sets the id field of the mutation.
+func withMetricID(id int) metricOption {
+	return func(m *MetricMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Metric
+		)
+		m.oldValue = func(ctx context.Context) (*Metric, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Metric.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withMetric sets the old Metric of the mutation.
+func withMetric(node *Metric) metricOption {
+	return func(m *MetricMutation) {
+		m.oldValue = func(context.Context) (*Metric, error) {
+			return node, nil
+		}
+		m.id = &node.ID
 	}
 }
 
@@ -2957,7 +3732,25 @@ func (m *MetricMutation) Title() (r string, exists bool) {
 	return *v, true
 }
 
-// ResetTitle reset all changes of the title field.
+// OldTitle returns the old title value of the Metric.
+// If the Metric object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *MetricMutation) OldTitle(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldTitle is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldTitle requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTitle: %w", err)
+	}
+	return oldValue.Title, nil
+}
+
+// ResetTitle reset all changes of the "title" field.
 func (m *MetricMutation) ResetTitle() {
 	m.title = nil
 }
@@ -2976,7 +3769,25 @@ func (m *MetricMutation) GetType() (r string, exists bool) {
 	return *v, true
 }
 
-// ResetType reset all changes of the type field.
+// OldType returns the old type value of the Metric.
+// If the Metric object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *MetricMutation) OldType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldType is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldType: %w", err)
+	}
+	return oldValue.Type, nil
+}
+
+// ResetType reset all changes of the "type" field.
 func (m *MetricMutation) ResetType() {
 	m._type = nil
 }
@@ -3014,7 +3825,7 @@ func (m *MetricMutation) GraphIDs() (ids []int) {
 	return
 }
 
-// ResetGraph reset all changes of the graph edge.
+// ResetGraph reset all changes of the "graph" edge.
 func (m *MetricMutation) ResetGraph() {
 	m.graph = nil
 	m.clearedgraph = false
@@ -3056,7 +3867,7 @@ func (m *MetricMutation) HistogramsIDs() (ids []int) {
 	return
 }
 
-// ResetHistograms reset all changes of the histograms edge.
+// ResetHistograms reset all changes of the "histograms" edge.
 func (m *MetricMutation) ResetHistograms() {
 	m.histograms = nil
 	m.removedhistograms = nil
@@ -3098,7 +3909,7 @@ func (m *MetricMutation) CountersIDs() (ids []int) {
 	return
 }
 
-// ResetCounters reset all changes of the counters edge.
+// ResetCounters reset all changes of the "counters" edge.
 func (m *MetricMutation) ResetCounters() {
 	m.counters = nil
 	m.removedcounters = nil
@@ -3140,7 +3951,7 @@ func (m *MetricMutation) GaugesIDs() (ids []int) {
 	return
 }
 
-// ResetGauges reset all changes of the gauges edge.
+// ResetGauges reset all changes of the "gauges" edge.
 func (m *MetricMutation) ResetGauges() {
 	m.gauges = nil
 	m.removedgauges = nil
@@ -3181,6 +3992,19 @@ func (m *MetricMutation) Field(name string) (ent.Value, bool) {
 		return m.GetType()
 	}
 	return nil, false
+}
+
+// OldField returns the old value of the field from the database.
+// An error is returned if the mutation operation is not UpdateOne,
+// or the query to the database was failed.
+func (m *MetricMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case metric.FieldTitle:
+		return m.OldTitle(ctx)
+	case metric.FieldType:
+		return m.OldType(ctx)
+	}
+	return nil, fmt.Errorf("unknown Metric field %s", name)
 }
 
 // SetField sets the value for the given name. It returns an

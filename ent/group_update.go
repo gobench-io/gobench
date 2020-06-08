@@ -75,6 +75,7 @@ func (gu *GroupUpdate) Save(ctx context.Context) (int, error) {
 			}
 			gu.mutation = mutation
 			affected, err = gu.sqlSave(ctx)
+			mutation.done = true
 			return affected, err
 		})
 		for i := len(gu.hooks) - 1; i >= 0; i-- {
@@ -230,6 +231,7 @@ func (guo *GroupUpdateOne) Save(ctx context.Context) (*Group, error) {
 			}
 			guo.mutation = mutation
 			node, err = guo.sqlSave(ctx)
+			mutation.done = true
 			return node, err
 		})
 		for i := len(guo.hooks) - 1; i >= 0; i-- {

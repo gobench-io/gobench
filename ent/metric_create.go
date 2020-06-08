@@ -121,6 +121,7 @@ func (mc *MetricCreate) Save(ctx context.Context) (*Metric, error) {
 			}
 			mc.mutation = mutation
 			node, err = mc.sqlSave(ctx)
+			mutation.done = true
 			return node, err
 		})
 		for i := len(mc.hooks) - 1; i >= 0; i-- {

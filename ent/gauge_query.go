@@ -21,14 +21,15 @@ type GaugeQuery struct {
 	config
 	limit      *int
 	offset     *int
-	order      []Order
+	order      []OrderFunc
 	unique     []string
 	predicates []predicate.Gauge
 	// eager-loading edges.
 	withMetric *MetricQuery
 	withFKs    bool
-	// intermediate query.
-	sql *sql.Selector
+	// intermediate query (i.e. traversal path).
+	sql  *sql.Selector
+	path func(context.Context) (*sql.Selector, error)
 }
 
 // Where adds a new predicate for the builder.
@@ -50,7 +51,7 @@ func (gq *GaugeQuery) Offset(offset int) *GaugeQuery {
 }
 
 // Order adds an order step to the query.
-func (gq *GaugeQuery) Order(o ...Order) *GaugeQuery {
+func (gq *GaugeQuery) Order(o ...OrderFunc) *GaugeQuery {
 	gq.order = append(gq.order, o...)
 	return gq
 }
@@ -58,12 +59,18 @@ func (gq *GaugeQuery) Order(o ...Order) *GaugeQuery {
 // QueryMetric chains the current query on the metric edge.
 func (gq *GaugeQuery) QueryMetric() *MetricQuery {
 	query := &MetricQuery{config: gq.config}
-	step := sqlgraph.NewStep(
-		sqlgraph.From(gauge.Table, gauge.FieldID, gq.sqlQuery()),
-		sqlgraph.To(metric.Table, metric.FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, gauge.MetricTable, gauge.MetricColumn),
-	)
-	query.sql = sqlgraph.SetNeighbors(gq.driver.Dialect(), step)
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := gq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(gauge.Table, gauge.FieldID, gq.sqlQuery()),
+			sqlgraph.To(metric.Table, metric.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, gauge.MetricTable, gauge.MetricColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(gq.driver.Dialect(), step)
+		return fromU, nil
+	}
 	return query
 }
 
@@ -163,6 +170,9 @@ func (gq *GaugeQuery) OnlyXID(ctx context.Context) int {
 
 // All executes the query and returns a list of Gauges.
 func (gq *GaugeQuery) All(ctx context.Context) ([]*Gauge, error) {
+	if err := gq.prepareQuery(ctx); err != nil {
+		return nil, err
+	}
 	return gq.sqlAll(ctx)
 }
 
@@ -195,6 +205,9 @@ func (gq *GaugeQuery) IDsX(ctx context.Context) []int {
 
 // Count returns the count of the given query.
 func (gq *GaugeQuery) Count(ctx context.Context) (int, error) {
+	if err := gq.prepareQuery(ctx); err != nil {
+		return 0, err
+	}
 	return gq.sqlCount(ctx)
 }
 
@@ -209,6 +222,9 @@ func (gq *GaugeQuery) CountX(ctx context.Context) int {
 
 // Exist returns true if the query has elements in the graph.
 func (gq *GaugeQuery) Exist(ctx context.Context) (bool, error) {
+	if err := gq.prepareQuery(ctx); err != nil {
+		return false, err
+	}
 	return gq.sqlExist(ctx)
 }
 
@@ -228,11 +244,12 @@ func (gq *GaugeQuery) Clone() *GaugeQuery {
 		config:     gq.config,
 		limit:      gq.limit,
 		offset:     gq.offset,
-		order:      append([]Order{}, gq.order...),
+		order:      append([]OrderFunc{}, gq.order...),
 		unique:     append([]string{}, gq.unique...),
 		predicates: append([]predicate.Gauge{}, gq.predicates...),
 		// clone intermediate query.
-		sql: gq.sql.Clone(),
+		sql:  gq.sql.Clone(),
+		path: gq.path,
 	}
 }
 
@@ -265,7 +282,12 @@ func (gq *GaugeQuery) WithMetric(opts ...func(*MetricQuery)) *GaugeQuery {
 func (gq *GaugeQuery) GroupBy(field string, fields ...string) *GaugeGroupBy {
 	group := &GaugeGroupBy{config: gq.config}
 	group.fields = append([]string{field}, fields...)
-	group.sql = gq.sqlQuery()
+	group.path = func(ctx context.Context) (prev *sql.Selector, err error) {
+		if err := gq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		return gq.sqlQuery(), nil
+	}
 	return group
 }
 
@@ -284,8 +306,24 @@ func (gq *GaugeQuery) GroupBy(field string, fields ...string) *GaugeGroupBy {
 func (gq *GaugeQuery) Select(field string, fields ...string) *GaugeSelect {
 	selector := &GaugeSelect{config: gq.config}
 	selector.fields = append([]string{field}, fields...)
-	selector.sql = gq.sqlQuery()
+	selector.path = func(ctx context.Context) (prev *sql.Selector, err error) {
+		if err := gq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		return gq.sqlQuery(), nil
+	}
 	return selector
+}
+
+func (gq *GaugeQuery) prepareQuery(ctx context.Context) error {
+	if gq.path != nil {
+		prev, err := gq.path(ctx)
+		if err != nil {
+			return err
+		}
+		gq.sql = prev
+	}
+	return nil
 }
 
 func (gq *GaugeQuery) sqlAll(ctx context.Context) ([]*Gauge, error) {
@@ -433,19 +471,25 @@ func (gq *GaugeQuery) sqlQuery() *sql.Selector {
 type GaugeGroupBy struct {
 	config
 	fields []string
-	fns    []Aggregate
-	// intermediate query.
-	sql *sql.Selector
+	fns    []AggregateFunc
+	// intermediate query (i.e. traversal path).
+	sql  *sql.Selector
+	path func(context.Context) (*sql.Selector, error)
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (ggb *GaugeGroupBy) Aggregate(fns ...Aggregate) *GaugeGroupBy {
+func (ggb *GaugeGroupBy) Aggregate(fns ...AggregateFunc) *GaugeGroupBy {
 	ggb.fns = append(ggb.fns, fns...)
 	return ggb
 }
 
 // Scan applies the group-by query and scan the result into the given value.
 func (ggb *GaugeGroupBy) Scan(ctx context.Context, v interface{}) error {
+	query, err := ggb.path(ctx)
+	if err != nil {
+		return err
+	}
+	ggb.sql = query
 	return ggb.sqlScan(ctx, v)
 }
 
@@ -564,12 +608,18 @@ func (ggb *GaugeGroupBy) sqlQuery() *sql.Selector {
 type GaugeSelect struct {
 	config
 	fields []string
-	// intermediate queries.
-	sql *sql.Selector
+	// intermediate query (i.e. traversal path).
+	sql  *sql.Selector
+	path func(context.Context) (*sql.Selector, error)
 }
 
 // Scan applies the selector query and scan the result into the given value.
 func (gs *GaugeSelect) Scan(ctx context.Context, v interface{}) error {
+	query, err := gs.path(ctx)
+	if err != nil {
+		return err
+	}
+	gs.sql = query
 	return gs.sqlScan(ctx, v)
 }
 

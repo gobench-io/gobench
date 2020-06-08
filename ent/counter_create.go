@@ -73,6 +73,7 @@ func (cc *CounterCreate) Save(ctx context.Context) (*Counter, error) {
 			}
 			cc.mutation = mutation
 			node, err = cc.sqlSave(ctx)
+			mutation.done = true
 			return node, err
 		})
 		for i := len(cc.hooks) - 1; i >= 0; i-- {

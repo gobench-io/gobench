@@ -96,6 +96,7 @@ func (cu *CounterUpdate) Save(ctx context.Context) (int, error) {
 			}
 			cu.mutation = mutation
 			affected, err = cu.sqlSave(ctx)
+			mutation.done = true
 			return affected, err
 		})
 		for i := len(cu.hooks) - 1; i >= 0; i-- {
@@ -297,6 +298,7 @@ func (cuo *CounterUpdateOne) Save(ctx context.Context) (*Counter, error) {
 			}
 			cuo.mutation = mutation
 			node, err = cuo.sqlSave(ctx)
+			mutation.done = true
 			return node, err
 		})
 		for i := len(cuo.hooks) - 1; i >= 0; i-- {

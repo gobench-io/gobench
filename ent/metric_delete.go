@@ -43,6 +43,7 @@ func (md *MetricDelete) Exec(ctx context.Context) (int, error) {
 			}
 			md.mutation = mutation
 			affected, err = md.sqlExec(ctx)
+			mutation.done = true
 			return affected, err
 		})
 		for i := len(md.hooks) - 1; i >= 0; i-- {

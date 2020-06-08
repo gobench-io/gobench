@@ -21,14 +21,15 @@ type CounterQuery struct {
 	config
 	limit      *int
 	offset     *int
-	order      []Order
+	order      []OrderFunc
 	unique     []string
 	predicates []predicate.Counter
 	// eager-loading edges.
 	withMetric *MetricQuery
 	withFKs    bool
-	// intermediate query.
-	sql *sql.Selector
+	// intermediate query (i.e. traversal path).
+	sql  *sql.Selector
+	path func(context.Context) (*sql.Selector, error)
 }
 
 // Where adds a new predicate for the builder.
@@ -50,7 +51,7 @@ func (cq *CounterQuery) Offset(offset int) *CounterQuery {
 }
 
 // Order adds an order step to the query.
-func (cq *CounterQuery) Order(o ...Order) *CounterQuery {
+func (cq *CounterQuery) Order(o ...OrderFunc) *CounterQuery {
 	cq.order = append(cq.order, o...)
 	return cq
 }
@@ -58,12 +59,18 @@ func (cq *CounterQuery) Order(o ...Order) *CounterQuery {
 // QueryMetric chains the current query on the metric edge.
 func (cq *CounterQuery) QueryMetric() *MetricQuery {
 	query := &MetricQuery{config: cq.config}
-	step := sqlgraph.NewStep(
-		sqlgraph.From(counter.Table, counter.FieldID, cq.sqlQuery()),
-		sqlgraph.To(metric.Table, metric.FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, counter.MetricTable, counter.MetricColumn),
-	)
-	query.sql = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := cq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(counter.Table, counter.FieldID, cq.sqlQuery()),
+			sqlgraph.To(metric.Table, metric.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, counter.MetricTable, counter.MetricColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
+		return fromU, nil
+	}
 	return query
 }
 
@@ -163,6 +170,9 @@ func (cq *CounterQuery) OnlyXID(ctx context.Context) int {
 
 // All executes the query and returns a list of Counters.
 func (cq *CounterQuery) All(ctx context.Context) ([]*Counter, error) {
+	if err := cq.prepareQuery(ctx); err != nil {
+		return nil, err
+	}
 	return cq.sqlAll(ctx)
 }
 
@@ -195,6 +205,9 @@ func (cq *CounterQuery) IDsX(ctx context.Context) []int {
 
 // Count returns the count of the given query.
 func (cq *CounterQuery) Count(ctx context.Context) (int, error) {
+	if err := cq.prepareQuery(ctx); err != nil {
+		return 0, err
+	}
 	return cq.sqlCount(ctx)
 }
 
@@ -209,6 +222,9 @@ func (cq *CounterQuery) CountX(ctx context.Context) int {
 
 // Exist returns true if the query has elements in the graph.
 func (cq *CounterQuery) Exist(ctx context.Context) (bool, error) {
+	if err := cq.prepareQuery(ctx); err != nil {
+		return false, err
+	}
 	return cq.sqlExist(ctx)
 }
 
@@ -228,11 +244,12 @@ func (cq *CounterQuery) Clone() *CounterQuery {
 		config:     cq.config,
 		limit:      cq.limit,
 		offset:     cq.offset,
-		order:      append([]Order{}, cq.order...),
+		order:      append([]OrderFunc{}, cq.order...),
 		unique:     append([]string{}, cq.unique...),
 		predicates: append([]predicate.Counter{}, cq.predicates...),
 		// clone intermediate query.
-		sql: cq.sql.Clone(),
+		sql:  cq.sql.Clone(),
+		path: cq.path,
 	}
 }
 
@@ -265,7 +282,12 @@ func (cq *CounterQuery) WithMetric(opts ...func(*MetricQuery)) *CounterQuery {
 func (cq *CounterQuery) GroupBy(field string, fields ...string) *CounterGroupBy {
 	group := &CounterGroupBy{config: cq.config}
 	group.fields = append([]string{field}, fields...)
-	group.sql = cq.sqlQuery()
+	group.path = func(ctx context.Context) (prev *sql.Selector, err error) {
+		if err := cq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		return cq.sqlQuery(), nil
+	}
 	return group
 }
 
@@ -284,8 +306,24 @@ func (cq *CounterQuery) GroupBy(field string, fields ...string) *CounterGroupBy 
 func (cq *CounterQuery) Select(field string, fields ...string) *CounterSelect {
 	selector := &CounterSelect{config: cq.config}
 	selector.fields = append([]string{field}, fields...)
-	selector.sql = cq.sqlQuery()
+	selector.path = func(ctx context.Context) (prev *sql.Selector, err error) {
+		if err := cq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		return cq.sqlQuery(), nil
+	}
 	return selector
+}
+
+func (cq *CounterQuery) prepareQuery(ctx context.Context) error {
+	if cq.path != nil {
+		prev, err := cq.path(ctx)
+		if err != nil {
+			return err
+		}
+		cq.sql = prev
+	}
+	return nil
 }
 
 func (cq *CounterQuery) sqlAll(ctx context.Context) ([]*Counter, error) {
@@ -433,19 +471,25 @@ func (cq *CounterQuery) sqlQuery() *sql.Selector {
 type CounterGroupBy struct {
 	config
 	fields []string
-	fns    []Aggregate
-	// intermediate query.
-	sql *sql.Selector
+	fns    []AggregateFunc
+	// intermediate query (i.e. traversal path).
+	sql  *sql.Selector
+	path func(context.Context) (*sql.Selector, error)
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (cgb *CounterGroupBy) Aggregate(fns ...Aggregate) *CounterGroupBy {
+func (cgb *CounterGroupBy) Aggregate(fns ...AggregateFunc) *CounterGroupBy {
 	cgb.fns = append(cgb.fns, fns...)
 	return cgb
 }
 
 // Scan applies the group-by query and scan the result into the given value.
 func (cgb *CounterGroupBy) Scan(ctx context.Context, v interface{}) error {
+	query, err := cgb.path(ctx)
+	if err != nil {
+		return err
+	}
+	cgb.sql = query
 	return cgb.sqlScan(ctx, v)
 }
 
@@ -564,12 +608,18 @@ func (cgb *CounterGroupBy) sqlQuery() *sql.Selector {
 type CounterSelect struct {
 	config
 	fields []string
-	// intermediate queries.
-	sql *sql.Selector
+	// intermediate query (i.e. traversal path).
+	sql  *sql.Selector
+	path func(context.Context) (*sql.Selector, error)
 }
 
 // Scan applies the selector query and scan the result into the given value.
 func (cs *CounterSelect) Scan(ctx context.Context, v interface{}) error {
+	query, err := cs.path(ctx)
+	if err != nil {
+		return err
+	}
+	cs.sql = query
 	return cs.sqlScan(ctx, v)
 }
 

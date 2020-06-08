@@ -169,6 +169,7 @@ func (mu *MetricUpdate) Save(ctx context.Context) (int, error) {
 			}
 			mu.mutation = mutation
 			affected, err = mu.sqlSave(ctx)
+			mutation.done = true
 			return affected, err
 		})
 		for i := len(mu.hooks) - 1; i >= 0; i-- {
@@ -533,6 +534,7 @@ func (muo *MetricUpdateOne) Save(ctx context.Context) (*Metric, error) {
 			}
 			muo.mutation = mutation
 			node, err = muo.sqlSave(ctx)
+			mutation.done = true
 			return node, err
 		})
 		for i := len(muo.hooks) - 1; i >= 0; i-- {
