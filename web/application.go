@@ -2,12 +2,12 @@ package web
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
+	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/ent/app"
 )
 
@@ -51,21 +51,16 @@ func createApplication(w http.ResponseWriter, r *http.Request) {
 }
 
 func getApplication(w http.ResponseWriter, r *http.Request) {
-	apps, err := db.Application.Query().All(r.Context())
-	if err != nil {
-		render.Render(w, r, ErrInternalServer(err))
+	ctx := r.Context()
+	app, ok := ctx.Value(webKey("application")).(*ent.Application)
+	if !ok {
+		http.Error(w, http.StatusText(422), 422)
 		return
 	}
-	if len(apps) == 0 {
-		http.Error(w, http.StatusText(404), 404)
+	if err := render.Render(w, r, newApplicationResponse(app)); err != nil {
+		render.Render(w, r, ErrRender(err))
 		return
 	}
-	if len(apps) > 1 {
-		log.Println("warning something went wrong, should not more thatn 2 applications", apps)
-	}
-	app := apps[0]
-
-	render.DefaultResponder(w, r, app)
 }
 
 func getApplicationGroups(w http.ResponseWriter, r *http.Request) {
