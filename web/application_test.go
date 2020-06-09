@@ -64,5 +64,9 @@ func TestCreateApplications(t *testing.T) {
 		r.ServeHTTP(w, req)
 
 		assert.Equal(t, 400, w.Code)
+		assert.Contains(t,
+			w.Body.String(),
+			`{"error":{"code":400,"message":"Name required","status":"Invalid Request"}}`,
+		)
 	})
 }
