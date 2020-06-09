@@ -114,10 +114,10 @@ func CreatedAt(v time.Time) predicate.Application {
 	})
 }
 
-// FinishedAt applies equality check predicate on the "finished_at" field. It's identical to FinishedAtEQ.
-func FinishedAt(v time.Time) predicate.Application {
+// UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
+func UpdatedAt(v time.Time) predicate.Application {
 	return predicate.Application(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldFinishedAt), v))
+		s.Where(sql.EQ(s.C(FieldUpdatedAt), v))
 	})
 }
 
@@ -426,22 +426,22 @@ func CreatedAtLTE(v time.Time) predicate.Application {
 	})
 }
 
-// FinishedAtEQ applies the EQ predicate on the "finished_at" field.
-func FinishedAtEQ(v time.Time) predicate.Application {
+// UpdatedAtEQ applies the EQ predicate on the "updated_at" field.
+func UpdatedAtEQ(v time.Time) predicate.Application {
 	return predicate.Application(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldFinishedAt), v))
+		s.Where(sql.EQ(s.C(FieldUpdatedAt), v))
 	})
 }
 
-// FinishedAtNEQ applies the NEQ predicate on the "finished_at" field.
-func FinishedAtNEQ(v time.Time) predicate.Application {
+// UpdatedAtNEQ applies the NEQ predicate on the "updated_at" field.
+func UpdatedAtNEQ(v time.Time) predicate.Application {
 	return predicate.Application(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldFinishedAt), v))
+		s.Where(sql.NEQ(s.C(FieldUpdatedAt), v))
 	})
 }
 
-// FinishedAtIn applies the In predicate on the "finished_at" field.
-func FinishedAtIn(vs ...time.Time) predicate.Application {
+// UpdatedAtIn applies the In predicate on the "updated_at" field.
+func UpdatedAtIn(vs ...time.Time) predicate.Application {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -453,12 +453,12 @@ func FinishedAtIn(vs ...time.Time) predicate.Application {
 			s.Where(sql.False())
 			return
 		}
-		s.Where(sql.In(s.C(FieldFinishedAt), v...))
+		s.Where(sql.In(s.C(FieldUpdatedAt), v...))
 	})
 }
 
-// FinishedAtNotIn applies the NotIn predicate on the "finished_at" field.
-func FinishedAtNotIn(vs ...time.Time) predicate.Application {
+// UpdatedAtNotIn applies the NotIn predicate on the "updated_at" field.
+func UpdatedAtNotIn(vs ...time.Time) predicate.Application {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -470,49 +470,35 @@ func FinishedAtNotIn(vs ...time.Time) predicate.Application {
 			s.Where(sql.False())
 			return
 		}
-		s.Where(sql.NotIn(s.C(FieldFinishedAt), v...))
+		s.Where(sql.NotIn(s.C(FieldUpdatedAt), v...))
 	})
 }
 
-// FinishedAtGT applies the GT predicate on the "finished_at" field.
-func FinishedAtGT(v time.Time) predicate.Application {
+// UpdatedAtGT applies the GT predicate on the "updated_at" field.
+func UpdatedAtGT(v time.Time) predicate.Application {
 	return predicate.Application(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldFinishedAt), v))
+		s.Where(sql.GT(s.C(FieldUpdatedAt), v))
 	})
 }
 
-// FinishedAtGTE applies the GTE predicate on the "finished_at" field.
-func FinishedAtGTE(v time.Time) predicate.Application {
+// UpdatedAtGTE applies the GTE predicate on the "updated_at" field.
+func UpdatedAtGTE(v time.Time) predicate.Application {
 	return predicate.Application(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldFinishedAt), v))
+		s.Where(sql.GTE(s.C(FieldUpdatedAt), v))
 	})
 }
 
-// FinishedAtLT applies the LT predicate on the "finished_at" field.
-func FinishedAtLT(v time.Time) predicate.Application {
+// UpdatedAtLT applies the LT predicate on the "updated_at" field.
+func UpdatedAtLT(v time.Time) predicate.Application {
 	return predicate.Application(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldFinishedAt), v))
+		s.Where(sql.LT(s.C(FieldUpdatedAt), v))
 	})
 }
 
-// FinishedAtLTE applies the LTE predicate on the "finished_at" field.
-func FinishedAtLTE(v time.Time) predicate.Application {
+// UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
+func UpdatedAtLTE(v time.Time) predicate.Application {
 	return predicate.Application(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldFinishedAt), v))
-	})
-}
-
-// FinishedAtIsNil applies the IsNil predicate on the "finished_at" field.
-func FinishedAtIsNil() predicate.Application {
-	return predicate.Application(func(s *sql.Selector) {
-		s.Where(sql.IsNull(s.C(FieldFinishedAt)))
-	})
-}
-
-// FinishedAtNotNil applies the NotNil predicate on the "finished_at" field.
-func FinishedAtNotNil() predicate.Application {
-	return predicate.Application(func(s *sql.Selector) {
-		s.Where(sql.NotNull(s.C(FieldFinishedAt)))
+		s.Where(sql.LTE(s.C(FieldUpdatedAt), v))
 	})
 }
 
