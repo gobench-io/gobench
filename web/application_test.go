@@ -53,7 +53,7 @@ func TestCreateApplications(t *testing.T) {
 		assert.Equal(t, app.Status, "init")
 	})
 
-	t.Run("invalid request", func(t *testing.T) {
+	t.Run("invalid request - without Name", func(t *testing.T) {
 		r, w := newAPITest()
 		reqBody, _ := json.Marshal(map[string]string{
 			"Scenario": "this is the scenario",
@@ -67,6 +67,23 @@ func TestCreateApplications(t *testing.T) {
 		assert.Contains(t,
 			w.Body.String(),
 			`{"error":{"code":400,"message":"Name required","status":"Invalid Request"}}`,
+		)
+	})
+
+	t.Run("invalid request - without Scenario", func(t *testing.T) {
+		r, w := newAPITest()
+		reqBody, _ := json.Marshal(map[string]string{
+			"Name": "name",
+		})
+		req, _ := http.NewRequest("POST", "/api/applications", bytes.NewBuffer(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, 400, w.Code)
+		assert.Contains(t,
+			w.Body.String(),
+			`{"error":{"code":400,"message":"Scenario required","status":"Invalid Request"}}`,
 		)
 	})
 }

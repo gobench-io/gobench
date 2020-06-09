@@ -7,12 +7,16 @@ import (
 	"github.com/gobench-io/gobench/ent"
 )
 
+// Err is the error struct that compatible to Google API recommendation
+// https://cloud.google.com/apis/design/errors#error_model
 type Err struct {
 	Code    int    `json:"code,omitempty"`    // application-specific error code
 	Message string `json:"message,omitempty"` // application-level error message, for debugging
 	Status  string `json:"status"`            // user-level status message
 }
 
+// ErrResponse is the error struct that compatible to Google API recommendation
+// https://cloud.google.com/apis/design/errors#error_model
 type ErrResponse struct {
 	Error Err `json:"error"`
 }
