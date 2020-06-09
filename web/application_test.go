@@ -87,3 +87,17 @@ func TestCreateApplications(t *testing.T) {
 		)
 	})
 }
+
+func TestGetApplication(t *testing.T) {
+	t.Run("not found request", func(t *testing.T) {
+		r, w := newAPITest()
+		req, _ := http.NewRequest("GET", "/api/applications/not-a-number", nil)
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, 404, w.Code)
+		assert.Contains(t,
+			w.Body.String(),
+			`{"error":{"code":404,"message":"Request data not found","status":"Model Not Found"}}`,
+		)
+	})
+}
