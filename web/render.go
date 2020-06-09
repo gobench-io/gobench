@@ -46,12 +46,22 @@ func ErrInvalidRequest(err error) render.Renderer {
 	}
 }
 
+func ErrNotFoundRequest(err error) render.Renderer {
+	return &ErrResponse{
+		Error: Err{
+			Code:    404,
+			Message: "Request data not found",
+			Status:  "Model Not Found",
+		},
+	}
+}
+
 func ErrRender(err error) render.Renderer {
 	return &ErrResponse{
 		Error: Err{
 			Code:    422,
 			Message: err.Error(),
-			Status:  "Error rendering response.",
+			Status:  "Error Rendering Response.",
 		},
 	}
 }

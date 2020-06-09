@@ -17,7 +17,7 @@ func applicationCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		appID, err := strconv.Atoi(chi.URLParam(r, "applicationID"))
 		if err != nil {
-			http.Error(w, http.StatusText(404), 404)
+			render.Render(w, r, ErrNotFoundRequest(err))
 			return
 		}
 
@@ -27,7 +27,7 @@ func applicationCtx(next http.Handler) http.Handler {
 			Only(r.Context())
 
 		if err != nil {
-			http.Error(w, http.StatusText(404), 404)
+			render.Render(w, r, ErrNotFoundRequest(err))
 			return
 		}
 		ctx := context.WithValue(r.Context(), webKey("application"), app)
