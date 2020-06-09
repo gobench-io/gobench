@@ -67,7 +67,6 @@ func (c *Collect) updateApplication(ctx context.Context) error {
 			entApplication.Name(c.name),
 		).
 		SetStatus(string(c.status)).
-		SetFinishedAt(c.finishedAt).
 		Save(ctx)
 
 	return err
