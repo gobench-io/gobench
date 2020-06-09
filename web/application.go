@@ -2,7 +2,7 @@ package web
 
 import (
 	"context"
-	"log"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -57,6 +57,12 @@ func createApplication(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if data.Name == "" {
+		err := errors.New("Name required")
+		render.Render(w, r, ErrInvalidRequest(err))
+		return
+	}
+
 	app, err := db.Application.
 		Create().
 		SetName(data.Name).
@@ -68,8 +74,6 @@ func createApplication(w http.ResponseWriter, r *http.Request) {
 		render.Render(w, r, ErrInternalServer(err))
 		return
 	}
-
-	log.Printf("created application: %+v\n", app)
 
 	render.Status(r, http.StatusCreated)
 	render.Render(w, r, newApplicationResponse(app))

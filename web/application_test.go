@@ -30,26 +30,39 @@ func TestListApplications(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, 200, w.Code)
-	// assert.Equal(t, "pong", w.Body.String())
 }
 
 func TestCreateApplications(t *testing.T) {
-	r, w := newAPITest()
+	t.Run("successful request", func(t *testing.T) {
+		r, w := newAPITest()
+		reqBody, _ := json.Marshal(map[string]string{
+			"Name":     "name",
+			"Scenario": "this is the scenario",
+		})
+		req, _ := http.NewRequest("POST", "/api/applications", bytes.NewBuffer(reqBody))
+		req.Header.Set("Content-Type", "application/json")
 
-	reqBody, _ := json.Marshal(map[string]string{
-		"Name":     "name",
-		"Scenario": "this is the scenario",
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, 201, w.Code)
+
+		var app ent.Application
+		json.Unmarshal(w.Body.Bytes(), &app)
+		assert.Equal(t, app.Name, "name")
+		assert.Equal(t, app.Scenario, "this is the scenario")
+		assert.Equal(t, app.Status, "init")
 	})
-	req, _ := http.NewRequest("POST", "/api/applications", bytes.NewBuffer(reqBody))
-	req.Header.Set("Content-Type", "application/json")
 
-	r.ServeHTTP(w, req)
+	t.Run("invalid request", func(t *testing.T) {
+		r, w := newAPITest()
+		reqBody, _ := json.Marshal(map[string]string{
+			"Scenario": "this is the scenario",
+		})
+		req, _ := http.NewRequest("POST", "/api/applications", bytes.NewBuffer(reqBody))
+		req.Header.Set("Content-Type", "application/json")
 
-	assert.Equal(t, 201, w.Code)
+		r.ServeHTTP(w, req)
 
-	var app ent.Application
-	json.Unmarshal(w.Body.Bytes(), &app)
-	assert.Equal(t, app.Name, "name")
-	assert.Equal(t, app.Scenario, "this is the scenario")
-	assert.Equal(t, app.Status, "init")
+		assert.Equal(t, 400, w.Code)
+	})
 }
