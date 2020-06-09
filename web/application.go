@@ -58,8 +58,11 @@ func createApplication(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if data.Name == "" {
-		err := errors.New("Name required")
-		render.Render(w, r, ErrInvalidRequest(err))
+		render.Render(w, r, ErrInvalidRequest(errors.New("Name required")))
+		return
+	}
+	if data.Scenario == "" {
+		render.Render(w, r, ErrInvalidRequest(errors.New("Scenario required")))
 		return
 	}
 
