@@ -47,16 +47,16 @@ func (ac *ApplicationCreate) SetNillableCreatedAt(t *time.Time) *ApplicationCrea
 	return ac
 }
 
-// SetFinishedAt sets the finished_at field.
-func (ac *ApplicationCreate) SetFinishedAt(t time.Time) *ApplicationCreate {
-	ac.mutation.SetFinishedAt(t)
+// SetUpdatedAt sets the updated_at field.
+func (ac *ApplicationCreate) SetUpdatedAt(t time.Time) *ApplicationCreate {
+	ac.mutation.SetUpdatedAt(t)
 	return ac
 }
 
-// SetNillableFinishedAt sets the finished_at field if the given value is not nil.
-func (ac *ApplicationCreate) SetNillableFinishedAt(t *time.Time) *ApplicationCreate {
+// SetNillableUpdatedAt sets the updated_at field if the given value is not nil.
+func (ac *ApplicationCreate) SetNillableUpdatedAt(t *time.Time) *ApplicationCreate {
 	if t != nil {
-		ac.SetFinishedAt(*t)
+		ac.SetUpdatedAt(*t)
 	}
 	return ac
 }
@@ -93,6 +93,10 @@ func (ac *ApplicationCreate) Save(ctx context.Context) (*Application, error) {
 	if _, ok := ac.mutation.CreatedAt(); !ok {
 		v := application.DefaultCreatedAt()
 		ac.mutation.SetCreatedAt(v)
+	}
+	if _, ok := ac.mutation.UpdatedAt(); !ok {
+		v := application.DefaultUpdatedAt()
+		ac.mutation.SetUpdatedAt(v)
 	}
 	if _, ok := ac.mutation.Scenario(); !ok {
 		return nil, errors.New("ent: missing required field \"scenario\"")
@@ -168,13 +172,13 @@ func (ac *ApplicationCreate) sqlSave(ctx context.Context) (*Application, error) 
 		})
 		a.CreatedAt = value
 	}
-	if value, ok := ac.mutation.FinishedAt(); ok {
+	if value, ok := ac.mutation.UpdatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
 			Value:  value,
-			Column: application.FieldFinishedAt,
+			Column: application.FieldUpdatedAt,
 		})
-		a.FinishedAt = value
+		a.UpdatedAt = value
 	}
 	if value, ok := ac.mutation.Scenario(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

@@ -14,7 +14,7 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "status", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "finished_at", Type: field.TypeTime, Nullable: true},
+		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "scenario", Type: field.TypeString, Size: 2147483647},
 	}
 	// ApplicationsTable holds the schema information for the "applications" table.

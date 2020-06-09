@@ -10,12 +10,12 @@ const (
 	// Label holds the string label denoting the application type in the database.
 	Label = "application"
 	// FieldID holds the string denoting the id field in the database.
-	FieldID         = "id"          // FieldName holds the string denoting the name vertex property in the database.
-	FieldName       = "name"        // FieldStatus holds the string denoting the status vertex property in the database.
-	FieldStatus     = "status"      // FieldCreatedAt holds the string denoting the created_at vertex property in the database.
-	FieldCreatedAt  = "created_at"  // FieldFinishedAt holds the string denoting the finished_at vertex property in the database.
-	FieldFinishedAt = "finished_at" // FieldScenario holds the string denoting the scenario vertex property in the database.
-	FieldScenario   = "scenario"
+	FieldID        = "id"         // FieldName holds the string denoting the name vertex property in the database.
+	FieldName      = "name"       // FieldStatus holds the string denoting the status vertex property in the database.
+	FieldStatus    = "status"     // FieldCreatedAt holds the string denoting the created_at vertex property in the database.
+	FieldCreatedAt = "created_at" // FieldUpdatedAt holds the string denoting the updated_at vertex property in the database.
+	FieldUpdatedAt = "updated_at" // FieldScenario holds the string denoting the scenario vertex property in the database.
+	FieldScenario  = "scenario"
 
 	// EdgeGroups holds the string denoting the groups edge name in mutations.
 	EdgeGroups = "groups"
@@ -37,11 +37,15 @@ var Columns = []string{
 	FieldName,
 	FieldStatus,
 	FieldCreatedAt,
-	FieldFinishedAt,
+	FieldUpdatedAt,
 	FieldScenario,
 }
 
 var (
 	// DefaultCreatedAt holds the default value on creation for the created_at field.
 	DefaultCreatedAt func() time.Time
+	// DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	DefaultUpdatedAt func() time.Time
+	// UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	UpdateDefaultUpdatedAt func() time.Time
 )

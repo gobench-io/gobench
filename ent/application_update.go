@@ -55,23 +55,9 @@ func (au *ApplicationUpdate) SetNillableCreatedAt(t *time.Time) *ApplicationUpda
 	return au
 }
 
-// SetFinishedAt sets the finished_at field.
-func (au *ApplicationUpdate) SetFinishedAt(t time.Time) *ApplicationUpdate {
-	au.mutation.SetFinishedAt(t)
-	return au
-}
-
-// SetNillableFinishedAt sets the finished_at field if the given value is not nil.
-func (au *ApplicationUpdate) SetNillableFinishedAt(t *time.Time) *ApplicationUpdate {
-	if t != nil {
-		au.SetFinishedAt(*t)
-	}
-	return au
-}
-
-// ClearFinishedAt clears the value of finished_at.
-func (au *ApplicationUpdate) ClearFinishedAt() *ApplicationUpdate {
-	au.mutation.ClearFinishedAt()
+// SetUpdatedAt sets the updated_at field.
+func (au *ApplicationUpdate) SetUpdatedAt(t time.Time) *ApplicationUpdate {
+	au.mutation.SetUpdatedAt(t)
 	return au
 }
 
@@ -113,6 +99,10 @@ func (au *ApplicationUpdate) RemoveGroups(g ...*Group) *ApplicationUpdate {
 
 // Save executes the query and returns the number of rows/vertices matched by this operation.
 func (au *ApplicationUpdate) Save(ctx context.Context) (int, error) {
+	if _, ok := au.mutation.UpdatedAt(); !ok {
+		v := application.UpdateDefaultUpdatedAt()
+		au.mutation.SetUpdatedAt(v)
+	}
 
 	var (
 		err      error
@@ -202,17 +192,11 @@ func (au *ApplicationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: application.FieldCreatedAt,
 		})
 	}
-	if value, ok := au.mutation.FinishedAt(); ok {
+	if value, ok := au.mutation.UpdatedAt(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
 			Value:  value,
-			Column: application.FieldFinishedAt,
-		})
-	}
-	if au.mutation.FinishedAtCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Column: application.FieldFinishedAt,
+			Column: application.FieldUpdatedAt,
 		})
 	}
 	if value, ok := au.mutation.Scenario(); ok {
@@ -304,23 +288,9 @@ func (auo *ApplicationUpdateOne) SetNillableCreatedAt(t *time.Time) *Application
 	return auo
 }
 
-// SetFinishedAt sets the finished_at field.
-func (auo *ApplicationUpdateOne) SetFinishedAt(t time.Time) *ApplicationUpdateOne {
-	auo.mutation.SetFinishedAt(t)
-	return auo
-}
-
-// SetNillableFinishedAt sets the finished_at field if the given value is not nil.
-func (auo *ApplicationUpdateOne) SetNillableFinishedAt(t *time.Time) *ApplicationUpdateOne {
-	if t != nil {
-		auo.SetFinishedAt(*t)
-	}
-	return auo
-}
-
-// ClearFinishedAt clears the value of finished_at.
-func (auo *ApplicationUpdateOne) ClearFinishedAt() *ApplicationUpdateOne {
-	auo.mutation.ClearFinishedAt()
+// SetUpdatedAt sets the updated_at field.
+func (auo *ApplicationUpdateOne) SetUpdatedAt(t time.Time) *ApplicationUpdateOne {
+	auo.mutation.SetUpdatedAt(t)
 	return auo
 }
 
@@ -362,6 +332,10 @@ func (auo *ApplicationUpdateOne) RemoveGroups(g ...*Group) *ApplicationUpdateOne
 
 // Save executes the query and returns the updated entity.
 func (auo *ApplicationUpdateOne) Save(ctx context.Context) (*Application, error) {
+	if _, ok := auo.mutation.UpdatedAt(); !ok {
+		v := application.UpdateDefaultUpdatedAt()
+		auo.mutation.SetUpdatedAt(v)
+	}
 
 	var (
 		err  error
@@ -449,17 +423,11 @@ func (auo *ApplicationUpdateOne) sqlSave(ctx context.Context) (a *Application, e
 			Column: application.FieldCreatedAt,
 		})
 	}
-	if value, ok := auo.mutation.FinishedAt(); ok {
+	if value, ok := auo.mutation.UpdatedAt(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
 			Value:  value,
-			Column: application.FieldFinishedAt,
-		})
-	}
-	if auo.mutation.FinishedAtCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Column: application.FieldFinishedAt,
+			Column: application.FieldUpdatedAt,
 		})
 	}
 	if value, ok := auo.mutation.Scenario(); ok {
