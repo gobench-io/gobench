@@ -7,44 +7,48 @@ import (
 	"github.com/gobench-io/gobench/ent"
 )
 
-type ErrResponse struct {
-	Err            error `json:"-"` // low-level runtime error
-	HTTPStatusCode int   `json:"-"` // http response status code
+type Err struct {
+	Code    int    `json:"code,omitempty"`    // application-specific error code
+	Message string `json:"message,omitempty"` // application-level error message, for debugging
+	Status  string `json:"status"`            // user-level status message
+}
 
-	StatusText string `json:"status"`          // user-level status message
-	AppCode    int64  `json:"code,omitempty"`  // application-specific error code
-	ErrorText  string `json:"error,omitempty"` // application-level error message, for debugging
+type ErrResponse struct {
+	Error Err `json:"error"`
 }
 
 func (e *ErrResponse) Render(w http.ResponseWriter, r *http.Request) error {
-	render.Status(r, e.HTTPStatusCode)
+	render.Status(r, e.Error.Code)
 	return nil
 }
 
 func ErrInternalServer(err error) render.Renderer {
 	return &ErrResponse{
-		Err:            err,
-		HTTPStatusCode: 500,
-		StatusText:     "Internal Server Error.",
-		ErrorText:      err.Error(),
+		Error: Err{
+			Code:    500,
+			Message: err.Error(),
+			Status:  "Internal Server Error",
+		},
 	}
 }
 
 func ErrInvalidRequest(err error) render.Renderer {
 	return &ErrResponse{
-		Err:            err,
-		HTTPStatusCode: 400,
-		StatusText:     "Invalid request.",
-		ErrorText:      err.Error(),
+		Error: Err{
+			Code:    400,
+			Message: err.Error(),
+			Status:  "Invalid Request",
+		},
 	}
 }
 
 func ErrRender(err error) render.Renderer {
 	return &ErrResponse{
-		Err:            err,
-		HTTPStatusCode: 422,
-		StatusText:     "Error rendering response.",
-		ErrorText:      err.Error(),
+		Error: Err{
+			Code:    422,
+			Message: err.Error(),
+			Status:  "Error rendering response.",
+		},
 	}
 }
 
