@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/go-chi/chi"
+	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/server"
 	"github.com/stretchr/testify/assert"
 )
@@ -44,6 +45,11 @@ func TestCreateApplications(t *testing.T) {
 
 	r.ServeHTTP(w, req)
 
-	assert.Equal(t, 200, w.Code)
-	assert.Equal(t, "pong", w.Body.String())
+	assert.Equal(t, 201, w.Code)
+
+	var app ent.Application
+	json.Unmarshal(w.Body.Bytes(), &app)
+	assert.Equal(t, app.Name, "name")
+	assert.Equal(t, app.Scenario, "this is the scenario")
+	assert.Equal(t, app.Status, "init")
 }
