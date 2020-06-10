@@ -22,4 +22,4 @@
 .bin/
 .idea/
 
-scenarios/
+test-scenario/
