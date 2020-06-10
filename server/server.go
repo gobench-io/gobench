@@ -87,3 +87,9 @@ func (s *Server) setupDb(filename string) error {
 func (s *Server) DB() *ent.Client {
 	return s.db
 }
+
+// NewApplication create a new application with a name and a scenario
+// return the application id and error
+func (s *Server) NewApplication(name, scenario string) (int, err) {
+
+}
