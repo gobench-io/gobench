@@ -3,6 +3,7 @@ package web
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -21,7 +22,25 @@ func newAPITest() (*chi.Mux, *httptest.ResponseRecorder) {
 	w := httptest.NewRecorder()
 
 	return r, w
+}
 
+func newApp(t *testing.T) *ent.Application {
+	r, w := newAPITest()
+	reqBody, _ := json.Marshal(map[string]string{
+		"Name":     "name 1",
+		"Scenario": "scenario 1",
+	})
+	req, _ := http.NewRequest("POST", "/api/applications", bytes.NewBuffer(reqBody))
+	req.Header.Set("Content-Type", "application/json")
+
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, 201, w.Code)
+
+	var app ent.Application
+	_ = json.Unmarshal(w.Body.Bytes(), &app)
+
+	return &app
 }
 
 func TestListApplications(t *testing.T) {
@@ -64,7 +83,8 @@ func TestCreateApplications(t *testing.T) {
 		r.ServeHTTP(w, req)
 
 		assert.Equal(t, 400, w.Code)
-		assert.Contains(t,
+		assert.Contains(
+			t,
 			w.Body.String(),
 			`{"error":{"code":400,"message":"Name required","status":"Invalid Request"}}`,
 		)
@@ -81,7 +101,8 @@ func TestCreateApplications(t *testing.T) {
 		r.ServeHTTP(w, req)
 
 		assert.Equal(t, 400, w.Code)
-		assert.Contains(t,
+		assert.Contains(
+			t,
 			w.Body.String(),
 			`{"error":{"code":400,"message":"Scenario required","status":"Invalid Request"}}`,
 		)
@@ -95,9 +116,27 @@ func TestGetApplication(t *testing.T) {
 		r.ServeHTTP(w, req)
 
 		assert.Equal(t, 404, w.Code)
-		assert.Contains(t,
+		assert.Contains(
+			t,
 			w.Body.String(),
 			`{"error":{"code":404,"message":"Request data not found","status":"Model Not Found"}}`,
 		)
+	})
+
+	t.Run("successful request", func(t *testing.T) {
+		app := newApp(t)
+
+		r, w := newAPITest()
+		req, _ := http.NewRequest(
+			"GET",
+			fmt.Sprintf("/api/applications/%d", app.ID),
+			nil,
+		)
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, 200, w.Code)
+		var resApp ent.Application
+		_ = json.Unmarshal(w.Body.Bytes(), &resApp)
+		assert.Equal(t, resApp, *app)
 	})
 }
