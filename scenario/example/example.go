@@ -11,17 +11,17 @@ import (
 func Export() *scenario.Vus {
 	return &scenario.Vus{
 		scenario.Vu{
-			Number:   1000,
-			Function: SubVuPool,
+			Nu: 1000,
+			Fu: F,
 		},
 	}
 }
 
-func SubVuPool(i int, donewg *sync.WaitGroup) {
+func F(i int, donewg *sync.WaitGroup) {
 	defer donewg.Done()
 
 	for {
-		log.Println("sub ...")
+		log.Printf("sub num %d\n", i)
 		time.Sleep(1 * time.Second)
 	}
 
