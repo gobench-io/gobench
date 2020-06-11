@@ -8,8 +8,8 @@ import (
 	"github.com/gobench-io/gobench/scenario"
 )
 
-func Export() *scenario.Vus {
-	return &scenario.Vus{
+func Export() scenario.Vus {
+	return scenario.Vus{
 		scenario.Vu{
 			Nu: 1000,
 			Fu: F,
@@ -24,5 +24,4 @@ func F(i int, donewg *sync.WaitGroup) {
 		log.Printf("sub num %d\n", i)
 		time.Sleep(1 * time.Second)
 	}
-
 }
