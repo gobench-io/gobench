@@ -9,8 +9,9 @@ import (
 type VuFunc func(int, *sync.WaitGroup)
 
 type Vu struct {
-	Nu int
-	Fu VuFunc
+	Nu   int
+	Rate float64
+	Fu   VuFunc
 }
 
 type Vus []Vu

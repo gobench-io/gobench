@@ -11,8 +11,9 @@ import (
 func Export() scenario.Vus {
 	return scenario.Vus{
 		scenario.Vu{
-			Nu: 10,
-			Fu: F,
+			Nu:   10,
+			Rate: 100,
+			Fu:   F,
 		},
 	}
 }

@@ -16,8 +16,6 @@ func main() {
 		log.Println(err)
 	}
 
-	log.Printf("vus: %+v\n", vus)
-
 	var donewg sync.WaitGroup
 
 	var totalVu int
@@ -28,8 +26,12 @@ func main() {
 
 	donewg.Add(totalVu)
 
-	for i:= range vus{
-		go vus[i].Fu(i, &donewg)
+	for i := range vus {
+		for j := 0; j < vus[i].Nu; j++ {
+			go func(j int) {
+				vus[i].Fu(j, &donewg)
+			}(j)
+		}
 	}
 
 	donewg.Wait()
