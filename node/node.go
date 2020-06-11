@@ -14,7 +14,7 @@ type Node struct {
 	id         string
 	status     status
 	pluginPath string
-	vus *scenario.Vus
+	vus        *scenario.Vus
 }
 
 const (
@@ -22,7 +22,7 @@ const (
 	running status = "running"
 )
 
-func New() (*Node, err) {
+func New() (*Node, error) {
 	hostname, err := os.Hostname()
 	if err != nil {
 		return nil, err
@@ -32,12 +32,12 @@ func New() (*Node, err) {
 	id = fmt.Sprintf("%s-%i", hostname, pid)
 
 	return &Node{
-		id: id,
+		id:     id,
 		status: idle,
 	}
 }
 
-func (n *Node) Load(so string) err {
+func (n *Node) Load(so string) error {
 	vus, err := scenario.LoadPlugin(so)
 	if err != nil {
 		return err
@@ -53,5 +53,31 @@ func (n *Node) Load(so string) err {
 func (n *Node) Run() {
 	n.mu.Lock()
 	n.status = running
+	n.mu.Unlock()
+}
+
+func (n *Node) run() {
+	var donewg sync.WaitGroup
+
+	var totalVu int
+
+	for i := range vus {
+		totalVu += vus[i].Nu
+	}
+
+	donewg.Add(totalVu)
+
+	for i := range vus {
+		for j := 0; j < vus[i].Nu; j++ {
+			go func(j int) {
+				vus[i].Fu(j, &donewg)
+			}(j)
+		}
+	}
+
+	donewg.Wait()
+
+	n.mu.Lock()
+	n.status = idle
 	n.mu.Unlock()
 }
