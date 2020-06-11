@@ -1,38 +1,57 @@
-package main
+package node
 
 import (
-	"log"
+	"os"
 	"sync"
 
 	"github.com/gobench-io/gobench/scenario"
 )
 
-func main() {
-	so := "./scenario/example/example.so"
+type status string
 
-	vus, err := scenario.LoadPlugin(so)
+type Node struct {
+	mu         sync.Mutex
+	id         string
+	status     status
+	pluginPath string
+	vus *scenario.Vus
+}
 
+const (
+	idle    status = "idle"
+	running status = "running"
+)
+
+func New() (*Node, err) {
+	hostname, err := os.Hostname()
 	if err != nil {
-		log.Println(err)
+		return nil, err
+	}
+	id := os.Getpid()
+
+	id = fmt.Sprintf("%s-%i", hostname, pid)
+
+	return &Node{
+		id: id,
+		status: idle,
+	}
+}
+
+func (n *Node) Load(so string) err {
+	vus, err := scenario.LoadPlugin(so)
+	if err != nil {
+		return err
 	}
 
-	var donewg sync.WaitGroup
+	n.mu.Lock()
+	defer n.mu.Unlock()
 
-	var totalVu int
+	n.pluginPath = so
+	n.vus = &vus
+}
 
-	for i := range vus {
-		totalVu += vus[i].Nu
-	}
-
-	donewg.Add(totalVu)
-
-	for i := range vus {
-		for j := 0; j < vus[i].Nu; j++ {
-			go func(j int) {
-				vus[i].Fu(j, &donewg)
-			}(j)
-		}
-	}
-
-	donewg.Wait()
+func (n *Node) Run() {
+	n.mu.Lock()
+	n.status = running
+	n.mu.Unlock()
 }
