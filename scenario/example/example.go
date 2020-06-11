@@ -11,7 +11,7 @@ import (
 func Export() scenario.Vus {
 	return scenario.Vus{
 		scenario.Vu{
-			Nu: 1000,
+			Nu: 10,
 			Fu: F,
 		},
 	}
@@ -20,7 +20,13 @@ func Export() scenario.Vus {
 func F(i int, donewg *sync.WaitGroup) {
 	defer donewg.Done()
 
+	count := 0
+
 	for {
+		count++
+		if count > 10 {
+			break
+		}
 		log.Printf("sub num %d\n", i)
 		time.Sleep(1 * time.Second)
 	}
