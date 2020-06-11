@@ -20,5 +20,17 @@ func main() {
 
 	var donewg sync.WaitGroup
 
-	vus[0].Fu(1, &donewg)
+	var totalVu int
+
+	for i := range vus {
+		totalVu += vus[i].Nu
+	}
+
+	donewg.Add(totalVu)
+
+	for i:= range vus{
+		go vus[i].Fu(i, &donewg)
+	}
+
+	donewg.Wait()
 }
