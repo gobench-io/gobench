@@ -3,13 +3,12 @@ package http
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
 
-	"github.com/gobench-io/gobench"
 	"github.com/gobench-io/gobench/metrics"
+	"github.com/gobench-io/gobench/node"
 )
 
 type HttpClient struct {
@@ -69,7 +68,7 @@ func NewHttpClient(ctx *context.Context, prefix string) (HttpClient, error) {
 		client: client,
 	}
 
-	if err := gobench.Setup(groups); err != nil {
+	if err := node.Setup(groups); err != nil {
 		return httpClient, err
 	}
 
@@ -86,17 +85,16 @@ func (h *HttpClient) do(method, url string, body []byte, headers map[string]stri
 
 	defer func() {
 		diff := time.Since(begin)
-		gobench.Notify(latency, diff.Microseconds())
+		node.Notify(latency, diff.Microseconds())
 		if err != nil {
-			gobench.Notify(otherFail, 1)
+			node.Notify(otherFail, 1)
 			return
 		}
 		if res.StatusCode >= 300 || res.StatusCode < 200 {
-			gobench.Notify(fail, 1)
-			err = fmt.Errorf("request failed with status code %d", res.StatusCode)
+			node.Notify(fail, 1)
 			return
 		}
-		gobench.Notify(success, 1)
+		node.Notify(success, 1)
 	}()
 
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(body))
