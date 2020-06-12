@@ -113,8 +113,75 @@ func (n *Node) run() {
 
 	donewg.Wait()
 
-	// when finish, set node to idle
-	n.mu.Lock()
-	n.status = idle
-	n.mu.Unlock()
+	// when finish, reset the node
+	n.reset()
+}
+
+// Setup is used for the worker to report the metrics that it will generate
+func (n *Node) Setup(groups []metrics.Group) error {
+	units := make(map[string]unit)
+
+	for _, group := range groups {
+		for _, graph := range group.Graphs {
+			for _, m := range graph.Metrics {
+				// counter type
+				if m.Type == metrics.Counter{
+					c := gometrics.NewCounter()
+					if err := gometrics.Register(m.Title, c); err != nil {
+						if _, ok := err.(gometrics.DuplicateMetric); ok {
+							continue
+						}
+						return err
+					}
+
+					units[m.Title] = unit{
+						Title:    m.Title,
+						Type:     m.Type,
+						// metricID: metricInstance.ID,
+						c:        c,
+					}
+				}
+
+				if m.Type == metrics.Histogram{
+					s := gometrics.NewExpDecaySample(1028, 0.015)
+					h := gometrics.NewHistogram(s)
+					if err := gometrics.Register(m.Title, h); err != nil {
+						if _, ok := err.(gometrics.DuplicateMetric); ok {
+							continue
+						}
+						return err
+					}
+					units[m.Title] = unit{
+						Title:    m.Title,
+						Type:     m.Type,
+						// metricID: metricInstance.ID,
+						h:        h,
+					}
+				}
+
+				if m.Type == metrics.Gauge{
+					g := gometrics.NewGauge()
+					if err := gometrics.Register(m.Title, g); err != nil {
+						if _, ok := err.(gometrics.DuplicateMetric); ok {
+							continue
+						}
+						return err
+					}
+					units[m.Title] = unit{
+						Title:    m.Title,
+						Type:     m.Type,
+						// metricID: metricInstance.ID,
+						g:        g,
+					}
+				}
+			}
+		}
+	}
+
+	// aggregrate units
+	for k, v := range units {
+		n.units[k] = v
+	}
+
+	return nil
 }
