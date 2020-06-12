@@ -3,6 +3,7 @@ package node
 import (
 	"os"
 	"sync"
+	"fmt"
 
 	"github.com/gobench-io/gobench/scenario"
 )
@@ -27,14 +28,14 @@ func New() (*Node, error) {
 	if err != nil {
 		return nil, err
 	}
-	id := os.Getpid()
+	pid := os.Getpid()
 
-	id = fmt.Sprintf("%s-%i", hostname, pid)
+	id := fmt.Sprintf("%s-%i", hostname, pid)
 
 	return &Node{
 		id:     id,
 		status: idle,
-	}
+	}, nil
 }
 
 func (n *Node) Load(so string) error {
@@ -48,18 +49,24 @@ func (n *Node) Load(so string) error {
 
 	n.pluginPath = so
 	n.vus = &vus
+
+	return nil
 }
 
 func (n *Node) Run() {
 	n.mu.Lock()
 	n.status = running
 	n.mu.Unlock()
+
+	n.run()
 }
 
 func (n *Node) run() {
 	var donewg sync.WaitGroup
 
 	var totalVu int
+
+	vus := *n.vus
 
 	for i := range vus {
 		totalVu += vus[i].Nu
