@@ -3,11 +3,16 @@ package node
 import (
 	"os"
 	"sync"
+	"time"
+	"log"
+	"errors"
 
 	"github.com/gobench-io/gobench/metrics"
 	"github.com/gobench-io/gobench/scenario"
 	gometrics "github.com/rcrowley/go-metrics"
 )
+
+var ErrIdNotFound = errors.New("id not found")
 
 type status string
 
@@ -128,12 +133,12 @@ func (n *Node) logScaled(freq time.Duration) {
 		}
 	}(ch)
 
-	if err := c.logScaledOnCue(ch); err != nil {
+	if err := n.logScaledOnCue(ch); err != nil {
 		log.Fatalln(err)
 	}
 }
 
-func (c *Collect) logScaledOnCue(ch chan interface{}) error {
+func (n *Node) logScaledOnCue(ch chan interface{}) error {
 	log.Println("logScaledOnCue")
 	return nil
 }
