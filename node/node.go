@@ -1,7 +1,6 @@
 package node
 
 import (
-	"fmt"
 	"os"
 	"sync"
 
@@ -29,7 +28,8 @@ type Node struct {
 	status     status
 	pluginPath string
 	vus        *scenario.Vus
-	units      map[string]unit
+
+	units map[string]unit
 }
 
 const (
@@ -41,19 +41,28 @@ const (
 var node Node
 
 func init() {
-	hostname, _:= os.Hostname()
+	hostname, _ := os.Hostname()
 	pid := os.Getpid()
 
 	node = Node{
 		pid:      pid,
 		hostname: hostname,
 		status:   idle,
+
+		units: make(map[string]unit),
 	}
 }
 
 // New return the singleton node
 func New() (*Node, error) {
 	return &node, nil
+}
+
+func (n *Node) reset() {
+	n.mu.Lock()
+	n.status = idle
+	n.units = make(map[string]unit)
+	n.mu.Unlock()
 }
 
 // Load downloads the go plugin, extracts the virtual user scenario
