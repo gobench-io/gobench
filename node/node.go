@@ -84,6 +84,7 @@ func (n *Node) run() {
 
 	donewg.Wait()
 
+	// when finish, set node to idle
 	n.mu.Lock()
 	n.status = idle
 	n.mu.Unlock()
