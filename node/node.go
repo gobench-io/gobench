@@ -87,6 +87,7 @@ func (n *Node) Run() {
 	n.status = running
 	n.mu.Unlock()
 
+
 	n.run()
 }
 
@@ -100,6 +101,8 @@ func (n *Node) run() {
 	for i := range vus {
 		totalVu += vus[i].Nu
 	}
+
+	go n.logScaled(10 * time.Second)
 
 	donewg.Add(totalVu)
 
@@ -115,6 +118,25 @@ func (n *Node) run() {
 
 	// when finish, reset the node
 	n.reset()
+}
+
+func (n *Node) logScaled(freq time.Duration) {
+	ch := make(chan interface{})
+
+	go func(channel chan interface{}) {
+		for range time.Tick(freq) {
+			channel <- struct{}{}
+		}
+	}(ch)
+
+	if err := c.logScaledOnCue(ch); err != nil {
+		log.Fatalln(err)
+	}
+}
+
+func (c *Collect) logScaledOnCue(ch chan interface{}) error {
+	log.Println("logScaledOnCue")
+	return nil
 }
 
 // Setup is used for the worker to report the metrics that it will generate
@@ -181,6 +203,32 @@ func (n *Node) Setup(groups []metrics.Group) error {
 	// aggregrate units
 	for k, v := range units {
 		n.units[k] = v
+	}
+
+	return nil
+}
+
+// Notify saves the id with value into metrics which later save to database
+func Notify(title string, value int64) error {
+	node.mu.Lock()
+	defer node.mu.Unlock()
+
+	u, ok := node.units[title]
+	if !ok {
+		log.Printf("error metric title %s not found\n", title)
+		return ErrIdNotFound
+	}
+
+	if u.Type == metrics.Counter {
+		u.c.Inc(value)
+	}
+
+	if u.Type == metrics.Histogram {
+		u.h.Update(value)
+	}
+
+	if u.Type == metrics.Gauge {
+		u.g.Update(value)
 	}
 
 	return nil
