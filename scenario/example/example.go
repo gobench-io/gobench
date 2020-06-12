@@ -1,11 +1,14 @@
 package main
 
 import (
+	"context"
 	"log"
 	"sync"
 	"time"
 
 	"github.com/gobench-io/gobench/scenario"
+
+	httpClient "github.com/gobench-io/gobench/workers/http"
 )
 
 func Export() scenario.Vus {
@@ -13,12 +16,17 @@ func Export() scenario.Vus {
 		scenario.Vu{
 			Nu:   10,
 			Rate: 100,
-			Fu:   F,
+			Fu:   f1,
+		},
+		scenario.Vu{
+			Nu:   1,
+			Rate: 100,
+			Fu:   f2,
 		},
 	}
 }
 
-func F(i int, donewg *sync.WaitGroup) {
+func f1(i int, donewg *sync.WaitGroup) {
 	defer donewg.Done()
 
 	count := 0
@@ -29,6 +37,36 @@ func F(i int, donewg *sync.WaitGroup) {
 			break
 		}
 		log.Printf("sub num %d\n", i)
+		time.Sleep(1 * time.Second)
+	}
+}
+
+func f2(i int, donewg *sync.WaitGroup) {
+	defer donewg.Done()
+
+	ctx := context.Background()
+
+	client1, err := httpClient.NewHttpClient(&ctx, "home")
+	if err != nil {
+		log.Println("create new client1 fail: " + err.Error())
+		return
+	}
+
+	url1 := "http://192.168.2.35"
+
+	headers := map[string]string{
+		// "Content-Type": "application/json",
+	}
+
+	count := 0
+
+	for {
+		count++
+		if count > 10 {
+			break
+		}
+
+		client1.Get(&ctx, url1, headers)
 		time.Sleep(1 * time.Second)
 	}
 }
