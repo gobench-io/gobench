@@ -15,6 +15,7 @@ import (
 
 // ErrIDNotFound is raised when the metric title is not found
 var ErrIDNotFound = errors.New("id not found")
+var ErrNodeIsRunning = errors.New("node is running")
 
 type status string
 
@@ -108,12 +109,19 @@ func (n *Node) Cancel() error {
 }
 
 // Run starts the preloaded plugin
-func (n *Node) Run() {
+// return error if the node is running already
+func (n *Node) Run() error {
 	n.mu.Lock()
+
+	if n.status == running {
+		return ErrNodeIsRunning
+	}
+
 	n.status = running
 	n.mu.Unlock()
 
 	n.run()
+	return nil
 }
 
 func (n *Node) run() {
@@ -123,15 +131,8 @@ func (n *Node) run() {
 
 	scensDone := make(chan struct{})
 
-	var totalVu int
-
-	vus := *n.vus
-	for i := range vus {
-		totalVu += vus[i].Nu
-	}
-
 	go n.logScaled(ctx, 5 * time.Second)
-	go n.runScens(ctx, scensDone)
+	go n.runScen(ctx, scensDone)
 
 	select {
 	case <- scensDone:
@@ -151,7 +152,7 @@ func (n *Node) Running() bool {
 	return n.status == running
 }
 
-func (n *Node) runScens(ctx context.Context, done chan struct{}) {
+func (n *Node) runScen(ctx context.Context, done chan struct{}) {
 	var totalVu int
 
 	vus := *n.vus
