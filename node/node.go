@@ -13,7 +13,8 @@ import (
 	gometrics "github.com/rcrowley/go-metrics"
 )
 
-var ErrIdNotFound = errors.New("id not found")
+// ErrIDNotFound is raised when the metric title is not found
+var ErrIDNotFound = errors.New("id not found")
 
 type status string
 
@@ -25,7 +26,9 @@ type unit struct {
 	h        gometrics.Histogram
 	g        gometrics.Gauge
 }
-
+// Node is the main structure for a running node
+// contains host information, the scenario (plugin)
+// and gometrics unit
 type Node struct {
 	mu       sync.Mutex
 	hostname string
@@ -270,7 +273,7 @@ func Notify(title string, value int64) error {
 	u, ok := node.units[title]
 	if !ok {
 		log.Printf("error metric title %s not found\n", title)
-		return ErrIdNotFound
+		return ErrIDNotFound
 	}
 
 	if u.Type == metrics.Counter {
