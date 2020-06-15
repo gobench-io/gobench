@@ -315,6 +315,10 @@ func Setup(groups []metrics.Group) error {
 }
 
 // Notify saves the id with value into metrics which later save to database
+// Return error when the title is not found from the metric list.
+// The not found error may occur because
+// a. The title has never ever register before
+// b. The session is cancel but the scenario does not handle the ctx.Done signal
 func Notify(title string, value int64) error {
 	log.Printf("node notify title: %s, value %d\n", title, value)
 
