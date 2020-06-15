@@ -97,7 +97,7 @@ func (n *Node) Run() {
 }
 
 func (n *Node) run() {
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, _:= context.WithCancel(context.Background())
 
 	var donewg sync.WaitGroup
 
@@ -146,7 +146,7 @@ func (n *Node) logScaledOnCue(ch chan interface{}) error {
 }
 
 // Setup is used for the worker to report the metrics that it will generate
-func (n *Node) Setup(groups []metrics.Group) error {
+func Setup(groups []metrics.Group) error {
 	units := make(map[string]unit)
 
 	for _, group := range groups {
@@ -207,9 +207,11 @@ func (n *Node) Setup(groups []metrics.Group) error {
 	}
 
 	// aggregrate units
+	node.mu.Lock()
 	for k, v := range units {
-		n.units[k] = v
+		node.units[k] = v
 	}
+	node.mu.Unlock()
 
 	return nil
 }
