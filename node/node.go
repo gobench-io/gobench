@@ -37,6 +37,7 @@ type Node struct {
 	status     status
 	pluginPath string
 	vus        *scenario.Vus
+	cancel context.CancelFunc
 
 	units map[string]unit // title - gometrics
 }
@@ -71,6 +72,7 @@ func (n *Node) reset() {
 	n.mu.Lock()
 	n.status = idle
 	n.units = make(map[string]unit)
+	n.cancel = nil
 	n.mu.Unlock()
 }
 
@@ -90,6 +92,21 @@ func (n *Node) Load(so string) error {
 	return nil
 }
 
+// Cancel stops the running scenario if any
+func (n *Node) Cancel() error {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+
+	if n.status == idle {
+		return nil
+	}
+
+	// if there is a running scenario
+	n.cancel()
+
+	return nil
+}
+
 // Run starts the preloaded plugin
 func (n *Node) Run() {
 	n.mu.Lock()
@@ -100,9 +117,11 @@ func (n *Node) Run() {
 }
 
 func (n *Node) run() {
-	ctx, _:= context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(context.Background())
 
-	var donewg sync.WaitGroup
+	n.cancel = cancel
+
+	scensDone := make(chan struct{})
 
 	var totalVu int
 
@@ -111,24 +130,54 @@ func (n *Node) run() {
 		totalVu += vus[i].Nu
 	}
 
-	go n.logScaled(ctx, 10 * time.Second)
+	go n.logScaled(ctx, 5 * time.Second)
+	go n.runScens(ctx, scensDone)
 
+	select {
+	case <- scensDone:
+		log.Printf("scenarios finished")
+	case <- ctx.Done():
+		log.Printf("scenarios cancel")
+	}
+
+	// when finish, reset the node
+	n.reset()
+}
+
+func (n *Node) Running() bool {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+
+	return n.status == running
+}
+
+func (n *Node) runScens(ctx context.Context, done chan struct{}) {
+	var totalVu int
+
+	vus := *n.vus
+	for i := range vus {
+		totalVu += vus[i].Nu
+	}
+
+	var donewg sync.WaitGroup
 	donewg.Add(totalVu)
 
 	for i := range vus {
 		for j := 0; j < vus[i].Nu; j++ {
 			go func(i, j int) {
-				vus[i].Fu(ctx, j, &donewg)
+				vus[i].Fu(ctx, j)
+				donewg.Done()
 			}(i, j)
 		}
 	}
 
 	donewg.Wait()
 
-	// when finish, reset the node
-	n.reset()
+	done <- struct{}{}
 }
 
+// logScaled extract the metric log from a node
+// should run this function in a routine
 func (n *Node) logScaled(ctx context.Context, freq time.Duration) {
 	ch := make(chan interface{})
 
@@ -164,7 +213,8 @@ func (n *Node) logScaledOnCue(ctx context.Context, ch chan interface{}) error {
 				}
 			}
 		case <- ctx.Done():
-			break
+			log.Printf("logScaledOnCue cancel")
+			return nil
 		}
 	}
 	return nil

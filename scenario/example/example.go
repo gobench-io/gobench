@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"log"
-	"sync"
 	"time"
 
 	"github.com/gobench-io/gobench/scenario"
@@ -26,9 +25,7 @@ func Export() scenario.Vus {
 	}
 }
 
-func f1(ctx context.Context, vui int, donewg *sync.WaitGroup) {
-	defer donewg.Done()
-
+func f1(ctx context.Context, vui int) {
 	count := 0
 
 	for {
@@ -41,9 +38,7 @@ func f1(ctx context.Context, vui int, donewg *sync.WaitGroup) {
 	}
 }
 
-func f2(ctx context.Context, vui int, donewg *sync.WaitGroup) {
-	defer donewg.Done()
-
+func f2(ctx context.Context, vui int) {
 	client1, err := httpClient.NewHttpClient(&ctx, "home")
 	if err != nil {
 		log.Println("create new client1 fail: " + err.Error())

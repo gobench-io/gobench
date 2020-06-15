@@ -4,10 +4,9 @@ import (
 	"context"
 	"fmt"
 	"plugin"
-	"sync"
 )
 
-type VuFunc func(context.Context, int, *sync.WaitGroup)
+type VuFunc func(context.Context, int)
 
 type Vu struct {
 	Nu   int
