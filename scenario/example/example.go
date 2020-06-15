@@ -26,7 +26,7 @@ func Export() scenario.Vus {
 	}
 }
 
-func f1(i int, donewg *sync.WaitGroup) {
+func f1(ctx context.Context, vui int, donewg *sync.WaitGroup) {
 	defer donewg.Done()
 
 	count := 0
@@ -36,15 +36,13 @@ func f1(i int, donewg *sync.WaitGroup) {
 		if count > 10 {
 			break
 		}
-		log.Printf("sub num %d\n", i)
+		log.Printf("sub num %d\n", vui)
 		time.Sleep(1 * time.Second)
 	}
 }
 
-func f2(i int, donewg *sync.WaitGroup) {
+func f2(ctx context.Context, vui int, donewg *sync.WaitGroup) {
 	defer donewg.Done()
-
-	ctx := context.Background()
 
 	client1, err := httpClient.NewHttpClient(&ctx, "home")
 	if err != nil {

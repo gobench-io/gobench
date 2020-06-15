@@ -1,12 +1,13 @@
 package scenario
 
 import (
+	"context"
 	"fmt"
 	"plugin"
 	"sync"
 )
 
-type VuFunc func(int, *sync.WaitGroup)
+type VuFunc func(context.Context, int, *sync.WaitGroup)
 
 type Vu struct {
 	Nu   int

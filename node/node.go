@@ -1,11 +1,12 @@
 package node
 
 import (
+	"context"
+	"errors"
+	"log"
 	"os"
 	"sync"
 	"time"
-	"log"
-	"errors"
 
 	"github.com/gobench-io/gobench/metrics"
 	"github.com/gobench-io/gobench/scenario"
@@ -96,12 +97,13 @@ func (n *Node) Run() {
 }
 
 func (n *Node) run() {
+	ctx, cancel := context.WithCancel(context.Background())
+
 	var donewg sync.WaitGroup
 
 	var totalVu int
 
 	vus := *n.vus
-
 	for i := range vus {
 		totalVu += vus[i].Nu
 	}
@@ -113,7 +115,7 @@ func (n *Node) run() {
 	for i := range vus {
 		for j := 0; j < vus[i].Nu; j++ {
 			go func(j int) {
-				vus[i].Fu(j, &donewg)
+				vus[i].Fu(ctx, j, &donewg)
 			}(j)
 		}
 	}
