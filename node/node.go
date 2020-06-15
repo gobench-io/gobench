@@ -21,7 +21,7 @@ type status string
 
 type unit struct {
 	Title    string             // metric title
-	Type     metrics.MetricType // to know the currnt unit type
+	Type     metrics.MetricType // to know the current unit type
 	metricID int                // metric table foreign key
 	c        gometrics.Counter
 	h        gometrics.Histogram
@@ -48,7 +48,7 @@ const (
 	running status = "running"
 )
 
-// the sigleton node variable
+// the singleton node variable
 var node Node
 
 func init() {
@@ -129,13 +129,13 @@ func (n *Node) run() {
 
 	n.cancel = cancel
 
-	scensDone := make(chan struct{})
+	finished := make(chan struct{})
 
 	go n.logScaled(ctx, 5 * time.Second)
-	go n.runScen(ctx, scensDone)
+	go n.runScen(ctx, finished)
 
 	select {
-	case <- scensDone:
+	case <- finished:
 		log.Printf("scenarios finished")
 	case <- ctx.Done():
 		log.Printf("scenarios cancel")
@@ -160,19 +160,19 @@ func (n *Node) runScen(ctx context.Context, done chan struct{}) {
 		totalVu += vus[i].Nu
 	}
 
-	var donewg sync.WaitGroup
-	donewg.Add(totalVu)
+	var wait sync.WaitGroup
+	wait.Add(totalVu)
 
 	for i := range vus {
 		for j := 0; j < vus[i].Nu; j++ {
 			go func(i, j int) {
 				vus[i].Fu(ctx, j)
-				donewg.Done()
+				wait.Done()
 			}(i, j)
 		}
 	}
 
-	donewg.Wait()
+	wait.Wait()
 
 	done <- struct{}{}
 }
@@ -304,7 +304,7 @@ func Setup(groups []metrics.Group) error {
 		}
 	}
 
-	// aggregrate units
+	// aggregate units
 	node.mu.Lock()
 	for k, v := range units {
 		node.units[k] = v
