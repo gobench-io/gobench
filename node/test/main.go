@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"time"
 
 	"github.com/gobench-io/gobench/node"
 )
@@ -18,5 +19,14 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	go func() {
+		time.Sleep(1 * time.Second)
+		log.Printf("is running: %v\n", n.Running())
+		time.Sleep(6 * time.Second)
+		n.Cancel()
+		log.Printf("is running: %v\n", n.Running())
+	}()
+
 	n.Run()
+	time.Sleep(10 * time.Second)
 }
