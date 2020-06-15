@@ -108,7 +108,7 @@ func (n *Node) run() {
 		totalVu += vus[i].Nu
 	}
 
-	go n.logScaled(10 * time.Second)
+	go n.logScaled(ctx, 10 * time.Second)
 
 	donewg.Add(totalVu)
 
@@ -126,7 +126,7 @@ func (n *Node) run() {
 	n.reset()
 }
 
-func (n *Node) logScaled(freq time.Duration) {
+func (n *Node) logScaled(ctx context.Context, freq time.Duration) {
 	ch := make(chan interface{})
 
 	go func(channel chan interface{}) {
@@ -135,13 +135,20 @@ func (n *Node) logScaled(freq time.Duration) {
 		}
 	}(ch)
 
-	if err := n.logScaledOnCue(ch); err != nil {
+	if err := n.logScaledOnCue(ctx, ch); err != nil {
 		log.Fatalln(err)
 	}
 }
 
-func (n *Node) logScaledOnCue(ch chan interface{}) error {
-	log.Println("logScaledOnCue")
+func (n *Node) logScaledOnCue(ctx context.Context, ch chan interface{}) error {
+	for {
+		select {
+		case <- ch:
+			log.Println("logScaledOnCue ticktock")
+		case <- ctx.Done():
+			log.Println("logScaledOnCue context done")
+		}
+	}
 	return nil
 }
 
