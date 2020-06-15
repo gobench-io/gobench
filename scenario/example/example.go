@@ -33,7 +33,7 @@ func f1(ctx context.Context, vui int, donewg *sync.WaitGroup) {
 
 	for {
 		count++
-		if count > 10 {
+		if count > 20 {
 			break
 		}
 		log.Printf("sub num %d\n", vui)
@@ -43,8 +43,6 @@ func f1(ctx context.Context, vui int, donewg *sync.WaitGroup) {
 
 func f2(ctx context.Context, vui int, donewg *sync.WaitGroup) {
 	defer donewg.Done()
-
-	log.Printf("f2 with vui: %d\n", vui)
 
 	client1, err := httpClient.NewHttpClient(&ctx, "home")
 	if err != nil {
