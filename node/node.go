@@ -144,11 +144,41 @@ func (n *Node) logScaledOnCue(ctx context.Context, ch chan interface{}) error {
 	for {
 		select {
 		case <- ch:
-			log.Println("logScaledOnCue ticktock")
+			now := timestampMs()
+			n.mu.Lock()
+			units := n.unit
+			n.mu.Unlock()
+
+			for _, u := range units {
+				switch u.Type {
+				case metrics.Counter:
+					n.logCounter(u.Title, now, u.c.Count())
+				case metrics.Histogram:
+					h := u.h.Snapshot()
+					n.logHistogram(u.Title, now, h)
+				case metrics.Gauge:
+					n.logGauge(u.Title, now, u.g.Value())
+				}
+			}
 		case <- ctx.Done():
-			log.Println("logScaledOnCue context done")
+			break
 		}
 	}
+	return nil
+}
+
+func (n *Node) logCounter(title string, time, c int64) error {
+	// todo: process counter log
+	return nil
+}
+
+func (n *Node) logHistogram(title string, time, h gometrics.Histogram) error {
+	// todo: process histogram log
+	return nil
+}
+
+func (n *Node) logGauge(title string, time, g int64) error {
+	// todo: process gauge log
 	return nil
 }
 
