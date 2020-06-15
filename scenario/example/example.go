@@ -44,6 +44,8 @@ func f1(ctx context.Context, vui int, donewg *sync.WaitGroup) {
 func f2(ctx context.Context, vui int, donewg *sync.WaitGroup) {
 	defer donewg.Done()
 
+	log.Printf("f2 with vui: %d\n", vui)
+
 	client1, err := httpClient.NewHttpClient(&ctx, "home")
 	if err != nil {
 		log.Println("create new client1 fail: " + err.Error())

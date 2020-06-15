@@ -114,9 +114,9 @@ func (n *Node) run() {
 
 	for i := range vus {
 		for j := 0; j < vus[i].Nu; j++ {
-			go func(j int) {
+			go func(i, j int) {
 				vus[i].Fu(ctx, j, &donewg)
-			}(j)
+			}(i, j)
 		}
 	}
 
@@ -218,6 +218,8 @@ func Setup(groups []metrics.Group) error {
 
 // Notify saves the id with value into metrics which later save to database
 func Notify(title string, value int64) error {
+	log.Printf("node notify title: %s, value %d\n", title, value)
+
 	node.mu.Lock()
 	defer node.mu.Unlock()
 
