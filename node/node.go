@@ -35,7 +35,7 @@ type Node struct {
 	pluginPath string
 	vus        *scenario.Vus
 
-	units map[string]unit
+	units map[string]unit // title - gometrics
 }
 
 const (
@@ -146,7 +146,7 @@ func (n *Node) logScaledOnCue(ctx context.Context, ch chan interface{}) error {
 		case <- ch:
 			now := timestampMs()
 			n.mu.Lock()
-			units := n.unit
+			units := n.units
 			n.mu.Unlock()
 
 			for _, u := range units {
@@ -169,17 +169,24 @@ func (n *Node) logScaledOnCue(ctx context.Context, ch chan interface{}) error {
 
 func (n *Node) logCounter(title string, time, c int64) error {
 	// todo: process counter log
+	log.Printf("logCounter: title %s, time %d, count %d\n", title, time, c)
 	return nil
 }
 
-func (n *Node) logHistogram(title string, time, h gometrics.Histogram) error {
+func (n *Node) logHistogram(title string, time int64, h gometrics.Histogram) error {
 	// todo: process histogram log
+	log.Printf("logHistogram: title %s, time %d, mean %d\n", title, time, h.Mean())
 	return nil
 }
 
-func (n *Node) logGauge(title string, time, g int64) error {
+func (n *Node) logGauge(title string, time int64, g int64) error {
 	// todo: process gauge log
+	log.Printf("logGauge: title %s, time %d, value %d\n", title, time, g)
 	return nil
+}
+
+func timestampMs() int64 {
+	return time.Now().UnixNano() / 1e6 // ms
 }
 
 // Setup is used for the worker to report the metrics that it will generate
