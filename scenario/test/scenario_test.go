@@ -10,6 +10,8 @@ import (
 func TestValidPlugin(t *testing.T) {
 	so := "valid.so"
 
+	assert.FileExistsf(t, so, "file valid.so must be compiled first")
+
 	vus, err := scenario.LoadPlugin(so)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(vus))
@@ -20,6 +22,9 @@ func TestValidPlugin(t *testing.T) {
 
 func TestInvalidPlugin(t *testing.T) {
 	so := "invalid.so"
+
+	assert.FileExistsf(t, so, "file invalid.so must be compiled first")
+
 	_, err := scenario.LoadPlugin(so)
 	assert.NotNil(t, err)
 }
