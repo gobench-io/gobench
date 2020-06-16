@@ -8,7 +8,8 @@ import (
 )
 
 func main() {
-	so := "./scenario/example/example.so"
+	// so := "./scenario/example/example.so"
+	so := "./scenario/valid.so"
 
 	n, err := node.New()
 	if err != nil {
