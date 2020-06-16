@@ -25,16 +25,34 @@ func Export() scenario.Vus {
 	}
 }
 
+// this function receive the ctx.Done signal
 func f1(ctx context.Context, vui int) {
-	count := 0
+	ch := make(chan struct{})
+
+	go func(c chan struct{}) {
+		count := 0
+		for range time.Tick(1 * time.Second) {
+			count++
+			if count > 4 {
+				close(c)
+				return
+			}
+			c <- struct{}{}
+		}
+	}(ch)
 
 	for {
-		count++
-		if count > 20 {
-			break
+		select {
+		case _, more := <-ch:
+			if !more {
+				log.Printf("f1 task is done")
+				return
+			}
+			log.Printf("sub num %d\n", vui)
+		case <-ctx.Done():
+			log.Printf("f1 asked to exit")
+			return
 		}
-		log.Printf("sub num %d\n", vui)
-		time.Sleep(1 * time.Second)
 	}
 }
 
