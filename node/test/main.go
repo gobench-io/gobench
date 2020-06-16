@@ -22,7 +22,7 @@ func main() {
 	go func() {
 		time.Sleep(1 * time.Second)
 		log.Printf("is running: %v\n", n.Running())
-		time.Sleep(6 * time.Second)
+		time.Sleep(60 * time.Second)
 		n.Cancel()
 		log.Printf("is running: %v\n", n.Running())
 	}()
