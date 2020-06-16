@@ -8,14 +8,11 @@ import (
 )
 
 func TestValidPlugin(t *testing.T) {
-	// so := "scenario/scripts/valid/valid.so"
-	so := "scripts/valid/valid.so"
+	// so := "scripts/valid/valid.so"
+	so := "valid.so"
 
 	vus, err := LoadPlugin(so)
 	assert.Nil(t, err)
-	log.Println(vus)
-	log.Println(err)
-	assert.Error(t, err)
 	assert.Equal(t, Vus{
 		{
 			Nu:   20,
@@ -25,9 +22,10 @@ func TestValidPlugin(t *testing.T) {
 }
 
 func TestInvalidPlugin(t *testing.T) {
-	so := "scenario/scripts/invalid/invalid.so"
+	so := "scripts/invalid/invalid.so"
 
 	vus, err := LoadPlugin(so)
+	log.Println(err)
 	log.Println(vus)
-	assert.Error(t, err)
+	assert.NotNil(t, err)
 }

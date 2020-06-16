@@ -21,8 +21,8 @@ build:
 	go build -o gobench ./
 
 test:
-	go build -race -buildmode=plugin -o scenario/scripts/valid/valid.so scenario/scripts/valid/valid.go
-	go build -race -buildmode=plugin -o scenario/scripts/invalid/invalid.so scenario/scripts/invalid/invalid.go
+	go build -race -buildmode=plugin -o scenario/valid.so scenario/scripts/valid/valid.go
+	go build -race -buildmode=plugin -o scenario/invalid.so scenario/scripts/invalid/invalid.go
 
 examples:
 	$(foreach var, $(EXAMPLES), go build -o ./.bin/${var} $(var);)
