@@ -13,9 +13,11 @@ import (
 	gometrics "github.com/rcrowley/go-metrics"
 )
 
-// ErrIDNotFound is raised when the metric title is not found
-var ErrIDNotFound = errors.New("id not found")
-var ErrNodeIsRunning = errors.New("node is running")
+// Error
+var (
+	ErrIDNotFound    = errors.New("id not found")
+	ErrNodeIsRunning = errors.New("node is running")
+)
 
 type status string
 
@@ -27,6 +29,7 @@ type unit struct {
 	h        gometrics.Histogram
 	g        gometrics.Gauge
 }
+
 // Node is the main structure for a running node
 // contains host information, the scenario (plugin)
 // and gometrics unit
@@ -38,7 +41,7 @@ type Node struct {
 	status     status
 	pluginPath string
 	vus        *scenario.Vus
-	cancel context.CancelFunc
+	cancel     context.CancelFunc
 
 	units map[string]unit // title - gometrics
 }
@@ -131,13 +134,13 @@ func (n *Node) run() {
 
 	finished := make(chan struct{})
 
-	go n.logScaled(ctx, 5 * time.Second)
+	go n.logScaled(ctx, 5*time.Second)
 	go n.runScen(ctx, finished)
 
 	select {
-	case <- finished:
+	case <-finished:
 		log.Printf("scenarios finished")
-	case <- ctx.Done():
+	case <-ctx.Done():
 		log.Printf("scenarios cancel")
 	}
 
@@ -196,7 +199,7 @@ func (n *Node) logScaled(ctx context.Context, freq time.Duration) {
 func (n *Node) logScaledOnCue(ctx context.Context, ch chan interface{}) error {
 	for {
 		select {
-		case <- ch:
+		case <-ch:
 			now := timestampMs()
 			n.mu.Lock()
 			units := n.units
@@ -213,11 +216,12 @@ func (n *Node) logScaledOnCue(ctx context.Context, ch chan interface{}) error {
 					n.logGauge(u.Title, now, u.g.Value())
 				}
 			}
-		case <- ctx.Done():
+		case <-ctx.Done():
 			log.Printf("logScaledOnCue cancel")
 			return nil
 		}
 	}
+
 	return nil
 }
 
@@ -229,7 +233,7 @@ func (n *Node) logCounter(title string, time, c int64) error {
 
 func (n *Node) logHistogram(title string, time int64, h gometrics.Histogram) error {
 	// todo: process histogram log
-	log.Printf("logHistogram: title %s, time %d, mean %d\n", title, time, h.Mean())
+	log.Printf("logHistogram: title %s, time %d, mean %f\n", title, time, h.Mean())
 	return nil
 }
 
