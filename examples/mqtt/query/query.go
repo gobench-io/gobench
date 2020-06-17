@@ -16,13 +16,11 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
-	"sync"
 
 	paho "github.com/eclipse/paho.mqtt.golang"
 
-	"github.com/gobench-io/gobench"
-	"github.com/gobench-io/gobench/web"
-	"github.com/gobench-io/gobench/workers/benchclient"
+	"github.com/gobench-io/gobench/dis"
+	"github.com/gobench-io/gobench/scenario"
 	"github.com/gobench-io/gobench/workers/mqtt"
 )
 
@@ -31,50 +29,22 @@ const (
 	serverNum = 1000
 )
 
-func main() {
-	bench := gobench.NewBench()
-	bench.Name("mqtt fan in benchmark example")
-
-	if err := bench.Start(); err != nil {
-		log.Fatalln(err)
-	}
-
-	go web.Serve(bench, 3001)
-	go benchclient.InternalMonitor()
-
-	clientVu := clientNum
-	serverVu := serverNum
-
-	var donewg sync.WaitGroup
-	donewg.Add(serverVu + clientVu)
-
-	rate := 1000.0 // per second
-
-	for i := 0; i < clientVu; i++ {
-		gobench.SleepPoisson(rate)
-
-		go clientVuPool(i, &donewg)
-	}
-
-	for j := 0; j < serverVu; j++ {
-		gobench.SleepPoisson(rate)
-
-		go serverVuPool(j, &donewg)
-	}
-
-	donewg.Wait()
-
-	if err := bench.Finish(); err != nil {
-		log.Printf("finish error %v\n", err)
+func Export() scenario.Vus {
+	return scenario.Vus{
+		{
+			Nu:   1,
+			Rate: 100,
+			Fu:   clientf,
+		},
+		{
+			Nu:   1000,
+			Rate: 100,
+			Fu:   serverf,
+		},
 	}
 }
-
-func clientVuPool(i int, donewg *sync.WaitGroup) {
-	defer donewg.Done()
-
-	ctx := context.Background()
-
-	clientID := fmt.Sprintf("client-%d", i)
+func clientf(ctx context.Context, vui int) {
+	clientID := fmt.Sprintf("client-%d", vui)
 
 	opts := mqtt.NewClientOptions()
 	opts.
@@ -99,11 +69,11 @@ func clientVuPool(i int, donewg *sync.WaitGroup) {
 
 	rate := 500.0 // rps
 	for j := 0; j < int(60*5*rate); j++ {
-		gobench.SleepPoisson(rate)
+		dis.SleepRatePoisson(rate)
 
 		go func() {
 			topic := fmt.Sprintf("prefix/servers/server-%d", rand.Intn(serverNum))
-			_ = client.Publish(&ctx, topic, 2, gobench.RandomByte(150))
+			_ = client.Publish(&ctx, topic, 2, dis.RandomByte(150))
 		}()
 	}
 
@@ -111,12 +81,8 @@ func clientVuPool(i int, donewg *sync.WaitGroup) {
 	_ = client.Disconnect(&ctx)
 }
 
-func serverVuPool(i int, donewg *sync.WaitGroup) {
-	ctx := context.Background()
-
-	defer donewg.Done()
-
-	clientID := fmt.Sprintf("server-%d", i)
+func serverf(ctx context.Context, vui int) {
+	clientID := fmt.Sprintf("server-%d", vui)
 
 	opts := mqtt.NewClientOptions()
 	opts.
