@@ -68,7 +68,7 @@ func (s *Server) setupDb(filename string) error {
 		filename+"?mode=rwc&cache=shared&&_busy_timeout=9999999&_fk=1")
 
 	if err != nil {
-		return fmt.Errorf("failed openning sqlite3 connection: %v", err)
+		return fmt.Errorf("failed opening sqlite3 connection: %v", err)
 	}
 
 	if err = client.Schema.Create(context.Background()); err != nil {
@@ -83,7 +83,7 @@ func (s *Server) setupDb(filename string) error {
 	return nil
 }
 
-// DB retuns the db client
+// DB returns the db client
 func (s *Server) DB() *ent.Client {
 	return s.db
 }
