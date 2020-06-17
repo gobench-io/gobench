@@ -1,10 +1,12 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
+	"os"
 
 	"github.com/gobench-io/gobench/server"
-	"github.com/gobench-io/gobench/web"
 )
 
 // gobench -p 3000 -master -cluster localhost:3001
@@ -32,12 +34,33 @@ Common Options:
 	-v, --version			Show version
 `
 
-func main() {
-	server, _ := server.New()
+func usage() {
+	fmt.Printf("%s\n", usageStr)
+	os.Exit(0)
+}
 
-	if err := server.Start(); err != nil {
-		log.Fatalf("failed to start the server: %v", err)
+func main() {
+	exe := "gobench"
+
+	// create a flagset and set the usage
+	fs := flag.NewFlagSet(exe, flag.ExitOnError)
+	fs.Usage = usage
+
+	log.Printf("fs %+v\n", fs)
+	log.Printf("args %+v\n", os.Args)
+
+	opts, err := server.ConfigureOptions(fs, os.Args[1:])
+	if err != nil {
+		server.PrintAndDie(fmt.Sprintf("%s: %s", exe, err))
 	}
 
-	web.Serve(server, 3001)
+	s, err := server.New(opts)
+	if err != nil {
+		server.PrintAndDie(fmt.Sprintf("%s: %s", exe, err))
+	}
+
+	if err := s.Start(); err != nil {
+		log.Fatalf("failed to start the server: %v", err)
+		server.PrintAndDie(err.Error())
+	}
 }
