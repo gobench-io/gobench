@@ -4,8 +4,6 @@ package main
 
 import (
 	"context"
-	"log"
-	"time"
 
 	"github.com/gobench-io/gobench/scenario"
 )
@@ -21,10 +19,9 @@ func Export() scenario.Vus {
 	}
 }
 
-// this function receive the ctx.Done signal
+// this function waiting to receive ctx.Done
 func f1(ctx context.Context, vui int) {
-	for {
-		log.Println("tic")
-		time.Sleep(1 * time.Second)
+	select {
+	case <-ctx.Done():
 	}
 }
