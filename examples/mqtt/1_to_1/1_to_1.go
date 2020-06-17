@@ -43,10 +43,6 @@ func f(ctx context.Context, vui int) {
 		return
 	}
 
-	// wait for all other workers finish the connect step
-	poolSignal.Done()
-	poolSignal.Wait()
-
 	_ = client.SubscribeToSelf(&ctx, "prefix/clients/", 0, nil)
 
 	rate := 1.0 // rps
