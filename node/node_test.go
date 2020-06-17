@@ -21,3 +21,7 @@ func TestNew(t *testing.T) {
 	assert.Nil(t, n1.cancel)
 	assert.Equal(t, n1.units, make(map[string]unit))
 }
+
+func TestLoadPlugin(t *testing.T) {
+
+}

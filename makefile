@@ -21,6 +21,7 @@ build:
 	go build -o gobench ./
 
 test:
+	go generate ./...
 	go build -buildmode=plugin -o scenario/test/valid.so scenario/test/scripts/valid/valid.go
 	go build -buildmode=plugin -o scenario/test/invalid.so scenario/test/scripts/invalid/invalid.go
 	go test ./...
