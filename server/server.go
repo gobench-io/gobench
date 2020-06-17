@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"sync"
 
 	"github.com/gobench-io/gobench/ent"
@@ -92,3 +93,9 @@ func (s *Server) DB() *ent.Client {
 // return the application id and error
 // func (s *Server) NewApplication(name, scenario string) (int, err) {
 // }
+
+// PrintAndDie print message to Stderr and exit error
+func PrintAndDie(msg string) {
+	fmt.Fprintln(os.Stderr, msg)
+	os.Exit(1)
+}
