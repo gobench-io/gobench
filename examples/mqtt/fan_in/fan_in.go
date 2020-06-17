@@ -13,6 +13,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/gobench-io/gobench/dis"
 	"github.com/gobench-io/gobench/scenario"
 	"github.com/gobench-io/gobench/workers/mqtt"
 )
@@ -70,7 +71,7 @@ func pubf(ctx context.Context, vui int) {
 
 	rate := 1.0 // rps
 	for j := 0; j < int(60*5*rate); j++ {
-		dis.SleepPoisson(rate)
+		dis.SleepRatePoisson(rate)
 		go func() {
 			_ = client.PublishToSelf(&ctx, "prefix/clients/", 0, dis.RandomByte(150))
 		}()
