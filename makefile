@@ -23,7 +23,7 @@ build:
 test:
 	go build -buildmode=plugin -o scenario/test/valid.so scenario/test/scripts/valid/valid.go
 	go build -buildmode=plugin -o scenario/test/invalid.so scenario/test/scripts/invalid/invalid.go
-	go build -buildmode=plugin -o node/script/valid.so node/script/valid.go
+	go build -buildmode=plugin -o worker/script/valid.so worker/script/valid.go
 	go test ./...
 
 examples:

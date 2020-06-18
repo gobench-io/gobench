@@ -10,7 +10,7 @@ import (
 	"github.com/go-chi/render"
 	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/ent/application"
-	"github.com/gobench-io/gobench/node/server"
+	"github.com/gobench-io/gobench/worker/server"
 )
 
 func applicationCtx(next http.Handler) http.Handler {

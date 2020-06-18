@@ -1,4 +1,4 @@
-package benchclient
+package gbworker
 
 import (
 	"context"

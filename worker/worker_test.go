@@ -1,4 +1,4 @@
-package node
+package worker
 
 import (
 	"testing"
@@ -6,9 +6,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func loadValidPlugin(n *Node) error {
+func loadValidPlugin(w *Worker) error {
 	so := "./script/valid.so"
-	return n.Load(so)
+	return w.Load(so)
 }
 
 // func TestNodeWithConfig(t *testing.T) {

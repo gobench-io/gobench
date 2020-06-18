@@ -1,4 +1,4 @@
-package node
+package worker
 
 import (
 	"context"
@@ -16,7 +16,7 @@ import (
 // Error
 var (
 	ErrIDNotFound    = errors.New("id not found")
-	ErrNodeIsRunning = errors.New("node is running")
+	ErrNodeIsRunning = errors.New("worker is running")
 )
 
 type status string
@@ -30,10 +30,10 @@ type unit struct {
 	g        gometrics.Gauge
 }
 
-// Node is the main structure for a running node
+// Worker is the main structure for a running worker
 // contains host information, the scenario (plugin)
 // and gometrics unit
-type Node struct {
+type Worker struct {
 	mu       sync.Mutex
 	hostname string
 	pid      int
@@ -51,14 +51,14 @@ const (
 	running status = "running"
 )
 
-// the singleton node variable
-var node Node
+// the singleton worker variable
+var worker Worker
 
 func init() {
 	hostname, _ := os.Hostname()
 	pid := os.Getpid()
 
-	node = Node{
+	worker = Worker{
 		pid:      pid,
 		hostname: hostname,
 		status:   idle,
@@ -67,75 +67,75 @@ func init() {
 	}
 }
 
-// New return the singleton node
-func New() (*Node, error) {
-	return &node, nil
+// New return the singleton worker
+func New() (*Worker, error) {
+	return &worker, nil
 }
 
-func (n *Node) reset() {
-	n.mu.Lock()
-	n.status = idle
-	n.units = make(map[string]unit)
-	n.cancel = nil
-	n.mu.Unlock()
+func (w *Worker) reset() {
+	w.mu.Lock()
+	w.status = idle
+	w.units = make(map[string]unit)
+	w.cancel = nil
+	w.mu.Unlock()
 }
 
 // Load downloads the go plugin, extracts the virtual user scenario
-func (n *Node) Load(so string) error {
+func (w *Worker) Load(so string) error {
 	vus, err := scenario.LoadPlugin(so)
 	if err != nil {
 		return err
 	}
 
-	n.mu.Lock()
-	defer n.mu.Unlock()
+	w.mu.Lock()
+	defer w.mu.Unlock()
 
-	n.pluginPath = so
-	n.vus = &vus
+	w.pluginPath = so
+	w.vus = &vus
 
 	return nil
 }
 
 // Cancel stops the running scenario if any
-func (n *Node) Cancel() error {
-	n.mu.Lock()
-	defer n.mu.Unlock()
+func (w *Worker) Cancel() error {
+	w.mu.Lock()
+	defer w.mu.Unlock()
 
-	if n.status == idle {
+	if w.status == idle {
 		return nil
 	}
 
 	// if there is a running scenario
-	n.cancel()
+	w.cancel()
 
 	return nil
 }
 
 // Run starts the preloaded plugin
-// return error if the node is running already
-func (n *Node) Run() error {
-	n.mu.Lock()
+// return error if the worker is running already
+func (w *Worker) Run() error {
+	w.mu.Lock()
 
-	if n.status == running {
+	if w.status == running {
 		return ErrNodeIsRunning
 	}
 
-	n.status = running
-	n.mu.Unlock()
+	w.status = running
+	w.mu.Unlock()
 
-	n.run()
+	w.run()
 	return nil
 }
 
-func (n *Node) run() {
+func (w *Worker) run() {
 	ctx, cancel := context.WithCancel(context.Background())
 
-	n.cancel = cancel
+	w.cancel = cancel
 
 	finished := make(chan struct{})
 
-	go n.logScaled(ctx, 5*time.Second)
-	go n.runScen(ctx, finished)
+	go w.logScaled(ctx, 5*time.Second)
+	go w.runScen(ctx, finished)
 
 	select {
 	case <-finished:
@@ -144,21 +144,21 @@ func (n *Node) run() {
 		log.Printf("scenarios cancel")
 	}
 
-	// when finish, reset the node
-	n.reset()
+	// when finish, reset the worker
+	w.reset()
 }
 
-func (n *Node) Running() bool {
-	n.mu.Lock()
-	defer n.mu.Unlock()
+func (w *Worker) Running() bool {
+	w.mu.Lock()
+	defer w.mu.Unlock()
 
-	return n.status == running
+	return w.status == running
 }
 
-func (n *Node) runScen(ctx context.Context, done chan struct{}) {
+func (w *Worker) runScen(ctx context.Context, done chan struct{}) {
 	var totalVu int
 
-	vus := *n.vus
+	vus := *w.vus
 	for i := range vus {
 		totalVu += vus[i].Nu
 	}
@@ -180,9 +180,9 @@ func (n *Node) runScen(ctx context.Context, done chan struct{}) {
 	done <- struct{}{}
 }
 
-// logScaled extract the metric log from a node
+// logScaled extract the metric log from a worker
 // should run this function in a routine
-func (n *Node) logScaled(ctx context.Context, freq time.Duration) {
+func (w *Worker) logScaled(ctx context.Context, freq time.Duration) {
 	ch := make(chan interface{})
 
 	go func(channel chan interface{}) {
@@ -191,29 +191,29 @@ func (n *Node) logScaled(ctx context.Context, freq time.Duration) {
 		}
 	}(ch)
 
-	if err := n.logScaledOnCue(ctx, ch); err != nil {
+	if err := w.logScaledOnCue(ctx, ch); err != nil {
 		log.Fatalln(err)
 	}
 }
 
-func (n *Node) logScaledOnCue(ctx context.Context, ch chan interface{}) error {
+func (w *Worker) logScaledOnCue(ctx context.Context, ch chan interface{}) error {
 	for {
 		select {
 		case <-ch:
 			now := timestampMs()
-			n.mu.Lock()
-			units := n.units
-			n.mu.Unlock()
+			w.mu.Lock()
+			units := w.units
+			w.mu.Unlock()
 
 			for _, u := range units {
 				switch u.Type {
 				case metrics.Counter:
-					n.logCounter(u.Title, now, u.c.Count())
+					w.logCounter(u.Title, now, u.c.Count())
 				case metrics.Histogram:
 					h := u.h.Snapshot()
-					n.logHistogram(u.Title, now, h)
+					w.logHistogram(u.Title, now, h)
 				case metrics.Gauge:
-					n.logGauge(u.Title, now, u.g.Value())
+					w.logGauge(u.Title, now, u.g.Value())
 				}
 			}
 		case <-ctx.Done():
@@ -225,19 +225,19 @@ func (n *Node) logScaledOnCue(ctx context.Context, ch chan interface{}) error {
 	return nil
 }
 
-func (n *Node) logCounter(title string, time, c int64) error {
+func (w *Worker) logCounter(title string, time, c int64) error {
 	// todo: process counter log
 	log.Printf("logCounter: title %s, time %d, count %d\n", title, time, c)
 	return nil
 }
 
-func (n *Node) logHistogram(title string, time int64, h gometrics.Histogram) error {
+func (w *Worker) logHistogram(title string, time int64, h gometrics.Histogram) error {
 	// todo: process histogram log
 	log.Printf("logHistogram: title %s, time %d, mean %f\n", title, time, h.Mean())
 	return nil
 }
 
-func (n *Node) logGauge(title string, time int64, g int64) error {
+func (w *Worker) logGauge(title string, time int64, g int64) error {
 	// todo: process gauge log
 	log.Printf("logGauge: title %s, time %d, value %d\n", title, time, g)
 	return nil
@@ -309,11 +309,11 @@ func Setup(groups []metrics.Group) error {
 	}
 
 	// aggregate units
-	node.mu.Lock()
+	worker.mu.Lock()
 	for k, v := range units {
-		node.units[k] = v
+		worker.units[k] = v
 	}
-	node.mu.Unlock()
+	worker.mu.Unlock()
 
 	return nil
 }
@@ -324,12 +324,12 @@ func Setup(groups []metrics.Group) error {
 // a. The title has never ever register before
 // b. The session is cancel but the scenario does not handle the ctx.Done signal
 func Notify(title string, value int64) error {
-	log.Printf("node notify title: %s, value %d\n", title, value)
+	log.Printf("worker notify title: %s, value %d\n", title, value)
 
-	node.mu.Lock()
-	defer node.mu.Unlock()
+	worker.mu.Lock()
+	defer worker.mu.Unlock()
 
-	u, ok := node.units[title]
+	u, ok := worker.units[title]
 	if !ok {
 		log.Printf("error metric title %s not found\n", title)
 		return ErrIDNotFound
