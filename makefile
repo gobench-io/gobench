@@ -21,13 +21,12 @@ build:
 	go build -o gobench ./
 
 test:
-	go generate ./...
 	go build -buildmode=plugin -o scenario/test/valid.so scenario/test/scripts/valid/valid.go
 	go build -buildmode=plugin -o scenario/test/invalid.so scenario/test/scripts/invalid/invalid.go
+	go build -buildmode=plugin -o node/script/valid.so node/script/valid.go
 	go test ./...
 
 examples:
-	# $(foreach var, $(EXAMPLES), go build -o ./.bin/${var} $(var);)
 	$(foreach var, $(EXAMPLES), go build -buildmode=plugin -o ./.bin/${var}.out $(var);)
 
 tools:
