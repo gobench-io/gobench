@@ -7,7 +7,7 @@ import (
 
 	"github.com/gobench-io/gobench/scenario"
 
-	httpClient "github.com/gobench-io/gobench/workers/http"
+	httpClient "github.com/gobench-io/gobench/clients/http"
 )
 
 func Export() scenario.Vus {

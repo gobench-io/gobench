@@ -5,9 +5,9 @@ import (
 	"log"
 	"strconv"
 
+	nats "github.com/gobench-io/gobench/clients/nats"
 	"github.com/gobench-io/gobench/dis"
 	"github.com/gobench-io/gobench/scenario"
-	nats "github.com/gobench-io/gobench/workers/nats"
 )
 
 func Export() scenario.Vus {
