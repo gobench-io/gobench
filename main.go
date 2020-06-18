@@ -23,7 +23,7 @@ Server Options:
 	-w, --worker 			Run server as worker mode
 
 Cluster Options
-		--cluster <port>	Cluster port to solicit and connect (default: 6890)
+		--cluster-port <port>	Cluster port to solicit and connect (default: 6890)
 							Master is required to have this option
 		--route <host:port> The master address to solicit routes.
 							Every worker must have this option sothat worker can
