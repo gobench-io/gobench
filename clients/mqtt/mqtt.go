@@ -8,7 +8,7 @@ import (
 	paho "github.com/eclipse/paho.mqtt.golang"
 	"github.com/gobench-io/gobench/dis"
 	"github.com/gobench-io/gobench/metrics"
-	"github.com/gobench-io/gobench/node"
+	"github.com/gobench-io/gobench/worker"
 )
 
 const conTotal string = "mqtt.connection.current_total"
@@ -266,7 +266,7 @@ func NewMqttClient(ctx *context.Context, opts *ClientOptions) (MqttClient, error
 	mqttClient := MqttClient{}
 
 	gs := groups()
-	if err := node.Setup(gs); err != nil {
+	if err := worker.Setup(gs); err != nil {
 		return mqttClient, err
 	}
 
@@ -281,7 +281,7 @@ func NewMqttClient(ctx *context.Context, opts *ClientOptions) (MqttClient, error
 	// Both at initial connection time and upon automatic reconnect.
 	OnConnect := opts.OnConnect
 	opts.SetOnConnectHandler(func(c paho.Client) {
-		node.Notify(conTotal, 1)
+		worker.Notify(conTotal, 1)
 		if OnConnect != nil {
 			OnConnect(c)
 		}
@@ -290,7 +290,7 @@ func NewMqttClient(ctx *context.Context, opts *ClientOptions) (MqttClient, error
 	// be executed in the case where the client unexpectedly loses connection with the MQTT broker.
 	OnConnectionLost := opts.OnConnectionLost
 	opts.SetConnectionLostHandler(func(c paho.Client, e error) {
-		node.Notify(conTotal, -1)
+		worker.Notify(conTotal, -1)
 		if OnConnectionLost != nil {
 			OnConnectionLost(c, e)
 		}
@@ -299,7 +299,7 @@ func NewMqttClient(ctx *context.Context, opts *ClientOptions) (MqttClient, error
 	// be executed prior to the client attempting a reconnect to the MQTT broker.
 	OnReconnecting := opts.OnReconnecting
 	opts.SetReconnectingHandler(func(c paho.Client, o *paho.ClientOptions) {
-		node.Notify(conReconnect, 1)
+		worker.Notify(conReconnect, 1)
 		if OnReconnecting != nil {
 			OnReconnecting(c, o)
 		}
@@ -330,10 +330,10 @@ func (c *MqttClient) Connect(ctx *context.Context) error {
 	if err := token.Error(); err != nil {
 		log.Printf("mqtt connect fail: %s\n", err.Error())
 
-		node.Notify(conError, 1)
+		worker.Notify(conError, 1)
 		return err
 	}
-	node.Notify(conLatency, time.Since(begin).Microseconds())
+	worker.Notify(conLatency, time.Since(begin).Microseconds())
 
 	return nil
 }
@@ -351,17 +351,17 @@ func (c *MqttClient) Publish(ctx *context.Context, topic string, qos byte, data 
 
 	switch qos {
 	case 0:
-		node.Notify(pubQos0Total, 1)
-		node.Notify(pubQos0Latency, time.Since(begin).Microseconds())
+		worker.Notify(pubQos0Total, 1)
+		worker.Notify(pubQos0Latency, time.Since(begin).Microseconds())
 	case 1:
-		node.Notify(pubQos1Total, 1)
-		node.Notify(pubQos1Latency, time.Since(begin).Microseconds())
+		worker.Notify(pubQos1Total, 1)
+		worker.Notify(pubQos1Latency, time.Since(begin).Microseconds())
 	case 2:
-		node.Notify(pubQos2Total, 1)
-		node.Notify(pubQos2Latency, time.Since(begin).Microseconds())
+		worker.Notify(pubQos2Total, 1)
+		worker.Notify(pubQos2Latency, time.Since(begin).Microseconds())
 	}
 
-	node.Notify(msgPublishedTotal, 1)
+	worker.Notify(msgPublishedTotal, 1)
 
 	return nil
 }
@@ -385,7 +385,7 @@ func (c *MqttClient) Subscribe(
 ) error {
 	begin := time.Now()
 	token := c.client.Subscribe(topic, qos, func(c paho.Client, m paho.Message) {
-		node.Notify(msgConsumedTotal, 1)
+		worker.Notify(msgConsumedTotal, 1)
 		if callback != nil {
 			callback(c, m)
 		}
@@ -395,12 +395,12 @@ func (c *MqttClient) Subscribe(
 
 	if err := token.Error(); err != nil {
 		log.Printf("mqtt subscribe fail: %s\n", err.Error())
-		node.Notify(subError, 1)
+		worker.Notify(subError, 1)
 		return err
 	}
 
-	node.Notify(subLatency, time.Since(begin).Microseconds())
-	node.Notify(subTotal, 1)
+	worker.Notify(subLatency, time.Since(begin).Microseconds())
+	worker.Notify(subTotal, 1)
 
 	return nil
 }
@@ -431,11 +431,11 @@ func (c *MqttClient) Unsubscribe(ctx *context.Context, topics ...string) error {
 
 	if err := token.Error(); err != nil {
 		log.Printf("mqtt unsubscribe fail: %s\n", err.Error())
-		node.Notify(unsubError, 1)
+		worker.Notify(unsubError, 1)
 		return err
 	}
 
-	node.Notify(unsubLatency, time.Since(begin).Microseconds())
+	worker.Notify(unsubLatency, time.Since(begin).Microseconds())
 
 	return nil
 }
@@ -443,6 +443,6 @@ func (c *MqttClient) Unsubscribe(ctx *context.Context, topics ...string) error {
 // Disconnect will end the connection with the server
 func (c *MqttClient) Disconnect(ctx *context.Context) error {
 	c.client.Disconnect(500)
-	node.Notify(conTotal, -1)
+	worker.Notify(conTotal, -1)
 	return nil
 }

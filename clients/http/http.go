@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/gobench-io/gobench/metrics"
-	"github.com/gobench-io/gobench/node"
+	"github.com/gobench-io/gobench/worker"
 )
 
 type HttpClient struct {
@@ -68,7 +68,7 @@ func NewHttpClient(ctx *context.Context, prefix string) (HttpClient, error) {
 		client: client,
 	}
 
-	if err := node.Setup(groups); err != nil {
+	if err := worker.Setup(groups); err != nil {
 		return httpClient, err
 	}
 
@@ -85,16 +85,16 @@ func (h *HttpClient) do(method, url string, body []byte, headers map[string]stri
 
 	defer func() {
 		diff := time.Since(begin)
-		node.Notify(latency, diff.Microseconds())
+		worker.Notify(latency, diff.Microseconds())
 		if err != nil {
-			node.Notify(otherFail, 1)
+			worker.Notify(otherFail, 1)
 			return
 		}
 		if res.StatusCode >= 300 || res.StatusCode < 200 {
-			node.Notify(fail, 1)
+			worker.Notify(fail, 1)
 			return
 		}
-		node.Notify(success, 1)
+		worker.Notify(success, 1)
 	}()
 
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(body))

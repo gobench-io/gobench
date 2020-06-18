@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/gobench-io/gobench/metrics"
-	"github.com/gobench-io/gobench/node"
+	"github.com/gobench-io/gobench/worker"
 	"github.com/nats-io/nats.go"
 )
 
@@ -161,13 +161,13 @@ func disconnectErrHandler(nc *nats.Conn, err error) {
 	if err != nil {
 		log.Printf("Disconnected due to: %v\n", err)
 	}
-	node.Notify(conTotal, -1)
+	worker.Notify(conTotal, -1)
 }
 
 func reconnectHandler(nc *nats.Conn) {
 	log.Printf("Reconnected [%s]\n", nc.ConnectedUrl())
-	node.Notify(conTotal, 1)
-	node.Notify(conReconnect, 1)
+	worker.Notify(conTotal, 1)
+	worker.Notify(conReconnect, 1)
 }
 func closeHandler(nc *nats.Conn) {
 	log.Printf("Exiting: %v\n", nc.LastError())
@@ -178,7 +178,7 @@ type NatsClient struct {
 }
 
 func NewNatClient(ctx *context.Context, url string) (natsClient NatsClient, err error) {
-	if err := node.Setup(groups()); err != nil {
+	if err := worker.Setup(groups()); err != nil {
 		return natsClient, err
 	}
 
@@ -191,14 +191,14 @@ func NewNatClient(ctx *context.Context, url string) (natsClient NatsClient, err 
 	begin := time.Now()
 	if natsClient.conn, err = nats.Connect(url, opts...); err != nil {
 		log.Printf("Connect error: %v\n", err)
-		node.Notify(conError, 1)
+		worker.Notify(conError, 1)
 		return natsClient, err
 	}
 
 	diff := time.Since(begin)
 
-	node.Notify(conTotal, 1)
-	node.Notify(conLatency, diff.Microseconds())
+	worker.Notify(conTotal, 1)
+	worker.Notify(conLatency, diff.Microseconds())
 
 	return natsClient, nil
 }
@@ -210,8 +210,8 @@ func (c *NatsClient) Publish(ctx *context.Context, topic string, data []byte) er
 	}
 	diff := time.Since(begin)
 
-	node.Notify(pubTotal, 1)
-	node.Notify(pubLatency, diff.Microseconds())
+	worker.Notify(pubTotal, 1)
+	worker.Notify(pubLatency, diff.Microseconds())
 
 	return nil
 }
@@ -222,14 +222,14 @@ func (c *NatsClient) Subscribe(ctx *context.Context, topic string) error {
 
 	// begin to sub, ignore sub
 	if _, err := c.conn.ChanSubscribe(topic, ch); err != nil {
-		node.Notify(subError, 1)
+		worker.Notify(subError, 1)
 		return err
 	}
 	diff := time.Since(begin)
 
 	// notify sub total and latency
-	node.Notify(subTotal, 1)
-	node.Notify(subLatency, diff.Microseconds())
+	worker.Notify(subTotal, 1)
+	worker.Notify(subLatency, diff.Microseconds())
 
 	go func(ch chan *nats.Msg) {
 		<-ch

@@ -27,7 +27,7 @@ test:
 	go test ./...
 
 examples:
-	$(foreach var, $(EXAMPLES), go build -buildmode=plugin -o ./.bin/${var}.out $(var);)
+	$(foreach var, $(EXAMPLES), go build -buildmode=plugin -o ./.bin/${var}.so $(var);)
 
 tools:
 	go build -o ./.bin/github.com/gobench-io/gobench/tools/gobench-viewer github.com/gobench-io/gobench/tools/gobench-viewer
