@@ -56,6 +56,9 @@ func TestConfigureOptions(t *testing.T) {
 
 	testFuncs := []testPrint{
 		{[]string{"-v"}, checkPrintInvoked, usage},
+		{[]string{"--version"}, checkPrintInvoked, usage},
+		{[]string{"-h"}, usage, checkPrintInvoked},
+		{[]string{"--help"}, usage, checkPrintInvoked},
 	}
 
 	for _, tf := range testFuncs {
@@ -65,7 +68,7 @@ func TestConfigureOptions(t *testing.T) {
 			t.Fatalf("Error on config: %v", err)
 		}
 		if opts != nil {
-			t.Fatalf("Expected options to be nil, got %v", opts)
+			t.Fatalf("Expected options to be nil, got %v for args %s", opts, tf.args)
 		}
 		select {
 		case <-ch:

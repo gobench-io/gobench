@@ -40,5 +40,31 @@ func setBaselineOptions(opts *Options) {
 // flags. On success, an options structure is returned configured based on the
 // selected flags
 func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp func()) (*Options, error) {
-	return nil, nil
+	opts := &Options{}
+
+	var (
+		showVersion bool
+		showHelp    bool
+	)
+
+	fs.BoolVar(&showVersion, "v", false, "Print version information.")
+	fs.BoolVar(&showVersion, "version", false, "Print version information.")
+	fs.BoolVar(&showHelp, "h", false, "Show this message.")
+	fs.BoolVar(&showHelp, "help", false, "Show this message.")
+
+	if err := fs.Parse(args); err != nil {
+		return nil, err
+	}
+
+	if showVersion {
+		printVersion()
+		return nil, nil
+	}
+
+	if showHelp {
+		printHelp()
+		return nil, nil
+	}
+
+	return opts, nil
 }
