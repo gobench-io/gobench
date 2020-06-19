@@ -5,10 +5,16 @@ import (
 	"fmt"
 )
 
+type serverType string
+
+var (
+	worker serverType = "worker"
+	master serverType = "master"
+)
+
 // Options block for gobench server
 type Options struct {
-	isWorker    bool
-	Master      bool
+	ServerType  serverType
 	Addr        string
 	Port        int
 	ClusterPort int    // master address to solicit and connect
@@ -20,19 +26,20 @@ func setBaselineOptions(opts *Options) {
 		opts.Addr = DEFAULT_HOST
 	}
 
-	if !opts.isWorker {
-		opts.Master = true
-		if opts.Port == 0 {
-			opts.Port = DEFAULT_PORT
-		}
-		if opts.ClusterPort == 0 {
-			opts.ClusterPort = DEFAULT_CLUSTER_PORT
-		}
-	} else {
-		opts.Master = false
+	if opts.ServerType == worker {
 		if opts.Route == "" {
 			opts.Route = fmt.Sprintf("0.0.0.0:%d", DEFAULT_CLUSTER_PORT)
 		}
+		return
+	}
+
+	// by default, it is a master
+	opts.ServerType = master
+	if opts.Port == 0 {
+		opts.Port = DEFAULT_PORT
+	}
+	if opts.ClusterPort == 0 {
+		opts.ClusterPort = DEFAULT_CLUSTER_PORT
 	}
 }
 
@@ -45,12 +52,22 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 	var (
 		showVersion bool
 		showHelp    bool
+		port        int
+		isMaster    bool
+		isWorker    bool
 	)
 
 	fs.BoolVar(&showVersion, "v", false, "Print version information.")
 	fs.BoolVar(&showVersion, "version", false, "Print version information.")
 	fs.BoolVar(&showHelp, "h", false, "Show this message.")
 	fs.BoolVar(&showHelp, "help", false, "Show this message.")
+	fs.IntVar(&port, "p", DEFAULT_PORT, "Port of the master server.")
+	fs.IntVar(&port, "port", DEFAULT_PORT, "Port of the master server.")
+
+	fs.BoolVar(&isMaster, "m", false, "Run this server as a master.")
+	fs.BoolVar(&isMaster, "master", false, "Run this server as a master.")
+	fs.BoolVar(&isWorker, "w", false, "Run this server as a worker.")
+	fs.BoolVar(&isWorker, "worker", false, "Run this server as a worker.")
 
 	if err := fs.Parse(args); err != nil {
 		return nil, err
@@ -64,6 +81,15 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 	if showHelp {
 		printHelp()
 		return nil, nil
+	}
+
+	opts.Port = port
+
+	if isMaster {
+		opts.ServerType = master
+	}
+	if isWorker {
+		opts.ServerType = worker
 	}
 
 	return opts, nil

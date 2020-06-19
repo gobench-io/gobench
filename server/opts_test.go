@@ -12,7 +12,7 @@ func TestDefaultOptions(t *testing.T) {
 	golden := &Options{
 		Addr:        DEFAULT_HOST,
 		Port:        DEFAULT_PORT,
-		Master:      true,
+		ServerType:  master,
 		ClusterPort: DEFAULT_CLUSTER_PORT,
 		Route:       "",
 	}
@@ -25,15 +25,14 @@ func TestDefaultOptions(t *testing.T) {
 func TestDefaultWorkerOptions(t *testing.T) {
 	// worker role
 	golden := &Options{
-		isWorker:    true,
 		Addr:        DEFAULT_HOST,
 		Port:        0,
-		Master:      false,
+		ServerType:  worker,
 		ClusterPort: 0,
 		Route:       "0.0.0.0:6890",
 	}
 	opts := &Options{
-		isWorker: true,
+		ServerType: worker,
 	}
 	setBaselineOptions(opts)
 	assert.Equal(t, golden, opts)
@@ -89,6 +88,12 @@ func TestConfigureOptions(t *testing.T) {
 		return opts
 	}
 
-	opts := mustNotFail([]string{"-p 3000"})
+	opts := mustNotFail([]string{"-p", "3000"})
 	assert.Equal(t, opts.Port, 3000)
+
+	opts = mustNotFail([]string{"-m", "true"})
+	assert.Equal(t, opts.ServerType, master)
+
+	opts = mustNotFail([]string{"-w", "true"})
+	assert.Equal(t, opts.ServerType, worker)
 }
