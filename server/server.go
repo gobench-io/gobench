@@ -99,3 +99,9 @@ func PrintAndDie(msg string) {
 	fmt.Fprintln(os.Stderr, msg)
 	os.Exit(1)
 }
+
+// PrintVersionAndExit will print our version and exit.
+func PrintVersionAndExit() {
+	fmt.Printf("gobench: v%s\n", VERSION)
+	os.Exit(0)
+}

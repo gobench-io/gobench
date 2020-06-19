@@ -1,11 +1,8 @@
 package server
 
-import "fmt"
-
-type stype string
-
-var (
-	master stype = "master"
+import (
+	"flag"
+	"fmt"
 )
 
 // Options block for gobench server
@@ -37,4 +34,11 @@ func setBaselineOptions(opts *Options) {
 			opts.Route = fmt.Sprintf("0.0.0.0:%d", DEFAULT_CLUSTER_PORT)
 		}
 	}
+}
+
+// ConfigureOptions accepts a flag set and augments it with gobench specific
+// flags. On success, an options structure is returned configured based on the
+// selected flags
+func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp func()) (*Options, error) {
+	return nil, nil
 }

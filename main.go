@@ -49,7 +49,9 @@ func main() {
 	log.Printf("fs %+v\n", fs)
 	log.Printf("args %+v\n", os.Args)
 
-	opts, err := server.ConfigureOptions(fs, os.Args[1:])
+	opts, err := server.ConfigureOptions(fs, os.Args[1:],
+		server.PrintVersionAndExit,
+		fs.Usage)
 	if err != nil {
 		server.PrintAndDie(fmt.Sprintf("%s: %s", exe, err))
 	}
