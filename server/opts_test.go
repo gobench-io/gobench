@@ -2,6 +2,7 @@ package server
 
 import (
 	"flag"
+	"strings"
 	"testing"
 	"time"
 
@@ -88,6 +89,20 @@ func TestConfigureOptions(t *testing.T) {
 		return opts
 	}
 
+	mustFail := func(args []string, errContent ...string) {
+		fs := flag.NewFlagSet("test", flag.ContinueOnError)
+		opts, err := ConfigureOptions(fs, args, usage, usage)
+		if opts != nil || err == nil {
+			t.Fatalf("Expect no opts and err, got %v and %v", opts, err)
+		}
+		for _, content := range errContent {
+			if strings.Contains(err.Error(), content) {
+				return
+			}
+		}
+		t.Fatalf("Expect error contain any of %v, got %v", errContent, err)
+	}
+
 	opts := mustNotFail([]string{"-p", "3000"})
 	assert.Equal(t, opts.Port, 3000)
 
@@ -100,4 +115,7 @@ func TestConfigureOptions(t *testing.T) {
 	assert.Equal(t, opts.ServerType, worker)
 	opts = mustNotFail([]string{"-w"})
 	assert.Equal(t, opts.ServerType, worker)
+
+	// cannot be master and worker at the same time
+	mustFail([]string{"-w", "-m"}, "master and worker")
 }

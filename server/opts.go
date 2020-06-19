@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 )
@@ -85,7 +86,11 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 
 	opts.Port = port
 
-	if isMaster {
+	if isMaster && isWorker {
+		return nil, errors.New("a worker cannot be master and worker at the same time")
+	}
+
+	if isMaster || !isWorker {
 		opts.ServerType = master
 	}
 	if isWorker {
