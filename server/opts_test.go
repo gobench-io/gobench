@@ -41,10 +41,12 @@ func TestDefaultWorkerOptions(t *testing.T) {
 }
 
 func TestConfigureOptions(t *testing.T) {
+	// helper function
 	ch := make(chan bool, 1)
 	checkPrintInvoked := func() {
 		ch <- true
 	}
+
 	usage := func() {
 		panic("should not get there")
 	}
@@ -76,4 +78,17 @@ func TestConfigureOptions(t *testing.T) {
 			t.Fatalf("Should have invoked print function for args=%v", tf.args)
 		}
 	}
+
+	// helper function
+	mustNotFail := func(args []string) *Options {
+		fs := flag.NewFlagSet("test", flag.ContinueOnError)
+		opts, err := ConfigureOptions(fs, args, usage, usage)
+		if err != nil {
+			t.Fatalf("Error on config: %v", err)
+		}
+		return opts
+	}
+
+	opts := mustNotFail([]string{"-p 3000"})
+	assert.Equal(t, opts.Port, 3000)
 }
