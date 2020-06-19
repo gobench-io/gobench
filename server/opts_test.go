@@ -93,7 +93,11 @@ func TestConfigureOptions(t *testing.T) {
 
 	opts = mustNotFail([]string{"-m", "true"})
 	assert.Equal(t, opts.ServerType, master)
+	opts = mustNotFail([]string{"-m"})
+	assert.Equal(t, opts.ServerType, master)
 
 	opts = mustNotFail([]string{"-w", "true"})
+	assert.Equal(t, opts.ServerType, worker)
+	opts = mustNotFail([]string{"-w"})
 	assert.Equal(t, opts.ServerType, worker)
 }
