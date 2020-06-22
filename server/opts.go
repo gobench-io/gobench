@@ -9,8 +9,8 @@ import (
 type serverType string
 
 var (
-	worker serverType = "worker"
-	master serverType = "master"
+	wkType serverType = "worker"
+	mtType serverType = "master"
 )
 
 // Options block for gobench server
@@ -27,7 +27,7 @@ func setBaselineOptions(opts *Options) {
 		opts.Addr = DEFAULT_HOST
 	}
 
-	if opts.ServerType == worker {
+	if opts.ServerType == wkType {
 		if opts.Route == "" {
 			opts.Route = fmt.Sprintf("0.0.0.0:%d", DEFAULT_CLUSTER_PORT)
 		}
@@ -35,7 +35,7 @@ func setBaselineOptions(opts *Options) {
 	}
 
 	// by default, it is a master
-	opts.ServerType = master
+	opts.ServerType = mtType
 	if opts.Port == 0 {
 		opts.Port = DEFAULT_PORT
 	}
@@ -91,10 +91,10 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 	}
 
 	if isMaster || !isWorker {
-		opts.ServerType = master
+		opts.ServerType = mtType
 	}
 	if isWorker {
-		opts.ServerType = worker
+		opts.ServerType = wkType
 	}
 
 	return opts, nil

@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/gobench-io/gobench/ent"
+	"github.com/gobench-io/gobench/worker"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -17,14 +18,25 @@ type app struct {
 	scenario string
 }
 
-type Server struct {
-	mu       sync.Mutex
-	pendings []app // pending apps
-	curr     *app  // current processing app
+type master struct {
+	addr        string // host name
+	port        int    // api port
+	clusterPort int    // cluster port
 
 	// database
 	dbFilename string
 	db         *ent.Client
+}
+
+type Server struct {
+	mu         sync.Mutex
+	serverType serverType
+	master     master
+	worker     worker.Worker
+
+	pendings []app // pending apps
+	curr     *app  // current processing app
+
 }
 
 // singleton server instance
@@ -77,8 +89,8 @@ func (s *Server) setupDb(filename string) error {
 	}
 
 	s.mu.Lock()
-	s.dbFilename = filename
-	s.db = client
+	s.master.dbFilename = filename
+	s.master.db = client
 	s.mu.Unlock()
 
 	return nil
@@ -86,7 +98,7 @@ func (s *Server) setupDb(filename string) error {
 
 // DB returns the db client
 func (s *Server) DB() *ent.Client {
-	return s.db
+	return s.master.db
 }
 
 // NewApplication create a new application with a name and a scenario
