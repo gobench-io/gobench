@@ -30,7 +30,7 @@ func TestDefaultWorkerOptions(t *testing.T) {
 		Port:        0,
 		ServerType:  wkType,
 		ClusterPort: 0,
-		Route:       "0.0.0.0:6890",
+		Route:       "0.0.0.0:8081",
 	}
 	opts := &Options{
 		ServerType: wkType,

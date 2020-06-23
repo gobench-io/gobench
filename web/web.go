@@ -10,7 +10,6 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
 	"github.com/gobench-io/gobench/ent"
-	"github.com/gobench-io/gobench/server"
 	_ "github.com/gobench-io/gobench/web/statik"
 	"github.com/rakyll/statik/fs"
 )
@@ -44,7 +43,7 @@ func New(db *ent.Client) *chi.Mux {
 	r.Use(cors.Handler)
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
+	// r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
 	r.Use(middleware.Timeout(60 * time.Second))
@@ -112,8 +111,8 @@ func New(db *ent.Client) *chi.Mux {
 
 // Serve start a web server at given port
 // should be run in a go routine
-func Serve(s *server.Server, port int) {
-	r := New(s.DB())
+func Serve(c *ent.Client, port int) {
+	r := New(c)
 
 	portS := fmt.Sprintf(":%d", port)
 
