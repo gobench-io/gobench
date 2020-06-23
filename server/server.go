@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"sync"
 
@@ -31,6 +32,7 @@ type master struct {
 type Server struct {
 	mu         sync.Mutex
 	serverType serverType
+	status     status
 	master     master
 	worker     worker.Worker
 
@@ -66,6 +68,8 @@ func (s *Server) Start() error {
 	if err := s.setupDb(s.master.dbFilename); err != nil {
 		return err
 	}
+
+	s.handleSignals()
 
 	web.Serve(s.master.db, s.master.port)
 
@@ -107,6 +111,18 @@ func (s *Server) setupDb(filename string) error {
 // DB returns the db client
 func (s *Server) DB() *ent.Client {
 	return s.master.db
+}
+
+func (s *Server) finish(status status) error {
+	log.Println("server is shutting down")
+
+	s.mu.Lock()
+	s.status = status
+	s.mu.Unlock()
+
+	// todo: if there is a running scenario, shutdown
+	// todo: send email if needed
+	return s.master.db.Close()
 }
 
 // NewApplication create a new application with a name and a scenario

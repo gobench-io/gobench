@@ -8,3 +8,12 @@ const (
 	DEFAULT_PORT         = 8080
 	DEFAULT_CLUSTER_PORT = 8081
 )
+
+type status string
+
+const (
+	statusInit    status = "init"
+	statusRunning status = "running"
+	statusIdle    status = "idle"
+	statusCancel  status = "cancel"
+)

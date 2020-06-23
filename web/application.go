@@ -10,7 +10,7 @@ import (
 	"github.com/go-chi/render"
 	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/ent/application"
-	"github.com/gobench-io/gobench/worker/server"
+	"github.com/gobench-io/gobench/worker"
 )
 
 func applicationCtx(next http.Handler) http.Handler {
@@ -70,7 +70,7 @@ func createApplication(w http.ResponseWriter, r *http.Request) {
 		Create().
 		SetName(data.Name).
 		SetScenario(data.Scenario).
-		SetStatus(string(server.StatusInit)).
+		SetStatus(string(worker.Idle)).
 		Save(r.Context())
 
 	if err != nil {

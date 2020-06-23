@@ -21,6 +21,11 @@ var (
 
 type status string
 
+const (
+	Idle    status = "idle"
+	Running status = "running"
+)
+
 type unit struct {
 	Title    string             // metric title
 	Type     metrics.MetricType // to know the current unit type
@@ -46,11 +51,6 @@ type Worker struct {
 	units map[string]unit // title - gometrics
 }
 
-const (
-	idle    status = "idle"
-	running status = "running"
-)
-
 // the singleton worker variable
 var worker Worker
 
@@ -61,7 +61,7 @@ func init() {
 	worker = Worker{
 		pid:      pid,
 		hostname: hostname,
-		status:   idle,
+		status:   Idle,
 
 		units: make(map[string]unit),
 	}
@@ -74,7 +74,7 @@ func New() (*Worker, error) {
 
 func (w *Worker) reset() {
 	w.mu.Lock()
-	w.status = idle
+	w.status = Idle
 	w.units = make(map[string]unit)
 	w.cancel = nil
 	w.mu.Unlock()
@@ -101,7 +101,7 @@ func (w *Worker) Cancel() error {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 
-	if w.status == idle {
+	if w.status == Idle {
 		return nil
 	}
 
@@ -116,11 +116,11 @@ func (w *Worker) Cancel() error {
 func (w *Worker) Run() error {
 	w.mu.Lock()
 
-	if w.status == running {
+	if w.status == Running {
 		return ErrNodeIsRunning
 	}
 
-	w.status = running
+	w.status = Running
 	w.mu.Unlock()
 
 	w.run()
@@ -152,7 +152,7 @@ func (w *Worker) Running() bool {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 
-	return w.status == running
+	return w.status == Running
 }
 
 func (w *Worker) runScen(ctx context.Context, done chan struct{}) {
