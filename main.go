@@ -56,7 +56,7 @@ func main() {
 		server.PrintAndDie(fmt.Sprintf("%s: %s", exe, err))
 	}
 
-	s, err := server.New(opts)
+	s, err := server.NewServer(opts)
 	if err != nil {
 		server.PrintAndDie(fmt.Sprintf("%s: %s", exe, err))
 	}

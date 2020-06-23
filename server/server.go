@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"sync"
 
@@ -39,23 +38,31 @@ type Server struct {
 
 }
 
-// singleton server instance
-var server Server
+// NewServer return a new server with provided options
+func NewServer(opts *Options) (*Server, error) {
+	// default db name
+	dbFilename := "./gobench.sqlite3"
 
-func init() {
-	server = Server{}
-}
+	s := &Server{
+		serverType: opts.ServerType,
+	}
 
-// New returns the singleton instance of the server
-func New() (*Server, error) {
-	return &server, nil
+	if opts.ServerType == mtType {
+		s.master.addr = opts.Addr
+		s.master.port = opts.Port
+		s.master.clusterPort = opts.ClusterPort
+		s.master.dbFilename = dbFilename
+	}
+
+	if opts.ServerType == wkType {
+	}
+
+	return s, nil
 }
 
 // Start begin a gobench server
 func (s *Server) Start() error {
-	// default db name
-	dbFilename := "./gobench.sqlite3"
-	if err := server.setupDb(dbFilename); err != nil {
+	if err := s.setupDb(s.master.dbFilename); err != nil {
 		return err
 	}
 
@@ -74,8 +81,6 @@ func (s *Server) Start() error {
 // }
 
 func (s *Server) setupDb(filename string) error {
-	log.Printf("gobench result will be save in %s\n", filename)
-
 	client, err := ent.Open(
 		"sqlite3",
 		filename+"?mode=rwc&cache=shared&&_busy_timeout=9999999&_fk=1")
