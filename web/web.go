@@ -10,6 +10,7 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
 	"github.com/gobench-io/gobench/ent"
+	"github.com/gobench-io/gobench/server"
 	_ "github.com/gobench-io/gobench/web/statik"
 	"github.com/rakyll/statik/fs"
 )
@@ -23,8 +24,10 @@ func intDB(c *ent.Client) {
 type webKey string
 
 // New return new router interface
-func New(db *ent.Client) *chi.Mux {
+func New(s *server.Server) *chi.Mux {
 	// save the db config
+	db := s.DB()
+
 	intDB(db)
 
 	// basic cors
@@ -110,9 +113,8 @@ func New(db *ent.Client) *chi.Mux {
 }
 
 // Serve start a web server at given port
-// should be run in a go routine
-func Serve(c *ent.Client, port int) {
-	r := New(c)
+func Serve(s *server.Server, port int) {
+	r := New(s)
 
 	portS := fmt.Sprintf(":%d", port)
 

@@ -8,7 +8,6 @@ import (
 	"sync"
 
 	"github.com/gobench-io/gobench/ent"
-	"github.com/gobench-io/gobench/web"
 	"github.com/gobench-io/gobench/worker"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -70,8 +69,6 @@ func (s *Server) Start() error {
 	}
 
 	s.handleSignals()
-
-	web.Serve(s.master.db, s.master.port)
 
 	return nil
 }
