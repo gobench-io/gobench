@@ -32,25 +32,25 @@ func f(ctx context.Context, vui int) {
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker("192.168.2.29:1883")
 
-	client, err := mqtt.NewMqttClient(&ctx, opts)
+	client, err := mqtt.NewMqttClient(ctx, opts)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	if err = client.Connect(&ctx); err != nil {
+	if err = client.Connect(ctx); err != nil {
 		log.Println(err)
 		return
 	}
 
-	_ = client.SubscribeToSelf(&ctx, "prefix/clients/", 0, nil)
+	_ = client.SubscribeToSelf(ctx, "prefix/clients/", 0, nil)
 
 	rate := 1.0 // rps
 	for j := 0; j < 60*5; j++ {
 		dis.SleepRatePoisson(rate)
-		_ = client.PublishToSelf(&ctx, "prefix/clients/", 0, dis.RandomByte(150))
+		_ = client.PublishToSelf(ctx, "prefix/clients/", 0, dis.RandomByte(150))
 	}
 
 	// finally
-	_ = client.Disconnect(&ctx)
+	_ = client.Disconnect(ctx)
 }

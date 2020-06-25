@@ -262,7 +262,7 @@ func groups() []metrics.Group {
 	}
 }
 
-func NewMqttClient(ctx *context.Context, opts *ClientOptions) (MqttClient, error) {
+func NewMqttClient(ctx context.Context, opts *ClientOptions) (MqttClient, error) {
 	mqttClient := MqttClient{}
 
 	gs := groups()
@@ -320,7 +320,7 @@ func (c *MqttClient) toSelfTopic(prefix string) string {
 // Connect will create a connection to the message broker, by default
 // it will attempt to connect at v3.1.1 and auto retry at v3.1 if that
 // fails
-func (c *MqttClient) Connect(ctx *context.Context) error {
+func (c *MqttClient) Connect(ctx context.Context) error {
 	begin := time.Now()
 
 	token := c.client.Connect()
@@ -340,7 +340,7 @@ func (c *MqttClient) Connect(ctx *context.Context) error {
 
 // Publish will publish a message with the specified QoS and content
 // to the specified topic.
-func (c *MqttClient) Publish(ctx *context.Context, topic string, qos byte, data []byte) error {
+func (c *MqttClient) Publish(ctx context.Context, topic string, qos byte, data []byte) error {
 	begin := time.Now()
 	token := c.client.Publish(topic, qos, false, data)
 	token.WaitTimeout(3 * time.Second)
@@ -368,7 +368,7 @@ func (c *MqttClient) Publish(ctx *context.Context, topic string, qos byte, data 
 
 // PublishToSelf starts a new publish. Topic is the concat of prefix
 // and clientID. Provide a prefix, qos, and data
-func (c *MqttClient) PublishToSelf(ctx *context.Context, prefix string, qos byte, data []byte) error {
+func (c *MqttClient) PublishToSelf(ctx context.Context, prefix string, qos byte, data []byte) error {
 	topic := c.toSelfTopic(prefix)
 	return c.Publish(ctx, topic, qos, data)
 }
@@ -378,7 +378,7 @@ func (c *MqttClient) PublishToSelf(ctx *context.Context, prefix string, qos byte
 // One different from the original paho is that when callback is nil the message will
 // not be forwarded to the default handler.
 func (c *MqttClient) Subscribe(
-	ctx *context.Context,
+	ctx context.Context,
 	topic string,
 	qos byte,
 	callback paho.MessageHandler,
@@ -411,7 +411,7 @@ func (c *MqttClient) Subscribe(
 // that when callback is nil the message will not be forwarded to the default
 // handler.
 func (c *MqttClient) SubscribeToSelf(
-	ctx *context.Context,
+	ctx context.Context,
 	prefix string,
 	qos byte,
 	callback paho.MessageHandler,
@@ -423,7 +423,7 @@ func (c *MqttClient) SubscribeToSelf(
 // Unsubscribe will end the subscription from each of the topics provided.
 // Messages published to those topics from other clients will no longer be
 // received.
-func (c *MqttClient) Unsubscribe(ctx *context.Context, topics ...string) error {
+func (c *MqttClient) Unsubscribe(ctx context.Context, topics ...string) error {
 	begin := time.Now()
 
 	token := c.client.Unsubscribe(topics...)
@@ -441,7 +441,7 @@ func (c *MqttClient) Unsubscribe(ctx *context.Context, topics ...string) error {
 }
 
 // Disconnect will end the connection with the server
-func (c *MqttClient) Disconnect(ctx *context.Context) error {
+func (c *MqttClient) Disconnect(ctx context.Context) error {
 	c.client.Disconnect(500)
 	worker.Notify(conTotal, -1)
 	return nil
