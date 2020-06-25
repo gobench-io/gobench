@@ -23,7 +23,7 @@ func Export() scenario.Vus {
 
 func f(ctx context.Context, vui int) {
 	url := "127.0.0.1"
-	client, err := nats.NewNatClient(&ctx, url)
+	client, err := nats.NewNatClient(ctx, url)
 	if err != nil {
 		log.Println(err)
 		return
@@ -33,14 +33,14 @@ func f(ctx context.Context, vui int) {
 	dis.SleepRatePoisson(1)
 
 	// subscribe_to_self("prefix/clients/", 0)
-	_ = client.Subscribe(&ctx, "hello."+strconv.Itoa(vui))
+	_ = client.Subscribe(ctx, "hello."+strconv.Itoa(vui))
 
 	// loop(time = 5 min, rate = 1 rps)
 	rate := 1.0
 	for j := 0; j < 10; j++ {
 		dis.SleepRatePoisson(rate)
-		_ = client.Publish(&ctx, "hello."+strconv.Itoa(vui), []byte("hello world"))
+		_ = client.Publish(ctx, "hello."+strconv.Itoa(vui), []byte("hello world"))
 	}
 	// finally
-	_ = client.Disconnect(&ctx)
+	_ = client.Disconnect(ctx)
 }

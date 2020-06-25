@@ -37,34 +37,34 @@ func subf(ctx context.Context, vui int) {
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker("192.168.2.29:1883")
 
-	client, err := mqtt.NewMqttClient(&ctx, opts)
+	client, err := mqtt.NewMqttClient(ctx, opts)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	if err = client.Connect(&ctx); err != nil {
+	if err = client.Connect(ctx); err != nil {
 		log.Println(err)
 		return
 	}
 
-	_ = client.Subscribe(&ctx, "prefix/clients/#", 0, nil)
+	_ = client.Subscribe(ctx, "prefix/clients/#", 0, nil)
 
 	// finally
-	// _ = client.Disconnect(&ctx)
+	// _ = client.Disconnect(ctx)
 }
 
 func pubf(ctx context.Context, vui int) {
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker("192.168.2.29:1883")
 
-	client, err := mqtt.NewMqttClient(&ctx, opts)
+	client, err := mqtt.NewMqttClient(ctx, opts)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	if err = client.Connect(&ctx); err != nil {
+	if err = client.Connect(ctx); err != nil {
 		log.Println(err)
 		return
 	}
@@ -73,10 +73,10 @@ func pubf(ctx context.Context, vui int) {
 	for j := 0; j < int(60*5*rate); j++ {
 		dis.SleepRatePoisson(rate)
 		go func() {
-			_ = client.PublishToSelf(&ctx, "prefix/clients/", 0, dis.RandomByte(150))
+			_ = client.PublishToSelf(ctx, "prefix/clients/", 0, dis.RandomByte(150))
 		}()
 	}
 
 	// finally
-	_ = client.Disconnect(&ctx)
+	_ = client.Disconnect(ctx)
 }

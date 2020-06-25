@@ -51,18 +51,18 @@ func clientf(ctx context.Context, vui int) {
 		AddBroker("192.168.2.29:1883").
 		SetClientID(clientID)
 
-	client, err := mqtt.NewMqttClient(&ctx, opts)
+	client, err := mqtt.NewMqttClient(ctx, opts)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	if err = client.Connect(&ctx); err != nil {
+	if err = client.Connect(ctx); err != nil {
 		log.Println(err)
 		return
 	}
 
-	if err = client.Subscribe(&ctx, "prefix/clients/#", 1, nil); err != nil {
+	if err = client.Subscribe(ctx, "prefix/clients/#", 1, nil); err != nil {
 		log.Println(err)
 		return
 	}
@@ -73,12 +73,12 @@ func clientf(ctx context.Context, vui int) {
 
 		go func() {
 			topic := fmt.Sprintf("prefix/servers/server-%d", rand.Intn(serverNum))
-			_ = client.Publish(&ctx, topic, 2, dis.RandomByte(150))
+			_ = client.Publish(ctx, topic, 2, dis.RandomByte(150))
 		}()
 	}
 
 	// finally
-	_ = client.Disconnect(&ctx)
+	_ = client.Disconnect(ctx)
 }
 
 func serverf(ctx context.Context, vui int) {
@@ -89,23 +89,23 @@ func serverf(ctx context.Context, vui int) {
 		AddBroker("192.168.2.29:1883").
 		SetClientID(clientID)
 
-	client, err := mqtt.NewMqttClient(&ctx, opts)
+	client, err := mqtt.NewMqttClient(ctx, opts)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	if err = client.Connect(&ctx); err != nil {
+	if err = client.Connect(ctx); err != nil {
 		log.Println(err)
 		return
 	}
 
 	if err = client.SubscribeToSelf(
-		&ctx,
+		ctx,
 		"prefix/servers/",
 		2,
 		func(c paho.Client, m paho.Message) {
-			_ = client.PublishToSelf(&ctx, "prefix/clients/", 1, m.Payload())
+			_ = client.PublishToSelf(ctx, "prefix/clients/", 1, m.Payload())
 		},
 	); err != nil {
 		log.Println(err)

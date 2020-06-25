@@ -22,7 +22,7 @@ func Export() scenario.Vus {
 }
 
 func f(ctx context.Context, vui int) {
-	client1, err := httpClient.NewHttpClient(&ctx, "home")
+	client1, err := httpClient.NewHttpClient(ctx, "home")
 	if err != nil {
 		log.Println("create new client1 fail: " + err.Error())
 		return
@@ -35,7 +35,7 @@ func f(ctx context.Context, vui int) {
 	}
 	go func() {
 		for {
-			client1.Get(&ctx, url1, headers)
+			client1.Get(ctx, url1, headers)
 		}
 	}()
 

@@ -177,7 +177,7 @@ type NatsClient struct {
 	conn *nats.Conn
 }
 
-func NewNatClient(ctx *context.Context, url string) (natsClient NatsClient, err error) {
+func NewNatClient(ctx context.Context, url string) (natsClient NatsClient, err error) {
 	if err := worker.Setup(groups()); err != nil {
 		return natsClient, err
 	}
@@ -203,7 +203,7 @@ func NewNatClient(ctx *context.Context, url string) (natsClient NatsClient, err 
 	return natsClient, nil
 }
 
-func (c *NatsClient) Publish(ctx *context.Context, topic string, data []byte) error {
+func (c *NatsClient) Publish(ctx context.Context, topic string, data []byte) error {
 	begin := time.Now()
 	if err := c.conn.Publish(topic, data); err != nil {
 		return err
@@ -216,7 +216,7 @@ func (c *NatsClient) Publish(ctx *context.Context, topic string, data []byte) er
 	return nil
 }
 
-func (c *NatsClient) Subscribe(ctx *context.Context, topic string) error {
+func (c *NatsClient) Subscribe(ctx context.Context, topic string) error {
 	ch := make(chan *nats.Msg, 1)
 	begin := time.Now()
 
@@ -238,7 +238,7 @@ func (c *NatsClient) Subscribe(ctx *context.Context, topic string) error {
 	return nil
 }
 
-func (c *NatsClient) Disconnect(ctx *context.Context) error {
+func (c *NatsClient) Disconnect(ctx context.Context) error {
 	c.conn.Drain()
 	c.conn.Close()
 

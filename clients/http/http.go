@@ -16,7 +16,7 @@ type HttpClient struct {
 	client *http.Client
 }
 
-func NewHttpClient(ctx *context.Context, prefix string) (HttpClient, error) {
+func NewHttpClient(ctx context.Context, prefix string) (HttpClient, error) {
 	group := metrics.Group{
 		Name: "HTTP (" + prefix + ")",
 		Graphs: []metrics.Graph{
@@ -122,11 +122,11 @@ func (h *HttpClient) do(method, url string, body []byte, headers map[string]stri
 }
 
 // Get makes http get request and record the metrics
-func (h *HttpClient) Get(ctx *context.Context, url string, headers map[string]string) ([]byte, error) {
+func (h *HttpClient) Get(ctx context.Context, url string, headers map[string]string) ([]byte, error) {
 	return h.do("GET", url, nil, headers)
 }
 
 // Post makes http post request and record the metrics
-func (h *HttpClient) Post(ctx *context.Context, url string, body []byte, headers map[string]string) ([]byte, error) {
+func (h *HttpClient) Post(ctx context.Context, url string, body []byte, headers map[string]string) ([]byte, error) {
 	return h.do("POST", url, body, headers)
 }
