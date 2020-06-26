@@ -112,11 +112,10 @@ func New(s *server.Server) *chi.Mux {
 	return r
 }
 
-// Serve start a web server at given port
-func Serve(s *server.Server, port int) {
+// Serve start a web server with given gobench server
+func Serve(s *server.Server) {
 	r := New(s)
-
-	portS := fmt.Sprintf(":%d", port)
+	portS := fmt.Sprintf(":%d", s.WebPort())
 
 	log.Printf("started the web server at port %s\n", portS)
 

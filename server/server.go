@@ -122,6 +122,11 @@ func (s *Server) finish(status status) error {
 	return s.master.db.Close()
 }
 
+// WebPort returns the master HTTP web port
+func (s *Server) WebPort() int {
+	return s.master.port
+}
+
 // NewApplication create a new application with a name and a scenario
 // return the application id and error
 // func (s *Server) NewApplication(name, scenario string) (int, err) {

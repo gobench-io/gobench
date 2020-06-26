@@ -5,7 +5,7 @@ import (
 	"log"
 	"strconv"
 
-	nats "github.com/gobench-io/gobench/clients/nats"
+	"github.com/gobench-io/gobench/clients/nats"
 	"github.com/gobench-io/gobench/dis"
 	"github.com/gobench-io/gobench/scenario"
 )
