@@ -23,6 +23,7 @@ type status string
 
 const (
 	Idle    status = "idle"
+	Init    status = "init"
 	Running status = "running"
 )
 

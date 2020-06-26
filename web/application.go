@@ -21,7 +21,7 @@ func applicationCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		app, err := db.Application.
+		app, err := db().Application.
 			Query().
 			Where(application.ID(appID)).
 			Only(r.Context())
@@ -36,7 +36,7 @@ func applicationCtx(next http.Handler) http.Handler {
 }
 
 func listApplications(w http.ResponseWriter, r *http.Request) {
-	aps, err := db.Application.
+	aps, err := db().Application.
 		Query().
 		All(r.Context())
 	if err != nil {
@@ -66,11 +66,11 @@ func createApplication(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app, err := db.Application.
+	app, err := db().Application.
 		Create().
 		SetName(data.Name).
 		SetScenario(data.Scenario).
-		SetStatus(string(worker.Idle)).
+		SetStatus(string(worker.Init)).
 		Save(r.Context())
 
 	if err != nil {

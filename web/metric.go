@@ -25,7 +25,7 @@ func metricCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		metric, err := db.Metric.
+		metric, err := db().Metric.
 			Query().
 			Where(metric.ID(metricID)).
 			Only(r.Context())
@@ -76,7 +76,7 @@ func timeCtx(next http.Handler) http.Handler {
 }
 
 func listMetrics(w http.ResponseWriter, r *http.Request) {
-	ms, err := db.Metric.
+	ms, err := db().Metric.
 		Query().
 		All(r.Context())
 	if err != nil {

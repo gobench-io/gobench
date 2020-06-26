@@ -19,7 +19,7 @@ func groupCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		group, err := db.Group.
+		group, err := db().Group.
 			Query().
 			Where(group.ID(groupID)).
 			Only(r.Context())
@@ -34,7 +34,7 @@ func groupCtx(next http.Handler) http.Handler {
 }
 
 func listGroups(w http.ResponseWriter, r *http.Request) {
-	gs, err := db.Group.
+	gs, err := db().Group.
 		Query().
 		All(r.Context())
 	if err != nil {

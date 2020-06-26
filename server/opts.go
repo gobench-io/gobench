@@ -44,6 +44,22 @@ func setBaselineOptions(opts *Options) {
 	}
 }
 
+func DefaultMasterOptions() *Options {
+	opts := &Options{
+		ServerType: mtType,
+	}
+	setBaselineOptions(opts)
+	return opts
+}
+
+func DefaultWorkerOptions() *Options {
+	opts := &Options{
+		ServerType: wkType,
+	}
+	setBaselineOptions(opts)
+	return opts
+}
+
 // ConfigureOptions accepts a flag set and augments it with gobench specific
 // flags. On success, an options structure is returned configured based on the
 // selected flags

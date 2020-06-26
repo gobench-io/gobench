@@ -15,23 +15,24 @@ import (
 	"github.com/rakyll/statik/fs"
 )
 
-var db *ent.Client
+type webKey string
 
-func intDB(c *ent.Client) {
-	db = c
+var s *server.Server
+
+func intServer(ws *server.Server) {
+	s = ws
 }
 
-type webKey string
+func db() *ent.Client {
+	return s.DB()
+}
 
 // New return new router interface
 func New(s *server.Server) *chi.Mux {
-	// save the db config
-	db := s.DB()
+	intServer(s)
 
-	intDB(db)
-
-	// basic cors
-	// for more ideas, see: https://developer.github.com/v3/#cross-origin-resource-sharing
+	// basic cors for more ideas, see:
+	// https://developer.github.com/v3/#cross-origin-resource-sharing
 	cors := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
