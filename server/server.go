@@ -40,6 +40,20 @@ type Server struct {
 
 }
 
+// application status. The application is in either pending, provisioning,
+// running, finished cancel, error states
+type appState string
+
+// App states
+const (
+	AppPending      appState = "pending"
+	AppProvisioning appState = "provisioning"
+	AppRunning      appState = "running"
+	AppFinished     appState = "finished"
+	AppCancel       appState = "cancel"
+	AppError        appState = "error"
+)
+
 // NewServer return a new server with provided options
 func NewServer(opts *Options) (*Server, error) {
 	// default db name

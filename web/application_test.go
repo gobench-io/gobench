@@ -69,7 +69,7 @@ func TestCreateApplications(t *testing.T) {
 		json.Unmarshal(w.Body.Bytes(), &app)
 		assert.Equal(t, app.Name, "name")
 		assert.Equal(t, app.Scenario, "this is the scenario")
-		assert.Equal(t, app.Status, "init")
+		assert.Equal(t, app.Status, "pending")
 	})
 
 	t.Run("invalid request - without Name", func(t *testing.T) {

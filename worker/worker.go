@@ -19,11 +19,11 @@ var (
 	ErrNodeIsRunning = errors.New("worker is running")
 )
 
+// worker status. the worker is in either idle, or running state
 type status string
 
 const (
 	Idle    status = "idle"
-	Init    status = "init"
 	Running status = "running"
 )
 
