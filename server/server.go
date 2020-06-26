@@ -143,8 +143,14 @@ func (s *Server) WebPort() int {
 
 // NewApplication create a new application with a name and a scenario
 // return the application id and error
-// func (s *Server) NewApplication(name, scenario string) (int, err) {
-// }
+func (s *Server) NewApplication(ctx context.Context, name, scenario string) (*ent.Application, error) {
+	return s.master.db.Application.
+		Create().
+		SetName(name).
+		SetScenario(scenario).
+		SetStatus(string(AppPending)).
+		Save(ctx)
+}
 
 // PrintAndDie print message to Stderr and exit error
 func PrintAndDie(msg string) {
