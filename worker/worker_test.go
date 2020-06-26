@@ -22,7 +22,7 @@ func TestNew(t *testing.T) {
 
 	assert.Equal(t, n1, n2)
 
-	assert.Equal(t, n1.status, idle)
+	assert.Equal(t, n1.status, Idle)
 	assert.Nil(t, n1.cancel)
 	assert.Equal(t, n1.units, make(map[string]unit))
 

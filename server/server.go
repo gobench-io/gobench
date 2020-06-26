@@ -46,12 +46,12 @@ type appState string
 
 // App states
 const (
-	AppPending      appState = "pending"
-	AppProvisioning appState = "provisioning"
-	AppRunning      appState = "running"
-	AppFinished     appState = "finished"
-	AppCancel       appState = "cancel"
-	AppError        appState = "error"
+	appPending      appState = "pending"
+	appProvisioning appState = "provisioning"
+	appRunning      appState = "running"
+	appFinished     appState = "finished"
+	appCancel       appState = "cancel"
+	appError        appState = "error"
 )
 
 // NewServer return a new server with provided options
@@ -148,7 +148,7 @@ func (s *Server) NewApplication(ctx context.Context, name, scenario string) (*en
 		Create().
 		SetName(name).
 		SetScenario(scenario).
-		SetStatus(string(AppPending)).
+		SetStatus(string(appPending)).
 		Save(ctx)
 }
 

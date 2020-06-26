@@ -57,7 +57,7 @@ func f1(ctx context.Context, vui int) {
 }
 
 func f2(ctx context.Context, vui int) {
-	client1, err := httpClient.NewHttpClient(&ctx, "home")
+	client1, err := httpClient.NewHttpClient(ctx, "home")
 	if err != nil {
 		log.Println("create new client1 fail: " + err.Error())
 		return
@@ -77,7 +77,7 @@ func f2(ctx context.Context, vui int) {
 			break
 		}
 
-		client1.Get(&ctx, url1, headers)
+		client1.Get(ctx, url1, headers)
 		time.Sleep(1 * time.Second)
 	}
 }
