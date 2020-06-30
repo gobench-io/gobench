@@ -51,5 +51,6 @@ func (s *Server) nextApplication() (*ent.Application, error) {
 		Order(
 			ent.Asc(application.FieldCreatedAt),
 		).First(ctx)
+
 	return app, err
 }
