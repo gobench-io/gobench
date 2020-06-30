@@ -12,12 +12,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type app struct {
-	id       int
-	name     string
-	scenario string
-}
-
 type master struct {
 	addr        string // host name
 	port        int    // api port
@@ -35,9 +29,8 @@ type Server struct {
 	master     master
 	worker     worker.Worker
 
-	pendings []app // pending apps
-	curr     *app  // current processing app
-
+	isSchedule bool
+	curr       *ent.Application
 }
 
 // application status. The application is in either pending, provisioning,
@@ -61,6 +54,7 @@ func NewServer(opts *Options) (*Server, error) {
 
 	s := &Server{
 		serverType: opts.ServerType,
+		isSchedule: true,
 	}
 
 	if opts.ServerType == mtType {
@@ -84,19 +78,10 @@ func (s *Server) Start() error {
 
 	s.handleSignals()
 
+	go s.schedule()
+
 	return nil
 }
-
-// NewApp creates a new application
-// provided name and scenario
-// returns application id and error
-// func (s *Server) NewApp(name string, scenario string) (int, error) {
-// 	s.mu.Lock()
-// 	defer s.mu.Unlock()
-
-// 	if s.curr == nil {
-// 	}
-// }
 
 func (s *Server) setupDb(filename string) error {
 	client, err := ent.Open(
@@ -150,6 +135,13 @@ func (s *Server) NewApplication(ctx context.Context, name, scenario string) (*en
 		SetScenario(scenario).
 		SetStatus(string(appPending)).
 		Save(ctx)
+}
+
+// cleanupDB is the helper function to cleanup the DB for testing
+func (s *Server) cleanupDB() error {
+	ctx := context.TODO()
+	_, err := s.master.db.Application.Delete().Exec(ctx)
+	return err
 }
 
 // PrintAndDie print message to Stderr and exit error
