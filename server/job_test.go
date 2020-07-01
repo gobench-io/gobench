@@ -59,6 +59,35 @@ func TestNextApplication(t *testing.T) {
 }
 
 func TestCompile(t *testing.T) {
+	t.Run("invalid scenario", func(t *testing.T) {
+		s := seedServer(t)
+		scen := `
+package main
+
+import (
+	"context"
+	"log"
+	"time"
+
+	"github.com/gobench-io/gobench/scenario"
+)
+
+// Export is a required function for a scenario
+func Export() scenario.Vus {
+	return scenario.Vus{
+		scenario.Vu{
+			Nu:   20,
+			Rate: 100,
+			Fu:   f1,
+		},
+	}
+}
+// missing f1 function`
+		path, err := s.compile(scen)
+		assert.EqualError(t, err, "failed compiling the scenario: exit status 2")
+		assert.NoFileExists(t, path)
+	})
+
 	t.Run("valid scenario", func(t *testing.T) {
 		s := seedServer(t)
 		scen := `
