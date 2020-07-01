@@ -29,6 +29,9 @@ func (s *Server) schedule() {
 
 		// save to state
 		s.curr = app
+
+		// compile the scenario
+		s.compile(s.curr.Scenario)
 	}
 }
 
@@ -53,4 +56,10 @@ func (s *Server) nextApplication() (*ent.Application, error) {
 		).First(ctx)
 
 	return app, err
+}
+
+// compile using go to compile a scenario in plugin build mode
+// the result is path to so file
+func (s *Server) compile(scen string) (string, error) {
+	return "", nil
 }

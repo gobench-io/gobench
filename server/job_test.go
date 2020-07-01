@@ -8,24 +8,25 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func seedServer(t *testing.T) *Server {
+	s, _ := NewServer(DefaultMasterOptions())
+	// disable the schedule
+	s.isSchedule = false
+	assert.Nil(t, s.Start())
+	assert.Nil(t, s.cleanupDB())
+
+	return s
+}
+
 func TestNextApplication(t *testing.T) {
 	t.Run("empty application", func(t *testing.T) {
-		s, _ := NewServer(DefaultMasterOptions())
-		// disable the schedule
-		s.isSchedule = false
-		assert.Nil(t, s.Start())
-		assert.Nil(t, s.cleanupDB())
-
+		s := seedServer(t)
 		_, err := s.nextApplication()
 		assert.True(t, ent.IsNotFound(err))
 	})
 
 	t.Run("one application", func(t *testing.T) {
-		s, _ := NewServer(DefaultMasterOptions())
-		// disable the schedule
-		s.isSchedule = false
-		assert.Nil(t, s.Start())
-		assert.Nil(t, s.cleanupDB())
+		s := seedServer(t)
 
 		ctx := context.TODO()
 		_, err := s.NewApplication(ctx, "name", "scenario")
@@ -40,11 +41,7 @@ func TestNextApplication(t *testing.T) {
 	})
 
 	t.Run("two applications", func(t *testing.T) {
-		s, _ := NewServer(DefaultMasterOptions())
-		// disable the schedule
-		s.isSchedule = false
-		assert.Nil(t, s.Start())
-		assert.Nil(t, s.cleanupDB())
+		s := seedServer(t)
 
 		ctx := context.TODO()
 		_, err := s.NewApplication(ctx, "name", "scenario")
@@ -60,3 +57,9 @@ func TestNextApplication(t *testing.T) {
 		assert.Equal(t, a.Status, string(appPending))
 	})
 }
+
+// func TestCompile(t *testing.T) {
+// 	t.Run("valid scenario", func(t *testing.T) {
+// 		s, _ := NewServer(DefaultMasterOptions())
+// 	})
+// }
