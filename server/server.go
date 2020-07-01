@@ -12,23 +12,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type master struct {
-	addr        string // host name
-	port        int    // api port
-	clusterPort int    // cluster port
-
-	// database
-	dbFilename string
-	db         *ent.Client
-
-	job *job
-}
-
-type job struct {
-	app    *ent.Application
-	plugin string // plugin path
-}
-
 type Server struct {
 	mu         sync.Mutex
 	serverType serverType
@@ -38,20 +21,6 @@ type Server struct {
 
 	isSchedule bool
 }
-
-// job status. The job is in either pending, provisioning, running, finished
-// cancel, error states
-type jobState string
-
-// App states
-const (
-	jobPending      jobState = "pending"
-	jobProvisioning jobState = "provisioning"
-	jobRunning      jobState = "running"
-	jobFinished     jobState = "finished"
-	jobCancel       jobState = "cancel"
-	jobError        jobState = "error"
-)
 
 // NewServer return a new server with provided options
 func NewServer(opts *Options) (*Server, error) {

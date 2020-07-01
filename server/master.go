@@ -11,7 +11,40 @@ import (
 
 	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/ent/application"
+	"github.com/gobench-io/gobench/worker"
 )
+
+// job status. The job is in either pending, provisioning, running, finished
+// cancel, error states
+type jobState string
+
+// App states
+const (
+	jobPending      jobState = "pending"
+	jobProvisioning jobState = "provisioning"
+	jobRunning      jobState = "running"
+	jobFinished     jobState = "finished"
+	jobCancel       jobState = "cancel"
+	jobError        jobState = "error"
+)
+
+type master struct {
+	addr        string // host name
+	port        int    // api port
+	clusterPort int    // cluster port
+
+	// database
+	dbFilename string
+	db         *ent.Client
+
+	lw  worker.Worker
+	job *job
+}
+
+type job struct {
+	app    *ent.Application
+	plugin string // plugin path
+}
 
 // to is the function to set new state for an application
 // save new state to the db
@@ -68,8 +101,9 @@ func (m *master) schedule() {
 			continue
 		}
 		// todo: ditribute the plugin to other worker when run in cloud mode
+		// in this phase, the server run in local mode
 
-		// change job to running
+		// change job to running state
 	}
 }
 
