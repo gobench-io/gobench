@@ -7,10 +7,19 @@ import (
 	"os/exec"
 	"time"
 
+	"context"
+
 	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/ent/application"
-	"golang.org/x/net/context"
 )
+
+// to is the function to set new state for an application
+// save new state to the db
+func (jb *job) to(ctx context.Context, state jobState) error {
+	return jb.app.Update().
+		SetStatus(string(state)).
+		Exec(ctx)
+}
 
 // schedule get a pending application from the db if there is no active job
 func (s *Server) schedule() {
@@ -21,19 +30,20 @@ func (s *Server) schedule() {
 
 		time.Sleep(1 * time.Second)
 
-		app, err := s.nextApplication()
+		ctx, _ := context.WithCancel(context.Background())
+
+		app, err := s.nextApplication(ctx)
 
 		if err != nil {
 			continue
 		}
 
-		// save to state
 		s.job = &job{
 			app: app,
 		}
 
 		// compile the scenario
-		if s.job.plugin, err = s.compile(s.job.app.Scenario); err != nil {
+		if s.job.plugin, err = s.compile(ctx, s.job.app.Scenario); err != nil {
 			continue
 		}
 	}
@@ -46,9 +56,7 @@ func (s *Server) provision() (*ent.Application, error) {
 	return nil, nil
 }
 
-func (s *Server) nextApplication() (*ent.Application, error) {
-	ctx, _ := context.WithCancel(context.TODO())
-
+func (s *Server) nextApplication(ctx context.Context) (*ent.Application, error) {
 	app, err := s.master.db.
 		Application.
 		Query().
@@ -64,7 +72,7 @@ func (s *Server) nextApplication() (*ent.Application, error) {
 
 // compile using go to compile a scenario in plugin build mode
 // the result is path to so file
-func (s *Server) compile(scen string) (string, error) {
+func (s *Server) compile(ctx context.Context, scen string) (string, error) {
 	var path string
 	var err error
 

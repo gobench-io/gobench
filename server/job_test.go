@@ -20,20 +20,21 @@ func seedServer(t *testing.T) *Server {
 
 func TestNextApplication(t *testing.T) {
 	t.Run("empty application", func(t *testing.T) {
+		ctx := context.Background()
 		s := seedServer(t)
-		_, err := s.nextApplication()
+		_, err := s.nextApplication(ctx)
 		assert.True(t, ent.IsNotFound(err))
 	})
 
 	t.Run("one application", func(t *testing.T) {
+		ctx := context.Background()
 		s := seedServer(t)
 
-		ctx := context.TODO()
 		_, err := s.NewApplication(ctx, "name", "scenario")
 		assert.Nil(t, err)
 
 		// the next application is not nil
-		a, err := s.nextApplication()
+		a, err := s.nextApplication(ctx)
 		assert.Nil(t, err)
 		assert.Equal(t, a.Name, "name")
 		assert.Equal(t, a.Scenario, "scenario")
@@ -41,16 +42,16 @@ func TestNextApplication(t *testing.T) {
 	})
 
 	t.Run("two applications", func(t *testing.T) {
+		ctx := context.Background()
 		s := seedServer(t)
 
-		ctx := context.TODO()
 		_, err := s.NewApplication(ctx, "name", "scenario")
 		assert.Nil(t, err)
 		_, err = s.NewApplication(ctx, "name 2", "scenario 2")
 		assert.Nil(t, err)
 
 		// applications is fifo, the next application is name
-		a, err := s.nextApplication()
+		a, err := s.nextApplication(ctx)
 		assert.Nil(t, err)
 		assert.Equal(t, a.Name, "name")
 		assert.Equal(t, a.Scenario, "scenario")
@@ -60,6 +61,8 @@ func TestNextApplication(t *testing.T) {
 
 func TestCompile(t *testing.T) {
 	t.Run("invalid scenario", func(t *testing.T) {
+		ctx := context.Background()
+
 		s := seedServer(t)
 		scen := `
 package main
@@ -84,12 +87,13 @@ func Export() scenario.Vus {
 }
 // missing f1 function`
 
-		path, err := s.compile(scen)
+		path, err := s.compile(ctx, scen)
 		assert.EqualError(t, err, "failed compiling the scenario: exit status 2")
 		assert.NoFileExists(t, path)
 	})
 
 	t.Run("valid scenario", func(t *testing.T) {
+		ctx := context.Background()
 		s := seedServer(t)
 		scen := `
 package main
@@ -120,7 +124,7 @@ func f1(ctx context.Context, vui int) {
 		time.Sleep(1 * time.Second)
 	}
 }`
-		path, err := s.compile(scen)
+		path, err := s.compile(ctx, scen)
 		assert.Nil(t, err)
 		assert.FileExists(t, path)
 	})
