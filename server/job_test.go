@@ -37,7 +37,7 @@ func TestNextApplication(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Equal(t, a.Name, "name")
 		assert.Equal(t, a.Scenario, "scenario")
-		assert.Equal(t, a.Status, string(appPending))
+		assert.Equal(t, a.Status, string(jobPending))
 	})
 
 	t.Run("two applications", func(t *testing.T) {
@@ -54,7 +54,7 @@ func TestNextApplication(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Equal(t, a.Name, "name")
 		assert.Equal(t, a.Scenario, "scenario")
-		assert.Equal(t, a.Status, string(appPending))
+		assert.Equal(t, a.Status, string(jobPending))
 	})
 }
 
@@ -83,6 +83,7 @@ func Export() scenario.Vus {
 	}
 }
 // missing f1 function`
+
 		path, err := s.compile(scen)
 		assert.EqualError(t, err, "failed compiling the scenario: exit status 2")
 		assert.NoFileExists(t, path)

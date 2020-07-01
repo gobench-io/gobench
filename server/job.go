@@ -21,10 +21,6 @@ func (s *Server) schedule() {
 
 		time.Sleep(1 * time.Second)
 
-		if s.curr != nil {
-			continue
-		}
-
 		app, err := s.nextApplication()
 
 		if err != nil {
@@ -32,10 +28,14 @@ func (s *Server) schedule() {
 		}
 
 		// save to state
-		s.curr = app
+		s.job = &job{
+			app: app,
+		}
 
 		// compile the scenario
-		s.compile(s.curr.Scenario)
+		if s.job.plugin, err = s.compile(s.job.app.Scenario); err != nil {
+			continue
+		}
 	}
 }
 
@@ -53,7 +53,7 @@ func (s *Server) nextApplication() (*ent.Application, error) {
 		Application.
 		Query().
 		Where(
-			application.Status(string(appPending)),
+			application.Status(string(jobPending)),
 		).
 		Order(
 			ent.Asc(application.FieldCreatedAt),

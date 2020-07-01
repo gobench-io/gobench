@@ -22,6 +22,11 @@ type master struct {
 	db         *ent.Client
 }
 
+type job struct {
+	app    *ent.Application
+	plugin string // plugin path
+}
+
 type Server struct {
 	mu         sync.Mutex
 	serverType serverType
@@ -30,21 +35,21 @@ type Server struct {
 	worker     worker.Worker
 
 	isSchedule bool
-	curr       *ent.Application
+	job        *job
 }
 
-// application status. The application is in either pending, provisioning,
-// running, finished cancel, error states
-type appState string
+// job status. The job is in either pending, provisioning, running, finished
+// cancel, error states
+type jobState string
 
 // App states
 const (
-	appPending      appState = "pending"
-	appProvisioning appState = "provisioning"
-	appRunning      appState = "running"
-	appFinished     appState = "finished"
-	appCancel       appState = "cancel"
-	appError        appState = "error"
+	jobPending      jobState = "pending"
+	jobProvisioning jobState = "provisioning"
+	jobRunning      jobState = "running"
+	jobFinished     jobState = "finished"
+	jobCancel       jobState = "cancel"
+	jobError        jobState = "error"
 )
 
 // NewServer return a new server with provided options
@@ -133,7 +138,7 @@ func (s *Server) NewApplication(ctx context.Context, name, scenario string) (*en
 		Create().
 		SetName(name).
 		SetScenario(scenario).
-		SetStatus(string(appPending)).
+		SetStatus(string(jobPending)).
 		Save(ctx)
 }
 
