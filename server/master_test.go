@@ -22,7 +22,7 @@ func TestNextApplication(t *testing.T) {
 	t.Run("empty application", func(t *testing.T) {
 		ctx := context.Background()
 		s := seedServer(t)
-		_, err := s.nextApplication(ctx)
+		_, err := s.master.nextApplication(ctx)
 		assert.True(t, ent.IsNotFound(err))
 	})
 
@@ -34,7 +34,7 @@ func TestNextApplication(t *testing.T) {
 		assert.Nil(t, err)
 
 		// the next application is not nil
-		a, err := s.nextApplication(ctx)
+		a, err := s.master.nextApplication(ctx)
 		assert.Nil(t, err)
 		assert.Equal(t, a.Name, "name")
 		assert.Equal(t, a.Scenario, "scenario")
@@ -51,7 +51,7 @@ func TestNextApplication(t *testing.T) {
 		assert.Nil(t, err)
 
 		// applications is fifo, the next application is name
-		a, err := s.nextApplication(ctx)
+		a, err := s.master.nextApplication(ctx)
 		assert.Nil(t, err)
 		assert.Equal(t, a.Name, "name")
 		assert.Equal(t, a.Scenario, "scenario")
@@ -87,7 +87,7 @@ func Export() scenario.Vus {
 }
 // missing f1 function`
 
-		path, err := s.compile(ctx, scen)
+		path, err := s.master.compile(ctx, scen)
 		assert.EqualError(t, err, "failed compiling the scenario: exit status 2")
 		assert.NoFileExists(t, path)
 	})
@@ -124,7 +124,7 @@ func f1(ctx context.Context, vui int) {
 		time.Sleep(1 * time.Second)
 	}
 }`
-		path, err := s.compile(ctx, scen)
+		path, err := s.master.compile(ctx, scen)
 		assert.Nil(t, err)
 		assert.FileExists(t, path)
 	})
