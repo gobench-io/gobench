@@ -1,6 +1,10 @@
 package server
 
 import (
+	"fmt"
+	"io/ioutil"
+	"os"
+	"os/exec"
 	"time"
 
 	"github.com/gobench-io/gobench/ent"
@@ -61,5 +65,37 @@ func (s *Server) nextApplication() (*ent.Application, error) {
 // compile using go to compile a scenario in plugin build mode
 // the result is path to so file
 func (s *Server) compile(scen string) (string, error) {
-	return "", nil
+	var path string
+	var err error
+
+	// save the scenario to a tmp file
+	tmpScenF, err := ioutil.TempFile("", "gobench-scenario-*.go")
+	if err != nil {
+		return path, fmt.Errorf("failed creating temp scenario file: %v", err)
+	}
+	tmpScenName := tmpScenF.Name()
+
+	defer os.Remove(tmpScenName) // cleanup
+
+	_, err = tmpScenF.Write([]byte(scen))
+	if err != nil {
+		return path, fmt.Errorf("failed write to scenario file: %v", err)
+	}
+
+	if err = tmpScenF.Close(); err != nil {
+		return path, fmt.Errorf("failed close the scenario file: %v", err)
+	}
+
+	path = fmt.Sprintf("%s.out", tmpScenName)
+
+	// compile the scenario to a tmp file
+	cmd := exec.Command("go", "build", "-buildmode=plugin", "-o",
+		path, tmpScenName)
+
+	// if out, err := cmd.CombinedOutput(); err != nil {
+	if err := cmd.Run(); err != nil {
+		return path, fmt.Errorf("failed compiling the scenario: %v", err)
+	}
+
+	return path, err
 }

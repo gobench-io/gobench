@@ -89,8 +89,7 @@ func f1(ctx context.Context, vui int) {
 		log.Println("tic")
 		time.Sleep(1 * time.Second)
 	}
-}
-		`
+}`
 		path, err := s.compile(scen)
 		assert.Nil(t, err)
 		assert.FileExists(t, path)
