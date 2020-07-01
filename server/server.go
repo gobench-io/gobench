@@ -20,6 +20,8 @@ type master struct {
 	// database
 	dbFilename string
 	db         *ent.Client
+
+	job *job
 }
 
 type job struct {
@@ -35,7 +37,6 @@ type Server struct {
 	worker     worker.Worker
 
 	isSchedule bool
-	job        *job
 }
 
 // job status. The job is in either pending, provisioning, running, finished
@@ -77,34 +78,13 @@ func NewServer(opts *Options) (*Server, error) {
 
 // Start begin a gobench server
 func (s *Server) Start() error {
-	if err := s.setupDb(s.master.dbFilename); err != nil {
+	if err := s.master.setupDb(); err != nil {
 		return err
 	}
 
 	s.handleSignals()
 
-	go s.schedule()
-
-	return nil
-}
-
-func (s *Server) setupDb(filename string) error {
-	client, err := ent.Open(
-		"sqlite3",
-		filename+"?mode=rwc&cache=shared&&_busy_timeout=9999999&_fk=1")
-
-	if err != nil {
-		return fmt.Errorf("failed opening sqlite3 connection: %v", err)
-	}
-
-	if err = client.Schema.Create(context.Background()); err != nil {
-		return fmt.Errorf("failed creating schema resources: %v", err)
-	}
-
-	s.mu.Lock()
-	s.master.dbFilename = filename
-	s.master.db = client
-	s.mu.Unlock()
+	go s.master.schedule()
 
 	return nil
 }

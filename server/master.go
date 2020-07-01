@@ -21,35 +21,53 @@ func (jb *job) to(ctx context.Context, state jobState) error {
 		Exec(ctx)
 }
 
-// schedule get a pending application from the db if there is no active job
-func (s *Server) schedule() {
-	for {
-		if !s.isSchedule {
-			break
-		}
+// setupDb setup the db in the master
+func (m *master) setupDb() error {
+	filename := m.dbFilename
+	client, err := ent.Open(
+		"sqlite3",
+		filename+"?mode=rwc&cache=shared&&_busy_timeout=9999999&_fk=1")
 
+	if err != nil {
+		return fmt.Errorf("failed opening sqlite3 connection: %v", err)
+	}
+
+	if err = client.Schema.Create(context.Background()); err != nil {
+		return fmt.Errorf("failed creating schema resources: %v", err)
+	}
+
+	m.dbFilename = filename
+	m.db = client
+
+	return nil
+}
+
+// schedule get a pending application from the db if there is no active job
+func (m *master) schedule() {
+	for {
 		time.Sleep(1 * time.Second)
 
 		ctx, _ := context.WithCancel(context.Background())
 
 		// finding pending application
-		app, err := s.nextApplication(ctx)
+		app, err := m.nextApplication(ctx)
 
 		if err != nil {
 			continue
 		}
 
 		// create new job from the application
-		s.job = &job{
+		m.job = &job{
 			app: app,
 		}
 
 		// change job to provisioning
-		s.job.to(ctx, jobProvisioning)
+		m.job.to(ctx, jobProvisioning)
 
-		if s.job.plugin, err = s.compile(ctx, s.job.app.Scenario); err != nil {
+		if m.job.plugin, err = m.compile(ctx, m.job.app.Scenario); err != nil {
 			continue
 		}
+		// todo: ditribute the plugin to other worker when run in cloud mode
 
 		// change job to running
 	}
@@ -57,13 +75,13 @@ func (s *Server) schedule() {
 
 // provision compiles a scenario to golang plugin, distribute the application to
 // worker. Return success when the workers confirm that the plugin is ready
-func (s *Server) provision() (*ent.Application, error) {
+func (m *master) provision() (*ent.Application, error) {
 	// compile
 	return nil, nil
 }
 
-func (s *Server) nextApplication(ctx context.Context) (*ent.Application, error) {
-	app, err := s.master.db.
+func (m *master) nextApplication(ctx context.Context) (*ent.Application, error) {
+	app, err := m.db.
 		Application.
 		Query().
 		Where(
@@ -78,7 +96,7 @@ func (s *Server) nextApplication(ctx context.Context) (*ent.Application, error) 
 
 // compile using go to compile a scenario in plugin build mode
 // the result is path to so file
-func (s *Server) compile(ctx context.Context, scen string) (string, error) {
+func (m *master) compile(ctx context.Context, scen string) (string, error) {
 	var path string
 	var err error
 
