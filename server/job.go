@@ -32,20 +32,26 @@ func (s *Server) schedule() {
 
 		ctx, _ := context.WithCancel(context.Background())
 
+		// finding pending application
 		app, err := s.nextApplication(ctx)
 
 		if err != nil {
 			continue
 		}
 
+		// create new job from the application
 		s.job = &job{
 			app: app,
 		}
 
-		// compile the scenario
+		// change job to provisioning
+		s.job.to(ctx, jobProvisioning)
+
 		if s.job.plugin, err = s.compile(ctx, s.job.app.Scenario); err != nil {
 			continue
 		}
+
+		// change job to running
 	}
 }
 
