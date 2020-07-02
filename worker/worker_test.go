@@ -15,9 +15,9 @@ func loadValidPlugin(w *Worker) error {
 // }
 
 func TestNew(t *testing.T) {
-	n1, err := New()
+	n1, err := NewWorker()
 	assert.Nil(t, err)
-	n2, err := New()
+	n2, err := NewWorker()
 	assert.Nil(t, err)
 
 	assert.Equal(t, n1, n2)
@@ -30,7 +30,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestLoadPlugin(t *testing.T) {
-	n, _ := New()
+	n, _ := NewWorker()
 	so := "./script/valid.so"
 	assert.Nil(t, n.Load(so))
 	assert.NotNil(t, n.vus)
@@ -38,7 +38,7 @@ func TestLoadPlugin(t *testing.T) {
 }
 
 // func TestRunPlugin(t *testing.T) {
-// 	n, _ := New()
+// 	n, _ := NewWorker()
 // 	assert.Nil(t, loadValidPlugin(n))
 // 	assert.Nil(t, n.Run())
 // 	assert.False(t, n.Running())

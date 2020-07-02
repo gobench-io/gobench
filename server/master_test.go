@@ -12,6 +12,8 @@ func seedServer(t *testing.T) *Server {
 	s, _ := NewServer(DefaultMasterOptions())
 	// disable the schedule
 	s.isSchedule = false
+	s.master.job = &job{}
+
 	assert.Nil(t, s.Start())
 	assert.Nil(t, s.cleanupDB())
 
@@ -128,4 +130,41 @@ func f1(ctx context.Context, vui int) {
 		assert.Nil(t, err)
 		assert.FileExists(t, path)
 	})
+}
+
+func TestRun(t *testing.T) {
+	ctx := context.Background()
+	s := seedServer(t)
+	scen := `
+package main
+
+import (
+	"context"
+	"log"
+	"time"
+
+	"github.com/gobench-io/gobench/scenario"
+)
+
+// Export is a required function for a scenario
+func Export() scenario.Vus {
+	return scenario.Vus{
+		scenario.Vu{
+			Nu:   1,
+			Rate: 100,
+			Fu:   f1,
+		},
+	}
+}
+
+// this function receive the ctx.Done signal
+func f1(ctx context.Context, vui int) {
+	time.Sleep(1 * time.Second)
+	log.Println("tic")
+}`
+
+	plugin, err := s.master.compile(ctx, scen)
+	assert.Nil(t, err)
+	s.master.job.plugin = plugin
+	assert.Nil(t, s.master.runJob(ctx))
 }

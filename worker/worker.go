@@ -68,8 +68,8 @@ func init() {
 	}
 }
 
-// New return the singleton worker
-func New() (*Worker, error) {
+// NewWorker returns the singleton worker
+func NewWorker() (*Worker, error) {
 	return &worker, nil
 }
 

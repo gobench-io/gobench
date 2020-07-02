@@ -37,7 +37,7 @@ type master struct {
 	dbFilename string
 	db         *ent.Client
 
-	lw  worker.Worker
+	lw  *worker.Worker // local worker
 	job *job
 }
 
@@ -79,33 +79,40 @@ func (m *master) setupDb() error {
 func (m *master) schedule() {
 	for {
 		time.Sleep(1 * time.Second)
+		m.run()
+	}
+}
 
-		ctx, _ := context.WithCancel(context.Background())
+func (m *master) run() {
+	ctx, _ := context.WithCancel(context.Background())
 
-		// finding pending application
-		app, err := m.nextApplication(ctx)
+	// finding pending application
+	app, err := m.nextApplication(ctx)
 
-		if err != nil {
-			continue
-		}
+	if err != nil {
+		return
+	}
 
-		// create new job from the application
-		m.job = &job{
-			app: app,
-		}
+	// create new job from the application
+	m.job = &job{
+		app: app,
+	}
 
-		// change job to provisioning
-		m.jobTo(ctx, jobProvisioning)
+	// change job to provisioning
+	m.jobTo(ctx, jobProvisioning)
 
-		if m.job.plugin, err = m.compile(ctx, m.job.app.Scenario); err != nil {
-			continue
-		}
-		// todo: ditribute the plugin to other worker when run in cloud mode
-		// in this phase, the server run in local mode
+	if m.job.plugin, err = m.compile(ctx, m.job.app.Scenario); err != nil {
+		return
+	}
+	// todo: ditribute the plugin to other worker when run in cloud mode
+	// in this phase, the server run in local mode
 
-		// change job to running state
-		m.jobTo(ctx, jobRunning)
-		// m.run(ctx)
+	// change job to running state
+	if err = m.jobTo(ctx, jobRunning); err != nil {
+		return
+	}
+	if err = m.runJob(ctx); err != nil {
+		return
 	}
 }
 
@@ -166,4 +173,22 @@ func (m *master) compile(ctx context.Context, scen string) (string, error) {
 	}
 
 	return path, err
+}
+
+// runJob run a application in a job
+func (m *master) runJob(ctx context.Context) error {
+	var err error
+	if m.lw, err = worker.NewWorker(); err != nil {
+		return err
+	}
+
+	if err = m.lw.Load(m.job.plugin); err != nil {
+		return fmt.Errorf("failed load plugin: %v", err)
+	}
+
+	if err = m.lw.Run(); err != nil {
+		return err
+	}
+
+	return nil
 }
