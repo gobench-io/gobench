@@ -12,9 +12,7 @@ func seedServer(t *testing.T) *Server {
 	s, _ := NewServer(DefaultMasterOptions())
 	// disable the schedule
 	s.isSchedule = false
-	s.master.job = &job{
-		app: &ent.Application{},
-	}
+	s.master.job.app = &ent.Application{}
 
 	assert.Nil(t, s.Start())
 	assert.Nil(t, s.cleanupDB())

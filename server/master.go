@@ -38,7 +38,7 @@ type master struct {
 	db         *ent.Client
 
 	lw  *worker.Worker // local worker
-	job *job
+	job job
 }
 
 type job struct {
@@ -94,9 +94,7 @@ func (m *master) run() {
 	}
 
 	// create new job from the application
-	m.job = &job{
-		app: app,
-	}
+	m.job.app = app
 
 	// change job to provisioning
 	m.jobTo(ctx, jobProvisioning)
