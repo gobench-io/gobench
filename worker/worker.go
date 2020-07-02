@@ -36,6 +36,12 @@ type unit struct {
 	g        gometrics.Gauge
 }
 
+type metricLog interface {
+	counter(string, int64, int64) error
+	histogram(string, int64, gometrics.Histogram) error
+	gauge(string, int64, int64) error
+}
+
 // Worker is the main structure for a running worker
 // contains host information, the scenario (plugin)
 // and gometrics unit
@@ -50,6 +56,8 @@ type Worker struct {
 	cancel     context.CancelFunc
 
 	units map[string]unit // title - gometrics
+
+	log metricLog
 }
 
 // the singleton worker variable
@@ -69,7 +77,8 @@ func init() {
 }
 
 // NewWorker returns the singleton worker
-func NewWorker() (*Worker, error) {
+func NewWorker(log metricLog) (*Worker, error) {
+	worker.log = log
 	return &worker, nil
 }
 
@@ -209,12 +218,12 @@ func (w *Worker) logScaledOnCue(ctx context.Context, ch chan interface{}) error 
 			for _, u := range units {
 				switch u.Type {
 				case metrics.Counter:
-					w.logCounter(u.Title, now, u.c.Count())
+					w.log.counter(u.Title, now, u.c.Count())
 				case metrics.Histogram:
 					h := u.h.Snapshot()
-					w.logHistogram(u.Title, now, h)
+					w.log.histogram(u.Title, now, h)
 				case metrics.Gauge:
-					w.logGauge(u.Title, now, u.g.Value())
+					w.log.gauge(u.Title, now, u.g.Value())
 				}
 			}
 		case <-ctx.Done():
@@ -223,24 +232,6 @@ func (w *Worker) logScaledOnCue(ctx context.Context, ch chan interface{}) error 
 		}
 	}
 
-	return nil
-}
-
-func (w *Worker) logCounter(title string, time, c int64) error {
-	// todo: process counter log
-	log.Printf("logCounter: title %s, time %d, count %d\n", title, time, c)
-	return nil
-}
-
-func (w *Worker) logHistogram(title string, time int64, h gometrics.Histogram) error {
-	// todo: process histogram log
-	log.Printf("logHistogram: title %s, time %d, mean %f\n", title, time, h.Mean())
-	return nil
-}
-
-func (w *Worker) logGauge(title string, time int64, g int64) error {
-	// todo: process gauge log
-	log.Printf("logGauge: title %s, time %d, value %d\n", title, time, g)
 	return nil
 }
 
