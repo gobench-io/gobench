@@ -12,7 +12,9 @@ func seedServer(t *testing.T) *Server {
 	s, _ := NewServer(DefaultMasterOptions())
 	// disable the schedule
 	s.isSchedule = false
-	s.master.job = &job{}
+	s.master.job = &job{
+		app: &ent.Application{},
+	}
 
 	assert.Nil(t, s.Start())
 	assert.Nil(t, s.cleanupDB())
@@ -66,7 +68,7 @@ func TestCompile(t *testing.T) {
 		ctx := context.Background()
 
 		s := seedServer(t)
-		scen := `
+		s.master.job.app.Scenario = `
 package main
 
 import (
@@ -89,15 +91,15 @@ func Export() scenario.Vus {
 }
 // missing f1 function`
 
-		path, err := s.master.compile(ctx, scen)
+		err := s.master.jobCompile(ctx)
 		assert.EqualError(t, err, "failed compiling the scenario: exit status 2")
-		assert.NoFileExists(t, path)
+		assert.NoFileExists(t, s.master.job.plugin)
 	})
 
 	t.Run("valid scenario", func(t *testing.T) {
 		ctx := context.Background()
 		s := seedServer(t)
-		scen := `
+		s.master.job.app.Scenario = `
 package main
 
 import (
@@ -126,16 +128,16 @@ func f1(ctx context.Context, vui int) {
 		time.Sleep(1 * time.Second)
 	}
 }`
-		path, err := s.master.compile(ctx, scen)
+		err := s.master.jobCompile(ctx)
 		assert.Nil(t, err)
-		assert.FileExists(t, path)
+		assert.FileExists(t, s.master.job.plugin)
 	})
 }
 
 func TestRun(t *testing.T) {
 	ctx := context.Background()
 	s := seedServer(t)
-	scen := `
+	s.master.job.app.Scenario = `
 package main
 
 import (
@@ -163,8 +165,7 @@ func f1(ctx context.Context, vui int) {
 	log.Println("tic")
 }`
 
-	plugin, err := s.master.compile(ctx, scen)
+	err := s.master.jobCompile(ctx)
 	assert.Nil(t, err)
-	s.master.job.plugin = plugin
 	assert.Nil(t, s.master.runJob(ctx))
 }

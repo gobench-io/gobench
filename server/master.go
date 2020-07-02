@@ -101,7 +101,7 @@ func (m *master) run() {
 	// change job to provisioning
 	m.jobTo(ctx, jobProvisioning)
 
-	if m.job.plugin, err = m.compile(ctx, m.job.app.Scenario); err != nil {
+	if err = m.jobCompile(ctx); err != nil {
 		return
 	}
 	// todo: ditribute the plugin to other worker when run in cloud mode
@@ -137,16 +137,17 @@ func (m *master) nextApplication(ctx context.Context) (*ent.Application, error) 
 	return app, err
 }
 
-// compile using go to compile a scenario in plugin build mode
+// jobCompile using go to compile a scenario in plugin build mode
 // the result is path to so file
-func (m *master) compile(ctx context.Context, scen string) (string, error) {
+func (m *master) jobCompile(ctx context.Context) error {
 	var path string
-	var err error
+
+	scen := m.job.app.Scenario
 
 	// save the scenario to a tmp file
 	tmpScenF, err := ioutil.TempFile("", "gobench-scenario-*.go")
 	if err != nil {
-		return path, fmt.Errorf("failed creating temp scenario file: %v", err)
+		return fmt.Errorf("failed creating temp scenario file: %v", err)
 	}
 	tmpScenName := tmpScenF.Name()
 
@@ -154,11 +155,11 @@ func (m *master) compile(ctx context.Context, scen string) (string, error) {
 
 	_, err = tmpScenF.Write([]byte(scen))
 	if err != nil {
-		return path, fmt.Errorf("failed write to scenario file: %v", err)
+		return fmt.Errorf("failed write to scenario file: %v", err)
 	}
 
 	if err = tmpScenF.Close(); err != nil {
-		return path, fmt.Errorf("failed close the scenario file: %v", err)
+		return fmt.Errorf("failed close the scenario file: %v", err)
 	}
 
 	path = fmt.Sprintf("%s.out", tmpScenName)
@@ -169,10 +170,12 @@ func (m *master) compile(ctx context.Context, scen string) (string, error) {
 
 	// if out, err := cmd.CombinedOutput(); err != nil {
 	if err := cmd.Run(); err != nil {
-		return path, fmt.Errorf("failed compiling the scenario: %v", err)
+		return fmt.Errorf("failed compiling the scenario: %v", err)
 	}
 
-	return path, err
+	m.job.plugin = path
+
+	return nil
 }
 
 // runJob run a application in a job
