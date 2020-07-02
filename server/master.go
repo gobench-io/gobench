@@ -48,8 +48,8 @@ type job struct {
 
 // to is the function to set new state for an application
 // save new state to the db
-func (jb *job) to(ctx context.Context, state jobState) error {
-	return jb.app.Update().
+func (m *master) jobTo(ctx context.Context, state jobState) error {
+	return m.job.app.Update().
 		SetStatus(string(state)).
 		Exec(ctx)
 }
@@ -95,7 +95,7 @@ func (m *master) schedule() {
 		}
 
 		// change job to provisioning
-		m.job.to(ctx, jobProvisioning)
+		m.jobTo(ctx, jobProvisioning)
 
 		if m.job.plugin, err = m.compile(ctx, m.job.app.Scenario); err != nil {
 			continue
@@ -104,6 +104,8 @@ func (m *master) schedule() {
 		// in this phase, the server run in local mode
 
 		// change job to running state
+		m.jobTo(ctx, jobRunning)
+		// m.run(ctx)
 	}
 }
 
