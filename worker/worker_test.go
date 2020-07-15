@@ -14,20 +14,20 @@ func loadValidPlugin(w *Worker) error {
 
 type nilLog struct{}
 
-func (l nilLog) counter(title string, time, c int64) error {
+func (l *nilLog) Counter(id, title string, time, c int64) error {
 	return nil
 }
 
-func (l nilLog) histogram(title string, time int64, h gometrics.Histogram) error {
+func (l *nilLog) Histogram(id, title string, time int64, h gometrics.Histogram) error {
 	return nil
 }
 
-func (l nilLog) gauge(title string, time int64, g int64) error {
+func (l *nilLog) Gauge(id, title string, time int64, g int64) error {
 	return nil
 }
 
 func newNilLog() metricLogger {
-	return nilLog{}
+	return &nilLog{}
 }
 
 // func TestNodeWithConfig(t *testing.T) {
