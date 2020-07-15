@@ -3,6 +3,7 @@ package http
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -92,6 +93,7 @@ func (h *HttpClient) do(method, url string, body []byte, headers map[string]stri
 		}
 		if res.StatusCode >= 300 || res.StatusCode < 200 {
 			gobench.Notify(fail, 1)
+			err = fmt.Errorf("request failed with status code %d", res.StatusCode)
 			return
 		}
 		gobench.Notify(success, 1)
