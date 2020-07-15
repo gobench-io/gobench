@@ -26,7 +26,7 @@ func (l nilLog) gauge(title string, time int64, g int64) error {
 	return nil
 }
 
-func newNilLog() metricLog {
+func newNilLog() metricLogger {
 	return nilLog{}
 }
 

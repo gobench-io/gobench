@@ -36,7 +36,7 @@ type unit struct {
 	g        gometrics.Gauge
 }
 
-type metricLog interface {
+type metricLogger interface {
 	counter(string, int64, int64) error
 	histogram(string, int64, gometrics.Histogram) error
 	gauge(string, int64, int64) error
@@ -57,7 +57,7 @@ type Worker struct {
 
 	units map[string]unit // title - gometrics
 
-	log metricLog
+	log metricLogger
 }
 
 // the singleton worker variable
@@ -77,7 +77,7 @@ func init() {
 }
 
 // NewWorker returns the singleton worker
-func NewWorker(log metricLog) (*Worker, error) {
+func NewWorker(log metricLogger) (*Worker, error) {
 	worker.log = log
 	return &worker, nil
 }
