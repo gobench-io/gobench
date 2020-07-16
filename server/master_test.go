@@ -25,7 +25,6 @@ func seedServer(t *testing.T) *Server {
 	s.master.lw, err = worker.NewWorker(&s.master)
 	assert.Nil(t, err)
 	assert.Nil(t, s.Start())
-	assert.Nil(t, s.cleanupDB())
 
 	return s
 }
