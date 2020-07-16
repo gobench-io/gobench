@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	entApplication "github.com/gobench-io/gobench/ent/application"
+	entGraph "github.com/gobench-io/gobench/ent/graph"
 	entGroup "github.com/gobench-io/gobench/ent/group"
 )
 
@@ -235,8 +236,18 @@ func TestSetup(t *testing.T) {
 		entGroup.HasApplicationWith(
 			entApplication.NameEQ("name"),
 		),
-	).Only(ctx)
-
+	).All(ctx)
 	assert.Nil(t, err)
+	assert.Len(t, gs, 1)
 	log.Println(gs)
+	g := gs[0]
+
+	graphs, err := s.master.db.Graph.Query().Where(
+		entGraph.HasGroupWith(
+			entGroup.IDEQ(g.ID),
+		),
+	).All(ctx)
+	assert.Nil(t, err)
+	log.Println(graphs)
+	assert.Len(t, graphs, 2)
 }
