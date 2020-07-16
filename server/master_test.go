@@ -264,5 +264,14 @@ func TestSetup(t *testing.T) {
 	assert.Len(t, metrics1, 3)
 	assert.Equal(t, "default.http_ok", metrics1[0].Title)
 	assert.Equal(t, "default.http_fail", metrics1[1].Title)
-	assert.Equal(t, "default.http_http_other_fail", metrics1[2].Title)
+	assert.Equal(t, "default.http_other_fail", metrics1[2].Title)
+
+	metrics2, err := s.master.db.Metric.Query().Where(
+		entMetric.HasGraphWith(
+			entGraph.IDEQ(graphs[1].ID),
+		),
+	).All(ctx)
+	assert.Nil(t, err)
+	assert.Len(t, metrics2, 1)
+	assert.Equal(t, "default.latency", metrics2[0].Title)
 }
