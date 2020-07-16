@@ -38,9 +38,9 @@ type unit struct {
 }
 
 type metricLogger interface {
-	Counter(string, string, int64, int64) error
-	Histogram(string, string, int64, gometrics.Histogram) error
-	Gauge(string, string, int64, int64) error
+	Counter(context.Context, string, string, int64, int64) error
+	Histogram(context.Context, string, string, int64, gometrics.Histogram) error
+	Gauge(context.Context, string, string, int64, int64) error
 }
 
 // Worker is the main structure for a running worker
@@ -224,12 +224,12 @@ func (w *Worker) logScaledOnCue(ctx context.Context, ch chan interface{}) error 
 			for _, u := range units {
 				switch u.Type {
 				case metrics.Counter:
-					w.log.Counter(w.id, u.Title, now, u.c.Count())
+					w.log.Counter(ctx, w.id, u.Title, now, u.c.Count())
 				case metrics.Histogram:
 					h := u.h.Snapshot()
-					w.log.Histogram(w.id, u.Title, now, h)
+					w.log.Histogram(ctx, w.id, u.Title, now, h)
 				case metrics.Gauge:
-					w.log.Gauge(w.id, u.Title, now, u.g.Value())
+					w.log.Gauge(ctx, w.id, u.Title, now, u.g.Value())
 				}
 			}
 		case <-ctx.Done():
