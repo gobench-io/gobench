@@ -47,7 +47,9 @@ func (m *master) NewGroup(ctx context.Context, mg metrics.Group) (*ent.Group, bo
 	eg, err = m.db.Group.
 		Create().
 		SetName(mg.Name).
+		SetApplication(m.job.app).
 		Save(ctx)
+
 	created = true
 
 	return eg, created, err

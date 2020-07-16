@@ -5,15 +5,19 @@ import (
 	"testing"
 
 	"github.com/gobench-io/gobench/ent"
+	"github.com/gobench-io/gobench/metrics"
+	"github.com/gobench-io/gobench/worker"
 	"github.com/stretchr/testify/assert"
 )
 
 func seedServer(t *testing.T) *Server {
+	var err error
 	s, _ := NewServer(DefaultMasterOptions())
 	// disable the schedule
 	s.isSchedule = false
 	s.master.job.app = &ent.Application{}
-
+	s.master.lw, err = worker.NewWorker(&s.master)
+	assert.Nil(t, err)
 	assert.Nil(t, s.Start())
 	assert.Nil(t, s.cleanupDB())
 
@@ -167,4 +171,56 @@ func f1(ctx context.Context, vui int) {
 	assert.Nil(t, err)
 	// should run for mor than 1 seconds
 	assert.Nil(t, s.master.runJob(ctx))
+}
+
+// worker.Setup should create associated tables in the database
+func TestSetup(t *testing.T) {
+	ctx := context.Background()
+	s := seedServer(t)
+
+	_, err := s.NewApplication(ctx, "name", "scenario")
+	assert.Nil(t, err)
+
+	s.master.job.app, err = s.master.nextApplication(ctx)
+	assert.Nil(t, err)
+
+	prefix := "default"
+	group := metrics.Group{
+		Name: "HTTP (" + prefix + ")",
+		Graphs: []metrics.Graph{
+			{
+				Title: "HTTP Response",
+				Unit:  "N",
+				Metrics: []metrics.Metric{
+					{
+						Title: prefix + ".http_ok",
+						Type:  metrics.Counter,
+					},
+					{
+						Title: prefix + ".http_fail",
+						Type:  metrics.Counter,
+					},
+					{
+						Title: prefix + ".http_other_fail",
+						Type:  metrics.Counter,
+					},
+				},
+			},
+			{
+				Title: "Latency",
+				Unit:  "Microsecond",
+				Metrics: []metrics.Metric{
+					{
+						Title: prefix + ".latency",
+						Type:  metrics.Histogram,
+					},
+				},
+			},
+		},
+	}
+	groups := []metrics.Group{
+		group,
+	}
+	err = worker.Setup(groups)
+	assert.Nil(t, err)
 }

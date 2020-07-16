@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/gobench-io/gobench/ent"
+	"github.com/gobench-io/gobench/metrics"
 	gometrics "github.com/rcrowley/go-metrics"
 	"github.com/stretchr/testify/assert"
 )
@@ -27,12 +29,13 @@ func (l *nilLog) Gauge(ctx context.Context, id, title string, time int64, g int6
 	return nil
 }
 
+func (l *nilLog) NewGroup(ctx context.Context, mg metrics.Group) (*ent.Group, bool, error) {
+	return nil, false, nil
+}
+
 func newNilLog() metricLogger {
 	return &nilLog{}
 }
-
-// func TestNodeWithConfig(t *testing.T) {
-// }
 
 func TestNew(t *testing.T) {
 	n1, err := NewWorker(newNilLog())

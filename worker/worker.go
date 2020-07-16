@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/metrics"
 	"github.com/gobench-io/gobench/scenario"
 	gometrics "github.com/rcrowley/go-metrics"
@@ -41,6 +42,7 @@ type metricLogger interface {
 	Counter(context.Context, string, string, int64, int64) error
 	Histogram(context.Context, string, string, int64, gometrics.Histogram) error
 	Gauge(context.Context, string, string, int64, int64) error
+	NewGroup(context.Context, metrics.Group) (*ent.Group, bool, error)
 }
 
 // Worker is the main structure for a running worker
@@ -247,9 +249,21 @@ func timestampMs() int64 {
 
 // Setup is used for the worker to report the metrics that it will generate
 func Setup(groups []metrics.Group) error {
+	ctx := context.TODO()
+
 	units := make(map[string]unit)
 
 	for _, group := range groups {
+		// create a new group if not existed
+		_, created, err := worker.log.NewGroup(ctx, group)
+		if err != nil {
+			return fmt.Errorf("failed create group: %v", err)
+		}
+		// if the group is existed, continue
+		if !created {
+			continue
+		}
+
 		for _, graph := range group.Graphs {
 			for _, m := range graph.Metrics {
 				// counter type
