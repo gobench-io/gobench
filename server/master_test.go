@@ -165,5 +165,6 @@ func f1(ctx context.Context, vui int) {
 
 	err := s.master.jobCompile(ctx)
 	assert.Nil(t, err)
+	// should run for mor than 1 seconds
 	assert.Nil(t, s.master.runJob(ctx))
 }

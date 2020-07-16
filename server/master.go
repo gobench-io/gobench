@@ -37,8 +37,6 @@ type master struct {
 	dbFilename string
 	db         *ent.Client
 
-	ml metriclog
-
 	lw  *worker.Worker // local worker
 	job job
 }
@@ -183,7 +181,7 @@ func (m *master) jobCompile(ctx context.Context) error {
 func (m *master) runJob(ctx context.Context) error {
 	var err error
 
-	if m.lw, err = worker.NewWorker(&m.ml); err != nil {
+	if m.lw, err = worker.NewWorker(m); err != nil {
 		return err
 	}
 
