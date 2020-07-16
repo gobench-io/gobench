@@ -2083,15 +2083,17 @@ func (m *GraphMutation) ResetEdge(name string) error {
 // nodes in the graph.
 type GroupMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	name          *string
-	clearedFields map[string]struct{}
-	graphs        map[int]struct{}
-	removedgraphs map[int]struct{}
-	done          bool
-	oldValue      func(context.Context) (*Group, error)
+	op                 Op
+	typ                string
+	id                 *int
+	name               *string
+	clearedFields      map[string]struct{}
+	application        *int
+	clearedapplication bool
+	graphs             map[int]struct{}
+	removedgraphs      map[int]struct{}
+	done               bool
+	oldValue           func(context.Context) (*Group, error)
 }
 
 var _ ent.Mutation = (*GroupMutation)(nil)
@@ -2208,6 +2210,45 @@ func (m *GroupMutation) OldName(ctx context.Context) (v string, err error) {
 // ResetName reset all changes of the "name" field.
 func (m *GroupMutation) ResetName() {
 	m.name = nil
+}
+
+// SetApplicationID sets the application edge to Application by id.
+func (m *GroupMutation) SetApplicationID(id int) {
+	m.application = &id
+}
+
+// ClearApplication clears the application edge to Application.
+func (m *GroupMutation) ClearApplication() {
+	m.clearedapplication = true
+}
+
+// ApplicationCleared returns if the edge application was cleared.
+func (m *GroupMutation) ApplicationCleared() bool {
+	return m.clearedapplication
+}
+
+// ApplicationID returns the application id in the mutation.
+func (m *GroupMutation) ApplicationID() (id int, exists bool) {
+	if m.application != nil {
+		return *m.application, true
+	}
+	return
+}
+
+// ApplicationIDs returns the application ids in the mutation.
+// Note that ids always returns len(ids) <= 1 for unique edges, and you should use
+// ApplicationID instead. It exists only for internal usage by the builders.
+func (m *GroupMutation) ApplicationIDs() (ids []int) {
+	if id := m.application; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetApplication reset all changes of the "application" edge.
+func (m *GroupMutation) ResetApplication() {
+	m.application = nil
+	m.clearedapplication = false
 }
 
 // AddGraphIDs adds the graphs edge to Graph by ids.
@@ -2367,7 +2408,10 @@ func (m *GroupMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this
 // mutation.
 func (m *GroupMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
+	if m.application != nil {
+		edges = append(edges, group.EdgeApplication)
+	}
 	if m.graphs != nil {
 		edges = append(edges, group.EdgeGraphs)
 	}
@@ -2378,6 +2422,10 @@ func (m *GroupMutation) AddedEdges() []string {
 // the given edge name.
 func (m *GroupMutation) AddedIDs(name string) []ent.Value {
 	switch name {
+	case group.EdgeApplication:
+		if id := m.application; id != nil {
+			return []ent.Value{*id}
+		}
 	case group.EdgeGraphs:
 		ids := make([]ent.Value, 0, len(m.graphs))
 		for id := range m.graphs {
@@ -2391,7 +2439,7 @@ func (m *GroupMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this
 // mutation.
 func (m *GroupMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.removedgraphs != nil {
 		edges = append(edges, group.EdgeGraphs)
 	}
@@ -2415,7 +2463,10 @@ func (m *GroupMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this
 // mutation.
 func (m *GroupMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
+	if m.clearedapplication {
+		edges = append(edges, group.EdgeApplication)
+	}
 	return edges
 }
 
@@ -2423,6 +2474,8 @@ func (m *GroupMutation) ClearedEdges() []string {
 // cleared in this mutation.
 func (m *GroupMutation) EdgeCleared(name string) bool {
 	switch name {
+	case group.EdgeApplication:
+		return m.clearedapplication
 	}
 	return false
 }
@@ -2431,6 +2484,9 @@ func (m *GroupMutation) EdgeCleared(name string) bool {
 // error if the edge name is not defined in the schema.
 func (m *GroupMutation) ClearEdge(name string) error {
 	switch name {
+	case group.EdgeApplication:
+		m.ClearApplication()
+		return nil
 	}
 	return fmt.Errorf("unknown Group unique edge %s", name)
 }
@@ -2440,6 +2496,9 @@ func (m *GroupMutation) ClearEdge(name string) error {
 // defined in the schema.
 func (m *GroupMutation) ResetEdge(name string) error {
 	switch name {
+	case group.EdgeApplication:
+		m.ResetApplication()
+		return nil
 	case group.EdgeGraphs:
 		m.ResetGraphs()
 		return nil

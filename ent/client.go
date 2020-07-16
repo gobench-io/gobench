@@ -647,6 +647,22 @@ func (c *GroupClient) GetX(ctx context.Context, id int) *Group {
 	return gr
 }
 
+// QueryApplication queries the application edge of a Group.
+func (c *GroupClient) QueryApplication(gr *Group) *ApplicationQuery {
+	query := &ApplicationQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := gr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(group.Table, group.FieldID, id),
+			sqlgraph.To(application.Table, application.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, group.ApplicationTable, group.ApplicationColumn),
+		)
+		fromV = sqlgraph.Neighbors(gr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryGraphs queries the graphs edge of a Group.
 func (c *GroupClient) QueryGraphs(gr *Group) *GraphQuery {
 	query := &GraphQuery{config: c.config}

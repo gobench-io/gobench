@@ -21,6 +21,7 @@ func (Group) Fields() []ent.Field {
 // Edges of the Group.
 func (Group) Edges() []ent.Edge {
 	return []ent.Edge{
+		edge.From("application", Application.Type).Ref("groups").Unique(),
 		edge.To("graphs", Graph.Type),
 	}
 }

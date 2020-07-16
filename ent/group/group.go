@@ -9,11 +9,20 @@ const (
 	FieldID   = "id" // FieldName holds the string denoting the name vertex property in the database.
 	FieldName = "name"
 
+	// EdgeApplication holds the string denoting the application edge name in mutations.
+	EdgeApplication = "application"
 	// EdgeGraphs holds the string denoting the graphs edge name in mutations.
 	EdgeGraphs = "graphs"
 
 	// Table holds the table name of the group in the database.
 	Table = "groups"
+	// ApplicationTable is the table the holds the application relation/edge.
+	ApplicationTable = "groups"
+	// ApplicationInverseTable is the table name for the Application entity.
+	// It exists in this package in order to avoid circular dependency with the "application" package.
+	ApplicationInverseTable = "applications"
+	// ApplicationColumn is the table column denoting the application relation/edge.
+	ApplicationColumn = "application_groups"
 	// GraphsTable is the table the holds the graphs relation/edge.
 	GraphsTable = "graphs"
 	// GraphsInverseTable is the table name for the Graph entity.

@@ -209,6 +209,34 @@ func NameContainsFold(v string) predicate.Group {
 	})
 }
 
+// HasApplication applies the HasEdge predicate on the "application" edge.
+func HasApplication() predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ApplicationTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, ApplicationTable, ApplicationColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasApplicationWith applies the HasEdge predicate on the "application" edge with a given conditions (other predicates).
+func HasApplicationWith(preds ...predicate.Application) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ApplicationInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, ApplicationTable, ApplicationColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasGraphs applies the HasEdge predicate on the "graphs" edge.
 func HasGraphs() predicate.Group {
 	return predicate.Group(func(s *sql.Selector) {
