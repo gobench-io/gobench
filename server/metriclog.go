@@ -8,6 +8,7 @@ import (
 	gometrics "github.com/rcrowley/go-metrics"
 
 	entGroup "github.com/gobench-io/gobench/ent/group"
+	entMetric "github.com/gobench-io/gobench/ent/metric"
 )
 
 func (m *master) Counter(ctx context.Context, wid, title string, time, c int64) error {
@@ -67,5 +68,35 @@ func (m *master) NewGraph(ctx context.Context, mgraph metrics.Graph, groupID int
 		SetUnit(mgraph.Unit).
 		SetGroupID(groupID).
 		Save(ctx)
+	return
+}
+
+func (m *master) NewMetric(ctx context.Context, mmetric metrics.Metric, graphID int) (
+	emetric *ent.Metric, created bool, err error,
+) {
+	emetric, err = m.db.Metric.Query().
+		Where(
+			entMetric.TitleEQ(mmetric.Title),
+		).
+		First(ctx)
+
+	// if there is one found
+	if err != nil && !ent.IsNotFound(err) {
+		return
+	}
+
+	emetric, err = m.db.Metric.
+		Create().
+		SetTitle(mmetric.Title).
+		SetType(string(mmetric.Type)).
+		SetGraphID(graphID).
+		Save(ctx)
+
+	if err != nil {
+		return
+	}
+
+	created = true
+
 	return
 }

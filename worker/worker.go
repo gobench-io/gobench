@@ -256,7 +256,7 @@ func Setup(groups []metrics.Group) error {
 
 	for _, group := range groups {
 		// create a new group if not existed
-		eg, created, err := worker.log.NewGroup(ctx, group)
+		egroup, created, err := worker.log.NewGroup(ctx, group)
 		if err != nil {
 			return fmt.Errorf("failed create group: %v", err)
 		}
@@ -267,7 +267,7 @@ func Setup(groups []metrics.Group) error {
 
 		for _, graph := range group.Graphs {
 			// create new graph if not existed
-			_, err := worker.log.NewGraph(ctx, graph, eg.ID)
+			_, err := worker.log.NewGraph(ctx, graph, egroup.ID)
 			if err != nil {
 				return fmt.Errorf("failed create graph: %v", err)
 			}

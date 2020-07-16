@@ -13,6 +13,7 @@ import (
 	entApplication "github.com/gobench-io/gobench/ent/application"
 	entGraph "github.com/gobench-io/gobench/ent/graph"
 	entGroup "github.com/gobench-io/gobench/ent/group"
+	entMetric "github.com/gobench-io/gobench/ent/metric"
 )
 
 func seedServer(t *testing.T) *Server {
@@ -250,4 +251,18 @@ func TestSetup(t *testing.T) {
 	assert.Nil(t, err)
 	log.Println(graphs)
 	assert.Len(t, graphs, 2)
+
+	assert.Equal(t, "HTTP Response", graphs[0].Title)
+	assert.Equal(t, "Latency", graphs[1].Title)
+
+	metrics1, err := s.master.db.Metric.Query().Where(
+		entMetric.HasGraphWith(
+			entGraph.IDEQ(graphs[0].ID),
+		),
+	).All(ctx)
+	assert.Nil(t, err)
+	assert.Len(t, metrics1, 3)
+	assert.Equal(t, "default.http_ok", metrics1[0].ID)
+	assert.Equal(t, "default.http_fail", metrics1[1].ID)
+	assert.Equal(t, "default.http_http_other_fail", metrics1[2].ID)
 }
