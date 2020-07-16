@@ -2,12 +2,16 @@ package server
 
 import (
 	"context"
+	"log"
 	"testing"
 
 	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/metrics"
 	"github.com/gobench-io/gobench/worker"
 	"github.com/stretchr/testify/assert"
+
+	entApplication "github.com/gobench-io/gobench/ent/application"
+	entGroup "github.com/gobench-io/gobench/ent/group"
 )
 
 func seedServer(t *testing.T) *Server {
@@ -175,8 +179,10 @@ func f1(ctx context.Context, vui int) {
 
 // worker.Setup should create associated tables in the database
 func TestSetup(t *testing.T) {
-	ctx := context.Background()
+	ctx := context.TODO()
+
 	s := seedServer(t)
+	// assert.Nil(t, s.cleanupDB())
 
 	_, err := s.NewApplication(ctx, "name", "scenario")
 	assert.Nil(t, err)
@@ -223,4 +229,14 @@ func TestSetup(t *testing.T) {
 	}
 	err = worker.Setup(groups)
 	assert.Nil(t, err)
+
+	gs, err := s.master.db.Group.Query().Where(
+		entGroup.Name("HTTP (default)"),
+		entGroup.HasApplicationWith(
+			entApplication.NameEQ("name"),
+		),
+	).Only(ctx)
+
+	assert.Nil(t, err)
+	log.Println(gs)
 }

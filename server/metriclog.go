@@ -29,26 +29,30 @@ func (m *master) Gauge(ctx context.Context, wid, title string, time int64, g int
 
 // NewGroup find or create new group
 // return the existing/new group ent, is created, and error
-func (m *master) NewGroup(ctx context.Context, mg metrics.Group) (*ent.Group, bool, error) {
-	created := false
-
-	eg, err := m.job.app.
+func (m *master) NewGroup(ctx context.Context, mg metrics.Group) (
+	eg *ent.Group, created bool, err error,
+) {
+	eg, err = m.job.app.
 		QueryGroups().
 		Where(
 			entGroup.NameEQ(mg.Name),
 		).
-		Only(ctx)
+		First(ctx)
 
 	// if there is one found
-	if err == nil {
-		return eg, created, err
+	if err != nil && !ent.IsNotFound(err) {
+		return
 	}
 
 	eg, err = m.db.Group.
 		Create().
 		SetName(mg.Name).
-		SetApplication(m.job.app).
+		SetApplicationID(m.job.app.ID).
 		Save(ctx)
+
+	if err != nil {
+		return
+	}
 
 	created = true
 
