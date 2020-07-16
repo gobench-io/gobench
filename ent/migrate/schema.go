@@ -145,7 +145,7 @@ var (
 	// MetricsColumns holds the columns for the "metrics" table.
 	MetricsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "title", Type: field.TypeString, Unique: true},
+		{Name: "title", Type: field.TypeString},
 		{Name: "type", Type: field.TypeString},
 		{Name: "graph_metrics", Type: field.TypeInt, Nullable: true},
 	}
