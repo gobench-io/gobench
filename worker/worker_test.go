@@ -36,6 +36,12 @@ func (l *nilLog) NewGraph(ctx context.Context, mgraph metrics.Graph, groupID int
 	return nil, nil
 }
 
+func (l *nilLog) NewMetric(ctx context.Context, mmetric metrics.Metric, graphID int) (
+	*ent.Metric, bool, error,
+) {
+	return nil, false, nil
+}
+
 func newNilLog() metricLogger {
 	return &nilLog{}
 }

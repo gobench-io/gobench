@@ -262,7 +262,7 @@ func TestSetup(t *testing.T) {
 	).All(ctx)
 	assert.Nil(t, err)
 	assert.Len(t, metrics1, 3)
-	assert.Equal(t, "default.http_ok", metrics1[0].ID)
-	assert.Equal(t, "default.http_fail", metrics1[1].ID)
-	assert.Equal(t, "default.http_http_other_fail", metrics1[2].ID)
+	assert.Equal(t, "default.http_ok", metrics1[0].Title)
+	assert.Equal(t, "default.http_fail", metrics1[1].Title)
+	assert.Equal(t, "default.http_http_other_fail", metrics1[2].Title)
 }
