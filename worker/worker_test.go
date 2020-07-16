@@ -32,6 +32,9 @@ func (l *nilLog) Gauge(ctx context.Context, id, title string, time int64, g int6
 func (l *nilLog) NewGroup(ctx context.Context, mg metrics.Group) (*ent.Group, bool, error) {
 	return nil, false, nil
 }
+func (l *nilLog) NewGraph(ctx context.Context, mgraph metrics.Graph, groupID int) (*ent.Graph, error) {
+	return nil, nil
+}
 
 func newNilLog() metricLogger {
 	return &nilLog{}

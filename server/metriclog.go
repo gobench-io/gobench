@@ -58,3 +58,14 @@ func (m *master) NewGroup(ctx context.Context, mg metrics.Group) (
 
 	return eg, created, err
 }
+
+func (m *master) NewGraph(ctx context.Context, mgraph metrics.Graph, groupID int) (
+	egraph *ent.Graph, err error,
+) {
+	egraph, err = m.db.Graph.Create().
+		SetTitle(mgraph.Title).
+		SetUnit(mgraph.Unit).
+		SetGroupID(groupID).
+		Save(ctx)
+	return
+}

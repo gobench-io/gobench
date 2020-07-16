@@ -43,6 +43,7 @@ type metricLogger interface {
 	Histogram(context.Context, string, string, int64, gometrics.Histogram) error
 	Gauge(context.Context, string, string, int64, int64) error
 	NewGroup(context.Context, metrics.Group) (*ent.Group, bool, error)
+	NewGraph(context.Context, metrics.Graph, int) (*ent.Graph, error)
 }
 
 // Worker is the main structure for a running worker
@@ -255,7 +256,7 @@ func Setup(groups []metrics.Group) error {
 
 	for _, group := range groups {
 		// create a new group if not existed
-		_, created, err := worker.log.NewGroup(ctx, group)
+		eg, created, err := worker.log.NewGroup(ctx, group)
 		if err != nil {
 			return fmt.Errorf("failed create group: %v", err)
 		}
@@ -265,6 +266,12 @@ func Setup(groups []metrics.Group) error {
 		}
 
 		for _, graph := range group.Graphs {
+			// create new graph if not existed
+			_, err := worker.log.NewGraph(ctx, graph, eg.ID)
+			if err != nil {
+				return fmt.Errorf("failed create graph: %v", err)
+			}
+
 			for _, m := range graph.Metrics {
 				// counter type
 				if m.Type == metrics.Counter {
