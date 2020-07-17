@@ -34,6 +34,7 @@ func TestNextApplication(t *testing.T) {
 	t.Run("empty application", func(t *testing.T) {
 		ctx := context.Background()
 		s := seedServer(t)
+		assert.Nil(t, s.cleanupDB())
 		_, err := s.master.nextApplication(ctx)
 		assert.True(t, ent.IsNotFound(err))
 	})
@@ -41,6 +42,7 @@ func TestNextApplication(t *testing.T) {
 	t.Run("one application", func(t *testing.T) {
 		ctx := context.Background()
 		s := seedServer(t)
+		assert.Nil(t, s.cleanupDB())
 
 		_, err := s.NewApplication(ctx, "name", "scenario")
 		assert.Nil(t, err)
