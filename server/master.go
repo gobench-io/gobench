@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"time"
@@ -48,10 +49,12 @@ type job struct {
 
 // to is the function to set new state for an application
 // save new state to the db
-func (m *master) jobTo(ctx context.Context, state jobState) error {
-	return m.job.app.Update().
+func (m *master) jobTo(ctx context.Context, state jobState) (err error) {
+	m.job.app, err = m.job.app.Update().
 		SetStatus(string(state)).
-		Exec(ctx)
+		Save(ctx)
+
+	return
 }
 
 // setupDb setup the db in the master
@@ -93,11 +96,15 @@ func (m *master) run() {
 		return
 	}
 
+	log.Printf("application id: %d, name: %s, status: %s\n", app.ID, app.Name, app.Status)
+
 	// create new job from the application
 	m.job.app = app
 
 	// change job to provisioning
 	m.jobTo(ctx, jobProvisioning)
+
+	log.Printf("application id: %d, name: %s, status: %s\n", app.ID, app.Name, app.Status)
 
 	if err = m.jobCompile(ctx); err != nil {
 		return
@@ -109,9 +116,16 @@ func (m *master) run() {
 	if err = m.jobTo(ctx, jobRunning); err != nil {
 		return
 	}
+
+	log.Printf("application id: %d, name: %s, status: %s\n", app.ID, app.Name, app.Status)
+
 	if err = m.runJob(ctx); err != nil {
+		log.Printf("application id: %d failed run job %v\n", app.ID, err)
+		_ = m.jobTo(ctx, jobError)
 		return
 	}
+
+	_ = m.jobTo(ctx, jobFinished)
 }
 
 // provision compiles a scenario to golang plugin, distribute the application to
@@ -130,7 +144,8 @@ func (m *master) nextApplication(ctx context.Context) (*ent.Application, error) 
 		).
 		Order(
 			ent.Asc(application.FieldCreatedAt),
-		).First(ctx)
+		).
+		First(ctx)
 
 	return app, err
 }
