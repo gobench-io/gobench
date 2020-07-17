@@ -275,7 +275,7 @@ func Setup(groups []metrics.Group) error {
 
 			for _, m := range graph.Metrics {
 				// create new metric if not existed
-				_, created, err := worker.log.NewMetric(ctx, m, egraph.ID)
+				emetric, created, err := worker.log.NewMetric(ctx, m, egraph.ID)
 				if err != nil {
 					return fmt.Errorf("failed create metric: %v", err)
 				}
@@ -294,10 +294,10 @@ func Setup(groups []metrics.Group) error {
 					}
 
 					units[m.Title] = unit{
-						Title: m.Title,
-						Type:  m.Type,
-						// metricID: metricInstance.ID,
-						c: c,
+						Title:    m.Title,
+						Type:     m.Type,
+						metricID: emetric.ID,
+						c:        c,
 					}
 				}
 
@@ -311,10 +311,10 @@ func Setup(groups []metrics.Group) error {
 						return err
 					}
 					units[m.Title] = unit{
-						Title: m.Title,
-						Type:  m.Type,
-						// metricID: metricInstance.ID,
-						h: h,
+						Title:    m.Title,
+						Type:     m.Type,
+						metricID: emetric.ID,
+						h:        h,
 					}
 				}
 
@@ -327,10 +327,10 @@ func Setup(groups []metrics.Group) error {
 						return err
 					}
 					units[m.Title] = unit{
-						Title: m.Title,
-						Type:  m.Type,
-						// metricID: metricInstance.ID,
-						g: g,
+						Title:    m.Title,
+						Type:     m.Type,
+						metricID: emetric.ID,
+						g:        g,
 					}
 				}
 			}
