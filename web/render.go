@@ -1,6 +1,7 @@
 package web
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/go-chi/render"
@@ -66,14 +67,47 @@ func ErrRender(err error) render.Renderer {
 	}
 }
 
+func DecodeForm(r *http.Request, v interface{}) (err error) {
+	if err = r.ParseMultipartForm(32 << 20); err != nil {
+		return
+	}
+
+	for key, value := range r.Form {
+		log.Printf("key: %s, value: %s\n", key, value)
+	}
+
+	return nil
+}
+
+func Bind(r *http.Request, v render.Binder) (err error) {
+	log.Println("--------- Bind")
+	log.Println(render.GetRequestContentType(r))
+
+	switch render.GetRequestContentType(r) {
+	case render.ContentTypeForm:
+		err = DecodeForm(r, v)
+
+	default:
+		err = render.Bind(r, v)
+	}
+
+	return err
+}
+
 // application response
 type applicationRequest struct {
 	*ent.Application
 	ProtectedID int `json:"id"`
 }
 
-func (a *applicationRequest) Bind(r *http.Request) error {
-	return nil
+func (a *applicationRequest) Bind(r *http.Request) (err error) {
+	switch render.GetRequestContentType(r) {
+	case render.ContentTypeForm:
+		err = DecodeForm(r, a)
+	default:
+		err = render.Decode(r, a)
+	}
+	return err
 }
 
 type applicationResponse struct {

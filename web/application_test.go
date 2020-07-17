@@ -59,7 +59,7 @@ func TestCreateApplications(t *testing.T) {
 			"Scenario": "this is the scenario",
 		})
 		req, _ := http.NewRequest("POST", "/api/applications", bytes.NewBuffer(reqBody))
-		req.Header.Set("Content-Type", "multipart/form-data")
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 		r.ServeHTTP(w, req)
 

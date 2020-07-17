@@ -51,7 +51,8 @@ func listApplications(w http.ResponseWriter, r *http.Request) {
 func createApplication(w http.ResponseWriter, r *http.Request) {
 	data := &applicationRequest{}
 
-	if err := render.Bind(r, data); err != nil {
+	if err := Bind(r, data); err != nil {
+		// if err := render.Bind(r, data); err != nil {
 		render.Render(w, r, ErrInvalidRequest(err))
 		return
 	}
