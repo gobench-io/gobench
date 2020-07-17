@@ -17,15 +17,15 @@ func loadValidPlugin(w *Worker) error {
 
 type nilLog struct{}
 
-func (l *nilLog) Counter(ctx context.Context, id, title string, time, c int64) error {
+func (l *nilLog) Counter(ctx context.Context, mID int, id, title string, time, c int64) error {
 	return nil
 }
 
-func (l *nilLog) Histogram(ctx context.Context, id, title string, time int64, h gometrics.Histogram) error {
+func (l *nilLog) Histogram(ctx context.Context, mID int, id, title string, time int64, h gometrics.Histogram) error {
 	return nil
 }
 
-func (l *nilLog) Gauge(ctx context.Context, id, title string, time int64, g int64) error {
+func (l *nilLog) Gauge(ctx context.Context, mID int, id, title string, time int64, g int64) error {
 	return nil
 }
 
@@ -39,7 +39,6 @@ func (l *nilLog) FindCreateGraph(ctx context.Context, mgraph metrics.Graph, grou
 ) {
 	return nil, nil
 }
-
 func (l *nilLog) FindCreateMetric(ctx context.Context, mmetric metrics.Metric, graphID int) (
 	*ent.Metric, error,
 ) {

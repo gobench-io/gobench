@@ -12,20 +12,21 @@ import (
 	entMetric "github.com/gobench-io/gobench/ent/metric"
 )
 
-func (m *master) Counter(ctx context.Context, wid, title string, time, c int64) error {
+func (m *master) Counter(ctx context.Context, mID int, wid, title string, time, c int64) error {
 	m.db.Counter.Create().
+		SetMetricID(mID).
 		SetCount(c).
 		SetTime(time).
-		// SetMetricID().
+		SetWID(wid).
 		Save(ctx)
 	return nil
 }
 
-func (m *master) Histogram(ctx context.Context, wid, title string, time int64, h gometrics.Histogram) error {
+func (m *master) Histogram(ctx context.Context, mID int, wid, title string, time int64, h gometrics.Histogram) error {
 	return nil
 }
 
-func (m *master) Gauge(ctx context.Context, wid, title string, time int64, g int64) error {
+func (m *master) Gauge(ctx context.Context, mID int, wid, title string, time int64, g int64) error {
 	return nil
 }
 

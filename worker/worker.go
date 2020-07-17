@@ -39,9 +39,9 @@ type unit struct {
 }
 
 type metricLogger interface {
-	Counter(context.Context, string, string, int64, int64) error
-	Histogram(context.Context, string, string, int64, gometrics.Histogram) error
-	Gauge(context.Context, string, string, int64, int64) error
+	Counter(context.Context, int, string, string, int64, int64) error
+	Histogram(context.Context, int, string, string, int64, gometrics.Histogram) error
+	Gauge(context.Context, int, string, string, int64, int64) error
 	FindCreateGroup(context.Context, metrics.Group) (*ent.Group, error)
 	FindCreateGraph(context.Context, metrics.Graph, int) (*ent.Graph, error)
 	FindCreateMetric(context.Context, metrics.Metric, int) (*ent.Metric, error)
@@ -228,12 +228,12 @@ func (w *Worker) logScaledOnCue(ctx context.Context, ch chan interface{}) error 
 			for _, u := range units {
 				switch u.Type {
 				case metrics.Counter:
-					w.log.Counter(ctx, w.id, u.Title, now, u.c.Count())
+					w.log.Counter(ctx, u.metricID, w.id, u.Title, now, u.c.Count())
 				case metrics.Histogram:
 					h := u.h.Snapshot()
-					w.log.Histogram(ctx, w.id, u.Title, now, h)
+					w.log.Histogram(ctx, u.metricID, w.id, u.Title, now, h)
 				case metrics.Gauge:
-					w.log.Gauge(ctx, w.id, u.Title, now, u.g.Value())
+					w.log.Gauge(ctx, u.metricID, w.id, u.Title, now, u.g.Value())
 				}
 			}
 		case <-ctx.Done():
