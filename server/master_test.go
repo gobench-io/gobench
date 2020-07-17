@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"testing"
+	"time"
 
 	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/metrics"
@@ -191,7 +192,7 @@ func TestSetup(t *testing.T) {
 	s.master.job.app, err = s.master.nextApplication(ctx)
 	assert.Nil(t, err)
 
-	prefix := "default"
+	prefix := time.Now().String()
 	group := metrics.Group{
 		Name: "HTTP (" + prefix + ")",
 		Graphs: []metrics.Graph{
@@ -225,22 +226,21 @@ func TestSetup(t *testing.T) {
 			},
 		},
 	}
-	groups := []metrics.Group{
+	err = worker.Setup([]metrics.Group{
 		group,
-	}
-	err = worker.Setup(groups)
+	})
 	assert.Nil(t, err)
 
-	gs, err := s.master.db.Group.Query().Where(
-		entGroup.Name("HTTP (default)"),
+	groups, err := s.master.db.Group.Query().Where(
+		entGroup.Name("HTTP ("+prefix+")"),
 		entGroup.HasApplicationWith(
 			entApplication.NameEQ("name"),
 		),
 	).All(ctx)
 	assert.Nil(t, err)
-	assert.Len(t, gs, 1)
-	log.Println(gs)
-	g := gs[0]
+	assert.Len(t, groups, 1)
+	log.Println(groups)
+	g := groups[0]
 
 	graphs, err := s.master.db.Graph.Query().Where(
 		entGraph.HasGroupWith(
@@ -261,9 +261,9 @@ func TestSetup(t *testing.T) {
 	).All(ctx)
 	assert.Nil(t, err)
 	assert.Len(t, metrics1, 3)
-	assert.Equal(t, "default.http_ok", metrics1[0].Title)
-	assert.Equal(t, "default.http_fail", metrics1[1].Title)
-	assert.Equal(t, "default.http_other_fail", metrics1[2].Title)
+	assert.Equal(t, prefix+".http_ok", metrics1[0].Title)
+	assert.Equal(t, prefix+".http_fail", metrics1[1].Title)
+	assert.Equal(t, prefix+".http_other_fail", metrics1[2].Title)
 
 	metrics2, err := s.master.db.Metric.Query().Where(
 		entMetric.HasGraphWith(
@@ -272,5 +272,5 @@ func TestSetup(t *testing.T) {
 	).All(ctx)
 	assert.Nil(t, err)
 	assert.Len(t, metrics2, 1)
-	assert.Equal(t, "default.latency", metrics2[0].Title)
+	assert.Equal(t, prefix+".latency", metrics2[0].Title)
 }
