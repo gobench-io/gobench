@@ -42,9 +42,9 @@ type metricLogger interface {
 	Counter(context.Context, string, string, int64, int64) error
 	Histogram(context.Context, string, string, int64, gometrics.Histogram) error
 	Gauge(context.Context, string, string, int64, int64) error
-	NewGroup(context.Context, metrics.Group) (*ent.Group, bool, error)
-	NewGraph(context.Context, metrics.Graph, int) (*ent.Graph, error)
-	NewMetric(context.Context, metrics.Metric, int) (*ent.Metric, bool, error)
+	FindCreateGroup(context.Context, metrics.Group) (*ent.Group, error)
+	FindCreateGraph(context.Context, metrics.Graph, int) (*ent.Graph, error)
+	FindCreateMetric(context.Context, metrics.Metric, int) (*ent.Metric, error)
 }
 
 // Worker is the main structure for a running worker
@@ -257,30 +257,23 @@ func Setup(groups []metrics.Group) error {
 
 	for _, group := range groups {
 		// create a new group if not existed
-		egroup, created, err := worker.log.NewGroup(ctx, group)
+		egroup, err := worker.log.FindCreateGroup(ctx, group)
 		if err != nil {
 			return fmt.Errorf("failed create group: %v", err)
-		}
-		// if the group is existed, continue
-		if !created {
-			continue
 		}
 
 		for _, graph := range group.Graphs {
 			// create new graph if not existed
-			egraph, err := worker.log.NewGraph(ctx, graph, egroup.ID)
+			egraph, err := worker.log.FindCreateGraph(ctx, graph, egroup.ID)
 			if err != nil {
 				return fmt.Errorf("failed create graph: %v", err)
 			}
 
 			for _, m := range graph.Metrics {
 				// create new metric if not existed
-				emetric, created, err := worker.log.NewMetric(ctx, m, egraph.ID)
+				emetric, err := worker.log.FindCreateMetric(ctx, m, egraph.ID)
 				if err != nil {
 					return fmt.Errorf("failed create metric: %v", err)
-				}
-				if !created {
-					continue
 				}
 
 				// counter type

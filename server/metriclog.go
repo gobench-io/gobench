@@ -7,6 +7,7 @@ import (
 	"github.com/gobench-io/gobench/metrics"
 	gometrics "github.com/rcrowley/go-metrics"
 
+	entGraph "github.com/gobench-io/gobench/ent/graph"
 	entGroup "github.com/gobench-io/gobench/ent/group"
 	entMetric "github.com/gobench-io/gobench/ent/metric"
 )
@@ -28,10 +29,10 @@ func (m *master) Gauge(ctx context.Context, wid, title string, time int64, g int
 	return nil
 }
 
-// NewGroup find or create new group
+// FindCreateGroup find or create new group
 // return the existing/new group ent, is created, and error
-func (m *master) NewGroup(ctx context.Context, mg metrics.Group) (
-	eg *ent.Group, created bool, err error,
+func (m *master) FindCreateGroup(ctx context.Context, mg metrics.Group) (
+	eg *ent.Group, err error,
 ) {
 	eg, err = m.job.app.
 		QueryGroups().
@@ -51,18 +52,27 @@ func (m *master) NewGroup(ctx context.Context, mg metrics.Group) (
 		SetApplicationID(m.job.app.ID).
 		Save(ctx)
 
-	if err != nil {
+	return
+}
+
+func (m *master) FindCreateGraph(ctx context.Context, mgraph metrics.Graph, groupID int) (
+	egraph *ent.Graph, err error,
+) {
+	egraph, err = m.db.Graph.Query().
+		Where(
+			entGraph.TitleEQ(mgraph.Title),
+			entGraph.UnitEQ(mgraph.Unit),
+			entGraph.HasGroupWith(
+				entGroup.IDEQ(groupID),
+			),
+		).
+		First(ctx)
+
+	// if there is one found
+	if err != nil && !ent.IsNotFound(err) {
 		return
 	}
 
-	created = true
-
-	return eg, created, err
-}
-
-func (m *master) NewGraph(ctx context.Context, mgraph metrics.Graph, groupID int) (
-	egraph *ent.Graph, err error,
-) {
 	egraph, err = m.db.Graph.Create().
 		SetTitle(mgraph.Title).
 		SetUnit(mgraph.Unit).
@@ -71,12 +81,16 @@ func (m *master) NewGraph(ctx context.Context, mgraph metrics.Graph, groupID int
 	return
 }
 
-func (m *master) NewMetric(ctx context.Context, mmetric metrics.Metric, graphID int) (
-	emetric *ent.Metric, created bool, err error,
+func (m *master) FindCreateMetric(ctx context.Context, mmetric metrics.Metric, graphID int) (
+	emetric *ent.Metric, err error,
 ) {
 	emetric, err = m.db.Metric.Query().
 		Where(
 			entMetric.TitleEQ(mmetric.Title),
+			entMetric.TypeEQ(mmetric.Title),
+			entMetric.HasGraphWith(
+				entGraph.IDEQ(graphID),
+			),
 		).
 		First(ctx)
 
@@ -91,12 +105,6 @@ func (m *master) NewMetric(ctx context.Context, mmetric metrics.Metric, graphID 
 		SetType(string(mmetric.Type)).
 		SetGraphID(graphID).
 		Save(ctx)
-
-	if err != nil {
-		return
-	}
-
-	created = true
 
 	return
 }

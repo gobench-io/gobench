@@ -29,17 +29,21 @@ func (l *nilLog) Gauge(ctx context.Context, id, title string, time int64, g int6
 	return nil
 }
 
-func (l *nilLog) NewGroup(ctx context.Context, mg metrics.Group) (*ent.Group, bool, error) {
-	return nil, false, nil
+func (l *nilLog) FindCreateGroup(ctx context.Context, mg metrics.Group) (
+	*ent.Group, error,
+) {
+	return nil, nil
 }
-func (l *nilLog) NewGraph(ctx context.Context, mgraph metrics.Graph, groupID int) (*ent.Graph, error) {
+func (l *nilLog) FindCreateGraph(ctx context.Context, mgraph metrics.Graph, groupID int) (
+	*ent.Graph, error,
+) {
 	return nil, nil
 }
 
-func (l *nilLog) NewMetric(ctx context.Context, mmetric metrics.Metric, graphID int) (
-	*ent.Metric, bool, error,
+func (l *nilLog) FindCreateMetric(ctx context.Context, mmetric metrics.Metric, graphID int) (
+	*ent.Metric, error,
 ) {
-	return nil, false, nil
+	return nil, nil
 }
 
 func newNilLog() metricLogger {
