@@ -241,8 +241,6 @@ func (w *Worker) logScaledOnCue(ctx context.Context, ch chan interface{}) error 
 			return nil
 		}
 	}
-
-	return nil
 }
 
 func timestampMs() int64 {

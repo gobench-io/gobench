@@ -84,7 +84,7 @@ func (m *master) schedule() {
 }
 
 func (m *master) run() {
-	ctx, _ := context.WithCancel(context.Background())
+	ctx := context.TODO()
 
 	// finding pending application
 	app, err := m.nextApplication(ctx)
