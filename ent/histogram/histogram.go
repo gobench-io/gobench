@@ -17,8 +17,8 @@ const (
 	FieldP75    = "p75"    // FieldP95 holds the string denoting the p95 vertex property in the database.
 	FieldP95    = "p95"    // FieldP99 holds the string denoting the p99 vertex property in the database.
 	FieldP99    = "p99"    // FieldP999 holds the string denoting the p999 vertex property in the database.
-	FieldP999   = "p999"   // FieldWId holds the string denoting the wid vertex property in the database.
-	FieldWId    = "w_id"
+	FieldP999   = "p999"   // FieldWID holds the string denoting the wid vertex property in the database.
+	FieldWID    = "w_id"
 
 	// EdgeMetric holds the string denoting the metric edge name in mutations.
 	EdgeMetric = "metric"
@@ -48,7 +48,7 @@ var Columns = []string{
 	FieldP95,
 	FieldP99,
 	FieldP999,
-	FieldWId,
+	FieldWID,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the Histogram type.

@@ -168,10 +168,10 @@ func P999(v float64) predicate.Histogram {
 	})
 }
 
-// WId applies equality check predicate on the "wId" field. It's identical to WIdEQ.
-func WId(v string) predicate.Histogram {
+// WID applies equality check predicate on the "wID" field. It's identical to WIDEQ.
+func WID(v string) predicate.Histogram {
 	return predicate.Histogram(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldWId), v))
+		s.Where(sql.EQ(s.C(FieldWID), v))
 	})
 }
 
@@ -1011,22 +1011,22 @@ func P999LTE(v float64) predicate.Histogram {
 	})
 }
 
-// WIdEQ applies the EQ predicate on the "wId" field.
-func WIdEQ(v string) predicate.Histogram {
+// WIDEQ applies the EQ predicate on the "wID" field.
+func WIDEQ(v string) predicate.Histogram {
 	return predicate.Histogram(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldWId), v))
+		s.Where(sql.EQ(s.C(FieldWID), v))
 	})
 }
 
-// WIdNEQ applies the NEQ predicate on the "wId" field.
-func WIdNEQ(v string) predicate.Histogram {
+// WIDNEQ applies the NEQ predicate on the "wID" field.
+func WIDNEQ(v string) predicate.Histogram {
 	return predicate.Histogram(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldWId), v))
+		s.Where(sql.NEQ(s.C(FieldWID), v))
 	})
 }
 
-// WIdIn applies the In predicate on the "wId" field.
-func WIdIn(vs ...string) predicate.Histogram {
+// WIDIn applies the In predicate on the "wID" field.
+func WIDIn(vs ...string) predicate.Histogram {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -1038,12 +1038,12 @@ func WIdIn(vs ...string) predicate.Histogram {
 			s.Where(sql.False())
 			return
 		}
-		s.Where(sql.In(s.C(FieldWId), v...))
+		s.Where(sql.In(s.C(FieldWID), v...))
 	})
 }
 
-// WIdNotIn applies the NotIn predicate on the "wId" field.
-func WIdNotIn(vs ...string) predicate.Histogram {
+// WIDNotIn applies the NotIn predicate on the "wID" field.
+func WIDNotIn(vs ...string) predicate.Histogram {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -1055,70 +1055,70 @@ func WIdNotIn(vs ...string) predicate.Histogram {
 			s.Where(sql.False())
 			return
 		}
-		s.Where(sql.NotIn(s.C(FieldWId), v...))
+		s.Where(sql.NotIn(s.C(FieldWID), v...))
 	})
 }
 
-// WIdGT applies the GT predicate on the "wId" field.
-func WIdGT(v string) predicate.Histogram {
+// WIDGT applies the GT predicate on the "wID" field.
+func WIDGT(v string) predicate.Histogram {
 	return predicate.Histogram(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldWId), v))
+		s.Where(sql.GT(s.C(FieldWID), v))
 	})
 }
 
-// WIdGTE applies the GTE predicate on the "wId" field.
-func WIdGTE(v string) predicate.Histogram {
+// WIDGTE applies the GTE predicate on the "wID" field.
+func WIDGTE(v string) predicate.Histogram {
 	return predicate.Histogram(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldWId), v))
+		s.Where(sql.GTE(s.C(FieldWID), v))
 	})
 }
 
-// WIdLT applies the LT predicate on the "wId" field.
-func WIdLT(v string) predicate.Histogram {
+// WIDLT applies the LT predicate on the "wID" field.
+func WIDLT(v string) predicate.Histogram {
 	return predicate.Histogram(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldWId), v))
+		s.Where(sql.LT(s.C(FieldWID), v))
 	})
 }
 
-// WIdLTE applies the LTE predicate on the "wId" field.
-func WIdLTE(v string) predicate.Histogram {
+// WIDLTE applies the LTE predicate on the "wID" field.
+func WIDLTE(v string) predicate.Histogram {
 	return predicate.Histogram(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldWId), v))
+		s.Where(sql.LTE(s.C(FieldWID), v))
 	})
 }
 
-// WIdContains applies the Contains predicate on the "wId" field.
-func WIdContains(v string) predicate.Histogram {
+// WIDContains applies the Contains predicate on the "wID" field.
+func WIDContains(v string) predicate.Histogram {
 	return predicate.Histogram(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldWId), v))
+		s.Where(sql.Contains(s.C(FieldWID), v))
 	})
 }
 
-// WIdHasPrefix applies the HasPrefix predicate on the "wId" field.
-func WIdHasPrefix(v string) predicate.Histogram {
+// WIDHasPrefix applies the HasPrefix predicate on the "wID" field.
+func WIDHasPrefix(v string) predicate.Histogram {
 	return predicate.Histogram(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldWId), v))
+		s.Where(sql.HasPrefix(s.C(FieldWID), v))
 	})
 }
 
-// WIdHasSuffix applies the HasSuffix predicate on the "wId" field.
-func WIdHasSuffix(v string) predicate.Histogram {
+// WIDHasSuffix applies the HasSuffix predicate on the "wID" field.
+func WIDHasSuffix(v string) predicate.Histogram {
 	return predicate.Histogram(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldWId), v))
+		s.Where(sql.HasSuffix(s.C(FieldWID), v))
 	})
 }
 
-// WIdEqualFold applies the EqualFold predicate on the "wId" field.
-func WIdEqualFold(v string) predicate.Histogram {
+// WIDEqualFold applies the EqualFold predicate on the "wID" field.
+func WIDEqualFold(v string) predicate.Histogram {
 	return predicate.Histogram(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldWId), v))
+		s.Where(sql.EqualFold(s.C(FieldWID), v))
 	})
 }
 
-// WIdContainsFold applies the ContainsFold predicate on the "wId" field.
-func WIdContainsFold(v string) predicate.Histogram {
+// WIDContainsFold applies the ContainsFold predicate on the "wID" field.
+func WIDContainsFold(v string) predicate.Histogram {
 	return predicate.Histogram(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldWId), v))
+		s.Where(sql.ContainsFold(s.C(FieldWID), v))
 	})
 }
 

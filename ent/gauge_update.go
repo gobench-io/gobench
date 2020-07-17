@@ -54,9 +54,9 @@ func (gu *GaugeUpdate) AddValue(i int64) *GaugeUpdate {
 	return gu
 }
 
-// SetWId sets the wId field.
-func (gu *GaugeUpdate) SetWId(s string) *GaugeUpdate {
-	gu.mutation.SetWId(s)
+// SetWID sets the wID field.
+func (gu *GaugeUpdate) SetWID(s string) *GaugeUpdate {
+	gu.mutation.SetWID(s)
 	return gu
 }
 
@@ -183,11 +183,11 @@ func (gu *GaugeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: gauge.FieldValue,
 		})
 	}
-	if value, ok := gu.mutation.WId(); ok {
+	if value, ok := gu.mutation.WID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: gauge.FieldWId,
+			Column: gauge.FieldWID,
 		})
 	}
 	if gu.mutation.MetricCleared() {
@@ -269,9 +269,9 @@ func (guo *GaugeUpdateOne) AddValue(i int64) *GaugeUpdateOne {
 	return guo
 }
 
-// SetWId sets the wId field.
-func (guo *GaugeUpdateOne) SetWId(s string) *GaugeUpdateOne {
-	guo.mutation.SetWId(s)
+// SetWID sets the wID field.
+func (guo *GaugeUpdateOne) SetWID(s string) *GaugeUpdateOne {
+	guo.mutation.SetWID(s)
 	return guo
 }
 
@@ -396,11 +396,11 @@ func (guo *GaugeUpdateOne) sqlSave(ctx context.Context) (ga *Gauge, err error) {
 			Column: gauge.FieldValue,
 		})
 	}
-	if value, ok := guo.mutation.WId(); ok {
+	if value, ok := guo.mutation.WID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: gauge.FieldWId,
+			Column: gauge.FieldWID,
 		})
 	}
 	if guo.mutation.MetricCleared() {

@@ -20,8 +20,8 @@ type Gauge struct {
 	Time int64 `json:"time"`
 	// Value holds the value of the "value" field.
 	Value int64 `json:"value"`
-	// WId holds the value of the "wId" field.
-	WId string `json:"wId"`
+	// WID holds the value of the "wID" field.
+	WID string `json:"wId"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the GaugeQuery when eager-loading is set.
 	Edges         GaugeEdges `json:"edges"`
@@ -57,7 +57,7 @@ func (*Gauge) scanValues() []interface{} {
 		&sql.NullInt64{},  // id
 		&sql.NullInt64{},  // time
 		&sql.NullInt64{},  // value
-		&sql.NullString{}, // wId
+		&sql.NullString{}, // wID
 	}
 }
 
@@ -91,9 +91,9 @@ func (ga *Gauge) assignValues(values ...interface{}) error {
 		ga.Value = value.Int64
 	}
 	if value, ok := values[2].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field wId", values[2])
+		return fmt.Errorf("unexpected type %T for field wID", values[2])
 	} else if value.Valid {
-		ga.WId = value.String
+		ga.WID = value.String
 	}
 	values = values[3:]
 	if len(values) == len(gauge.ForeignKeys) {
@@ -139,8 +139,8 @@ func (ga *Gauge) String() string {
 	builder.WriteString(fmt.Sprintf("%v", ga.Time))
 	builder.WriteString(", value=")
 	builder.WriteString(fmt.Sprintf("%v", ga.Value))
-	builder.WriteString(", wId=")
-	builder.WriteString(ga.WId)
+	builder.WriteString(", wID=")
+	builder.WriteString(ga.WID)
 	builder.WriteByte(')')
 	return builder.String()
 }

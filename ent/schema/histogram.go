@@ -29,7 +29,7 @@ func (Histogram) Fields() []ent.Field {
 		field.Float("p99").StructTag(`json:"p99"`),
 		field.Float("p999").StructTag(`json:"p999"`),
 
-		field.String("wId").StructTag(`json:"wId"`),
+		field.String("wID").StructTag(`json:"wId"`),
 	}
 }
 

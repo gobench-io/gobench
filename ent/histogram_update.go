@@ -171,9 +171,9 @@ func (hu *HistogramUpdate) AddP999(f float64) *HistogramUpdate {
 	return hu
 }
 
-// SetWId sets the wId field.
-func (hu *HistogramUpdate) SetWId(s string) *HistogramUpdate {
-	hu.mutation.SetWId(s)
+// SetWID sets the wID field.
+func (hu *HistogramUpdate) SetWID(s string) *HistogramUpdate {
+	hu.mutation.SetWID(s)
 	return hu
 }
 
@@ -426,11 +426,11 @@ func (hu *HistogramUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: histogram.FieldP999,
 		})
 	}
-	if value, ok := hu.mutation.WId(); ok {
+	if value, ok := hu.mutation.WID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: histogram.FieldWId,
+			Column: histogram.FieldWID,
 		})
 	}
 	if hu.mutation.MetricCleared() {
@@ -629,9 +629,9 @@ func (huo *HistogramUpdateOne) AddP999(f float64) *HistogramUpdateOne {
 	return huo
 }
 
-// SetWId sets the wId field.
-func (huo *HistogramUpdateOne) SetWId(s string) *HistogramUpdateOne {
-	huo.mutation.SetWId(s)
+// SetWID sets the wID field.
+func (huo *HistogramUpdateOne) SetWID(s string) *HistogramUpdateOne {
+	huo.mutation.SetWID(s)
 	return huo
 }
 
@@ -882,11 +882,11 @@ func (huo *HistogramUpdateOne) sqlSave(ctx context.Context) (h *Histogram, err e
 			Column: histogram.FieldP999,
 		})
 	}
-	if value, ok := huo.mutation.WId(); ok {
+	if value, ok := huo.mutation.WID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: histogram.FieldWId,
+			Column: histogram.FieldWID,
 		})
 	}
 	if huo.mutation.MetricCleared() {

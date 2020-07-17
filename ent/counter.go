@@ -20,8 +20,8 @@ type Counter struct {
 	Time int64 `json:"time"`
 	// Count holds the value of the "count" field.
 	Count int64 `json:"count"`
-	// WId holds the value of the "wId" field.
-	WId string `json:"wId"`
+	// WID holds the value of the "wID" field.
+	WID string `json:"wId"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the CounterQuery when eager-loading is set.
 	Edges           CounterEdges `json:"edges"`
@@ -57,7 +57,7 @@ func (*Counter) scanValues() []interface{} {
 		&sql.NullInt64{},  // id
 		&sql.NullInt64{},  // time
 		&sql.NullInt64{},  // count
-		&sql.NullString{}, // wId
+		&sql.NullString{}, // wID
 	}
 }
 
@@ -91,9 +91,9 @@ func (c *Counter) assignValues(values ...interface{}) error {
 		c.Count = value.Int64
 	}
 	if value, ok := values[2].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field wId", values[2])
+		return fmt.Errorf("unexpected type %T for field wID", values[2])
 	} else if value.Valid {
-		c.WId = value.String
+		c.WID = value.String
 	}
 	values = values[3:]
 	if len(values) == len(counter.ForeignKeys) {
@@ -139,8 +139,8 @@ func (c *Counter) String() string {
 	builder.WriteString(fmt.Sprintf("%v", c.Time))
 	builder.WriteString(", count=")
 	builder.WriteString(fmt.Sprintf("%v", c.Count))
-	builder.WriteString(", wId=")
-	builder.WriteString(c.WId)
+	builder.WriteString(", wID=")
+	builder.WriteString(c.WID)
 	builder.WriteByte(')')
 	return builder.String()
 }

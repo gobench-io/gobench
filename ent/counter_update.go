@@ -54,9 +54,9 @@ func (cu *CounterUpdate) AddCount(i int64) *CounterUpdate {
 	return cu
 }
 
-// SetWId sets the wId field.
-func (cu *CounterUpdate) SetWId(s string) *CounterUpdate {
-	cu.mutation.SetWId(s)
+// SetWID sets the wID field.
+func (cu *CounterUpdate) SetWID(s string) *CounterUpdate {
+	cu.mutation.SetWID(s)
 	return cu
 }
 
@@ -183,11 +183,11 @@ func (cu *CounterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: counter.FieldCount,
 		})
 	}
-	if value, ok := cu.mutation.WId(); ok {
+	if value, ok := cu.mutation.WID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: counter.FieldWId,
+			Column: counter.FieldWID,
 		})
 	}
 	if cu.mutation.MetricCleared() {
@@ -269,9 +269,9 @@ func (cuo *CounterUpdateOne) AddCount(i int64) *CounterUpdateOne {
 	return cuo
 }
 
-// SetWId sets the wId field.
-func (cuo *CounterUpdateOne) SetWId(s string) *CounterUpdateOne {
-	cuo.mutation.SetWId(s)
+// SetWID sets the wID field.
+func (cuo *CounterUpdateOne) SetWID(s string) *CounterUpdateOne {
+	cuo.mutation.SetWID(s)
 	return cuo
 }
 
@@ -396,11 +396,11 @@ func (cuo *CounterUpdateOne) sqlSave(ctx context.Context) (c *Counter, err error
 			Column: counter.FieldCount,
 		})
 	}
-	if value, ok := cuo.mutation.WId(); ok {
+	if value, ok := cuo.mutation.WID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: counter.FieldWId,
+			Column: counter.FieldWID,
 		})
 	}
 	if cuo.mutation.MetricCleared() {
