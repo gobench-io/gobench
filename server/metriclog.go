@@ -13,21 +13,42 @@ import (
 )
 
 func (m *master) Counter(ctx context.Context, mID int, wid, title string, time, c int64) error {
-	m.db.Counter.Create().
+	_, err := m.db.Counter.Create().
 		SetMetricID(mID).
 		SetCount(c).
 		SetTime(time).
 		SetWID(wid).
 		Save(ctx)
-	return nil
+	return err
 }
 
 func (m *master) Histogram(ctx context.Context, mID int, wid, title string, time int64, h gometrics.Histogram) error {
-	return nil
+	ps := h.Percentiles([]float64{0.5, 0.75, 0.95, 0.99, 0.999})
+	_, err := m.db.Histogram.Create().
+		SetMetricID(mID).
+		SetCount(h.Count()).
+		SetMin(h.Min()).
+		SetMax(h.Max()).
+		SetMean(h.Mean()).
+		SetStddev(h.StdDev()).
+		SetMedian(ps[0]).
+		SetP75(ps[1]).
+		SetP95(ps[2]).
+		SetP99(ps[3]).
+		SetP999(ps[4]).
+		SetTime(time).
+		Save(ctx)
+	return err
 }
 
 func (m *master) Gauge(ctx context.Context, mID int, wid, title string, time int64, g int64) error {
-	return nil
+	_, err := m.db.Gauge.Create().
+		SetMetricID(mID).
+		SetValue(g).
+		SetTime(time).
+		SetWID(wid).
+		Save(ctx)
+	return err
 }
 
 // FindCreateGroup find or create new group
