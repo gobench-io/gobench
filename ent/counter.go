@@ -20,6 +20,8 @@ type Counter struct {
 	Time int64 `json:"time"`
 	// Count holds the value of the "count" field.
 	Count int64 `json:"count"`
+	// WId holds the value of the "wId" field.
+	WId string `json:"wId"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the CounterQuery when eager-loading is set.
 	Edges           CounterEdges `json:"edges"`
@@ -52,9 +54,10 @@ func (e CounterEdges) MetricOrErr() (*Metric, error) {
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Counter) scanValues() []interface{} {
 	return []interface{}{
-		&sql.NullInt64{}, // id
-		&sql.NullInt64{}, // time
-		&sql.NullInt64{}, // count
+		&sql.NullInt64{},  // id
+		&sql.NullInt64{},  // time
+		&sql.NullInt64{},  // count
+		&sql.NullString{}, // wId
 	}
 }
 
@@ -87,7 +90,12 @@ func (c *Counter) assignValues(values ...interface{}) error {
 	} else if value.Valid {
 		c.Count = value.Int64
 	}
-	values = values[2:]
+	if value, ok := values[2].(*sql.NullString); !ok {
+		return fmt.Errorf("unexpected type %T for field wId", values[2])
+	} else if value.Valid {
+		c.WId = value.String
+	}
+	values = values[3:]
 	if len(values) == len(counter.ForeignKeys) {
 		if value, ok := values[0].(*sql.NullInt64); !ok {
 			return fmt.Errorf("unexpected type %T for edge-field metric_counters", value)
@@ -131,6 +139,8 @@ func (c *Counter) String() string {
 	builder.WriteString(fmt.Sprintf("%v", c.Time))
 	builder.WriteString(", count=")
 	builder.WriteString(fmt.Sprintf("%v", c.Count))
+	builder.WriteString(", wId=")
+	builder.WriteString(c.WId)
 	builder.WriteByte(')')
 	return builder.String()
 }

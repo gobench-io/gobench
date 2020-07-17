@@ -636,6 +636,7 @@ type CounterMutation struct {
 	addtime       *int64
 	count         *int64
 	addcount      *int64
+	wId           *string
 	clearedFields map[string]struct{}
 	metric        *int
 	clearedmetric bool
@@ -836,6 +837,43 @@ func (m *CounterMutation) ResetCount() {
 	m.addcount = nil
 }
 
+// SetWId sets the wId field.
+func (m *CounterMutation) SetWId(s string) {
+	m.wId = &s
+}
+
+// WId returns the wId value in the mutation.
+func (m *CounterMutation) WId() (r string, exists bool) {
+	v := m.wId
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWId returns the old wId value of the Counter.
+// If the Counter object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *CounterMutation) OldWId(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldWId is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldWId requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWId: %w", err)
+	}
+	return oldValue.WId, nil
+}
+
+// ResetWId reset all changes of the "wId" field.
+func (m *CounterMutation) ResetWId() {
+	m.wId = nil
+}
+
 // SetMetricID sets the metric edge to Metric by id.
 func (m *CounterMutation) SetMetricID(id int) {
 	m.metric = &id
@@ -889,12 +927,15 @@ func (m *CounterMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *CounterMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 3)
 	if m.time != nil {
 		fields = append(fields, counter.FieldTime)
 	}
 	if m.count != nil {
 		fields = append(fields, counter.FieldCount)
+	}
+	if m.wId != nil {
+		fields = append(fields, counter.FieldWId)
 	}
 	return fields
 }
@@ -908,6 +949,8 @@ func (m *CounterMutation) Field(name string) (ent.Value, bool) {
 		return m.Time()
 	case counter.FieldCount:
 		return m.Count()
+	case counter.FieldWId:
+		return m.WId()
 	}
 	return nil, false
 }
@@ -921,6 +964,8 @@ func (m *CounterMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldTime(ctx)
 	case counter.FieldCount:
 		return m.OldCount(ctx)
+	case counter.FieldWId:
+		return m.OldWId(ctx)
 	}
 	return nil, fmt.Errorf("unknown Counter field %s", name)
 }
@@ -943,6 +988,13 @@ func (m *CounterMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCount(v)
+		return nil
+	case counter.FieldWId:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWId(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Counter field %s", name)
@@ -1026,6 +1078,9 @@ func (m *CounterMutation) ResetField(name string) error {
 		return nil
 	case counter.FieldCount:
 		m.ResetCount()
+		return nil
+	case counter.FieldWId:
+		m.ResetWId()
 		return nil
 	}
 	return fmt.Errorf("unknown Counter field %s", name)
@@ -1122,6 +1177,7 @@ type GaugeMutation struct {
 	addtime       *int64
 	value         *int64
 	addvalue      *int64
+	wId           *string
 	clearedFields map[string]struct{}
 	metric        *int
 	clearedmetric bool
@@ -1322,6 +1378,43 @@ func (m *GaugeMutation) ResetValue() {
 	m.addvalue = nil
 }
 
+// SetWId sets the wId field.
+func (m *GaugeMutation) SetWId(s string) {
+	m.wId = &s
+}
+
+// WId returns the wId value in the mutation.
+func (m *GaugeMutation) WId() (r string, exists bool) {
+	v := m.wId
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWId returns the old wId value of the Gauge.
+// If the Gauge object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *GaugeMutation) OldWId(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldWId is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldWId requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWId: %w", err)
+	}
+	return oldValue.WId, nil
+}
+
+// ResetWId reset all changes of the "wId" field.
+func (m *GaugeMutation) ResetWId() {
+	m.wId = nil
+}
+
 // SetMetricID sets the metric edge to Metric by id.
 func (m *GaugeMutation) SetMetricID(id int) {
 	m.metric = &id
@@ -1375,12 +1468,15 @@ func (m *GaugeMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *GaugeMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 3)
 	if m.time != nil {
 		fields = append(fields, gauge.FieldTime)
 	}
 	if m.value != nil {
 		fields = append(fields, gauge.FieldValue)
+	}
+	if m.wId != nil {
+		fields = append(fields, gauge.FieldWId)
 	}
 	return fields
 }
@@ -1394,6 +1490,8 @@ func (m *GaugeMutation) Field(name string) (ent.Value, bool) {
 		return m.Time()
 	case gauge.FieldValue:
 		return m.Value()
+	case gauge.FieldWId:
+		return m.WId()
 	}
 	return nil, false
 }
@@ -1407,6 +1505,8 @@ func (m *GaugeMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldTime(ctx)
 	case gauge.FieldValue:
 		return m.OldValue(ctx)
+	case gauge.FieldWId:
+		return m.OldWId(ctx)
 	}
 	return nil, fmt.Errorf("unknown Gauge field %s", name)
 }
@@ -1429,6 +1529,13 @@ func (m *GaugeMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetValue(v)
+		return nil
+	case gauge.FieldWId:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWId(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Gauge field %s", name)
@@ -1512,6 +1619,9 @@ func (m *GaugeMutation) ResetField(name string) error {
 		return nil
 	case gauge.FieldValue:
 		m.ResetValue()
+		return nil
+	case gauge.FieldWId:
+		m.ResetWId()
 		return nil
 	}
 	return fmt.Errorf("unknown Gauge field %s", name)
@@ -2535,6 +2645,7 @@ type HistogramMutation struct {
 	addp99        *float64
 	p999          *float64
 	addp999       *float64
+	wId           *string
 	clearedFields map[string]struct{}
 	metric        *int
 	clearedmetric bool
@@ -3248,6 +3359,43 @@ func (m *HistogramMutation) ResetP999() {
 	m.addp999 = nil
 }
 
+// SetWId sets the wId field.
+func (m *HistogramMutation) SetWId(s string) {
+	m.wId = &s
+}
+
+// WId returns the wId value in the mutation.
+func (m *HistogramMutation) WId() (r string, exists bool) {
+	v := m.wId
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWId returns the old wId value of the Histogram.
+// If the Histogram object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *HistogramMutation) OldWId(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldWId is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldWId requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWId: %w", err)
+	}
+	return oldValue.WId, nil
+}
+
+// ResetWId reset all changes of the "wId" field.
+func (m *HistogramMutation) ResetWId() {
+	m.wId = nil
+}
+
 // SetMetricID sets the metric edge to Metric by id.
 func (m *HistogramMutation) SetMetricID(id int) {
 	m.metric = &id
@@ -3301,7 +3449,7 @@ func (m *HistogramMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *HistogramMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 12)
 	if m.time != nil {
 		fields = append(fields, histogram.FieldTime)
 	}
@@ -3335,6 +3483,9 @@ func (m *HistogramMutation) Fields() []string {
 	if m.p999 != nil {
 		fields = append(fields, histogram.FieldP999)
 	}
+	if m.wId != nil {
+		fields = append(fields, histogram.FieldWId)
+	}
 	return fields
 }
 
@@ -3365,6 +3516,8 @@ func (m *HistogramMutation) Field(name string) (ent.Value, bool) {
 		return m.P99()
 	case histogram.FieldP999:
 		return m.P999()
+	case histogram.FieldWId:
+		return m.WId()
 	}
 	return nil, false
 }
@@ -3396,6 +3549,8 @@ func (m *HistogramMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldP99(ctx)
 	case histogram.FieldP999:
 		return m.OldP999(ctx)
+	case histogram.FieldWId:
+		return m.OldWId(ctx)
 	}
 	return nil, fmt.Errorf("unknown Histogram field %s", name)
 }
@@ -3481,6 +3636,13 @@ func (m *HistogramMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetP999(v)
+		return nil
+	case histogram.FieldWId:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWId(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Histogram field %s", name)
@@ -3699,6 +3861,9 @@ func (m *HistogramMutation) ResetField(name string) error {
 		return nil
 	case histogram.FieldP999:
 		m.ResetP999()
+		return nil
+	case histogram.FieldWId:
+		m.ResetWId()
 		return nil
 	}
 	return fmt.Errorf("unknown Histogram field %s", name)

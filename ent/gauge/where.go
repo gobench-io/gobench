@@ -105,6 +105,13 @@ func Value(v int64) predicate.Gauge {
 	})
 }
 
+// WId applies equality check predicate on the "wId" field. It's identical to WIdEQ.
+func WId(v string) predicate.Gauge {
+	return predicate.Gauge(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldWId), v))
+	})
+}
+
 // TimeEQ applies the EQ predicate on the "time" field.
 func TimeEQ(v int64) predicate.Gauge {
 	return predicate.Gauge(func(s *sql.Selector) {
@@ -254,6 +261,117 @@ func ValueLT(v int64) predicate.Gauge {
 func ValueLTE(v int64) predicate.Gauge {
 	return predicate.Gauge(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldValue), v))
+	})
+}
+
+// WIdEQ applies the EQ predicate on the "wId" field.
+func WIdEQ(v string) predicate.Gauge {
+	return predicate.Gauge(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldWId), v))
+	})
+}
+
+// WIdNEQ applies the NEQ predicate on the "wId" field.
+func WIdNEQ(v string) predicate.Gauge {
+	return predicate.Gauge(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldWId), v))
+	})
+}
+
+// WIdIn applies the In predicate on the "wId" field.
+func WIdIn(vs ...string) predicate.Gauge {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Gauge(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(vs) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldWId), v...))
+	})
+}
+
+// WIdNotIn applies the NotIn predicate on the "wId" field.
+func WIdNotIn(vs ...string) predicate.Gauge {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Gauge(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(vs) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldWId), v...))
+	})
+}
+
+// WIdGT applies the GT predicate on the "wId" field.
+func WIdGT(v string) predicate.Gauge {
+	return predicate.Gauge(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldWId), v))
+	})
+}
+
+// WIdGTE applies the GTE predicate on the "wId" field.
+func WIdGTE(v string) predicate.Gauge {
+	return predicate.Gauge(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldWId), v))
+	})
+}
+
+// WIdLT applies the LT predicate on the "wId" field.
+func WIdLT(v string) predicate.Gauge {
+	return predicate.Gauge(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldWId), v))
+	})
+}
+
+// WIdLTE applies the LTE predicate on the "wId" field.
+func WIdLTE(v string) predicate.Gauge {
+	return predicate.Gauge(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldWId), v))
+	})
+}
+
+// WIdContains applies the Contains predicate on the "wId" field.
+func WIdContains(v string) predicate.Gauge {
+	return predicate.Gauge(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldWId), v))
+	})
+}
+
+// WIdHasPrefix applies the HasPrefix predicate on the "wId" field.
+func WIdHasPrefix(v string) predicate.Gauge {
+	return predicate.Gauge(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldWId), v))
+	})
+}
+
+// WIdHasSuffix applies the HasSuffix predicate on the "wId" field.
+func WIdHasSuffix(v string) predicate.Gauge {
+	return predicate.Gauge(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldWId), v))
+	})
+}
+
+// WIdEqualFold applies the EqualFold predicate on the "wId" field.
+func WIdEqualFold(v string) predicate.Gauge {
+	return predicate.Gauge(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldWId), v))
+	})
+}
+
+// WIdContainsFold applies the ContainsFold predicate on the "wId" field.
+func WIdContainsFold(v string) predicate.Gauge {
+	return predicate.Gauge(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldWId), v))
 	})
 }
 

@@ -86,6 +86,12 @@ func (hc *HistogramCreate) SetP999(f float64) *HistogramCreate {
 	return hc
 }
 
+// SetWId sets the wId field.
+func (hc *HistogramCreate) SetWId(s string) *HistogramCreate {
+	hc.mutation.SetWId(s)
+	return hc
+}
+
 // SetMetricID sets the metric edge to Metric by id.
 func (hc *HistogramCreate) SetMetricID(id int) *HistogramCreate {
 	hc.mutation.SetMetricID(id)
@@ -139,6 +145,9 @@ func (hc *HistogramCreate) Save(ctx context.Context) (*Histogram, error) {
 	}
 	if _, ok := hc.mutation.P999(); !ok {
 		return nil, errors.New("ent: missing required field \"p999\"")
+	}
+	if _, ok := hc.mutation.WId(); !ok {
+		return nil, errors.New("ent: missing required field \"wId\"")
 	}
 	var (
 		err  error
@@ -274,6 +283,14 @@ func (hc *HistogramCreate) sqlSave(ctx context.Context) (*Histogram, error) {
 			Column: histogram.FieldP999,
 		})
 		h.P999 = value
+	}
+	if value, ok := hc.mutation.WId(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: histogram.FieldWId,
+		})
+		h.WId = value
 	}
 	if nodes := hc.mutation.MetricIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

@@ -19,6 +19,8 @@ func (Gauge) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int64("time").StructTag(`json:"time"`),
 		field.Int64("value").StructTag(`json:"value"`),
+
+		field.String("wId").StructTag(`json:"wId"`),
 	}
 }
 

@@ -6,9 +6,10 @@ const (
 	// Label holds the string label denoting the gauge type in the database.
 	Label = "gauge"
 	// FieldID holds the string denoting the id field in the database.
-	FieldID    = "id"   // FieldTime holds the string denoting the time vertex property in the database.
-	FieldTime  = "time" // FieldValue holds the string denoting the value vertex property in the database.
-	FieldValue = "value"
+	FieldID    = "id"    // FieldTime holds the string denoting the time vertex property in the database.
+	FieldTime  = "time"  // FieldValue holds the string denoting the value vertex property in the database.
+	FieldValue = "value" // FieldWId holds the string denoting the wid vertex property in the database.
+	FieldWId   = "w_id"
 
 	// EdgeMetric holds the string denoting the metric edge name in mutations.
 	EdgeMetric = "metric"
@@ -29,6 +30,7 @@ var Columns = []string{
 	FieldID,
 	FieldTime,
 	FieldValue,
+	FieldWId,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the Gauge type.

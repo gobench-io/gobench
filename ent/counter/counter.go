@@ -6,9 +6,10 @@ const (
 	// Label holds the string label denoting the counter type in the database.
 	Label = "counter"
 	// FieldID holds the string denoting the id field in the database.
-	FieldID    = "id"   // FieldTime holds the string denoting the time vertex property in the database.
-	FieldTime  = "time" // FieldCount holds the string denoting the count vertex property in the database.
-	FieldCount = "count"
+	FieldID    = "id"    // FieldTime holds the string denoting the time vertex property in the database.
+	FieldTime  = "time"  // FieldCount holds the string denoting the count vertex property in the database.
+	FieldCount = "count" // FieldWId holds the string denoting the wid vertex property in the database.
+	FieldWId   = "w_id"
 
 	// EdgeMetric holds the string denoting the metric edge name in mutations.
 	EdgeMetric = "metric"
@@ -29,6 +30,7 @@ var Columns = []string{
 	FieldID,
 	FieldTime,
 	FieldCount,
+	FieldWId,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the Counter type.

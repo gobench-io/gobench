@@ -32,6 +32,12 @@ func (cc *CounterCreate) SetCount(i int64) *CounterCreate {
 	return cc
 }
 
+// SetWId sets the wId field.
+func (cc *CounterCreate) SetWId(s string) *CounterCreate {
+	cc.mutation.SetWId(s)
+	return cc
+}
+
 // SetMetricID sets the metric edge to Metric by id.
 func (cc *CounterCreate) SetMetricID(id int) *CounterCreate {
 	cc.mutation.SetMetricID(id)
@@ -58,6 +64,9 @@ func (cc *CounterCreate) Save(ctx context.Context) (*Counter, error) {
 	}
 	if _, ok := cc.mutation.Count(); !ok {
 		return nil, errors.New("ent: missing required field \"count\"")
+	}
+	if _, ok := cc.mutation.WId(); !ok {
+		return nil, errors.New("ent: missing required field \"wId\"")
 	}
 	var (
 		err  error
@@ -121,6 +130,14 @@ func (cc *CounterCreate) sqlSave(ctx context.Context) (*Counter, error) {
 			Column: counter.FieldCount,
 		})
 		c.Count = value
+	}
+	if value, ok := cc.mutation.WId(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: counter.FieldWId,
+		})
+		c.WId = value
 	}
 	if nodes := cc.mutation.MetricIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

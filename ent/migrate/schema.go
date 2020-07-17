@@ -29,6 +29,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "time", Type: field.TypeInt64},
 		{Name: "count", Type: field.TypeInt64},
+		{Name: "w_id", Type: field.TypeString},
 		{Name: "metric_counters", Type: field.TypeInt, Nullable: true},
 	}
 	// CountersTable holds the schema information for the "counters" table.
@@ -39,7 +40,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:  "counters_metrics_counters",
-				Columns: []*schema.Column{CountersColumns[3]},
+				Columns: []*schema.Column{CountersColumns[4]},
 
 				RefColumns: []*schema.Column{MetricsColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -51,6 +52,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "time", Type: field.TypeInt64},
 		{Name: "value", Type: field.TypeInt64},
+		{Name: "w_id", Type: field.TypeString},
 		{Name: "metric_gauges", Type: field.TypeInt, Nullable: true},
 	}
 	// GaugesTable holds the schema information for the "gauges" table.
@@ -61,7 +63,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:  "gauges_metrics_gauges",
-				Columns: []*schema.Column{GaugesColumns[3]},
+				Columns: []*schema.Column{GaugesColumns[4]},
 
 				RefColumns: []*schema.Column{MetricsColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -125,6 +127,7 @@ var (
 		{Name: "p95", Type: field.TypeFloat64},
 		{Name: "p99", Type: field.TypeFloat64},
 		{Name: "p999", Type: field.TypeFloat64},
+		{Name: "w_id", Type: field.TypeString},
 		{Name: "metric_histograms", Type: field.TypeInt, Nullable: true},
 	}
 	// HistogramsTable holds the schema information for the "histograms" table.
@@ -135,7 +138,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:  "histograms_metrics_histograms",
-				Columns: []*schema.Column{HistogramsColumns[12]},
+				Columns: []*schema.Column{HistogramsColumns[13]},
 
 				RefColumns: []*schema.Column{MetricsColumns[0]},
 				OnDelete:   schema.SetNull,

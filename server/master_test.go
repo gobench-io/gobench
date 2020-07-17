@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"log"
 	"testing"
 	"time"
 
@@ -241,7 +240,6 @@ func TestSetup(t *testing.T) {
 	).All(ctx)
 	assert.Nil(t, err)
 	assert.Len(t, groups, 1)
-	log.Println(groups)
 	g := groups[0]
 
 	graphs, err := s.master.db.Graph.Query().Where(
@@ -250,7 +248,6 @@ func TestSetup(t *testing.T) {
 		),
 	).All(ctx)
 	assert.Nil(t, err)
-	log.Println(graphs)
 	assert.Len(t, graphs, 2)
 
 	assert.Equal(t, "HTTP Response", graphs[0].Title)
