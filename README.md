@@ -6,6 +6,8 @@ A distributed benchmark tool with Golang
 ![](https://img.shields.io/badge/license-MIT-blue.svg)
 ![](https://img.shields.io/badge/status-unstable-red.svg)
 
+> Note: gobench is under heavy development. Do not use.
+
 ## Why gobench
 
 Targets: Supporting more than HTTP like MQTT, Websocket, graphQL. It can scale to support up to 1 million connection concurrently. It could support scriptable tool.
@@ -48,7 +50,7 @@ Gobench is supporting 3 kinds of metric: counter, histogram, and gauge.
 
 Notify to gobench via `gobench.Notify(metric name, value)`.
 
-See `workers/http` for HTTP worker example.
+See `clients/http` for HTTP worker example.
 
 ## Sponsor
 
