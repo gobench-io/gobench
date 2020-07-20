@@ -53,7 +53,7 @@ func (m *master) Gauge(ctx context.Context, mID int, wid, title string, time int
 
 // FindCreateGroup find or create new group
 // return the existing/new group ent, is created, and error
-func (m *master) FindCreateGroup(ctx context.Context, mg metrics.Group) (
+func (m *master) FindCreateGroup(ctx context.Context, mg metrics.Group, appID int) (
 	eg *ent.Group, err error,
 ) {
 	eg, err = m.job.app.

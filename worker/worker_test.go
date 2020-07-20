@@ -29,7 +29,7 @@ func (l *nilLog) Gauge(ctx context.Context, mID int, id, title string, time int6
 	return nil
 }
 
-func (l *nilLog) FindCreateGroup(ctx context.Context, mg metrics.Group) (
+func (l *nilLog) FindCreateGroup(ctx context.Context, mg metrics.Group, appID int) (
 	*ent.Group, error,
 ) {
 	return nil, nil
@@ -50,9 +50,9 @@ func newNilLog() metricLogger {
 }
 
 func TestNew(t *testing.T) {
-	n1, err := NewWorker(newNilLog())
+	n1, err := NewWorker(newNilLog(), 1)
 	assert.Nil(t, err)
-	n2, err := NewWorker(newNilLog())
+	n2, err := NewWorker(newNilLog(), 2)
 	assert.Nil(t, err)
 
 	assert.Equal(t, n1, n2)
@@ -65,7 +65,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestLoadPlugin(t *testing.T) {
-	n, _ := NewWorker(newNilLog())
+	n, _ := NewWorker(newNilLog(), 1)
 	so := "./script/valid.so"
 	assert.Nil(t, n.Load(so))
 	assert.NotNil(t, n.vus)

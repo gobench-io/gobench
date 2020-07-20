@@ -42,7 +42,7 @@ type metricLogger interface {
 	Counter(context.Context, int, string, string, int64, int64) error
 	Histogram(context.Context, int, string, string, int64, gometrics.Histogram) error
 	Gauge(context.Context, int, string, string, int64, int64) error
-	FindCreateGroup(context.Context, metrics.Group) (*ent.Group, error)
+	FindCreateGroup(context.Context, metrics.Group, int) (*ent.Group, error)
 	FindCreateGraph(context.Context, metrics.Graph, int) (*ent.Graph, error)
 	FindCreateMetric(context.Context, metrics.Metric, int) (*ent.Metric, error)
 }
@@ -56,6 +56,7 @@ type Worker struct {
 	hostname string
 	pid      int
 
+	appID      int
 	status     status
 	pluginPath string
 	vus        *scenario.Vus
@@ -82,13 +83,16 @@ func init() {
 		hostname: hostname,
 		status:   Idle,
 
-		units: make(map[string]unit),
+		// units: make(map[string]unit),
 	}
 }
 
 // NewWorker returns the singleton worker
-func NewWorker(log metricLogger) (*Worker, error) {
+func NewWorker(log metricLogger, appID int) (*Worker, error) {
 	worker.log = log
+	worker.units = make(map[string]unit)
+	worker.appID = appID
+
 	return &worker, nil
 }
 
@@ -249,13 +253,14 @@ func timestampMs() int64 {
 
 // Setup is used for the worker to report the metrics that it will generate
 func Setup(groups []metrics.Group) error {
+	log.Println("setup -------------")
 	ctx := context.TODO()
 
 	units := make(map[string]unit)
 
 	for _, group := range groups {
 		// create a new group if not existed
-		egroup, err := worker.log.FindCreateGroup(ctx, group)
+		egroup, err := worker.log.FindCreateGroup(ctx, group, worker.appID)
 		if err != nil {
 			return fmt.Errorf("failed create group: %v", err)
 		}
@@ -348,6 +353,8 @@ func Notify(title string, value int64) error {
 
 	worker.mu.Lock()
 	defer worker.mu.Unlock()
+
+	log.Printf("worker units %+v\n", worker.units)
 
 	u, ok := worker.units[title]
 	if !ok {
