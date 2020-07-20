@@ -7,6 +7,7 @@ import (
 	"github.com/gobench-io/gobench/metrics"
 	gometrics "github.com/rcrowley/go-metrics"
 
+	entApp "github.com/gobench-io/gobench/ent/application"
 	entGraph "github.com/gobench-io/gobench/ent/graph"
 	entGroup "github.com/gobench-io/gobench/ent/group"
 	entMetric "github.com/gobench-io/gobench/ent/metric"
@@ -60,6 +61,9 @@ func (m *master) FindCreateGroup(ctx context.Context, mg metrics.Group, appID in
 		QueryGroups().
 		Where(
 			entGroup.NameEQ(mg.Name),
+			entGroup.HasApplicationWith(
+				entApp.IDEQ(appID),
+			),
 		).
 		First(ctx)
 

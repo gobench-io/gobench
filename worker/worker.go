@@ -88,12 +88,21 @@ func init() {
 }
 
 // NewWorker returns the singleton worker
-func NewWorker(log metricLogger, appID int) (*Worker, error) {
-	worker.log = log
+func NewWorker(l metricLogger, appID int) (*Worker, error) {
+	worker.log = l
 	worker.units = make(map[string]unit)
 	worker.appID = appID
 
+	// reset metrics
+	worker.unregisterGometrics()
+
 	return &worker, nil
+}
+
+func (w *Worker) unregisterGometrics() {
+	gometrics.Each(func(name string, i interface{}) {
+		gometrics.Unregister(name)
+	})
 }
 
 func (w *Worker) reset() {
