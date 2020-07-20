@@ -86,7 +86,8 @@ func (m *master) schedule() {
 	}
 }
 
-func (m *master) run() {
+func (m *master) run() (err error) {
+
 	ctx := context.TODO()
 
 	// finding pending application
@@ -99,12 +100,21 @@ func (m *master) run() {
 	// create new job from the application
 	m.job.app = app
 
+	defer func() {
+		if err != nil {
+			log.Printf("application id: %d failed run job %v\n", m.job.app.ID, err)
+			_ = m.jobTo(ctx, jobError)
+		}
+	}()
+
 	log.Printf("application id: %d, name: %s, status: %s\n",
 		m.job.app.ID, m.job.app.Name, m.job.app.Status,
 	)
 
 	// change job to provisioning
-	m.jobTo(ctx, jobProvisioning)
+	if err = m.jobTo(ctx, jobProvisioning); err != nil {
+		return
+	}
 
 	log.Printf("application id: %d, name: %s, status: %s\n",
 		m.job.app.ID, m.job.app.Name, m.job.app.Status,
@@ -126,17 +136,18 @@ func (m *master) run() {
 	)
 
 	if err = m.runJob(ctx); err != nil {
-		log.Printf("application id: %d failed run job %v\n", m.job.app.ID, err)
-
-		_ = m.jobTo(ctx, jobError)
 		return
 	}
 
-	_ = m.jobTo(ctx, jobFinished)
+	if err = m.jobTo(ctx, jobFinished); err != nil {
+		return
+	}
 
 	log.Printf("application id: %d, name: %s, status: %s\n",
 		m.job.app.ID, m.job.app.Name, m.job.app.Status,
 	)
+
+	return
 }
 
 // provision compiles a scenario to golang plugin, distribute the application to
