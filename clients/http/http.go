@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gobench-io/gobench"
 	"github.com/gobench-io/gobench/metrics"
 	"github.com/gobench-io/gobench/worker"
 )
@@ -93,7 +92,7 @@ func (h *HttpClient) do(method, url string, body []byte, headers map[string]stri
 			return
 		}
 		if res.StatusCode >= 300 || res.StatusCode < 200 {
-			gobench.Notify(fail, 1)
+			worker.Notify(fail, 1)
 			err = fmt.Errorf("request failed with status code %d", res.StatusCode)
 			return
 		}

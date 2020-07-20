@@ -27,9 +27,13 @@ func newAPITest() (*chi.Mux, *httptest.ResponseRecorder) {
 
 func newApp(t *testing.T) *ent.Application {
 	r, w := newAPITest()
+	name := "name 1"
+	scenario := "scenario 1"
+	encScenario := base64.StdEncoding.EncodeToString([]byte(scenario))
+
 	reqBody, _ := json.Marshal(map[string]string{
-		"Name":     "name 1",
-		"Scenario": "scenario 1",
+		"Name":     name,
+		"Scenario": encScenario,
 	})
 	req, _ := http.NewRequest("POST", "/api/applications", bytes.NewBuffer(reqBody))
 	req.Header.Set("Content-Type", "application/json")
