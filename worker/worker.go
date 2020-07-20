@@ -42,7 +42,7 @@ type metricLogger interface {
 	Counter(context.Context, int, string, string, int64, int64) error
 	Histogram(context.Context, int, string, string, int64, gometrics.Histogram) error
 	Gauge(context.Context, int, string, string, int64, int64) error
-	FindCreateGroup(context.Context, metrics.Group) (*ent.Group, error)
+	FindCreateGroup(context.Context, metrics.Group, int) (*ent.Group, error)
 	FindCreateGraph(context.Context, metrics.Graph, int) (*ent.Graph, error)
 	FindCreateMetric(context.Context, metrics.Metric, int) (*ent.Metric, error)
 }
@@ -56,6 +56,7 @@ type Worker struct {
 	hostname string
 	pid      int
 
+	appID      int
 	status     status
 	pluginPath string
 	vus        *scenario.Vus
@@ -81,15 +82,25 @@ func init() {
 		pid:      pid,
 		hostname: hostname,
 		status:   Idle,
-
-		units: make(map[string]unit),
 	}
 }
 
 // NewWorker returns the singleton worker
-func NewWorker(log metricLogger) (*Worker, error) {
-	worker.log = log
+func NewWorker(l metricLogger, appID int) (*Worker, error) {
+	worker.log = l
+	worker.units = make(map[string]unit)
+	worker.appID = appID
+
+	// reset metrics
+	worker.unregisterGometrics()
+
 	return &worker, nil
+}
+
+func (w *Worker) unregisterGometrics() {
+	gometrics.Each(func(name string, i interface{}) {
+		gometrics.Unregister(name)
+	})
 }
 
 func (w *Worker) reset() {
@@ -217,6 +228,7 @@ func (w *Worker) logScaled(ctx context.Context, freq time.Duration) {
 }
 
 func (w *Worker) logScaledOnCue(ctx context.Context, ch chan interface{}) error {
+	var err error
 	for {
 		select {
 		case <-ch:
@@ -228,12 +240,15 @@ func (w *Worker) logScaledOnCue(ctx context.Context, ch chan interface{}) error 
 			for _, u := range units {
 				switch u.Type {
 				case metrics.Counter:
-					w.log.Counter(ctx, u.metricID, w.id, u.Title, now, u.c.Count())
+					err = w.log.Counter(ctx, u.metricID, w.id, u.Title, now, u.c.Count())
 				case metrics.Histogram:
 					h := u.h.Snapshot()
-					w.log.Histogram(ctx, u.metricID, w.id, u.Title, now, h)
+					err = w.log.Histogram(ctx, u.metricID, w.id, u.Title, now, h)
 				case metrics.Gauge:
-					w.log.Gauge(ctx, u.metricID, w.id, u.Title, now, u.g.Value())
+					err = w.log.Gauge(ctx, u.metricID, w.id, u.Title, now, u.g.Value())
+				}
+				if err != nil {
+					log.Printf("worker log failed: %v\n", err)
 				}
 			}
 		case <-ctx.Done():
@@ -255,7 +270,7 @@ func Setup(groups []metrics.Group) error {
 
 	for _, group := range groups {
 		// create a new group if not existed
-		egroup, err := worker.log.FindCreateGroup(ctx, group)
+		egroup, err := worker.log.FindCreateGroup(ctx, group, worker.appID)
 		if err != nil {
 			return fmt.Errorf("failed create group: %v", err)
 		}
@@ -344,8 +359,6 @@ func Setup(groups []metrics.Group) error {
 // a. The title has never ever register before
 // b. The session is cancel but the scenario does not handle the ctx.Done signal
 func Notify(title string, value int64) error {
-	log.Printf("worker notify title: %s, value %d\n", title, value)
-
 	worker.mu.Lock()
 	defer worker.mu.Unlock()
 

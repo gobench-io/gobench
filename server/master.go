@@ -86,7 +86,8 @@ func (m *master) schedule() {
 	}
 }
 
-func (m *master) run() {
+func (m *master) run() (err error) {
+
 	ctx := context.TODO()
 
 	// finding pending application
@@ -96,15 +97,28 @@ func (m *master) run() {
 		return
 	}
 
-	log.Printf("application id: %d, name: %s, status: %s\n", app.ID, app.Name, app.Status)
-
 	// create new job from the application
 	m.job.app = app
 
-	// change job to provisioning
-	m.jobTo(ctx, jobProvisioning)
+	defer func() {
+		if err != nil {
+			log.Printf("application id: %d failed run job %v\n", m.job.app.ID, err)
+			_ = m.jobTo(ctx, jobError)
+		}
+	}()
 
-	log.Printf("application id: %d, name: %s, status: %s\n", app.ID, app.Name, app.Status)
+	log.Printf("application id: %d, name: %s, status: %s\n",
+		m.job.app.ID, m.job.app.Name, m.job.app.Status,
+	)
+
+	// change job to provisioning
+	if err = m.jobTo(ctx, jobProvisioning); err != nil {
+		return
+	}
+
+	log.Printf("application id: %d, name: %s, status: %s\n",
+		m.job.app.ID, m.job.app.Name, m.job.app.Status,
+	)
 
 	if err = m.jobCompile(ctx); err != nil {
 		return
@@ -117,15 +131,23 @@ func (m *master) run() {
 		return
 	}
 
-	log.Printf("application id: %d, name: %s, status: %s\n", app.ID, app.Name, app.Status)
+	log.Printf("application id: %d, name: %s, status: %s\n",
+		m.job.app.ID, m.job.app.Name, m.job.app.Status,
+	)
 
 	if err = m.runJob(ctx); err != nil {
-		log.Printf("application id: %d failed run job %v\n", app.ID, err)
-		_ = m.jobTo(ctx, jobError)
 		return
 	}
 
-	_ = m.jobTo(ctx, jobFinished)
+	if err = m.jobTo(ctx, jobFinished); err != nil {
+		return
+	}
+
+	log.Printf("application id: %d, name: %s, status: %s\n",
+		m.job.app.ID, m.job.app.Name, m.job.app.Status,
+	)
+
+	return
 }
 
 // provision compiles a scenario to golang plugin, distribute the application to
@@ -196,7 +218,7 @@ func (m *master) jobCompile(ctx context.Context) error {
 func (m *master) runJob(ctx context.Context) error {
 	var err error
 
-	if m.lw, err = worker.NewWorker(m); err != nil {
+	if m.lw, err = worker.NewWorker(m, m.job.app.ID); err != nil {
 		return err
 	}
 

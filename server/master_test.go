@@ -22,7 +22,7 @@ func seedServer(t *testing.T) *Server {
 	// disable the schedule
 	s.isSchedule = false
 	s.master.job.app = &ent.Application{}
-	s.master.lw, err = worker.NewWorker(&s.master)
+	s.master.lw, err = worker.NewWorker(&s.master, s.master.job.app.ID)
 	assert.Nil(t, err)
 	assert.Nil(t, s.Start())
 
