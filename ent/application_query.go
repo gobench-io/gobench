@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -12,6 +13,7 @@ import (
 	"github.com/facebookincubator/ent/dialect/sql/sqlgraph"
 	"github.com/facebookincubator/ent/schema/field"
 	"github.com/gobench-io/gobench/ent/application"
+	"github.com/gobench-io/gobench/ent/group"
 	"github.com/gobench-io/gobench/ent/predicate"
 )
 
@@ -23,6 +25,8 @@ type ApplicationQuery struct {
 	order      []OrderFunc
 	unique     []string
 	predicates []predicate.Application
+	// eager-loading edges.
+	withGroups *GroupQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -50,6 +54,24 @@ func (aq *ApplicationQuery) Offset(offset int) *ApplicationQuery {
 func (aq *ApplicationQuery) Order(o ...OrderFunc) *ApplicationQuery {
 	aq.order = append(aq.order, o...)
 	return aq
+}
+
+// QueryGroups chains the current query on the groups edge.
+func (aq *ApplicationQuery) QueryGroups() *GroupQuery {
+	query := &GroupQuery{config: aq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(application.Table, application.FieldID, aq.sqlQuery()),
+			sqlgraph.To(group.Table, group.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, application.GroupsTable, application.GroupsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first Application entity in the query. Returns *NotFoundError when no application was found.
@@ -231,6 +253,17 @@ func (aq *ApplicationQuery) Clone() *ApplicationQuery {
 	}
 }
 
+//  WithGroups tells the query-builder to eager-loads the nodes that are connected to
+// the "groups" edge. The optional arguments used to configure the query builder of the edge.
+func (aq *ApplicationQuery) WithGroups(opts ...func(*GroupQuery)) *ApplicationQuery {
+	query := &GroupQuery{config: aq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	aq.withGroups = query
+	return aq
+}
+
 // GroupBy used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -295,8 +328,11 @@ func (aq *ApplicationQuery) prepareQuery(ctx context.Context) error {
 
 func (aq *ApplicationQuery) sqlAll(ctx context.Context) ([]*Application, error) {
 	var (
-		nodes = []*Application{}
-		_spec = aq.querySpec()
+		nodes       = []*Application{}
+		_spec       = aq.querySpec()
+		loadedTypes = [1]bool{
+			aq.withGroups != nil,
+		}
 	)
 	_spec.ScanValues = func() []interface{} {
 		node := &Application{config: aq.config}
@@ -309,6 +345,7 @@ func (aq *ApplicationQuery) sqlAll(ctx context.Context) ([]*Application, error) 
 			return fmt.Errorf("ent: Assign called without calling ScanValues")
 		}
 		node := nodes[len(nodes)-1]
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(values...)
 	}
 	if err := sqlgraph.QueryNodes(ctx, aq.driver, _spec); err != nil {
@@ -317,6 +354,35 @@ func (aq *ApplicationQuery) sqlAll(ctx context.Context) ([]*Application, error) 
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+
+	if query := aq.withGroups; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*Application)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+		}
+		query.withFKs = true
+		query.Where(predicate.Group(func(s *sql.Selector) {
+			s.Where(sql.InValues(application.GroupsColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.application_groups
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "application_groups" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "application_groups" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.Groups = append(node.Edges.Groups, n)
+		}
+	}
+
 	return nodes, nil
 }
 

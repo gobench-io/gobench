@@ -47,8 +47,11 @@ type ApplicationMutation struct {
 	name          *string
 	status        *string
 	created_at    *time.Time
-	finished_at   *time.Time
+	updated_at    *time.Time
+	scenario      *string
 	clearedFields map[string]struct{}
+	groups        map[int]struct{}
+	removedgroups map[int]struct{}
 	done          bool
 	oldValue      func(context.Context) (*Application, error)
 }
@@ -243,54 +246,120 @@ func (m *ApplicationMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
-// SetFinishedAt sets the finished_at field.
-func (m *ApplicationMutation) SetFinishedAt(t time.Time) {
-	m.finished_at = &t
+// SetUpdatedAt sets the updated_at field.
+func (m *ApplicationMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
 }
 
-// FinishedAt returns the finished_at value in the mutation.
-func (m *ApplicationMutation) FinishedAt() (r time.Time, exists bool) {
-	v := m.finished_at
+// UpdatedAt returns the updated_at value in the mutation.
+func (m *ApplicationMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldFinishedAt returns the old finished_at value of the Application.
+// OldUpdatedAt returns the old updated_at value of the Application.
 // If the Application object wasn't provided to the builder, the object is fetched
 // from the database.
 // An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *ApplicationMutation) OldFinishedAt(ctx context.Context) (v time.Time, err error) {
+func (m *ApplicationMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldFinishedAt is allowed only on UpdateOne operations")
+		return v, fmt.Errorf("OldUpdatedAt is allowed only on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldFinishedAt requires an ID field in the mutation")
+		return v, fmt.Errorf("OldUpdatedAt requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldFinishedAt: %w", err)
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
 	}
-	return oldValue.FinishedAt, nil
+	return oldValue.UpdatedAt, nil
 }
 
-// ClearFinishedAt clears the value of finished_at.
-func (m *ApplicationMutation) ClearFinishedAt() {
-	m.finished_at = nil
-	m.clearedFields[application.FieldFinishedAt] = struct{}{}
+// ResetUpdatedAt reset all changes of the "updated_at" field.
+func (m *ApplicationMutation) ResetUpdatedAt() {
+	m.updated_at = nil
 }
 
-// FinishedAtCleared returns if the field finished_at was cleared in this mutation.
-func (m *ApplicationMutation) FinishedAtCleared() bool {
-	_, ok := m.clearedFields[application.FieldFinishedAt]
-	return ok
+// SetScenario sets the scenario field.
+func (m *ApplicationMutation) SetScenario(s string) {
+	m.scenario = &s
 }
 
-// ResetFinishedAt reset all changes of the "finished_at" field.
-func (m *ApplicationMutation) ResetFinishedAt() {
-	m.finished_at = nil
-	delete(m.clearedFields, application.FieldFinishedAt)
+// Scenario returns the scenario value in the mutation.
+func (m *ApplicationMutation) Scenario() (r string, exists bool) {
+	v := m.scenario
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldScenario returns the old scenario value of the Application.
+// If the Application object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *ApplicationMutation) OldScenario(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldScenario is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldScenario requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldScenario: %w", err)
+	}
+	return oldValue.Scenario, nil
+}
+
+// ResetScenario reset all changes of the "scenario" field.
+func (m *ApplicationMutation) ResetScenario() {
+	m.scenario = nil
+}
+
+// AddGroupIDs adds the groups edge to Group by ids.
+func (m *ApplicationMutation) AddGroupIDs(ids ...int) {
+	if m.groups == nil {
+		m.groups = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.groups[ids[i]] = struct{}{}
+	}
+}
+
+// RemoveGroupIDs removes the groups edge to Group by ids.
+func (m *ApplicationMutation) RemoveGroupIDs(ids ...int) {
+	if m.removedgroups == nil {
+		m.removedgroups = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removedgroups[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedGroups returns the removed ids of groups.
+func (m *ApplicationMutation) RemovedGroupsIDs() (ids []int) {
+	for id := range m.removedgroups {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// GroupsIDs returns the groups ids in the mutation.
+func (m *ApplicationMutation) GroupsIDs() (ids []int) {
+	for id := range m.groups {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetGroups reset all changes of the "groups" edge.
+func (m *ApplicationMutation) ResetGroups() {
+	m.groups = nil
+	m.removedgroups = nil
 }
 
 // Op returns the operation name.
@@ -307,7 +376,7 @@ func (m *ApplicationMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *ApplicationMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.name != nil {
 		fields = append(fields, application.FieldName)
 	}
@@ -317,8 +386,11 @@ func (m *ApplicationMutation) Fields() []string {
 	if m.created_at != nil {
 		fields = append(fields, application.FieldCreatedAt)
 	}
-	if m.finished_at != nil {
-		fields = append(fields, application.FieldFinishedAt)
+	if m.updated_at != nil {
+		fields = append(fields, application.FieldUpdatedAt)
+	}
+	if m.scenario != nil {
+		fields = append(fields, application.FieldScenario)
 	}
 	return fields
 }
@@ -334,8 +406,10 @@ func (m *ApplicationMutation) Field(name string) (ent.Value, bool) {
 		return m.Status()
 	case application.FieldCreatedAt:
 		return m.CreatedAt()
-	case application.FieldFinishedAt:
-		return m.FinishedAt()
+	case application.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case application.FieldScenario:
+		return m.Scenario()
 	}
 	return nil, false
 }
@@ -351,8 +425,10 @@ func (m *ApplicationMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldStatus(ctx)
 	case application.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
-	case application.FieldFinishedAt:
-		return m.OldFinishedAt(ctx)
+	case application.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case application.FieldScenario:
+		return m.OldScenario(ctx)
 	}
 	return nil, fmt.Errorf("unknown Application field %s", name)
 }
@@ -383,12 +459,19 @@ func (m *ApplicationMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetCreatedAt(v)
 		return nil
-	case application.FieldFinishedAt:
+	case application.FieldUpdatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetFinishedAt(v)
+		m.SetUpdatedAt(v)
+		return nil
+	case application.FieldScenario:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetScenario(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Application field %s", name)
@@ -419,11 +502,7 @@ func (m *ApplicationMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared
 // during this mutation.
 func (m *ApplicationMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(application.FieldFinishedAt) {
-		fields = append(fields, application.FieldFinishedAt)
-	}
-	return fields
+	return nil
 }
 
 // FieldCleared returns a boolean indicates if this field was
@@ -436,11 +515,6 @@ func (m *ApplicationMutation) FieldCleared(name string) bool {
 // ClearField clears the value for the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *ApplicationMutation) ClearField(name string) error {
-	switch name {
-	case application.FieldFinishedAt:
-		m.ClearFinishedAt()
-		return nil
-	}
 	return fmt.Errorf("unknown Application nullable field %s", name)
 }
 
@@ -458,8 +532,11 @@ func (m *ApplicationMutation) ResetField(name string) error {
 	case application.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil
-	case application.FieldFinishedAt:
-		m.ResetFinishedAt()
+	case application.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case application.FieldScenario:
+		m.ResetScenario()
 		return nil
 	}
 	return fmt.Errorf("unknown Application field %s", name)
@@ -468,45 +545,71 @@ func (m *ApplicationMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this
 // mutation.
 func (m *ApplicationMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.groups != nil {
+		edges = append(edges, application.EdgeGroups)
+	}
 	return edges
 }
 
 // AddedIDs returns all ids (to other nodes) that were added for
 // the given edge name.
 func (m *ApplicationMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case application.EdgeGroups:
+		ids := make([]ent.Value, 0, len(m.groups))
+		for id := range m.groups {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this
 // mutation.
 func (m *ApplicationMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.removedgroups != nil {
+		edges = append(edges, application.EdgeGroups)
+	}
 	return edges
 }
 
 // RemovedIDs returns all ids (to other nodes) that were removed for
 // the given edge name.
 func (m *ApplicationMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case application.EdgeGroups:
+		ids := make([]ent.Value, 0, len(m.removedgroups))
+		for id := range m.removedgroups {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this
 // mutation.
 func (m *ApplicationMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
 	return edges
 }
 
 // EdgeCleared returns a boolean indicates if this edge was
 // cleared in this mutation.
 func (m *ApplicationMutation) EdgeCleared(name string) bool {
+	switch name {
+	}
 	return false
 }
 
 // ClearEdge clears the value for the given name. It returns an
 // error if the edge name is not defined in the schema.
 func (m *ApplicationMutation) ClearEdge(name string) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown Application unique edge %s", name)
 }
 
@@ -514,6 +617,11 @@ func (m *ApplicationMutation) ClearEdge(name string) error {
 // given edge name. It returns an error if the edge is not
 // defined in the schema.
 func (m *ApplicationMutation) ResetEdge(name string) error {
+	switch name {
+	case application.EdgeGroups:
+		m.ResetGroups()
+		return nil
+	}
 	return fmt.Errorf("unknown Application edge %s", name)
 }
 
@@ -528,6 +636,7 @@ type CounterMutation struct {
 	addtime       *int64
 	count         *int64
 	addcount      *int64
+	wID           *string
 	clearedFields map[string]struct{}
 	metric        *int
 	clearedmetric bool
@@ -728,6 +837,43 @@ func (m *CounterMutation) ResetCount() {
 	m.addcount = nil
 }
 
+// SetWID sets the wID field.
+func (m *CounterMutation) SetWID(s string) {
+	m.wID = &s
+}
+
+// WID returns the wID value in the mutation.
+func (m *CounterMutation) WID() (r string, exists bool) {
+	v := m.wID
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWID returns the old wID value of the Counter.
+// If the Counter object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *CounterMutation) OldWID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldWID is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldWID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWID: %w", err)
+	}
+	return oldValue.WID, nil
+}
+
+// ResetWID reset all changes of the "wID" field.
+func (m *CounterMutation) ResetWID() {
+	m.wID = nil
+}
+
 // SetMetricID sets the metric edge to Metric by id.
 func (m *CounterMutation) SetMetricID(id int) {
 	m.metric = &id
@@ -781,12 +927,15 @@ func (m *CounterMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *CounterMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 3)
 	if m.time != nil {
 		fields = append(fields, counter.FieldTime)
 	}
 	if m.count != nil {
 		fields = append(fields, counter.FieldCount)
+	}
+	if m.wID != nil {
+		fields = append(fields, counter.FieldWID)
 	}
 	return fields
 }
@@ -800,6 +949,8 @@ func (m *CounterMutation) Field(name string) (ent.Value, bool) {
 		return m.Time()
 	case counter.FieldCount:
 		return m.Count()
+	case counter.FieldWID:
+		return m.WID()
 	}
 	return nil, false
 }
@@ -813,6 +964,8 @@ func (m *CounterMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldTime(ctx)
 	case counter.FieldCount:
 		return m.OldCount(ctx)
+	case counter.FieldWID:
+		return m.OldWID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Counter field %s", name)
 }
@@ -835,6 +988,13 @@ func (m *CounterMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCount(v)
+		return nil
+	case counter.FieldWID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Counter field %s", name)
@@ -918,6 +1078,9 @@ func (m *CounterMutation) ResetField(name string) error {
 		return nil
 	case counter.FieldCount:
 		m.ResetCount()
+		return nil
+	case counter.FieldWID:
+		m.ResetWID()
 		return nil
 	}
 	return fmt.Errorf("unknown Counter field %s", name)
@@ -1014,6 +1177,7 @@ type GaugeMutation struct {
 	addtime       *int64
 	value         *int64
 	addvalue      *int64
+	wID           *string
 	clearedFields map[string]struct{}
 	metric        *int
 	clearedmetric bool
@@ -1214,6 +1378,43 @@ func (m *GaugeMutation) ResetValue() {
 	m.addvalue = nil
 }
 
+// SetWID sets the wID field.
+func (m *GaugeMutation) SetWID(s string) {
+	m.wID = &s
+}
+
+// WID returns the wID value in the mutation.
+func (m *GaugeMutation) WID() (r string, exists bool) {
+	v := m.wID
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWID returns the old wID value of the Gauge.
+// If the Gauge object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *GaugeMutation) OldWID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldWID is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldWID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWID: %w", err)
+	}
+	return oldValue.WID, nil
+}
+
+// ResetWID reset all changes of the "wID" field.
+func (m *GaugeMutation) ResetWID() {
+	m.wID = nil
+}
+
 // SetMetricID sets the metric edge to Metric by id.
 func (m *GaugeMutation) SetMetricID(id int) {
 	m.metric = &id
@@ -1267,12 +1468,15 @@ func (m *GaugeMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *GaugeMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 3)
 	if m.time != nil {
 		fields = append(fields, gauge.FieldTime)
 	}
 	if m.value != nil {
 		fields = append(fields, gauge.FieldValue)
+	}
+	if m.wID != nil {
+		fields = append(fields, gauge.FieldWID)
 	}
 	return fields
 }
@@ -1286,6 +1490,8 @@ func (m *GaugeMutation) Field(name string) (ent.Value, bool) {
 		return m.Time()
 	case gauge.FieldValue:
 		return m.Value()
+	case gauge.FieldWID:
+		return m.WID()
 	}
 	return nil, false
 }
@@ -1299,6 +1505,8 @@ func (m *GaugeMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldTime(ctx)
 	case gauge.FieldValue:
 		return m.OldValue(ctx)
+	case gauge.FieldWID:
+		return m.OldWID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Gauge field %s", name)
 }
@@ -1321,6 +1529,13 @@ func (m *GaugeMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetValue(v)
+		return nil
+	case gauge.FieldWID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Gauge field %s", name)
@@ -1404,6 +1619,9 @@ func (m *GaugeMutation) ResetField(name string) error {
 		return nil
 	case gauge.FieldValue:
 		m.ResetValue()
+		return nil
+	case gauge.FieldWID:
+		m.ResetWID()
 		return nil
 	}
 	return fmt.Errorf("unknown Gauge field %s", name)
@@ -1975,15 +2193,17 @@ func (m *GraphMutation) ResetEdge(name string) error {
 // nodes in the graph.
 type GroupMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	name          *string
-	clearedFields map[string]struct{}
-	graphs        map[int]struct{}
-	removedgraphs map[int]struct{}
-	done          bool
-	oldValue      func(context.Context) (*Group, error)
+	op                 Op
+	typ                string
+	id                 *int
+	name               *string
+	clearedFields      map[string]struct{}
+	application        *int
+	clearedapplication bool
+	graphs             map[int]struct{}
+	removedgraphs      map[int]struct{}
+	done               bool
+	oldValue           func(context.Context) (*Group, error)
 }
 
 var _ ent.Mutation = (*GroupMutation)(nil)
@@ -2100,6 +2320,45 @@ func (m *GroupMutation) OldName(ctx context.Context) (v string, err error) {
 // ResetName reset all changes of the "name" field.
 func (m *GroupMutation) ResetName() {
 	m.name = nil
+}
+
+// SetApplicationID sets the application edge to Application by id.
+func (m *GroupMutation) SetApplicationID(id int) {
+	m.application = &id
+}
+
+// ClearApplication clears the application edge to Application.
+func (m *GroupMutation) ClearApplication() {
+	m.clearedapplication = true
+}
+
+// ApplicationCleared returns if the edge application was cleared.
+func (m *GroupMutation) ApplicationCleared() bool {
+	return m.clearedapplication
+}
+
+// ApplicationID returns the application id in the mutation.
+func (m *GroupMutation) ApplicationID() (id int, exists bool) {
+	if m.application != nil {
+		return *m.application, true
+	}
+	return
+}
+
+// ApplicationIDs returns the application ids in the mutation.
+// Note that ids always returns len(ids) <= 1 for unique edges, and you should use
+// ApplicationID instead. It exists only for internal usage by the builders.
+func (m *GroupMutation) ApplicationIDs() (ids []int) {
+	if id := m.application; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetApplication reset all changes of the "application" edge.
+func (m *GroupMutation) ResetApplication() {
+	m.application = nil
+	m.clearedapplication = false
 }
 
 // AddGraphIDs adds the graphs edge to Graph by ids.
@@ -2259,7 +2518,10 @@ func (m *GroupMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this
 // mutation.
 func (m *GroupMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
+	if m.application != nil {
+		edges = append(edges, group.EdgeApplication)
+	}
 	if m.graphs != nil {
 		edges = append(edges, group.EdgeGraphs)
 	}
@@ -2270,6 +2532,10 @@ func (m *GroupMutation) AddedEdges() []string {
 // the given edge name.
 func (m *GroupMutation) AddedIDs(name string) []ent.Value {
 	switch name {
+	case group.EdgeApplication:
+		if id := m.application; id != nil {
+			return []ent.Value{*id}
+		}
 	case group.EdgeGraphs:
 		ids := make([]ent.Value, 0, len(m.graphs))
 		for id := range m.graphs {
@@ -2283,7 +2549,7 @@ func (m *GroupMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this
 // mutation.
 func (m *GroupMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.removedgraphs != nil {
 		edges = append(edges, group.EdgeGraphs)
 	}
@@ -2307,7 +2573,10 @@ func (m *GroupMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this
 // mutation.
 func (m *GroupMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
+	if m.clearedapplication {
+		edges = append(edges, group.EdgeApplication)
+	}
 	return edges
 }
 
@@ -2315,6 +2584,8 @@ func (m *GroupMutation) ClearedEdges() []string {
 // cleared in this mutation.
 func (m *GroupMutation) EdgeCleared(name string) bool {
 	switch name {
+	case group.EdgeApplication:
+		return m.clearedapplication
 	}
 	return false
 }
@@ -2323,6 +2594,9 @@ func (m *GroupMutation) EdgeCleared(name string) bool {
 // error if the edge name is not defined in the schema.
 func (m *GroupMutation) ClearEdge(name string) error {
 	switch name {
+	case group.EdgeApplication:
+		m.ClearApplication()
+		return nil
 	}
 	return fmt.Errorf("unknown Group unique edge %s", name)
 }
@@ -2332,6 +2606,9 @@ func (m *GroupMutation) ClearEdge(name string) error {
 // defined in the schema.
 func (m *GroupMutation) ResetEdge(name string) error {
 	switch name {
+	case group.EdgeApplication:
+		m.ResetApplication()
+		return nil
 	case group.EdgeGraphs:
 		m.ResetGraphs()
 		return nil
@@ -2368,6 +2645,7 @@ type HistogramMutation struct {
 	addp99        *float64
 	p999          *float64
 	addp999       *float64
+	wID           *string
 	clearedFields map[string]struct{}
 	metric        *int
 	clearedmetric bool
@@ -3081,6 +3359,43 @@ func (m *HistogramMutation) ResetP999() {
 	m.addp999 = nil
 }
 
+// SetWID sets the wID field.
+func (m *HistogramMutation) SetWID(s string) {
+	m.wID = &s
+}
+
+// WID returns the wID value in the mutation.
+func (m *HistogramMutation) WID() (r string, exists bool) {
+	v := m.wID
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWID returns the old wID value of the Histogram.
+// If the Histogram object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *HistogramMutation) OldWID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldWID is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldWID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWID: %w", err)
+	}
+	return oldValue.WID, nil
+}
+
+// ResetWID reset all changes of the "wID" field.
+func (m *HistogramMutation) ResetWID() {
+	m.wID = nil
+}
+
 // SetMetricID sets the metric edge to Metric by id.
 func (m *HistogramMutation) SetMetricID(id int) {
 	m.metric = &id
@@ -3134,7 +3449,7 @@ func (m *HistogramMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *HistogramMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 12)
 	if m.time != nil {
 		fields = append(fields, histogram.FieldTime)
 	}
@@ -3168,6 +3483,9 @@ func (m *HistogramMutation) Fields() []string {
 	if m.p999 != nil {
 		fields = append(fields, histogram.FieldP999)
 	}
+	if m.wID != nil {
+		fields = append(fields, histogram.FieldWID)
+	}
 	return fields
 }
 
@@ -3198,6 +3516,8 @@ func (m *HistogramMutation) Field(name string) (ent.Value, bool) {
 		return m.P99()
 	case histogram.FieldP999:
 		return m.P999()
+	case histogram.FieldWID:
+		return m.WID()
 	}
 	return nil, false
 }
@@ -3229,6 +3549,8 @@ func (m *HistogramMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldP99(ctx)
 	case histogram.FieldP999:
 		return m.OldP999(ctx)
+	case histogram.FieldWID:
+		return m.OldWID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Histogram field %s", name)
 }
@@ -3314,6 +3636,13 @@ func (m *HistogramMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetP999(v)
+		return nil
+	case histogram.FieldWID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Histogram field %s", name)
@@ -3532,6 +3861,9 @@ func (m *HistogramMutation) ResetField(name string) error {
 		return nil
 	case histogram.FieldP999:
 		m.ResetP999()
+		return nil
+	case histogram.FieldWID:
+		m.ResetWID()
 		return nil
 	}
 	return fmt.Errorf("unknown Histogram field %s", name)

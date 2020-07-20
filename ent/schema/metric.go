@@ -14,7 +14,7 @@ type Metric struct {
 // Fields of the Metric.
 func (Metric) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("title").Immutable().Unique().StructTag(`json:"title"`),
+		field.String("title").Immutable().StructTag(`json:"title"`),
 		field.String("type").StructTag(`json:"type"`),
 	}
 }
@@ -22,8 +22,7 @@ func (Metric) Fields() []ent.Field {
 // Edges of the Metric.
 func (Metric) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("graph", Graph.Type).Ref("metrics").Unique().StructTag("json:\"-\""),
-
+		edge.From("graph", Graph.Type).Ref("metrics").Unique(),
 		edge.To("histograms", Histogram.Type),
 		edge.To("counters", Counter.Type),
 		edge.To("gauges", Gauge.Type),

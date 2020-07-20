@@ -9,6 +9,7 @@ import (
 	"github.com/facebookincubator/ent/dialect/sql"
 	"github.com/facebookincubator/ent/dialect/sql/sqlgraph"
 	"github.com/facebookincubator/ent/schema/field"
+	"github.com/gobench-io/gobench/ent/application"
 	"github.com/gobench-io/gobench/ent/graph"
 	"github.com/gobench-io/gobench/ent/group"
 	"github.com/gobench-io/gobench/ent/predicate"
@@ -28,6 +29,25 @@ func (gu *GroupUpdate) Where(ps ...predicate.Group) *GroupUpdate {
 	return gu
 }
 
+// SetApplicationID sets the application edge to Application by id.
+func (gu *GroupUpdate) SetApplicationID(id int) *GroupUpdate {
+	gu.mutation.SetApplicationID(id)
+	return gu
+}
+
+// SetNillableApplicationID sets the application edge to Application by id if the given value is not nil.
+func (gu *GroupUpdate) SetNillableApplicationID(id *int) *GroupUpdate {
+	if id != nil {
+		gu = gu.SetApplicationID(*id)
+	}
+	return gu
+}
+
+// SetApplication sets the application edge to Application.
+func (gu *GroupUpdate) SetApplication(a *Application) *GroupUpdate {
+	return gu.SetApplicationID(a.ID)
+}
+
 // AddGraphIDs adds the graphs edge to Graph by ids.
 func (gu *GroupUpdate) AddGraphIDs(ids ...int) *GroupUpdate {
 	gu.mutation.AddGraphIDs(ids...)
@@ -41,6 +61,12 @@ func (gu *GroupUpdate) AddGraphs(g ...*Graph) *GroupUpdate {
 		ids[i] = g[i].ID
 	}
 	return gu.AddGraphIDs(ids...)
+}
+
+// ClearApplication clears the application edge to Application.
+func (gu *GroupUpdate) ClearApplication() *GroupUpdate {
+	gu.mutation.ClearApplication()
+	return gu
 }
 
 // RemoveGraphIDs removes the graphs edge to Graph by ids.
@@ -128,6 +154,41 @@ func (gu *GroupUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if gu.mutation.ApplicationCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   group.ApplicationTable,
+			Columns: []string{group.ApplicationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: application.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := gu.mutation.ApplicationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   group.ApplicationTable,
+			Columns: []string{group.ApplicationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: application.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if nodes := gu.mutation.RemovedGraphsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -184,6 +245,25 @@ type GroupUpdateOne struct {
 	mutation *GroupMutation
 }
 
+// SetApplicationID sets the application edge to Application by id.
+func (guo *GroupUpdateOne) SetApplicationID(id int) *GroupUpdateOne {
+	guo.mutation.SetApplicationID(id)
+	return guo
+}
+
+// SetNillableApplicationID sets the application edge to Application by id if the given value is not nil.
+func (guo *GroupUpdateOne) SetNillableApplicationID(id *int) *GroupUpdateOne {
+	if id != nil {
+		guo = guo.SetApplicationID(*id)
+	}
+	return guo
+}
+
+// SetApplication sets the application edge to Application.
+func (guo *GroupUpdateOne) SetApplication(a *Application) *GroupUpdateOne {
+	return guo.SetApplicationID(a.ID)
+}
+
 // AddGraphIDs adds the graphs edge to Graph by ids.
 func (guo *GroupUpdateOne) AddGraphIDs(ids ...int) *GroupUpdateOne {
 	guo.mutation.AddGraphIDs(ids...)
@@ -197,6 +277,12 @@ func (guo *GroupUpdateOne) AddGraphs(g ...*Graph) *GroupUpdateOne {
 		ids[i] = g[i].ID
 	}
 	return guo.AddGraphIDs(ids...)
+}
+
+// ClearApplication clears the application edge to Application.
+func (guo *GroupUpdateOne) ClearApplication() *GroupUpdateOne {
+	guo.mutation.ClearApplication()
+	return guo
 }
 
 // RemoveGraphIDs removes the graphs edge to Graph by ids.
@@ -282,6 +368,41 @@ func (guo *GroupUpdateOne) sqlSave(ctx context.Context) (gr *Group, err error) {
 		return nil, fmt.Errorf("missing Group.ID for update")
 	}
 	_spec.Node.ID.Value = id
+	if guo.mutation.ApplicationCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   group.ApplicationTable,
+			Columns: []string{group.ApplicationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: application.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := guo.mutation.ApplicationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   group.ApplicationTable,
+			Columns: []string{group.ApplicationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: application.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if nodes := guo.mutation.RemovedGraphsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,

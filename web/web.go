@@ -9,27 +9,30 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
-	"github.com/gobench-io/gobench"
 	"github.com/gobench-io/gobench/ent"
+	"github.com/gobench-io/gobench/server"
 	_ "github.com/gobench-io/gobench/web/statik"
 	"github.com/rakyll/statik/fs"
 )
 
-var db *ent.Client
-
-func intDB(c *ent.Client) {
-	db = c
-}
-
 type webKey string
 
-// New return new router interface
-func New(db *ent.Client) *chi.Mux {
-	// save the db config
-	intDB(db)
+var s *server.Server
 
-	// basic cors
-	// for more ideas, see: https://developer.github.com/v3/#cross-origin-resource-sharing
+func intServer(ws *server.Server) {
+	s = ws
+}
+
+func db() *ent.Client {
+	return s.DB()
+}
+
+// New return new router interface
+func New(s *server.Server) *chi.Mux {
+	intServer(s)
+
+	// basic cors for more ideas, see:
+	// https://developer.github.com/v3/#cross-origin-resource-sharing
 	cors := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -44,7 +47,7 @@ func New(db *ent.Client) *chi.Mux {
 	r.Use(cors.Handler)
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
+	// r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
 	r.Use(middleware.Timeout(60 * time.Second))
@@ -63,7 +66,7 @@ func New(db *ent.Client) *chi.Mux {
 
 		// rest for graphs
 		r.Route("/graphs", func(r chi.Router) {
-			r.Get("/", listGraphs) // GET /groups
+			r.Get("/", listGraphs) // GET /graphs
 
 			r.Route("/{graphID}", func(r chi.Router) {
 				r.Use(graphCtx)
@@ -74,7 +77,7 @@ func New(db *ent.Client) *chi.Mux {
 
 		// rest for metrics
 		r.Route("/metrics", func(r chi.Router) {
-			r.Get("/", listMetrics) // GET /groups
+			r.Get("/", listMetrics) // GET /metrics
 
 			r.Route("/{metricID}", func(r chi.Router) {
 				r.Use(metricCtx, timeCtx)
@@ -87,7 +90,17 @@ func New(db *ent.Client) *chi.Mux {
 		})
 
 		// get the application
-		r.Get("/application", getApplication)
+		r.Route("/applications", func(r chi.Router) {
+			r.Get("/", listApplications)   // GET /applications
+			r.Post("/", createApplication) // POST /applications
+
+			r.Route("/{applicationID}", func(r chi.Router) {
+				r.Use(applicationCtx)
+
+				r.Get("/", getApplication)
+				r.Get("/groups", getApplicationGroups)
+			})
+		})
 	})
 
 	statikFS, err := fs.New()
@@ -100,12 +113,10 @@ func New(db *ent.Client) *chi.Mux {
 	return r
 }
 
-// Serve start a web server at given port
-// should be run in a go routine
-func Serve(collect *gobench.Collect, port int) {
-	r := New(collect.DB)
-
-	portS := fmt.Sprintf(":%d", port)
+// Serve start a web server with given gobench server
+func Serve(s *server.Server) {
+	r := New(s)
+	portS := fmt.Sprintf(":%d", s.WebPort())
 
 	log.Printf("started the web server at port %s\n", portS)
 

@@ -4,6 +4,7 @@
 *.dll
 *.so
 *.dylib
+*.bak
 
 # Test binary, built with `go test -c`
 *.test
@@ -19,3 +20,6 @@
 *.sqlite3-journal
 
 .bin/
+.idea/
+
+test-scenario/

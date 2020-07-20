@@ -32,6 +32,12 @@ func (gc *GaugeCreate) SetValue(i int64) *GaugeCreate {
 	return gc
 }
 
+// SetWID sets the wID field.
+func (gc *GaugeCreate) SetWID(s string) *GaugeCreate {
+	gc.mutation.SetWID(s)
+	return gc
+}
+
 // SetMetricID sets the metric edge to Metric by id.
 func (gc *GaugeCreate) SetMetricID(id int) *GaugeCreate {
 	gc.mutation.SetMetricID(id)
@@ -58,6 +64,9 @@ func (gc *GaugeCreate) Save(ctx context.Context) (*Gauge, error) {
 	}
 	if _, ok := gc.mutation.Value(); !ok {
 		return nil, errors.New("ent: missing required field \"value\"")
+	}
+	if _, ok := gc.mutation.WID(); !ok {
+		return nil, errors.New("ent: missing required field \"wID\"")
 	}
 	var (
 		err  error
@@ -121,6 +130,14 @@ func (gc *GaugeCreate) sqlSave(ctx context.Context) (*Gauge, error) {
 			Column: gauge.FieldValue,
 		})
 		ga.Value = value
+	}
+	if value, ok := gc.mutation.WID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: gauge.FieldWID,
+		})
+		ga.WID = value
 	}
 	if nodes := gc.mutation.MetricIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

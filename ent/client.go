@@ -235,6 +235,22 @@ func (c *ApplicationClient) GetX(ctx context.Context, id int) *Application {
 	return a
 }
 
+// QueryGroups queries the groups edge of a Application.
+func (c *ApplicationClient) QueryGroups(a *Application) *GroupQuery {
+	query := &GroupQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(application.Table, application.FieldID, id),
+			sqlgraph.To(group.Table, group.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, application.GroupsTable, application.GroupsColumn),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ApplicationClient) Hooks() []Hook {
 	return c.hooks.Application
@@ -629,6 +645,22 @@ func (c *GroupClient) GetX(ctx context.Context, id int) *Group {
 		panic(err)
 	}
 	return gr
+}
+
+// QueryApplication queries the application edge of a Group.
+func (c *GroupClient) QueryApplication(gr *Group) *ApplicationQuery {
+	query := &ApplicationQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := gr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(group.Table, group.FieldID, id),
+			sqlgraph.To(application.Table, application.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, group.ApplicationTable, group.ApplicationColumn),
+		)
+		fromV = sqlgraph.Neighbors(gr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QueryGraphs queries the graphs edge of a Group.

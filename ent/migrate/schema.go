@@ -14,7 +14,8 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "status", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "finished_at", Type: field.TypeTime, Nullable: true},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "scenario", Type: field.TypeString, Size: 2147483647},
 	}
 	// ApplicationsTable holds the schema information for the "applications" table.
 	ApplicationsTable = &schema.Table{
@@ -28,6 +29,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "time", Type: field.TypeInt64},
 		{Name: "count", Type: field.TypeInt64},
+		{Name: "w_id", Type: field.TypeString},
 		{Name: "metric_counters", Type: field.TypeInt, Nullable: true},
 	}
 	// CountersTable holds the schema information for the "counters" table.
@@ -38,7 +40,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:  "counters_metrics_counters",
-				Columns: []*schema.Column{CountersColumns[3]},
+				Columns: []*schema.Column{CountersColumns[4]},
 
 				RefColumns: []*schema.Column{MetricsColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -50,6 +52,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "time", Type: field.TypeInt64},
 		{Name: "value", Type: field.TypeInt64},
+		{Name: "w_id", Type: field.TypeString},
 		{Name: "metric_gauges", Type: field.TypeInt, Nullable: true},
 	}
 	// GaugesTable holds the schema information for the "gauges" table.
@@ -60,7 +63,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:  "gauges_metrics_gauges",
-				Columns: []*schema.Column{GaugesColumns[3]},
+				Columns: []*schema.Column{GaugesColumns[4]},
 
 				RefColumns: []*schema.Column{MetricsColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -92,14 +95,23 @@ var (
 	// GroupsColumns holds the columns for the "groups" table.
 	GroupsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "application_groups", Type: field.TypeInt, Nullable: true},
 	}
 	// GroupsTable holds the schema information for the "groups" table.
 	GroupsTable = &schema.Table{
-		Name:        "groups",
-		Columns:     GroupsColumns,
-		PrimaryKey:  []*schema.Column{GroupsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "groups",
+		Columns:    GroupsColumns,
+		PrimaryKey: []*schema.Column{GroupsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "groups_applications_groups",
+				Columns: []*schema.Column{GroupsColumns[2]},
+
+				RefColumns: []*schema.Column{ApplicationsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// HistogramsColumns holds the columns for the "histograms" table.
 	HistogramsColumns = []*schema.Column{
@@ -115,6 +127,7 @@ var (
 		{Name: "p95", Type: field.TypeFloat64},
 		{Name: "p99", Type: field.TypeFloat64},
 		{Name: "p999", Type: field.TypeFloat64},
+		{Name: "w_id", Type: field.TypeString},
 		{Name: "metric_histograms", Type: field.TypeInt, Nullable: true},
 	}
 	// HistogramsTable holds the schema information for the "histograms" table.
@@ -125,7 +138,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:  "histograms_metrics_histograms",
-				Columns: []*schema.Column{HistogramsColumns[12]},
+				Columns: []*schema.Column{HistogramsColumns[13]},
 
 				RefColumns: []*schema.Column{MetricsColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -135,7 +148,7 @@ var (
 	// MetricsColumns holds the columns for the "metrics" table.
 	MetricsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "title", Type: field.TypeString, Unique: true},
+		{Name: "title", Type: field.TypeString},
 		{Name: "type", Type: field.TypeString},
 		{Name: "graph_metrics", Type: field.TypeInt, Nullable: true},
 	}
@@ -170,6 +183,7 @@ func init() {
 	CountersTable.ForeignKeys[0].RefTable = MetricsTable
 	GaugesTable.ForeignKeys[0].RefTable = MetricsTable
 	GraphsTable.ForeignKeys[0].RefTable = GroupsTable
+	GroupsTable.ForeignKeys[0].RefTable = ApplicationsTable
 	HistogramsTable.ForeignKeys[0].RefTable = MetricsTable
 	MetricsTable.ForeignKeys[0].RefTable = GraphsTable
 }

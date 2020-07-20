@@ -11,6 +11,7 @@ import (
 	"github.com/facebookincubator/ent/dialect/sql/sqlgraph"
 	"github.com/facebookincubator/ent/schema/field"
 	"github.com/gobench-io/gobench/ent/application"
+	"github.com/gobench-io/gobench/ent/group"
 )
 
 // ApplicationCreate is the builder for creating a Application entity.
@@ -46,18 +47,39 @@ func (ac *ApplicationCreate) SetNillableCreatedAt(t *time.Time) *ApplicationCrea
 	return ac
 }
 
-// SetFinishedAt sets the finished_at field.
-func (ac *ApplicationCreate) SetFinishedAt(t time.Time) *ApplicationCreate {
-	ac.mutation.SetFinishedAt(t)
+// SetUpdatedAt sets the updated_at field.
+func (ac *ApplicationCreate) SetUpdatedAt(t time.Time) *ApplicationCreate {
+	ac.mutation.SetUpdatedAt(t)
 	return ac
 }
 
-// SetNillableFinishedAt sets the finished_at field if the given value is not nil.
-func (ac *ApplicationCreate) SetNillableFinishedAt(t *time.Time) *ApplicationCreate {
+// SetNillableUpdatedAt sets the updated_at field if the given value is not nil.
+func (ac *ApplicationCreate) SetNillableUpdatedAt(t *time.Time) *ApplicationCreate {
 	if t != nil {
-		ac.SetFinishedAt(*t)
+		ac.SetUpdatedAt(*t)
 	}
 	return ac
+}
+
+// SetScenario sets the scenario field.
+func (ac *ApplicationCreate) SetScenario(s string) *ApplicationCreate {
+	ac.mutation.SetScenario(s)
+	return ac
+}
+
+// AddGroupIDs adds the groups edge to Group by ids.
+func (ac *ApplicationCreate) AddGroupIDs(ids ...int) *ApplicationCreate {
+	ac.mutation.AddGroupIDs(ids...)
+	return ac
+}
+
+// AddGroups adds the groups edges to Group.
+func (ac *ApplicationCreate) AddGroups(g ...*Group) *ApplicationCreate {
+	ids := make([]int, len(g))
+	for i := range g {
+		ids[i] = g[i].ID
+	}
+	return ac.AddGroupIDs(ids...)
 }
 
 // Save creates the Application in the database.
@@ -71,6 +93,13 @@ func (ac *ApplicationCreate) Save(ctx context.Context) (*Application, error) {
 	if _, ok := ac.mutation.CreatedAt(); !ok {
 		v := application.DefaultCreatedAt()
 		ac.mutation.SetCreatedAt(v)
+	}
+	if _, ok := ac.mutation.UpdatedAt(); !ok {
+		v := application.DefaultUpdatedAt()
+		ac.mutation.SetUpdatedAt(v)
+	}
+	if _, ok := ac.mutation.Scenario(); !ok {
+		return nil, errors.New("ent: missing required field \"scenario\"")
 	}
 	var (
 		err  error
@@ -143,13 +172,40 @@ func (ac *ApplicationCreate) sqlSave(ctx context.Context) (*Application, error) 
 		})
 		a.CreatedAt = value
 	}
-	if value, ok := ac.mutation.FinishedAt(); ok {
+	if value, ok := ac.mutation.UpdatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
 			Value:  value,
-			Column: application.FieldFinishedAt,
+			Column: application.FieldUpdatedAt,
 		})
-		a.FinishedAt = value
+		a.UpdatedAt = value
+	}
+	if value, ok := ac.mutation.Scenario(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: application.FieldScenario,
+		})
+		a.Scenario = value
+	}
+	if nodes := ac.mutation.GroupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   application.GroupsTable,
+			Columns: []string{application.GroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: group.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if err := sqlgraph.CreateNode(ctx, ac.driver, _spec); err != nil {
 		if cerr, ok := isSQLConstraintError(err); ok {

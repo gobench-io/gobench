@@ -9,6 +9,7 @@ import (
 
 	"github.com/facebookincubator/ent/dialect/sql/sqlgraph"
 	"github.com/facebookincubator/ent/schema/field"
+	"github.com/gobench-io/gobench/ent/application"
 	"github.com/gobench-io/gobench/ent/graph"
 	"github.com/gobench-io/gobench/ent/group"
 )
@@ -24,6 +25,25 @@ type GroupCreate struct {
 func (gc *GroupCreate) SetName(s string) *GroupCreate {
 	gc.mutation.SetName(s)
 	return gc
+}
+
+// SetApplicationID sets the application edge to Application by id.
+func (gc *GroupCreate) SetApplicationID(id int) *GroupCreate {
+	gc.mutation.SetApplicationID(id)
+	return gc
+}
+
+// SetNillableApplicationID sets the application edge to Application by id if the given value is not nil.
+func (gc *GroupCreate) SetNillableApplicationID(id *int) *GroupCreate {
+	if id != nil {
+		gc = gc.SetApplicationID(*id)
+	}
+	return gc
+}
+
+// SetApplication sets the application edge to Application.
+func (gc *GroupCreate) SetApplication(a *Application) *GroupCreate {
+	return gc.SetApplicationID(a.ID)
 }
 
 // AddGraphIDs adds the graphs edge to Graph by ids.
@@ -100,6 +120,25 @@ func (gc *GroupCreate) sqlSave(ctx context.Context) (*Group, error) {
 			Column: group.FieldName,
 		})
 		gr.Name = value
+	}
+	if nodes := gc.mutation.ApplicationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   group.ApplicationTable,
+			Columns: []string{group.ApplicationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: application.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := gc.mutation.GraphsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

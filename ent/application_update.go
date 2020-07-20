@@ -11,6 +11,7 @@ import (
 	"github.com/facebookincubator/ent/dialect/sql/sqlgraph"
 	"github.com/facebookincubator/ent/schema/field"
 	"github.com/gobench-io/gobench/ent/application"
+	"github.com/gobench-io/gobench/ent/group"
 	"github.com/gobench-io/gobench/ent/predicate"
 )
 
@@ -54,28 +55,55 @@ func (au *ApplicationUpdate) SetNillableCreatedAt(t *time.Time) *ApplicationUpda
 	return au
 }
 
-// SetFinishedAt sets the finished_at field.
-func (au *ApplicationUpdate) SetFinishedAt(t time.Time) *ApplicationUpdate {
-	au.mutation.SetFinishedAt(t)
+// SetUpdatedAt sets the updated_at field.
+func (au *ApplicationUpdate) SetUpdatedAt(t time.Time) *ApplicationUpdate {
+	au.mutation.SetUpdatedAt(t)
 	return au
 }
 
-// SetNillableFinishedAt sets the finished_at field if the given value is not nil.
-func (au *ApplicationUpdate) SetNillableFinishedAt(t *time.Time) *ApplicationUpdate {
-	if t != nil {
-		au.SetFinishedAt(*t)
+// SetScenario sets the scenario field.
+func (au *ApplicationUpdate) SetScenario(s string) *ApplicationUpdate {
+	au.mutation.SetScenario(s)
+	return au
+}
+
+// AddGroupIDs adds the groups edge to Group by ids.
+func (au *ApplicationUpdate) AddGroupIDs(ids ...int) *ApplicationUpdate {
+	au.mutation.AddGroupIDs(ids...)
+	return au
+}
+
+// AddGroups adds the groups edges to Group.
+func (au *ApplicationUpdate) AddGroups(g ...*Group) *ApplicationUpdate {
+	ids := make([]int, len(g))
+	for i := range g {
+		ids[i] = g[i].ID
 	}
+	return au.AddGroupIDs(ids...)
+}
+
+// RemoveGroupIDs removes the groups edge to Group by ids.
+func (au *ApplicationUpdate) RemoveGroupIDs(ids ...int) *ApplicationUpdate {
+	au.mutation.RemoveGroupIDs(ids...)
 	return au
 }
 
-// ClearFinishedAt clears the value of finished_at.
-func (au *ApplicationUpdate) ClearFinishedAt() *ApplicationUpdate {
-	au.mutation.ClearFinishedAt()
-	return au
+// RemoveGroups removes groups edges to Group.
+func (au *ApplicationUpdate) RemoveGroups(g ...*Group) *ApplicationUpdate {
+	ids := make([]int, len(g))
+	for i := range g {
+		ids[i] = g[i].ID
+	}
+	return au.RemoveGroupIDs(ids...)
 }
 
 // Save executes the query and returns the number of rows/vertices matched by this operation.
 func (au *ApplicationUpdate) Save(ctx context.Context) (int, error) {
+	if _, ok := au.mutation.UpdatedAt(); !ok {
+		v := application.UpdateDefaultUpdatedAt()
+		au.mutation.SetUpdatedAt(v)
+	}
+
 	var (
 		err      error
 		affected int
@@ -164,18 +192,57 @@ func (au *ApplicationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: application.FieldCreatedAt,
 		})
 	}
-	if value, ok := au.mutation.FinishedAt(); ok {
+	if value, ok := au.mutation.UpdatedAt(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
 			Value:  value,
-			Column: application.FieldFinishedAt,
+			Column: application.FieldUpdatedAt,
 		})
 	}
-	if au.mutation.FinishedAtCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Column: application.FieldFinishedAt,
+	if value, ok := au.mutation.Scenario(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: application.FieldScenario,
 		})
+	}
+	if nodes := au.mutation.RemovedGroupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   application.GroupsTable,
+			Columns: []string{application.GroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: group.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.GroupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   application.GroupsTable,
+			Columns: []string{application.GroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: group.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, au.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -221,28 +288,55 @@ func (auo *ApplicationUpdateOne) SetNillableCreatedAt(t *time.Time) *Application
 	return auo
 }
 
-// SetFinishedAt sets the finished_at field.
-func (auo *ApplicationUpdateOne) SetFinishedAt(t time.Time) *ApplicationUpdateOne {
-	auo.mutation.SetFinishedAt(t)
+// SetUpdatedAt sets the updated_at field.
+func (auo *ApplicationUpdateOne) SetUpdatedAt(t time.Time) *ApplicationUpdateOne {
+	auo.mutation.SetUpdatedAt(t)
 	return auo
 }
 
-// SetNillableFinishedAt sets the finished_at field if the given value is not nil.
-func (auo *ApplicationUpdateOne) SetNillableFinishedAt(t *time.Time) *ApplicationUpdateOne {
-	if t != nil {
-		auo.SetFinishedAt(*t)
+// SetScenario sets the scenario field.
+func (auo *ApplicationUpdateOne) SetScenario(s string) *ApplicationUpdateOne {
+	auo.mutation.SetScenario(s)
+	return auo
+}
+
+// AddGroupIDs adds the groups edge to Group by ids.
+func (auo *ApplicationUpdateOne) AddGroupIDs(ids ...int) *ApplicationUpdateOne {
+	auo.mutation.AddGroupIDs(ids...)
+	return auo
+}
+
+// AddGroups adds the groups edges to Group.
+func (auo *ApplicationUpdateOne) AddGroups(g ...*Group) *ApplicationUpdateOne {
+	ids := make([]int, len(g))
+	for i := range g {
+		ids[i] = g[i].ID
 	}
+	return auo.AddGroupIDs(ids...)
+}
+
+// RemoveGroupIDs removes the groups edge to Group by ids.
+func (auo *ApplicationUpdateOne) RemoveGroupIDs(ids ...int) *ApplicationUpdateOne {
+	auo.mutation.RemoveGroupIDs(ids...)
 	return auo
 }
 
-// ClearFinishedAt clears the value of finished_at.
-func (auo *ApplicationUpdateOne) ClearFinishedAt() *ApplicationUpdateOne {
-	auo.mutation.ClearFinishedAt()
-	return auo
+// RemoveGroups removes groups edges to Group.
+func (auo *ApplicationUpdateOne) RemoveGroups(g ...*Group) *ApplicationUpdateOne {
+	ids := make([]int, len(g))
+	for i := range g {
+		ids[i] = g[i].ID
+	}
+	return auo.RemoveGroupIDs(ids...)
 }
 
 // Save executes the query and returns the updated entity.
 func (auo *ApplicationUpdateOne) Save(ctx context.Context) (*Application, error) {
+	if _, ok := auo.mutation.UpdatedAt(); !ok {
+		v := application.UpdateDefaultUpdatedAt()
+		auo.mutation.SetUpdatedAt(v)
+	}
+
 	var (
 		err  error
 		node *Application
@@ -329,18 +423,57 @@ func (auo *ApplicationUpdateOne) sqlSave(ctx context.Context) (a *Application, e
 			Column: application.FieldCreatedAt,
 		})
 	}
-	if value, ok := auo.mutation.FinishedAt(); ok {
+	if value, ok := auo.mutation.UpdatedAt(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
 			Value:  value,
-			Column: application.FieldFinishedAt,
+			Column: application.FieldUpdatedAt,
 		})
 	}
-	if auo.mutation.FinishedAtCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Column: application.FieldFinishedAt,
+	if value, ok := auo.mutation.Scenario(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: application.FieldScenario,
 		})
+	}
+	if nodes := auo.mutation.RemovedGroupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   application.GroupsTable,
+			Columns: []string{application.GroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: group.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.GroupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   application.GroupsTable,
+			Columns: []string{application.GroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: group.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	a = &Application{config: auo.config}
 	_spec.Assign = a.assignValues

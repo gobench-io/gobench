@@ -20,6 +20,8 @@ type Gauge struct {
 	Time int64 `json:"time"`
 	// Value holds the value of the "value" field.
 	Value int64 `json:"value"`
+	// WID holds the value of the "wID" field.
+	WID string `json:"wId"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the GaugeQuery when eager-loading is set.
 	Edges         GaugeEdges `json:"edges"`
@@ -52,9 +54,10 @@ func (e GaugeEdges) MetricOrErr() (*Metric, error) {
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Gauge) scanValues() []interface{} {
 	return []interface{}{
-		&sql.NullInt64{}, // id
-		&sql.NullInt64{}, // time
-		&sql.NullInt64{}, // value
+		&sql.NullInt64{},  // id
+		&sql.NullInt64{},  // time
+		&sql.NullInt64{},  // value
+		&sql.NullString{}, // wID
 	}
 }
 
@@ -87,7 +90,12 @@ func (ga *Gauge) assignValues(values ...interface{}) error {
 	} else if value.Valid {
 		ga.Value = value.Int64
 	}
-	values = values[2:]
+	if value, ok := values[2].(*sql.NullString); !ok {
+		return fmt.Errorf("unexpected type %T for field wID", values[2])
+	} else if value.Valid {
+		ga.WID = value.String
+	}
+	values = values[3:]
 	if len(values) == len(gauge.ForeignKeys) {
 		if value, ok := values[0].(*sql.NullInt64); !ok {
 			return fmt.Errorf("unexpected type %T for edge-field metric_gauges", value)
@@ -131,6 +139,8 @@ func (ga *Gauge) String() string {
 	builder.WriteString(fmt.Sprintf("%v", ga.Time))
 	builder.WriteString(", value=")
 	builder.WriteString(fmt.Sprintf("%v", ga.Value))
+	builder.WriteString(", wID=")
+	builder.WriteString(ga.WID)
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -38,6 +38,8 @@ type Histogram struct {
 	P99 float64 `json:"p99"`
 	// P999 holds the value of the "p999" field.
 	P999 float64 `json:"p999"`
+	// WID holds the value of the "wID" field.
+	WID string `json:"wId"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the HistogramQuery when eager-loading is set.
 	Edges             HistogramEdges `json:"edges"`
@@ -82,6 +84,7 @@ func (*Histogram) scanValues() []interface{} {
 		&sql.NullFloat64{}, // p95
 		&sql.NullFloat64{}, // p99
 		&sql.NullFloat64{}, // p999
+		&sql.NullString{},  // wID
 	}
 }
 
@@ -159,7 +162,12 @@ func (h *Histogram) assignValues(values ...interface{}) error {
 	} else if value.Valid {
 		h.P999 = value.Float64
 	}
-	values = values[11:]
+	if value, ok := values[11].(*sql.NullString); !ok {
+		return fmt.Errorf("unexpected type %T for field wID", values[11])
+	} else if value.Valid {
+		h.WID = value.String
+	}
+	values = values[12:]
 	if len(values) == len(histogram.ForeignKeys) {
 		if value, ok := values[0].(*sql.NullInt64); !ok {
 			return fmt.Errorf("unexpected type %T for edge-field metric_histograms", value)
@@ -221,6 +229,8 @@ func (h *Histogram) String() string {
 	builder.WriteString(fmt.Sprintf("%v", h.P99))
 	builder.WriteString(", p999=")
 	builder.WriteString(fmt.Sprintf("%v", h.P999))
+	builder.WriteString(", wID=")
+	builder.WriteString(h.WID)
 	builder.WriteByte(')')
 	return builder.String()
 }

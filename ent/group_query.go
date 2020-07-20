@@ -12,6 +12,7 @@ import (
 	"github.com/facebookincubator/ent/dialect/sql"
 	"github.com/facebookincubator/ent/dialect/sql/sqlgraph"
 	"github.com/facebookincubator/ent/schema/field"
+	"github.com/gobench-io/gobench/ent/application"
 	"github.com/gobench-io/gobench/ent/graph"
 	"github.com/gobench-io/gobench/ent/group"
 	"github.com/gobench-io/gobench/ent/predicate"
@@ -26,7 +27,9 @@ type GroupQuery struct {
 	unique     []string
 	predicates []predicate.Group
 	// eager-loading edges.
-	withGraphs *GraphQuery
+	withApplication *ApplicationQuery
+	withGraphs      *GraphQuery
+	withFKs         bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -54,6 +57,24 @@ func (gq *GroupQuery) Offset(offset int) *GroupQuery {
 func (gq *GroupQuery) Order(o ...OrderFunc) *GroupQuery {
 	gq.order = append(gq.order, o...)
 	return gq
+}
+
+// QueryApplication chains the current query on the application edge.
+func (gq *GroupQuery) QueryApplication() *ApplicationQuery {
+	query := &ApplicationQuery{config: gq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := gq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(group.Table, group.FieldID, gq.sqlQuery()),
+			sqlgraph.To(application.Table, application.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, group.ApplicationTable, group.ApplicationColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(gq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryGraphs chains the current query on the graphs edge.
@@ -253,6 +274,17 @@ func (gq *GroupQuery) Clone() *GroupQuery {
 	}
 }
 
+//  WithApplication tells the query-builder to eager-loads the nodes that are connected to
+// the "application" edge. The optional arguments used to configure the query builder of the edge.
+func (gq *GroupQuery) WithApplication(opts ...func(*ApplicationQuery)) *GroupQuery {
+	query := &ApplicationQuery{config: gq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	gq.withApplication = query
+	return gq
+}
+
 //  WithGraphs tells the query-builder to eager-loads the nodes that are connected to
 // the "graphs" edge. The optional arguments used to configure the query builder of the edge.
 func (gq *GroupQuery) WithGraphs(opts ...func(*GraphQuery)) *GroupQuery {
@@ -329,15 +361,26 @@ func (gq *GroupQuery) prepareQuery(ctx context.Context) error {
 func (gq *GroupQuery) sqlAll(ctx context.Context) ([]*Group, error) {
 	var (
 		nodes       = []*Group{}
+		withFKs     = gq.withFKs
 		_spec       = gq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
+			gq.withApplication != nil,
 			gq.withGraphs != nil,
 		}
 	)
+	if gq.withApplication != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, group.ForeignKeys...)
+	}
 	_spec.ScanValues = func() []interface{} {
 		node := &Group{config: gq.config}
 		nodes = append(nodes, node)
 		values := node.scanValues()
+		if withFKs {
+			values = append(values, node.fkValues()...)
+		}
 		return values
 	}
 	_spec.Assign = func(values ...interface{}) error {
@@ -353,6 +396,31 @@ func (gq *GroupQuery) sqlAll(ctx context.Context) ([]*Group, error) {
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
+	}
+
+	if query := gq.withApplication; query != nil {
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*Group)
+		for i := range nodes {
+			if fk := nodes[i].application_groups; fk != nil {
+				ids = append(ids, *fk)
+				nodeids[*fk] = append(nodeids[*fk], nodes[i])
+			}
+		}
+		query.Where(application.IDIn(ids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nodeids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "application_groups" returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.Application = n
+			}
+		}
 	}
 
 	if query := gq.withGraphs; query != nil {

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/facebookincubator/ent/dialect/sql"
+	"github.com/gobench-io/gobench/ent/application"
 	"github.com/gobench-io/gobench/ent/group"
 )
 
@@ -19,22 +20,39 @@ type Group struct {
 	Name string `json:"name"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the GroupQuery when eager-loading is set.
-	Edges GroupEdges `json:"edges"`
+	Edges              GroupEdges `json:"edges"`
+	application_groups *int
 }
 
 // GroupEdges holds the relations/edges for other nodes in the graph.
 type GroupEdges struct {
+	// Application holds the value of the application edge.
+	Application *Application
 	// Graphs holds the value of the graphs edge.
 	Graphs []*Graph
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
+}
+
+// ApplicationOrErr returns the Application value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e GroupEdges) ApplicationOrErr() (*Application, error) {
+	if e.loadedTypes[0] {
+		if e.Application == nil {
+			// The edge application was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: application.Label}
+		}
+		return e.Application, nil
+	}
+	return nil, &NotLoadedError{edge: "application"}
 }
 
 // GraphsOrErr returns the Graphs value or an error if the edge
 // was not loaded in eager-loading.
 func (e GroupEdges) GraphsOrErr() ([]*Graph, error) {
-	if e.loadedTypes[0] {
+	if e.loadedTypes[1] {
 		return e.Graphs, nil
 	}
 	return nil, &NotLoadedError{edge: "graphs"}
@@ -45,6 +63,13 @@ func (*Group) scanValues() []interface{} {
 	return []interface{}{
 		&sql.NullInt64{},  // id
 		&sql.NullString{}, // name
+	}
+}
+
+// fkValues returns the types for scanning foreign-keys values from sql.Rows.
+func (*Group) fkValues() []interface{} {
+	return []interface{}{
+		&sql.NullInt64{}, // application_groups
 	}
 }
 
@@ -65,7 +90,21 @@ func (gr *Group) assignValues(values ...interface{}) error {
 	} else if value.Valid {
 		gr.Name = value.String
 	}
+	values = values[1:]
+	if len(values) == len(group.ForeignKeys) {
+		if value, ok := values[0].(*sql.NullInt64); !ok {
+			return fmt.Errorf("unexpected type %T for edge-field application_groups", value)
+		} else if value.Valid {
+			gr.application_groups = new(int)
+			*gr.application_groups = int(value.Int64)
+		}
+	}
 	return nil
+}
+
+// QueryApplication queries the application edge of the Group.
+func (gr *Group) QueryApplication() *ApplicationQuery {
+	return (&GroupClient{config: gr.config}).QueryApplication(gr)
 }
 
 // QueryGraphs queries the graphs edge of the Group.

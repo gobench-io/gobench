@@ -54,6 +54,12 @@ func (cu *CounterUpdate) AddCount(i int64) *CounterUpdate {
 	return cu
 }
 
+// SetWID sets the wID field.
+func (cu *CounterUpdate) SetWID(s string) *CounterUpdate {
+	cu.mutation.SetWID(s)
+	return cu
+}
+
 // SetMetricID sets the metric edge to Metric by id.
 func (cu *CounterUpdate) SetMetricID(id int) *CounterUpdate {
 	cu.mutation.SetMetricID(id)
@@ -177,6 +183,13 @@ func (cu *CounterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: counter.FieldCount,
 		})
 	}
+	if value, ok := cu.mutation.WID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: counter.FieldWID,
+		})
+	}
 	if cu.mutation.MetricCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -253,6 +266,12 @@ func (cuo *CounterUpdateOne) SetCount(i int64) *CounterUpdateOne {
 // AddCount adds i to count.
 func (cuo *CounterUpdateOne) AddCount(i int64) *CounterUpdateOne {
 	cuo.mutation.AddCount(i)
+	return cuo
+}
+
+// SetWID sets the wID field.
+func (cuo *CounterUpdateOne) SetWID(s string) *CounterUpdateOne {
+	cuo.mutation.SetWID(s)
 	return cuo
 }
 
@@ -375,6 +394,13 @@ func (cuo *CounterUpdateOne) sqlSave(ctx context.Context) (c *Counter, err error
 			Type:   field.TypeInt64,
 			Value:  value,
 			Column: counter.FieldCount,
+		})
+	}
+	if value, ok := cuo.mutation.WID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: counter.FieldWID,
 		})
 	}
 	if cuo.mutation.MetricCleared() {

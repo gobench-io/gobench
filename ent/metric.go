@@ -29,7 +29,7 @@ type Metric struct {
 // MetricEdges holds the relations/edges for other nodes in the graph.
 type MetricEdges struct {
 	// Graph holds the value of the graph edge.
-	Graph *Graph `json:"-"`
+	Graph *Graph
 	// Histograms holds the value of the histograms edge.
 	Histograms []*Histogram
 	// Counters holds the value of the counters edge.

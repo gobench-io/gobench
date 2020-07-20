@@ -19,7 +19,7 @@ func graphCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		g, err := db.Graph.
+		g, err := db().Graph.
 			Query().
 			Where(graph.ID(graphID)).
 			Only(r.Context())
@@ -34,7 +34,7 @@ func graphCtx(next http.Handler) http.Handler {
 }
 
 func listGraphs(w http.ResponseWriter, r *http.Request) {
-	graphs, err := db.Graph.
+	graphs, err := db().Graph.
 		Query().
 		All(r.Context())
 	if err != nil {
