@@ -2,6 +2,7 @@ package web
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"net/http"
 	"strconv"
@@ -65,7 +66,14 @@ func createApplication(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app, err := s.NewApplication(r.Context(), data.Name, data.Scenario)
+	decScenario, err := base64.StdEncoding.DecodeString(data.Scenario)
+	if err != nil {
+		render.Render(w, r, ErrInvalidRequest(errors.New("Invalid Scenario")))
+		return
+	}
+	scenario := string(decScenario)
+
+	app, err := s.NewApplication(r.Context(), data.Name, scenario)
 
 	if err != nil {
 		render.Render(w, r, ErrInternalServer(err))

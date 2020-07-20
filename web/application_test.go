@@ -2,6 +2,7 @@ package web
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -54,9 +55,13 @@ func TestListApplications(t *testing.T) {
 func TestCreateApplications(t *testing.T) {
 	t.Run("successful request", func(t *testing.T) {
 		r, w := newAPITest()
+		name := "name"
+		scenario := "this is the scenario"
+		encScenario := base64.StdEncoding.EncodeToString([]byte(scenario))
+
 		reqBody, _ := json.Marshal(map[string]string{
-			"Name":     "name",
-			"Scenario": "this is the scenario",
+			"Name":     name,
+			"Scenario": encScenario,
 		})
 		req, _ := http.NewRequest("POST", "/api/applications", bytes.NewBuffer(reqBody))
 		req.Header.Set("Content-Type", "application/json")
@@ -67,8 +72,8 @@ func TestCreateApplications(t *testing.T) {
 
 		var app ent.Application
 		json.Unmarshal(w.Body.Bytes(), &app)
-		assert.Equal(t, app.Name, "name")
-		assert.Equal(t, app.Scenario, "this is the scenario")
+		assert.Equal(t, app.Name, name)
+		assert.Equal(t, app.Scenario, scenario)
 		assert.Equal(t, app.Status, "pending")
 	})
 
