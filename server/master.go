@@ -96,15 +96,19 @@ func (m *master) run() {
 		return
 	}
 
-	log.Printf("application id: %d, name: %s, status: %s\n", app.ID, app.Name, app.Status)
-
 	// create new job from the application
 	m.job.app = app
+
+	log.Printf("application id: %d, name: %s, status: %s\n",
+		m.job.app.ID, m.job.app.Name, m.job.app.Status,
+	)
 
 	// change job to provisioning
 	m.jobTo(ctx, jobProvisioning)
 
-	log.Printf("application id: %d, name: %s, status: %s\n", app.ID, app.Name, app.Status)
+	log.Printf("application id: %d, name: %s, status: %s\n",
+		m.job.app.ID, m.job.app.Name, m.job.app.Status,
+	)
 
 	if err = m.jobCompile(ctx); err != nil {
 		return
@@ -117,15 +121,22 @@ func (m *master) run() {
 		return
 	}
 
-	log.Printf("application id: %d, name: %s, status: %s\n", app.ID, app.Name, app.Status)
+	log.Printf("application id: %d, name: %s, status: %s\n",
+		m.job.app.ID, m.job.app.Name, m.job.app.Status,
+	)
 
 	if err = m.runJob(ctx); err != nil {
-		log.Printf("application id: %d failed run job %v\n", app.ID, err)
+		log.Printf("application id: %d failed run job %v\n", m.job.app.ID, err)
+
 		_ = m.jobTo(ctx, jobError)
 		return
 	}
 
 	_ = m.jobTo(ctx, jobFinished)
+
+	log.Printf("application id: %d, name: %s, status: %s\n",
+		m.job.app.ID, m.job.app.Name, m.job.app.Status,
+	)
 }
 
 // provision compiles a scenario to golang plugin, distribute the application to
