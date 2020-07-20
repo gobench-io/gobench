@@ -129,7 +129,7 @@ func (m *master) FindCreateMetric(ctx context.Context, mmetric metrics.Metric, g
 	emetric, err = m.db.Metric.Query().
 		Where(
 			entMetric.TitleEQ(mmetric.Title),
-			entMetric.TypeEQ(mmetric.Title),
+			entMetric.TypeEQ(string(mmetric.Type)),
 			entMetric.HasGraphWith(
 				entGraph.IDEQ(graphID),
 			),
