@@ -15,10 +15,10 @@ import (
 
 func (m *master) Counter(ctx context.Context, mID int, wid, title string, time, c int64) error {
 	_, err := m.db.Counter.Create().
-		SetMetricID(mID).
-		SetCount(c).
-		SetTime(time).
 		SetWID(wid).
+		SetMetricID(mID).
+		SetTime(time).
+		SetCount(c).
 		Save(ctx)
 	return err
 }
@@ -26,7 +26,9 @@ func (m *master) Counter(ctx context.Context, mID int, wid, title string, time, 
 func (m *master) Histogram(ctx context.Context, mID int, wid, title string, time int64, h gometrics.Histogram) error {
 	ps := h.Percentiles([]float64{0.5, 0.75, 0.95, 0.99, 0.999})
 	_, err := m.db.Histogram.Create().
+		SetWID(wid).
 		SetMetricID(mID).
+		SetTime(time).
 		SetCount(h.Count()).
 		SetMin(h.Min()).
 		SetMax(h.Max()).
@@ -37,17 +39,16 @@ func (m *master) Histogram(ctx context.Context, mID int, wid, title string, time
 		SetP95(ps[2]).
 		SetP99(ps[3]).
 		SetP999(ps[4]).
-		SetTime(time).
 		Save(ctx)
 	return err
 }
 
 func (m *master) Gauge(ctx context.Context, mID int, wid, title string, time int64, g int64) error {
 	_, err := m.db.Gauge.Create().
-		SetMetricID(mID).
-		SetValue(g).
-		SetTime(time).
 		SetWID(wid).
+		SetMetricID(mID).
+		SetTime(time).
+		SetValue(g).
 		Save(ctx)
 	return err
 }

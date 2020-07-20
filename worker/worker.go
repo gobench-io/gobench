@@ -82,8 +82,6 @@ func init() {
 		pid:      pid,
 		hostname: hostname,
 		status:   Idle,
-
-		// units: make(map[string]unit),
 	}
 }
 
@@ -230,6 +228,7 @@ func (w *Worker) logScaled(ctx context.Context, freq time.Duration) {
 }
 
 func (w *Worker) logScaledOnCue(ctx context.Context, ch chan interface{}) error {
+	var err error
 	for {
 		select {
 		case <-ch:
@@ -241,12 +240,15 @@ func (w *Worker) logScaledOnCue(ctx context.Context, ch chan interface{}) error 
 			for _, u := range units {
 				switch u.Type {
 				case metrics.Counter:
-					w.log.Counter(ctx, u.metricID, w.id, u.Title, now, u.c.Count())
+					err = w.log.Counter(ctx, u.metricID, w.id, u.Title, now, u.c.Count())
 				case metrics.Histogram:
 					h := u.h.Snapshot()
-					w.log.Histogram(ctx, u.metricID, w.id, u.Title, now, h)
+					err = w.log.Histogram(ctx, u.metricID, w.id, u.Title, now, h)
 				case metrics.Gauge:
-					w.log.Gauge(ctx, u.metricID, w.id, u.Title, now, u.g.Value())
+					err = w.log.Gauge(ctx, u.metricID, w.id, u.Title, now, u.g.Value())
+				}
+				if err != nil {
+					log.Printf("worker log failed: %v\n", err)
 				}
 			}
 		case <-ctx.Done():
@@ -262,7 +264,6 @@ func timestampMs() int64 {
 
 // Setup is used for the worker to report the metrics that it will generate
 func Setup(groups []metrics.Group) error {
-	log.Println("setup -------------")
 	ctx := context.TODO()
 
 	units := make(map[string]unit)
@@ -358,12 +359,8 @@ func Setup(groups []metrics.Group) error {
 // a. The title has never ever register before
 // b. The session is cancel but the scenario does not handle the ctx.Done signal
 func Notify(title string, value int64) error {
-	log.Printf("worker notify title: %s, value %d\n", title, value)
-
 	worker.mu.Lock()
 	defer worker.mu.Unlock()
-
-	log.Printf("worker units %+v\n", worker.units)
 
 	u, ok := worker.units[title]
 	if !ok {
