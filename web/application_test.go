@@ -52,26 +52,6 @@ func TestListApplications(t *testing.T) {
 }
 
 func TestCreateApplications(t *testing.T) {
-	t.Run("successful multipart request", func(t *testing.T) {
-		r, w := newAPITest()
-		reqBody, _ := json.Marshal(map[string]string{
-			"Name":     "name",
-			"Scenario": "this is the scenario",
-		})
-		req, _ := http.NewRequest("POST", "/api/applications", bytes.NewBuffer(reqBody))
-		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-		r.ServeHTTP(w, req)
-
-		assert.Equal(t, 201, w.Code)
-
-		var app ent.Application
-		json.Unmarshal(w.Body.Bytes(), &app)
-		assert.Equal(t, app.Name, "name")
-		assert.Equal(t, app.Scenario, "this is the scenario")
-		assert.Equal(t, app.Status, "pending")
-	})
-
 	t.Run("successful request", func(t *testing.T) {
 		r, w := newAPITest()
 		reqBody, _ := json.Marshal(map[string]string{
