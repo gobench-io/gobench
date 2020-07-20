@@ -58,6 +58,9 @@ func (m *master) Gauge(ctx context.Context, mID int, wid, title string, time int
 func (m *master) FindCreateGroup(ctx context.Context, mg metrics.Group, appID int) (
 	eg *ent.Group, err error,
 ) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
 	eg, err = m.job.app.
 		QueryGroups().
 		Where(
@@ -69,15 +72,18 @@ func (m *master) FindCreateGroup(ctx context.Context, mg metrics.Group, appID in
 		First(ctx)
 
 	// if there is one found
-	if err != nil && !ent.IsNotFound(err) {
+	if err != nil {
+		if !ent.IsNotFound(err) {
+			return
+		}
+
+		eg, err = m.db.Group.
+			Create().
+			SetName(mg.Name).
+			SetApplicationID(m.job.app.ID).
+			Save(ctx)
 		return
 	}
-
-	eg, err = m.db.Group.
-		Create().
-		SetName(mg.Name).
-		SetApplicationID(m.job.app.ID).
-		Save(ctx)
 
 	return
 }
@@ -85,6 +91,9 @@ func (m *master) FindCreateGroup(ctx context.Context, mg metrics.Group, appID in
 func (m *master) FindCreateGraph(ctx context.Context, mgraph metrics.Graph, groupID int) (
 	egraph *ent.Graph, err error,
 ) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
 	egraph, err = m.db.Graph.Query().
 		Where(
 			entGraph.TitleEQ(mgraph.Title),
@@ -96,21 +105,27 @@ func (m *master) FindCreateGraph(ctx context.Context, mgraph metrics.Graph, grou
 		First(ctx)
 
 	// if there is one found
-	if err != nil && !ent.IsNotFound(err) {
+	if err != nil {
+		if !ent.IsNotFound(err) {
+			return
+		}
+
+		egraph, err = m.db.Graph.Create().
+			SetTitle(mgraph.Title).
+			SetUnit(mgraph.Unit).
+			SetGroupID(groupID).
+			Save(ctx)
 		return
 	}
-
-	egraph, err = m.db.Graph.Create().
-		SetTitle(mgraph.Title).
-		SetUnit(mgraph.Unit).
-		SetGroupID(groupID).
-		Save(ctx)
 	return
 }
 
 func (m *master) FindCreateMetric(ctx context.Context, mmetric metrics.Metric, graphID int) (
 	emetric *ent.Metric, err error,
 ) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
 	emetric, err = m.db.Metric.Query().
 		Where(
 			entMetric.TitleEQ(mmetric.Title),
@@ -122,16 +137,19 @@ func (m *master) FindCreateMetric(ctx context.Context, mmetric metrics.Metric, g
 		First(ctx)
 
 	// if there is one found
-	if err != nil && !ent.IsNotFound(err) {
+	if err != nil {
+		if !ent.IsNotFound(err) {
+			return
+		}
+
+		emetric, err = m.db.Metric.
+			Create().
+			SetTitle(mmetric.Title).
+			SetType(string(mmetric.Type)).
+			SetGraphID(graphID).
+			Save(ctx)
+
 		return
 	}
-
-	emetric, err = m.db.Metric.
-		Create().
-		SetTitle(mmetric.Title).
-		SetType(string(mmetric.Type)).
-		SetGraphID(graphID).
-		Save(ctx)
-
 	return
 }

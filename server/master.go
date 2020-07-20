@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"sync"
 	"time"
 
 	"context"
@@ -30,6 +31,7 @@ const (
 )
 
 type master struct {
+	mu          sync.Mutex
 	addr        string // host name
 	port        int    // api port
 	clusterPort int    // cluster port
