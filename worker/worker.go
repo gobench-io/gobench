@@ -173,6 +173,7 @@ func (w *Worker) Running() bool {
 }
 
 func (w *Worker) runScen(ctx context.Context, done chan struct{}) {
+
 	var totalVu int
 
 	vus := *w.vus
@@ -186,6 +187,14 @@ func (w *Worker) runScen(ctx context.Context, done chan struct{}) {
 	for i := range vus {
 		for j := 0; j < vus[i].Nu; j++ {
 			go func(i, j int) {
+
+				// defer func() {
+				// 	if r := recover(); r != nil {
+				// 		log.Println("recovered in run scen", r)
+				// 		return
+				// 	}
+				// }()
+
 				vus[i].Fu(ctx, j)
 				wait.Done()
 			}(i, j)

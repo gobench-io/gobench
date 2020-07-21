@@ -112,3 +112,17 @@ func TestCancelPlugin(t *testing.T) {
 		t.Fatalf("Should have finish the running after cancel")
 	}
 }
+
+func TestPanicPlugin(t *testing.T) {
+	n, _ := NewWorker(newNilLog(), 1)
+	so := "./script/valid-panic/valid-panic.so"
+	assert.Nil(t, n.Load(so))
+	assert.NotNil(t, n.vus)
+
+	ctx, _ := context.WithCancel(context.Background())
+
+	err := n.Run(ctx)
+	assert.EqualError(t, err, ErrApp.Error())
+	// after Run finish, the worker is in normal state
+	assert.False(t, n.Running())
+}
