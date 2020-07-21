@@ -66,7 +66,7 @@ func TestNew(t *testing.T) {
 
 func TestLoadPlugin(t *testing.T) {
 	n, _ := NewWorker(newNilLog(), 1)
-	so := "./script/valid-dnt.so"
+	so := "./script/valid-dnt/valid-dnt.so"
 	assert.Nil(t, n.Load(so))
 	assert.NotNil(t, n.vus)
 	assert.False(t, n.Running())
@@ -74,8 +74,12 @@ func TestLoadPlugin(t *testing.T) {
 
 func TestRunPlugin(t *testing.T) {
 	n, _ := NewWorker(newNilLog(), 1)
-	so := "./script/valid-dnt.so"
+	so := "./script/valid-dnt/valid-dnt.so"
 	assert.Nil(t, n.Load(so))
 	assert.NotNil(t, n.vus)
+
+	assert.False(t, n.Running())
 	assert.Nil(t, n.Run())
+	// after Run finish, the worker is in normal state
+	assert.False(t, n.Running())
 }
