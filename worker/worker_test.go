@@ -88,7 +88,7 @@ func TestRunPlugin(t *testing.T) {
 
 func TestCancelPlugin(t *testing.T) {
 	n, _ := NewWorker(newNilLog(), 1)
-	so := "./script/valid-wait/valid-wait.so"
+	so := "./script/valid-forever/valid-forever.so"
 	assert.Nil(t, n.Load(so))
 
 	ctx, cancel := context.WithCancel(context.Background())
