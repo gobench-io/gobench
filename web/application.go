@@ -38,6 +38,9 @@ func applicationCtx(next http.Handler) http.Handler {
 func listApplications(w http.ResponseWriter, r *http.Request) {
 	aps, err := db().Application.
 		Query().
+		Order(
+			ent.Desc(application.FieldCreatedAt),
+		).
 		All(r.Context())
 	if err != nil {
 		render.Render(w, r, ErrInternalServer(err))
