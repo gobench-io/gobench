@@ -144,25 +144,23 @@ func (w *Worker) Cancel() error {
 
 // Run starts the preloaded plugin
 // return error if the worker is running already
-func (w *Worker) Run() error {
+func (w *Worker) Run(ctx context.Context) error {
 	w.mu.Lock()
 
 	if w.status == Running {
+		w.mu.Unlock()
 		return ErrNodeIsRunning
 	}
 
 	w.status = Running
 	w.mu.Unlock()
 
-	w.run()
+	w.run(ctx)
+
 	return nil
 }
 
-func (w *Worker) run() {
-	ctx, cancel := context.WithCancel(context.Background())
-
-	w.cancel = cancel
-
+func (w *Worker) run(ctx context.Context) {
 	finished := make(chan struct{})
 
 	go w.logScaled(ctx, 5*time.Second)
@@ -179,6 +177,7 @@ func (w *Worker) run() {
 	w.reset()
 }
 
+// Running returns a bool value indicating that the working is running
 func (w *Worker) Running() bool {
 	w.mu.Lock()
 	defer w.mu.Unlock()

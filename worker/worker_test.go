@@ -78,8 +78,20 @@ func TestRunPlugin(t *testing.T) {
 	assert.Nil(t, n.Load(so))
 	assert.NotNil(t, n.vus)
 
+	ctx, _ := context.WithCancel(context.Background())
+
 	assert.False(t, n.Running())
-	assert.Nil(t, n.Run())
+	assert.Nil(t, n.Run(ctx))
 	// after Run finish, the worker is in normal state
 	assert.False(t, n.Running())
+}
+
+func TestCancelPlugin(t *testing.T) {
+	n, _ := NewWorker(newNilLog(), 1)
+	so := "./script/valid-wait/valid-wait.so"
+	assert.Nil(t, n.Load(so))
+
+	ctx, _ := context.WithCancel(context.Background())
+
+	assert.Nil(t, n.Run(ctx))
 }
