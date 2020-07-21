@@ -208,7 +208,7 @@ func groups() []metrics.Group {
 				Unit:  "Microsecond",
 				Metrics: []metrics.Metric{
 					{
-						Title: unsubError,
+						Title: unsubLatency,
 						Type:  metrics.Histogram,
 					},
 				},

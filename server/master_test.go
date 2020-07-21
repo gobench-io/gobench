@@ -273,3 +273,73 @@ func TestSetup(t *testing.T) {
 	assert.Len(t, metrics2, 1)
 	assert.Equal(t, prefix+".latency", metrics2[0].Title)
 }
+
+func TestDucplicateSetup(t *testing.T) {
+	ctx := context.TODO()
+
+	s := seedServer(t)
+	// assert.Nil(t, s.cleanupDB())
+
+	_, err := s.NewApplication(ctx, "name", "scenario")
+	assert.Nil(t, err)
+
+	s.master.job.app, err = s.master.nextApplication(ctx)
+	assert.Nil(t, err)
+
+	prefix := time.Now().String()
+	group := metrics.Group{
+		Name: "HTTP (" + prefix + ")",
+		Graphs: []metrics.Graph{
+			{
+				Title: "HTTP Response",
+				Unit:  "N",
+				Metrics: []metrics.Metric{
+					{
+						Title: prefix + ".http_ok",
+						Type:  metrics.Counter,
+					},
+				},
+			},
+			{
+				Title: "HTTP Response",
+				Unit:  "N",
+				Metrics: []metrics.Metric{
+					{
+						Title: prefix + ".http_ok",
+						Type:  metrics.Counter,
+					},
+				},
+			},
+		},
+	}
+	err = worker.Setup([]metrics.Group{
+		group,
+	})
+	assert.Nil(t, err)
+
+	groups, err := s.master.db.Group.Query().Where(
+		entGroup.Name("HTTP ("+prefix+")"),
+		entGroup.HasApplicationWith(
+			entApplication.NameEQ("name"),
+		),
+	).All(ctx)
+	assert.Nil(t, err)
+	assert.Len(t, groups, 1)
+	g := groups[0]
+
+	graphs, err := s.master.db.Graph.Query().Where(
+		entGraph.HasGroupWith(
+			entGroup.IDEQ(g.ID),
+		),
+	).All(ctx)
+	assert.Nil(t, err)
+	assert.Len(t, graphs, 1)
+
+	metrics, err := s.master.db.Metric.Query().Where(
+		entMetric.HasGraphWith(
+			entGraph.IDEQ(graphs[0].ID),
+		),
+	).All(ctx)
+	assert.Nil(t, err)
+	assert.Len(t, metrics, 1)
+}

@@ -268,6 +268,9 @@ func Setup(groups []metrics.Group) error {
 
 	units := make(map[string]unit)
 
+	worker.mu.Lock()
+	defer worker.mu.Unlock()
+
 	for _, group := range groups {
 		// create a new group if not existed
 		egroup, err := worker.log.FindCreateGroup(ctx, group, worker.appID)
@@ -344,11 +347,9 @@ func Setup(groups []metrics.Group) error {
 	}
 
 	// aggregate units
-	worker.mu.Lock()
 	for k, v := range units {
 		worker.units[k] = v
 	}
-	worker.mu.Unlock()
 
 	return nil
 }
