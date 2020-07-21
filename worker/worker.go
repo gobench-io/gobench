@@ -63,7 +63,6 @@ type Worker struct {
 	status     status
 	pluginPath string
 	vus        *scenario.Vus
-	cancel     context.CancelFunc
 
 	units map[string]unit // title - gometrics
 
@@ -110,7 +109,6 @@ func (w *Worker) reset() {
 	w.mu.Lock()
 	w.status = Idle
 	w.units = make(map[string]unit)
-	w.cancel = nil
 	w.mu.Unlock()
 }
 
@@ -126,21 +124,6 @@ func (w *Worker) Load(so string) error {
 
 	w.pluginPath = so
 	w.vus = &vus
-
-	return nil
-}
-
-// Cancel stops the running scenario if any
-func (w *Worker) Cancel() error {
-	w.mu.Lock()
-	defer w.mu.Unlock()
-
-	if w.status == Idle {
-		return nil
-	}
-
-	// if there is a running scenario
-	w.cancel()
 
 	return nil
 }
