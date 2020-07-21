@@ -1,6 +1,7 @@
-package main
+// a valid gobench scenario
+// wait until the application is cancel
 
-//go:generate go build -buildmode=plugin -o valid.so valid.go
+package main
 
 import (
 	"context"

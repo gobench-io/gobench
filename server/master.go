@@ -89,7 +89,6 @@ func (m *master) schedule() {
 }
 
 func (m *master) run() (err error) {
-
 	ctx := context.TODO()
 
 	// finding pending application

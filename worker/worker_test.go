@@ -11,7 +11,7 @@ import (
 )
 
 func loadValidPlugin(w *Worker) error {
-	so := "./script/valid.so"
+	so := "./script/valid-dnt.so"
 	return w.Load(so)
 }
 
@@ -66,15 +66,16 @@ func TestNew(t *testing.T) {
 
 func TestLoadPlugin(t *testing.T) {
 	n, _ := NewWorker(newNilLog(), 1)
-	so := "./script/valid.so"
+	so := "./script/valid-dnt.so"
 	assert.Nil(t, n.Load(so))
 	assert.NotNil(t, n.vus)
 	assert.False(t, n.Running())
 }
 
-// func TestRunPlugin(t *testing.T) {
-// 	n, _ := NewWorker(newNilLog())
-// 	assert.Nil(t, loadValidPlugin(n))
-// 	assert.Nil(t, n.Run())
-// 	assert.False(t, n.Running())
-// }
+func TestRunPlugin(t *testing.T) {
+	n, _ := NewWorker(newNilLog(), 1)
+	so := "./script/valid-dnt.so"
+	assert.Nil(t, n.Load(so))
+	assert.NotNil(t, n.vus)
+	assert.Nil(t, n.Run())
+}
