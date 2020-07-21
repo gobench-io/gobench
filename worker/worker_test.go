@@ -3,6 +3,7 @@ package worker
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/metrics"
@@ -91,7 +92,24 @@ func TestCancelPlugin(t *testing.T) {
 	so := "./script/valid-wait/valid-wait.so"
 	assert.Nil(t, n.Load(so))
 
-	ctx, _ := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(context.Background())
 
-	assert.Nil(t, n.Run(ctx))
+	done := make(chan struct{}, 1)
+
+	go func() {
+		err := n.Run(ctx)
+
+		assert.EqualError(t, err, ErrAppCancel.Error())
+		assert.False(t, n.Running())
+
+		done <- struct{}{}
+	}()
+
+	cancel()
+
+	select {
+	case <-done:
+	case <-time.After(1 * time.Second):
+		t.Fatalf("Should have finish the running after cancel")
+	}
 }

@@ -19,6 +19,9 @@ import (
 var (
 	ErrIDNotFound    = errors.New("id not found")
 	ErrNodeIsRunning = errors.New("worker is running")
+
+	ErrApp       = errors.New("failed run the application")
+	ErrAppCancel = errors.New("cancel the application")
 )
 
 // worker status. the worker is in either idle, or running state
@@ -144,7 +147,7 @@ func (w *Worker) Cancel() error {
 
 // Run starts the preloaded plugin
 // return error if the worker is running already
-func (w *Worker) Run(ctx context.Context) error {
+func (w *Worker) Run(ctx context.Context) (err error) {
 	w.mu.Lock()
 
 	if w.status == Running {
@@ -155,12 +158,12 @@ func (w *Worker) Run(ctx context.Context) error {
 	w.status = Running
 	w.mu.Unlock()
 
-	w.run(ctx)
+	err = w.run(ctx)
 
-	return nil
+	return err
 }
 
-func (w *Worker) run(ctx context.Context) {
+func (w *Worker) run(ctx context.Context) (err error) {
 	finished := make(chan struct{})
 
 	go w.logScaled(ctx, 5*time.Second)
@@ -168,13 +171,14 @@ func (w *Worker) run(ctx context.Context) {
 
 	select {
 	case <-finished:
-		log.Printf("scenarios finished")
 	case <-ctx.Done():
-		log.Printf("scenarios cancel")
+		err = ErrAppCancel
 	}
 
 	// when finish, reset the worker
 	w.reset()
+
+	return
 }
 
 // Running returns a bool value indicating that the working is running
