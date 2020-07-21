@@ -58,9 +58,6 @@ func (m *master) Gauge(ctx context.Context, mID int, wid, title string, time int
 func (m *master) FindCreateGroup(ctx context.Context, mg metrics.Group, appID int) (
 	eg *ent.Group, err error,
 ) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
 	eg, err = m.job.app.
 		QueryGroups().
 		Where(
@@ -91,9 +88,6 @@ func (m *master) FindCreateGroup(ctx context.Context, mg metrics.Group, appID in
 func (m *master) FindCreateGraph(ctx context.Context, mgraph metrics.Graph, groupID int) (
 	egraph *ent.Graph, err error,
 ) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
 	egraph, err = m.db.Graph.Query().
 		Where(
 			entGraph.TitleEQ(mgraph.Title),
@@ -123,9 +117,6 @@ func (m *master) FindCreateGraph(ctx context.Context, mgraph metrics.Graph, grou
 func (m *master) FindCreateMetric(ctx context.Context, mmetric metrics.Metric, graphID int) (
 	emetric *ent.Metric, err error,
 ) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
 	emetric, err = m.db.Metric.Query().
 		Where(
 			entMetric.TitleEQ(mmetric.Title),
