@@ -78,7 +78,7 @@ func TestRunPlugin(t *testing.T) {
 	assert.Nil(t, n.Load(so))
 	assert.NotNil(t, n.vus)
 
-	ctx, _ := context.WithCancel(context.Background())
+	ctx := context.Background()
 
 	assert.False(t, n.Running())
 	assert.Nil(t, n.Run(ctx))
@@ -120,7 +120,7 @@ func TestPanicPlugin(t *testing.T) {
 	assert.Nil(t, n.Load(so))
 	assert.NotNil(t, n.vus)
 
-	ctx, _ := context.WithCancel(context.Background())
+	ctx := context.Background()
 
 	err := n.Run(ctx)
 	assert.EqualError(t, err, ErrApp.Error())
