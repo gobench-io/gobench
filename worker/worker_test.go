@@ -114,7 +114,6 @@ func TestCancelPlugin(t *testing.T) {
 }
 
 func TestPanicPlugin(t *testing.T) {
-	t.Skip()
 	n, _ := NewWorker(newNilLog(), 1)
 	so := "./script/valid-panic/valid-panic.so"
 	assert.Nil(t, n.Load(so))
@@ -123,7 +122,7 @@ func TestPanicPlugin(t *testing.T) {
 	ctx := context.Background()
 
 	err := n.Run(ctx)
-	assert.EqualError(t, err, ErrApp.Error())
+	assert.EqualError(t, err, ErrAppPanic.Error())
 	// after Run finish, the worker is in normal state
 	assert.False(t, n.Running())
 }

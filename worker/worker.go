@@ -20,8 +20,8 @@ var (
 	ErrIDNotFound    = errors.New("id not found")
 	ErrNodeIsRunning = errors.New("worker is running")
 
-	ErrApp       = errors.New("failed run the application")
-	ErrAppCancel = errors.New("cancel the application")
+	ErrAppCancel = errors.New("application is cancel")
+	ErrAppPanic  = errors.New("application is panic")
 )
 
 // worker status. the worker is in either idle, or running state
@@ -147,13 +147,13 @@ func (w *Worker) Run(ctx context.Context) (err error) {
 }
 
 func (w *Worker) run(ctx context.Context) (err error) {
-	finished := make(chan struct{})
+	finished := make(chan error)
 
 	go w.logScaled(ctx, 5*time.Second)
 	go w.runScen(ctx, finished)
 
 	select {
-	case <-finished:
+	case err = <-finished:
 	case <-ctx.Done():
 		err = ErrAppCancel
 	}
@@ -172,8 +172,7 @@ func (w *Worker) Running() bool {
 	return w.status == Running
 }
 
-func (w *Worker) runScen(ctx context.Context, done chan struct{}) {
-
+func (w *Worker) runScen(ctx context.Context, done chan error) {
 	var totalVu int
 
 	vus := *w.vus
@@ -181,29 +180,40 @@ func (w *Worker) runScen(ctx context.Context, done chan struct{}) {
 		totalVu += vus[i].Nu
 	}
 
-	var wait sync.WaitGroup
-	wait.Add(totalVu)
+	fatalErr := make(chan error)
+	wgDone := make(chan struct{})
+	var wg sync.WaitGroup
+	wg.Add(totalVu)
 
 	for i := range vus {
 		for j := 0; j < vus[i].Nu; j++ {
 			go func(i, j int) {
 
-				// defer func() {
-				// 	if r := recover(); r != nil {
-				// 		log.Println("recovered in run scen", r)
-				// 		return
-				// 	}
-				// }()
+				defer func() {
+					if r := recover(); r != nil {
+						log.Println("recovered in runScen", r)
+						fatalErr <- ErrAppPanic
+						// return
+					}
+				}()
 
 				vus[i].Fu(ctx, j)
-				wait.Done()
+				wg.Done()
 			}(i, j)
 		}
 	}
 
-	wait.Wait()
+	go func() {
+		wg.Wait()
+		close(wgDone)
+	}()
 
-	done <- struct{}{}
+	select {
+	case <-wgDone:
+		done <- nil
+	case err := <-fatalErr:
+		done <- err
+	}
 }
 
 // logScaled extract the metric log from a worker
