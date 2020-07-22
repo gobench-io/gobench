@@ -20,6 +20,6 @@ func Export() scenario.Vus {
 	}
 }
 
-// this function waiting to receive ctx.Done
+// this func does nothing
 func f1(ctx context.Context, vui int) {
 }

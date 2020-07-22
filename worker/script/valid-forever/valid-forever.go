@@ -1,5 +1,5 @@
 // a valid gobench scenario
-// wait until the application is cancel
+// vu function wait until the application is cancel
 
 package main
 

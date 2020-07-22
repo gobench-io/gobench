@@ -1,5 +1,5 @@
 // a valid gobench scenario
-// wait until the application is cancel
+// the vu function panic
 
 package main
 
@@ -20,7 +20,7 @@ func Export() scenario.Vus {
 	}
 }
 
-// this function run for forever
+// this function panic
 func f1(ctx context.Context, vui int) {
 	y := 0
 	x := 1 / y
