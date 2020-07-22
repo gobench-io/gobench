@@ -89,7 +89,6 @@ func (m *master) schedule() {
 }
 
 func (m *master) run() (err error) {
-
 	ctx := context.TODO()
 
 	// finding pending application
@@ -228,7 +227,7 @@ func (m *master) runJob(ctx context.Context) error {
 		return fmt.Errorf("failed load plugin: %v", err)
 	}
 
-	if err = m.lw.Run(); err != nil {
+	if err = m.lw.Run(ctx); err != nil {
 		return err
 	}
 

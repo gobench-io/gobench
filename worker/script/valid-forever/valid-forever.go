@@ -1,6 +1,7 @@
-package main
+// a valid gobench scenario
+// vu function wait until the application is cancel
 
-//go:generate go build -buildmode=plugin -o valid.so valid.go
+package main
 
 import (
 	"context"
@@ -19,9 +20,8 @@ func Export() scenario.Vus {
 	}
 }
 
-// this function waiting to receive ctx.Done
+// this function run for forever
 func f1(ctx context.Context, vui int) {
-	select {
-	case <-ctx.Done():
+	for {
 	}
 }

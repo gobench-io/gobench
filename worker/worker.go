@@ -19,6 +19,9 @@ import (
 var (
 	ErrIDNotFound    = errors.New("id not found")
 	ErrNodeIsRunning = errors.New("worker is running")
+
+	ErrApp       = errors.New("failed run the application")
+	ErrAppCancel = errors.New("cancel the application")
 )
 
 // worker status. the worker is in either idle, or running state
@@ -60,7 +63,6 @@ type Worker struct {
 	status     status
 	pluginPath string
 	vus        *scenario.Vus
-	cancel     context.CancelFunc
 
 	units map[string]unit // title - gometrics
 
@@ -107,7 +109,6 @@ func (w *Worker) reset() {
 	w.mu.Lock()
 	w.status = Idle
 	w.units = make(map[string]unit)
-	w.cancel = nil
 	w.mu.Unlock()
 }
 
@@ -127,42 +128,25 @@ func (w *Worker) Load(so string) error {
 	return nil
 }
 
-// Cancel stops the running scenario if any
-func (w *Worker) Cancel() error {
-	w.mu.Lock()
-	defer w.mu.Unlock()
-
-	if w.status == Idle {
-		return nil
-	}
-
-	// if there is a running scenario
-	w.cancel()
-
-	return nil
-}
-
 // Run starts the preloaded plugin
 // return error if the worker is running already
-func (w *Worker) Run() error {
+func (w *Worker) Run(ctx context.Context) (err error) {
 	w.mu.Lock()
 
 	if w.status == Running {
+		w.mu.Unlock()
 		return ErrNodeIsRunning
 	}
 
 	w.status = Running
 	w.mu.Unlock()
 
-	w.run()
-	return nil
+	err = w.run(ctx)
+
+	return err
 }
 
-func (w *Worker) run() {
-	ctx, cancel := context.WithCancel(context.Background())
-
-	w.cancel = cancel
-
+func (w *Worker) run(ctx context.Context) (err error) {
 	finished := make(chan struct{})
 
 	go w.logScaled(ctx, 5*time.Second)
@@ -170,15 +154,17 @@ func (w *Worker) run() {
 
 	select {
 	case <-finished:
-		log.Printf("scenarios finished")
 	case <-ctx.Done():
-		log.Printf("scenarios cancel")
+		err = ErrAppCancel
 	}
 
 	// when finish, reset the worker
 	w.reset()
+
+	return
 }
 
+// Running returns a bool value indicating that the working is running
 func (w *Worker) Running() bool {
 	w.mu.Lock()
 	defer w.mu.Unlock()
@@ -187,6 +173,7 @@ func (w *Worker) Running() bool {
 }
 
 func (w *Worker) runScen(ctx context.Context, done chan struct{}) {
+
 	var totalVu int
 
 	vus := *w.vus
@@ -200,6 +187,14 @@ func (w *Worker) runScen(ctx context.Context, done chan struct{}) {
 	for i := range vus {
 		for j := 0; j < vus[i].Nu; j++ {
 			go func(i, j int) {
+
+				// defer func() {
+				// 	if r := recover(); r != nil {
+				// 		log.Println("recovered in run scen", r)
+				// 		return
+				// 	}
+				// }()
+
 				vus[i].Fu(ctx, j)
 				wait.Done()
 			}(i, j)

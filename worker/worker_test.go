@@ -3,6 +3,7 @@ package worker
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/metrics"
@@ -11,7 +12,7 @@ import (
 )
 
 func loadValidPlugin(w *Worker) error {
-	so := "./script/valid.so"
+	so := "./script/valid-dnt.so"
 	return w.Load(so)
 }
 
@@ -58,7 +59,6 @@ func TestNew(t *testing.T) {
 	assert.Equal(t, n1, n2)
 
 	assert.Equal(t, n1.status, Idle)
-	assert.Nil(t, n1.cancel)
 	assert.Equal(t, n1.units, make(map[string]unit))
 
 	assert.False(t, n1.Running())
@@ -66,15 +66,64 @@ func TestNew(t *testing.T) {
 
 func TestLoadPlugin(t *testing.T) {
 	n, _ := NewWorker(newNilLog(), 1)
-	so := "./script/valid.so"
+	so := "./script/valid-dnt/valid-dnt.so"
 	assert.Nil(t, n.Load(so))
 	assert.NotNil(t, n.vus)
 	assert.False(t, n.Running())
 }
 
-// func TestRunPlugin(t *testing.T) {
-// 	n, _ := NewWorker(newNilLog())
-// 	assert.Nil(t, loadValidPlugin(n))
-// 	assert.Nil(t, n.Run())
-// 	assert.False(t, n.Running())
-// }
+func TestRunPlugin(t *testing.T) {
+	n, _ := NewWorker(newNilLog(), 1)
+	so := "./script/valid-dnt/valid-dnt.so"
+	assert.Nil(t, n.Load(so))
+	assert.NotNil(t, n.vus)
+
+	ctx := context.Background()
+
+	assert.False(t, n.Running())
+	assert.Nil(t, n.Run(ctx))
+	// after Run finish, the worker is in normal state
+	assert.False(t, n.Running())
+}
+
+func TestCancelPlugin(t *testing.T) {
+	n, _ := NewWorker(newNilLog(), 1)
+	so := "./script/valid-forever/valid-forever.so"
+	assert.Nil(t, n.Load(so))
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	done := make(chan struct{}, 1)
+
+	go func() {
+		err := n.Run(ctx)
+
+		assert.EqualError(t, err, ErrAppCancel.Error())
+		assert.False(t, n.Running())
+
+		done <- struct{}{}
+	}()
+
+	cancel()
+
+	select {
+	case <-done:
+	case <-time.After(1 * time.Second):
+		t.Fatalf("Should have finish the running after cancel")
+	}
+}
+
+func TestPanicPlugin(t *testing.T) {
+	t.Skip()
+	n, _ := NewWorker(newNilLog(), 1)
+	so := "./script/valid-panic/valid-panic.so"
+	assert.Nil(t, n.Load(so))
+	assert.NotNil(t, n.vus)
+
+	ctx := context.Background()
+
+	err := n.Run(ctx)
+	assert.EqualError(t, err, ErrApp.Error())
+	// after Run finish, the worker is in normal state
+	assert.False(t, n.Running())
+}
