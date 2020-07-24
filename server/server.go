@@ -91,6 +91,11 @@ func (s *Server) NewApplication(ctx context.Context, name, scenario string) (*en
 		Save(ctx)
 }
 
+// CancelApplication terminates an application
+func (s *Server) CancelApplication(ctx context.Context, appID int) error {
+	return s.master.cancel(ctx, appID)
+}
+
 // cleanupDB is the helper function to cleanup the DB for testing
 func (s *Server) cleanupDB() error {
 	ctx := context.TODO()

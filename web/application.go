@@ -120,3 +120,19 @@ func getApplicationGroups(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func cancelApplication(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	app, ok := ctx.Value(webKey("application")).(*ent.Application)
+	if !ok {
+		http.Error(w, http.StatusText(422), 422)
+		return
+	}
+
+	err := s.CancelApplication(ctx, app.ID)
+
+	if err != nil {
+		render.Render(w, r, ErrInternalServer(err))
+		return
+	}
+}

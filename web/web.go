@@ -99,6 +99,7 @@ func New(s *server.Server) *chi.Mux {
 
 				r.Get("/", getApplication)
 				r.Get("/groups", getApplicationGroups)
+				r.Put("/cancel", cancelApplication)
 			})
 		})
 	})

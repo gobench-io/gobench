@@ -218,7 +218,7 @@ func f1(ctx context.Context, vui int) {
 		time.Sleep(1 * time.Second)
 		assert.Equal(t, string(jobRunning), s.master.job.app.Status, "should run after 1 second")
 
-		assert.Nil(t, s.master.cancel(app.ID))
+		assert.Nil(t, s.master.cancel(ctx, app.ID))
 	}()
 
 	err := s.master.run(ctx, j)

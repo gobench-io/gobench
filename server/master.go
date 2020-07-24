@@ -157,7 +157,7 @@ func (m *master) run(ctx context.Context, j *job) (err error) {
 }
 
 // cancel terminates a running job with the same app ID
-func (m *master) cancel(appID int) error {
+func (m *master) cancel(ctx context.Context, appID int) error {
 	if m.job.app.ID != appID {
 		return errors.New("missmatch application ID")
 	}
