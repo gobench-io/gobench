@@ -82,22 +82,19 @@ func (m *master) setupDb() error {
 
 // schedule get a pending application from the db if there is no active job
 func (m *master) schedule() {
+	ctx := context.TODO()
+
 	for {
+		// finding pending application
+		if app, err := m.nextApplication(ctx); err == nil {
+			m.run(ctx, app)
+		}
+
 		time.Sleep(1 * time.Second)
-		m.run()
 	}
 }
 
-func (m *master) run() (err error) {
-	ctx := context.TODO()
-
-	// finding pending application
-	app, err := m.nextApplication(ctx)
-
-	if err != nil {
-		return
-	}
-
+func (m *master) run(ctx context.Context, app *ent.Application) (err error) {
 	// create new job from the application
 	m.job.app = app
 
