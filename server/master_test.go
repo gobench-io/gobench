@@ -216,9 +216,7 @@ func f1(ctx context.Context, vui int) {
 
 	go func() {
 		time.Sleep(1 * time.Second)
-		if s.master.job.app.Status != string(jobRunning) {
-			t.Fatalf("should running after 1 second")
-		}
+		assert.Equal(t, string(jobRunning), s.master.job.app.Status, "should run after 1 second")
 
 		assert.Nil(t, s.master.cancel(app.ID))
 	}()
