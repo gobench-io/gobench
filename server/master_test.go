@@ -180,6 +180,38 @@ func f1(ctx context.Context, vui int) {
 	assert.Nil(t, s.master.runJob(ctx))
 }
 
+func TestCancel(t *testing.T) {
+	ctx := context.Background()
+	s := seedServer(t)
+
+	scenario := `
+package main
+
+import (
+	"context"
+
+	"github.com/gobench-io/gobench/scenario"
+)
+
+func Export() scenario.Vus {
+	return scenario.Vus{
+		scenario.Vu{
+			Nu:   1,
+			Rate: 100,
+			Fu:   f1,
+		},
+	}
+}
+
+func f1(ctx context.Context, vui int) {
+	for {}
+}`
+
+	app, _ := s.NewApplication(ctx, "foo", scenario)
+	err := s.master.run(ctx, app)
+	assert.Nil(t, err)
+}
+
 // worker.Setup should create associated tables in the database
 func TestSetup(t *testing.T) {
 	ctx := context.TODO()
