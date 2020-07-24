@@ -21,6 +21,7 @@ func seedServer(t *testing.T) *Server {
 	s, _ := NewServer(DefaultMasterOptions())
 	// disable the schedule
 	s.isSchedule = false
+	s.master.job = &job{}
 	s.master.job.app = &ent.Application{}
 	s.master.lw, err = worker.NewWorker(&s.master, s.master.job.app.ID)
 	assert.Nil(t, err)
@@ -181,7 +182,7 @@ func f1(ctx context.Context, vui int) {
 }
 
 func TestCancel(t *testing.T) {
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
 	s := seedServer(t)
 
 	scenario := `
@@ -207,9 +208,23 @@ func f1(ctx context.Context, vui int) {
 	for {}
 }`
 
-	app, _ := s.NewApplication(ctx, "foo", scenario)
-	err := s.master.run(ctx, app)
-	assert.Nil(t, err)
+	app, _ := s.NewApplication(ctx, "cancel test", scenario)
+	j := &job{
+		app:    app,
+		cancel: cancel,
+	}
+
+	go func() {
+		time.Sleep(1 * time.Second)
+		if s.master.job.app.Status != string(jobRunning) {
+			t.Fatalf("should running after 1 second")
+		}
+
+		assert.Nil(t, s.master.cancel(app.ID))
+	}()
+
+	err := s.master.run(ctx, j)
+	assert.EqualError(t, err, worker.ErrAppCancel.Error())
 }
 
 // worker.Setup should create associated tables in the database

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -41,12 +42,13 @@ type master struct {
 	db         *ent.Client
 
 	lw  *worker.Worker // local worker
-	job job
+	job *job
 }
 
 type job struct {
 	app    *ent.Application
 	plugin string // plugin path
+	cancel context.CancelFunc
 }
 
 // to is the function to set new state for an application
@@ -82,21 +84,27 @@ func (m *master) setupDb() error {
 
 // schedule get a pending application from the db if there is no active job
 func (m *master) schedule() {
-	ctx := context.TODO()
+	ctx, cancel := context.WithCancel(context.Background())
 
 	for {
-		// finding pending application
-		if app, err := m.nextApplication(ctx); err == nil {
-			m.run(ctx, app)
-		}
-
 		time.Sleep(1 * time.Second)
+
+		// finding pending application
+		app, err := m.nextApplication(ctx)
+		if err != nil {
+			continue
+		}
+		job := &job{
+			app:    app,
+			cancel: cancel,
+		}
+		m.run(ctx, job)
 	}
 }
 
-func (m *master) run(ctx context.Context, app *ent.Application) (err error) {
+func (m *master) run(ctx context.Context, j *job) (err error) {
 	// create new job from the application
-	m.job.app = app
+	m.job = j
 
 	defer func() {
 		if err != nil {
@@ -146,6 +154,16 @@ func (m *master) run(ctx context.Context, app *ent.Application) (err error) {
 	)
 
 	return
+}
+
+func (m *master) cancel(appID int) error {
+	if m.job.app.ID != appID {
+		return errors.New("missmatch application ID")
+	}
+
+	m.job.cancel()
+
+	return nil
 }
 
 // provision compiles a scenario to golang plugin, distribute the application to
