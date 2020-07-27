@@ -11,6 +11,7 @@ import (
 	"github.com/go-chi/render"
 	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/ent/application"
+	"github.com/gobench-io/gobench/server"
 )
 
 func applicationCtx(next http.Handler) http.Handler {
@@ -129,10 +130,21 @@ func cancelApplication(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := s.CancelApplication(ctx, app.ID)
+	na, err := s.CancelApplication(ctx, app.ID)
 
+	// if err is ErrAppIsFinished, return 400 error
+	// else return 500 error
 	if err != nil {
+		if errors.Is(err, server.ErrAppIsFinished) {
+			render.Render(w, r, ErrAppIsFinished(err))
+			return
+		}
 		render.Render(w, r, ErrInternalServer(err))
+		return
+	}
+
+	if err := render.Render(w, r, newApplicationResponse(na)); err != nil {
+		render.Render(w, r, ErrRender(err))
 		return
 	}
 }

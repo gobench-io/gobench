@@ -162,6 +162,7 @@ func TestCancelApplication(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, 200, w.Code)
+
 	var resApp ent.Application
 	_ = json.Unmarshal(w.Body.Bytes(), &resApp)
 	assert.Equal(t, resApp.Status, "cancel")

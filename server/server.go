@@ -2,12 +2,14 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
 	"sync"
 
 	"github.com/gobench-io/gobench/ent"
+	"github.com/gobench-io/gobench/ent/application"
 	"github.com/gobench-io/gobench/worker"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -92,8 +94,51 @@ func (s *Server) NewApplication(ctx context.Context, name, scenario string) (*en
 }
 
 // CancelApplication terminates an application
-func (s *Server) CancelApplication(ctx context.Context, appID int) error {
-	return s.master.cancel(ctx, appID)
+// if the app is running, send cancel signal
+// if the app is finished/error, return ErrAppIsFinished error
+// if the app is canceled, return with current app status
+// else update app status with cancel
+func (s *Server) CancelApplication(ctx context.Context, appID int) (*ent.Application, error) {
+	err := s.master.cancel(ctx, appID)
+
+	if err == nil {
+		return s.master.db.Application.
+			Query().
+			Where(application.ID(appID)).
+			Only(ctx)
+	}
+
+	// if err and err is not the app is not running
+	if err != nil && !errors.Is(err, ErrAppNotRunning) {
+		return nil, err
+	}
+
+	// if the app is not running, update directly on the db
+	// query the app
+	// if the app status is finished or error, return error
+	// if the app status is cancel (already), just return
+	// else, update the app table
+	app, err := s.master.db.Application.
+		Query().
+		Where(application.ID(appID)).
+		Only(ctx)
+
+	if err != nil {
+		return app, err
+	}
+
+	if app.Status == string(jobCancel) {
+		return app, nil
+	}
+	if app.Status == string(jobFinished) || app.Status == string(jobError) {
+		return app, ErrAppIsFinished
+	}
+
+	// else, update the status on db
+	return s.master.db.Application.
+		UpdateOneID(appID).
+		SetStatus(string(jobCancel)).
+		Save(ctx)
 }
 
 // cleanupDB is the helper function to cleanup the DB for testing

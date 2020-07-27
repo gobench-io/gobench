@@ -1,7 +1,6 @@
 package server
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -158,8 +157,11 @@ func (m *master) run(ctx context.Context, j *job) (err error) {
 
 // cancel terminates a running job with the same app ID
 func (m *master) cancel(ctx context.Context, appID int) error {
+	if m.job == nil {
+		return ErrAppNotRunning
+	}
 	if m.job.app.ID != appID {
-		return errors.New("missmatch application ID")
+		return ErrAppNotRunning
 	}
 
 	m.job.cancel()
