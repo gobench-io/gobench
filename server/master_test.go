@@ -21,6 +21,7 @@ func seedServer(t *testing.T) *Server {
 	s, _ := NewServer(DefaultMasterOptions())
 	// disable the schedule
 	s.isSchedule = false
+	s.master.job = &job{}
 	s.master.job.app = &ent.Application{}
 	s.master.lw, err = worker.NewWorker(&s.master, s.master.job.app.ID)
 	assert.Nil(t, err)
@@ -178,6 +179,50 @@ func f1(ctx context.Context, vui int) {
 	assert.Nil(t, err)
 	// should run for mor than 1 seconds
 	assert.Nil(t, s.master.runJob(ctx))
+}
+
+func TestCancel(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	s := seedServer(t)
+
+	scenario := `
+package main
+
+import (
+	"context"
+
+	"github.com/gobench-io/gobench/scenario"
+)
+
+func Export() scenario.Vus {
+	return scenario.Vus{
+		scenario.Vu{
+			Nu:   1,
+			Rate: 100,
+			Fu:   f1,
+		},
+	}
+}
+
+func f1(ctx context.Context, vui int) {
+	for {}
+}`
+
+	app, _ := s.NewApplication(ctx, "cancel test", scenario)
+	j := &job{
+		app:    app,
+		cancel: cancel,
+	}
+
+	go func() {
+		time.Sleep(1 * time.Second)
+		assert.Equal(t, string(jobRunning), s.master.job.app.Status, "should run after 1 second")
+
+		assert.Nil(t, s.master.cancel(ctx, app.ID))
+	}()
+
+	err := s.master.run(ctx, j)
+	assert.EqualError(t, err, worker.ErrAppCancel.Error())
 }
 
 // worker.Setup should create associated tables in the database

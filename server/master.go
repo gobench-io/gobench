@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -41,12 +42,13 @@ type master struct {
 	db         *ent.Client
 
 	lw  *worker.Worker // local worker
-	job job
+	job *job
 }
 
 type job struct {
 	app    *ent.Application
 	plugin string // plugin path
+	cancel context.CancelFunc
 }
 
 // to is the function to set new state for an application
@@ -83,28 +85,35 @@ func (m *master) setupDb() error {
 // schedule get a pending application from the db if there is no active job
 func (m *master) schedule() {
 	for {
+		ctx, cancel := context.WithCancel(context.Background())
 		time.Sleep(1 * time.Second)
-		m.run()
+
+		// finding pending application
+		app, err := m.nextApplication(ctx)
+		if err != nil {
+			continue
+		}
+		job := &job{
+			app:    app,
+			cancel: cancel,
+		}
+		m.run(ctx, job)
 	}
 }
 
-func (m *master) run() (err error) {
-	ctx := context.TODO()
-
-	// finding pending application
-	app, err := m.nextApplication(ctx)
-
-	if err != nil {
-		return
-	}
-
+func (m *master) run(ctx context.Context, j *job) (err error) {
 	// create new job from the application
-	m.job.app = app
+	m.job = j
 
 	defer func() {
 		if err != nil {
-			log.Printf("application id: %d failed run job %v\n", m.job.app.ID, err)
-			_ = m.jobTo(ctx, jobError)
+			log.Printf("application id: %d failed run job: %v\n", m.job.app.ID, err)
+			je := jobError
+			if errors.Is(err, worker.ErrAppCancel) {
+				je = jobCancel
+			}
+			ctx := context.TODO()
+			m.jobTo(ctx, je)
 		}
 	}()
 
@@ -149,6 +158,20 @@ func (m *master) run() (err error) {
 	)
 
 	return
+}
+
+// cancel terminates a running job with the same app ID
+func (m *master) cancel(ctx context.Context, appID int) error {
+	if m.job == nil {
+		return ErrAppNotRunning
+	}
+	if m.job.app.ID != appID {
+		return ErrAppNotRunning
+	}
+
+	m.job.cancel()
+
+	return nil
 }
 
 // provision compiles a scenario to golang plugin, distribute the application to

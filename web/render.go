@@ -36,6 +36,16 @@ func ErrInternalServer(err error) render.Renderer {
 	}
 }
 
+func ErrAppIsFinished(err error) render.Renderer {
+	return &ErrResponse{
+		Error: Err{
+			Code:    400,
+			Message: err.Error(),
+			Status:  "Application Finished",
+		},
+	}
+}
+
 func ErrInvalidRequest(err error) render.Renderer {
 	return &ErrResponse{
 		Error: Err{

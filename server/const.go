@@ -1,5 +1,7 @@
 package server
 
+import "errors"
+
 const (
 	// VERSION is the current version for the server.
 	VERSION = "0.0.1"
@@ -16,4 +18,10 @@ const (
 	statusRunning status = "running"
 	statusIdle    status = "idle"
 	statusCancel  status = "cancel"
+)
+
+// Error
+var (
+	ErrAppNotRunning = errors.New("application is not running")
+	ErrAppIsFinished = errors.New("application is finished already")
 )

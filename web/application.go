@@ -11,6 +11,7 @@ import (
 	"github.com/go-chi/render"
 	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/ent/application"
+	"github.com/gobench-io/gobench/server"
 )
 
 func applicationCtx(next http.Handler) http.Handler {
@@ -116,6 +117,33 @@ func getApplicationGroups(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := render.RenderList(w, r, newGroupListResponse(gs)); err != nil {
+		render.Render(w, r, ErrRender(err))
+		return
+	}
+}
+
+func cancelApplication(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	app, ok := ctx.Value(webKey("application")).(*ent.Application)
+	if !ok {
+		http.Error(w, http.StatusText(422), 422)
+		return
+	}
+
+	na, err := s.CancelApplication(ctx, app.ID)
+
+	// if err is ErrAppIsFinished, return 400 error
+	// else return 500 error
+	if err != nil {
+		if errors.Is(err, server.ErrAppIsFinished) {
+			render.Render(w, r, ErrAppIsFinished(err))
+			return
+		}
+		render.Render(w, r, ErrInternalServer(err))
+		return
+	}
+
+	if err := render.Render(w, r, newApplicationResponse(na)); err != nil {
 		render.Render(w, r, ErrRender(err))
 		return
 	}
