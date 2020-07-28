@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"os/exec"
 	"sync"
@@ -15,6 +14,7 @@ import (
 	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/ent/application"
 	"github.com/gobench-io/gobench/worker"
+	"go.uber.org/zap"
 )
 
 // job status. The job is in either pending, provisioning, running, finished
@@ -36,6 +36,8 @@ type master struct {
 	addr        string // host name
 	port        int    // api port
 	clusterPort int    // cluster port
+
+	logger *zap.SugaredLogger
 
 	// database
 	dbFilename string
@@ -107,7 +109,10 @@ func (m *master) run(ctx context.Context, j *job) (err error) {
 
 	defer func() {
 		if err != nil {
-			log.Printf("application id: %d failed run job: %v\n", m.job.app.ID, err)
+			m.logger.Errorw("failed run job",
+				"application id", m.job.app.ID,
+				"err", err,
+			)
 			je := jobError
 			if errors.Is(err, worker.ErrAppCancel) {
 				je = jobCancel
@@ -117,8 +122,9 @@ func (m *master) run(ctx context.Context, j *job) (err error) {
 		}
 	}()
 
-	log.Printf("application id: %d, name: %s, status: %s\n",
-		m.job.app.ID, m.job.app.Name, m.job.app.Status,
+	m.logger.Infow("job new status",
+		"application id", m.job.app.ID,
+		"status", m.job.app.Status,
 	)
 
 	// change job to provisioning
@@ -126,8 +132,9 @@ func (m *master) run(ctx context.Context, j *job) (err error) {
 		return
 	}
 
-	log.Printf("application id: %d, name: %s, status: %s\n",
-		m.job.app.ID, m.job.app.Name, m.job.app.Status,
+	m.logger.Infow("job new status",
+		"application id", m.job.app.ID,
+		"status", m.job.app.Status,
 	)
 
 	if err = m.jobCompile(ctx); err != nil {
@@ -141,8 +148,9 @@ func (m *master) run(ctx context.Context, j *job) (err error) {
 		return
 	}
 
-	log.Printf("application id: %d, name: %s, status: %s\n",
-		m.job.app.ID, m.job.app.Name, m.job.app.Status,
+	m.logger.Infow("job new status",
+		"application id", m.job.app.ID,
+		"status", m.job.app.Status,
 	)
 
 	if err = m.runJob(ctx); err != nil {
@@ -153,8 +161,9 @@ func (m *master) run(ctx context.Context, j *job) (err error) {
 		return
 	}
 
-	log.Printf("application id: %d, name: %s, status: %s\n",
-		m.job.app.ID, m.job.app.Name, m.job.app.Status,
+	m.logger.Infow("job new status",
+		"application id", m.job.app.ID,
+		"status", m.job.app.Status,
 	)
 
 	return

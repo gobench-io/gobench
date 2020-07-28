@@ -47,8 +47,13 @@ func f(ctx context.Context, vui int) {
 
 	rate := 1.0 // rps
 	for j := 0; j < 60*5; j++ {
-		dis.SleepRatePoisson(rate)
-		_ = client.PublishToSelf(ctx, "prefix/clients/", 0, dis.RandomByte(150))
+		select {
+		case <-ctx.Done():
+			break
+		default:
+			_ = client.PublishToSelf(ctx, "prefix/clients/", 0, dis.RandomByte(150))
+			dis.SleepRatePoisson(rate)
+		}
 	}
 
 	// finally

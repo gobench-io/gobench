@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"sync"
 
@@ -12,6 +11,7 @@ import (
 	"github.com/gobench-io/gobench/ent/application"
 	"github.com/gobench-io/gobench/worker"
 	_ "github.com/mattn/go-sqlite3"
+	"go.uber.org/zap"
 )
 
 type Server struct {
@@ -22,6 +22,8 @@ type Server struct {
 	worker     worker.Worker
 
 	isSchedule bool
+
+	logger *zap.SugaredLogger
 }
 
 // NewServer return a new server with provided options
@@ -34,11 +36,16 @@ func NewServer(opts *Options) (*Server, error) {
 		isSchedule: true,
 	}
 
+	// default log
+	logger, _ := zap.NewProduction()
+	s.logger = logger.Sugar()
+
 	if opts.ServerType == mtType {
 		s.master.addr = opts.Addr
 		s.master.port = opts.Port
 		s.master.clusterPort = opts.ClusterPort
 		s.master.dbFilename = dbFilename
+		s.master.logger = s.logger
 	}
 
 	if opts.ServerType == wkType {
@@ -66,7 +73,7 @@ func (s *Server) DB() *ent.Client {
 }
 
 func (s *Server) finish(status status) error {
-	log.Println("server is shutting down")
+	s.logger.Infow("server is shutting down")
 
 	s.mu.Lock()
 	s.status = status
