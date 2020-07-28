@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -83,9 +84,8 @@ func (m *master) setupDb() error {
 
 // schedule get a pending application from the db if there is no active job
 func (m *master) schedule() {
-	ctx, cancel := context.WithCancel(context.Background())
-
 	for {
+		ctx, cancel := context.WithCancel(context.Background())
 		time.Sleep(1 * time.Second)
 
 		// finding pending application
@@ -107,8 +107,13 @@ func (m *master) run(ctx context.Context, j *job) (err error) {
 
 	defer func() {
 		if err != nil {
-			log.Printf("application id: %d failed run job %v\n", m.job.app.ID, err)
-			_ = m.jobTo(ctx, jobError)
+			log.Printf("application id: %d failed run job: %v\n", m.job.app.ID, err)
+			je := jobError
+			if errors.Is(err, worker.ErrAppCancel) {
+				je = jobCancel
+			}
+			ctx := context.TODO()
+			m.jobTo(ctx, je)
 		}
 	}()
 
