@@ -9,6 +9,7 @@ import (
 	"github.com/gobench-io/gobench/metrics"
 	"github.com/gobench-io/gobench/worker"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 
 	entApplication "github.com/gobench-io/gobench/ent/application"
 	entGraph "github.com/gobench-io/gobench/ent/graph"
@@ -16,14 +17,20 @@ import (
 	entMetric "github.com/gobench-io/gobench/ent/metric"
 )
 
+func newLogger() *zap.SugaredLogger {
+	return zap.NewNop().Sugar()
+}
+
 func seedServer(t *testing.T) *Server {
+	logger := newLogger()
+
 	var err error
 	s, _ := NewServer(DefaultMasterOptions())
 	// disable the schedule
 	s.isSchedule = false
 	s.master.job = &job{}
 	s.master.job.app = &ent.Application{}
-	s.master.lw, err = worker.NewWorker(&s.master, s.master.job.app.ID)
+	s.master.lw, err = worker.NewWorker(&s.master, logger, s.master.job.app.ID)
 	assert.Nil(t, err)
 	assert.Nil(t, s.Start())
 

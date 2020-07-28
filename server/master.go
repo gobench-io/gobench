@@ -109,7 +109,7 @@ func (m *master) run(ctx context.Context, j *job) (err error) {
 
 	defer func() {
 		if err != nil {
-			m.logger.Errorw("failed run job",
+			m.logger.Infow("failed run job",
 				"application id", m.job.app.ID,
 				"err", err,
 			)
@@ -251,7 +251,7 @@ func (m *master) jobCompile(ctx context.Context) error {
 func (m *master) runJob(ctx context.Context) error {
 	var err error
 
-	if m.lw, err = worker.NewWorker(m, m.job.app.ID); err != nil {
+	if m.lw, err = worker.NewWorker(m, m.logger, m.job.app.ID); err != nil {
 		return err
 	}
 

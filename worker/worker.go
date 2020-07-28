@@ -13,6 +13,7 @@ import (
 	"github.com/gobench-io/gobench/metrics"
 	"github.com/gobench-io/gobench/scenario"
 	gometrics "github.com/rcrowley/go-metrics"
+	"go.uber.org/zap"
 )
 
 // Error
@@ -66,7 +67,8 @@ type Worker struct {
 
 	units map[string]unit // title - gometrics
 
-	ml metricLogger
+	logger *zap.SugaredLogger
+	ml     metricLogger
 }
 
 // the singleton worker variable
@@ -88,8 +90,9 @@ func init() {
 }
 
 // NewWorker returns the singleton worker
-func NewWorker(l metricLogger, appID int) (*Worker, error) {
-	worker.ml = l
+func NewWorker(ml metricLogger, logger *zap.SugaredLogger, appID int) (*Worker, error) {
+	worker.ml = ml
+	worker.logger = logger
 	worker.units = make(map[string]unit)
 	worker.appID = appID
 
