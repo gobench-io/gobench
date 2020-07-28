@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"sync"
 	"time"
@@ -194,7 +193,9 @@ func (w *Worker) runScen(ctx context.Context, done chan error) {
 
 				defer func() {
 					if r := recover(); r != nil {
-						log.Println("recovered in runScen", r)
+						w.logger.Errorw("recovered in runScreen",
+							"err", r,
+						)
 						fatalErr <- ErrAppPanic
 						// return
 					}
@@ -231,7 +232,7 @@ func (w *Worker) logScaled(ctx context.Context, freq time.Duration) {
 	}(ch)
 
 	if err := w.logScaledOnCue(ctx, ch); err != nil {
-		log.Fatalln(err)
+		w.logger.Fatalw("failed logScaledOnCue", "err", err)
 	}
 }
 
@@ -256,11 +257,13 @@ func (w *Worker) logScaledOnCue(ctx context.Context, ch chan interface{}) error 
 					err = w.ml.Gauge(ctx, u.metricID, w.id, u.Title, now, u.g.Value())
 				}
 				if err != nil {
-					log.Printf("worker log failed: %v\n", err)
+					w.logger.Errorw("metric log failed",
+						"err", err,
+					)
 				}
 			}
 		case <-ctx.Done():
-			log.Printf("logScaledOnCue cancel")
+			w.logger.Info("logScaledOnCue canceled")
 			return nil
 		}
 	}
@@ -373,7 +376,9 @@ func Notify(title string, value int64) error {
 
 	u, ok := worker.units[title]
 	if !ok {
-		log.Printf("error metric title %s not found\n", title)
+		worker.logger.Infow("metric not found",
+			"title", title,
+		)
 		return ErrIDNotFound
 	}
 
