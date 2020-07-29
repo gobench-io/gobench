@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/gobench-io/gobench/ent"
+	"github.com/gobench-io/gobench/logger"
 	"github.com/gobench-io/gobench/metrics"
 	"github.com/gobench-io/gobench/worker"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap"
 
 	entApplication "github.com/gobench-io/gobench/ent/application"
 	entGraph "github.com/gobench-io/gobench/ent/graph"
@@ -17,12 +17,8 @@ import (
 	entMetric "github.com/gobench-io/gobench/ent/metric"
 )
 
-func newLogger() *zap.SugaredLogger {
-	return zap.NewNop().Sugar()
-}
-
 func seedServer(t *testing.T) *Server {
-	logger := newLogger()
+	log := logger.NewNopLogger()
 
 	var err error
 	s, _ := NewServer(DefaultMasterOptions())
@@ -30,7 +26,7 @@ func seedServer(t *testing.T) *Server {
 	s.isSchedule = false
 	s.master.job = &job{}
 	s.master.job.app = &ent.Application{}
-	s.master.lw, err = worker.NewWorker(&s.master, logger, s.master.job.app.ID)
+	s.master.lw, err = worker.NewWorker(&s.master, log, s.master.job.app.ID)
 	assert.Nil(t, err)
 	assert.Nil(t, s.Start())
 

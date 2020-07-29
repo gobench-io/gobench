@@ -23,3 +23,12 @@ func NewStdLogger() *Log {
 	}
 	return l
 }
+
+// NewNopLogger returns a no-op Logger. It never writes out logs or internal errors,
+// and it never runs user-defined hooks.
+func NewNopLogger() *Log {
+	nopLogger := zap.NewNop().Sugar()
+	return &Log{
+		SugaredLogger: *nopLogger,
+	}
+}
