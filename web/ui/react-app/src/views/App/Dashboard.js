@@ -14,7 +14,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (appData) {
-      GoBenchAPI.getGroups().then(res => {
+      GoBenchAPI.getGroups(get(appData, 'id', '')).then(res => {
         fetchGroups(res);
       })
     }

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { get } from 'lodash';
 import GoBenchAPI from '../../api/gobench';
 import { useHistory } from 'react-router-dom';
-import { useInterval } from '../../realtimeHelpers';
+import { useInterval, INTERVAL } from '../../realtimeHelpers';
 import Status from '../../components/Status';
 
 const Applications = () => {
@@ -24,7 +24,7 @@ const Applications = () => {
         setApplications(apps);
       })
     }
-  }, 5000)
+  }, INTERVAL)
 
   const cancelRunApplication = (id) => {
     GoBenchAPI.cancelApplication(id).then(() => {

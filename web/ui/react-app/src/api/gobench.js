@@ -6,7 +6,7 @@ const GoBenchAPI = {
   getApplications() {
     return new Promise((resolve, reject) => {
       API.axios().get(`api/applications`)
-        .then(res => resolve(get(res, 'data', null)))
+        .then(res => resolve(get(res, 'data', [])))
         .catch(reject);
     });
   },
@@ -31,9 +31,9 @@ const GoBenchAPI = {
         .catch(reject);
     });
   },
-  getGroups() {
+  getGroups(appId) {
     return new Promise((resolve, reject) => {
-      API.axios().get(`api/groups`)
+      API.axios().get(`api/applications/${appId}/groups`)
         .then(res => resolve(get(res, 'data', [])))
         .catch(reject);
     });
