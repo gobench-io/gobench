@@ -18,7 +18,7 @@ lint:
 	staticcheck $(go list ./... | grep -v ent/privacy)
 
 build:
-	go build -o gobench ./
+	go build -o gobench.out ./
 
 test:
 	go build -buildmode=plugin -o scenario/test/valid.so scenario/test/scripts/valid/valid.go

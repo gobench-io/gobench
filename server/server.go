@@ -9,9 +9,9 @@ import (
 
 	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/ent/application"
+	"github.com/gobench-io/gobench/logger"
 	"github.com/gobench-io/gobench/worker"
 	_ "github.com/mattn/go-sqlite3"
-	"go.uber.org/zap"
 )
 
 type Server struct {
@@ -23,7 +23,7 @@ type Server struct {
 
 	isSchedule bool
 
-	logger *zap.SugaredLogger
+	logger logger.Logger
 }
 
 // NewServer return a new server with provided options
@@ -37,8 +37,7 @@ func NewServer(opts *Options) (*Server, error) {
 	}
 
 	// default log
-	logger, _ := zap.NewProduction()
-	s.logger = logger.Sugar()
+	s.logger = logger.NewStdLogger()
 
 	if opts.ServerType == mtType {
 		s.master.addr = opts.Addr

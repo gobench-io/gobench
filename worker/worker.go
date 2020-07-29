@@ -9,10 +9,10 @@ import (
 	"time"
 
 	"github.com/gobench-io/gobench/ent"
+	"github.com/gobench-io/gobench/logger"
 	"github.com/gobench-io/gobench/metrics"
 	"github.com/gobench-io/gobench/scenario"
 	gometrics "github.com/rcrowley/go-metrics"
-	"go.uber.org/zap"
 )
 
 // Error
@@ -66,7 +66,7 @@ type Worker struct {
 
 	units map[string]unit // title - gometrics
 
-	logger *zap.SugaredLogger
+	logger logger.Logger
 	ml     metricLogger
 }
 
@@ -89,7 +89,7 @@ func init() {
 }
 
 // NewWorker returns the singleton worker
-func NewWorker(ml metricLogger, logger *zap.SugaredLogger, appID int) (*Worker, error) {
+func NewWorker(ml metricLogger, logger logger.Logger, appID int) (*Worker, error) {
 	worker.ml = ml
 	worker.logger = logger
 	worker.units = make(map[string]unit)
@@ -263,7 +263,7 @@ func (w *Worker) logScaledOnCue(ctx context.Context, ch chan interface{}) error 
 				}
 			}
 		case <-ctx.Done():
-			w.logger.Info("logScaledOnCue canceled")
+			w.logger.Infow("logScaledOnCue canceled")
 			return nil
 		}
 	}

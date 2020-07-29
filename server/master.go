@@ -13,8 +13,8 @@ import (
 
 	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/ent/application"
+	"github.com/gobench-io/gobench/logger"
 	"github.com/gobench-io/gobench/worker"
-	"go.uber.org/zap"
 )
 
 // job status. The job is in either pending, provisioning, running, finished
@@ -37,7 +37,7 @@ type master struct {
 	port        int    // api port
 	clusterPort int    // cluster port
 
-	logger *zap.SugaredLogger
+	logger logger.Logger
 
 	// database
 	dbFilename string
