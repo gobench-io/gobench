@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"sync"
 	"time"
 
 	"github.com/gobench-io/gobench/ent"
+	"github.com/gobench-io/gobench/logger"
 	"github.com/gobench-io/gobench/metrics"
 	"github.com/gobench-io/gobench/scenario"
 	gometrics "github.com/rcrowley/go-metrics"
@@ -66,7 +66,8 @@ type Worker struct {
 
 	units map[string]unit // title - gometrics
 
-	log metricLogger
+	logger logger.Logger
+	ml     metricLogger
 }
 
 // the singleton worker variable
@@ -88,8 +89,9 @@ func init() {
 }
 
 // NewWorker returns the singleton worker
-func NewWorker(l metricLogger, appID int) (*Worker, error) {
-	worker.log = l
+func NewWorker(ml metricLogger, logger logger.Logger, appID int) (*Worker, error) {
+	worker.ml = ml
+	worker.logger = logger
 	worker.units = make(map[string]unit)
 	worker.appID = appID
 
@@ -191,7 +193,9 @@ func (w *Worker) runScen(ctx context.Context, done chan error) {
 
 				defer func() {
 					if r := recover(); r != nil {
-						log.Println("recovered in runScen", r)
+						w.logger.Errorw("recovered in runScreen",
+							"err", r,
+						)
 						fatalErr <- ErrAppPanic
 						// return
 					}
@@ -228,7 +232,7 @@ func (w *Worker) logScaled(ctx context.Context, freq time.Duration) {
 	}(ch)
 
 	if err := w.logScaledOnCue(ctx, ch); err != nil {
-		log.Fatalln(err)
+		w.logger.Fatalw("failed logScaledOnCue", "err", err)
 	}
 }
 
@@ -245,19 +249,21 @@ func (w *Worker) logScaledOnCue(ctx context.Context, ch chan interface{}) error 
 			for _, u := range units {
 				switch u.Type {
 				case metrics.Counter:
-					err = w.log.Counter(ctx, u.metricID, w.id, u.Title, now, u.c.Count())
+					err = w.ml.Counter(ctx, u.metricID, w.id, u.Title, now, u.c.Count())
 				case metrics.Histogram:
 					h := u.h.Snapshot()
-					err = w.log.Histogram(ctx, u.metricID, w.id, u.Title, now, h)
+					err = w.ml.Histogram(ctx, u.metricID, w.id, u.Title, now, h)
 				case metrics.Gauge:
-					err = w.log.Gauge(ctx, u.metricID, w.id, u.Title, now, u.g.Value())
+					err = w.ml.Gauge(ctx, u.metricID, w.id, u.Title, now, u.g.Value())
 				}
 				if err != nil {
-					log.Printf("worker log failed: %v\n", err)
+					w.logger.Errorw("metric log failed",
+						"err", err,
+					)
 				}
 			}
 		case <-ctx.Done():
-			log.Printf("logScaledOnCue cancel")
+			w.logger.Infow("logScaledOnCue canceled")
 			return nil
 		}
 	}
@@ -278,21 +284,21 @@ func Setup(groups []metrics.Group) error {
 
 	for _, group := range groups {
 		// create a new group if not existed
-		egroup, err := worker.log.FindCreateGroup(ctx, group, worker.appID)
+		egroup, err := worker.ml.FindCreateGroup(ctx, group, worker.appID)
 		if err != nil {
 			return fmt.Errorf("failed create group: %v", err)
 		}
 
 		for _, graph := range group.Graphs {
 			// create new graph if not existed
-			egraph, err := worker.log.FindCreateGraph(ctx, graph, egroup.ID)
+			egraph, err := worker.ml.FindCreateGraph(ctx, graph, egroup.ID)
 			if err != nil {
 				return fmt.Errorf("failed create graph: %v", err)
 			}
 
 			for _, m := range graph.Metrics {
 				// create new metric if not existed
-				emetric, err := worker.log.FindCreateMetric(ctx, m, egraph.ID)
+				emetric, err := worker.ml.FindCreateMetric(ctx, m, egraph.ID)
 				if err != nil {
 					return fmt.Errorf("failed create metric: %v", err)
 				}
@@ -370,7 +376,9 @@ func Notify(title string, value int64) error {
 
 	u, ok := worker.units[title]
 	if !ok {
-		log.Printf("error metric title %s not found\n", title)
+		worker.logger.Infow("metric not found",
+			"title", title,
+		)
 		return ErrIDNotFound
 	}
 

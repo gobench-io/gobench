@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gobench-io/gobench/ent"
+	"github.com/gobench-io/gobench/logger"
 	"github.com/gobench-io/gobench/metrics"
 	gometrics "github.com/rcrowley/go-metrics"
 	"github.com/stretchr/testify/assert"
@@ -51,9 +52,9 @@ func newNilLog() metricLogger {
 }
 
 func TestNew(t *testing.T) {
-	n1, err := NewWorker(newNilLog(), 1)
+	n1, err := NewWorker(newNilLog(), logger.NewNopLogger(), 1)
 	assert.Nil(t, err)
-	n2, err := NewWorker(newNilLog(), 2)
+	n2, err := NewWorker(newNilLog(), logger.NewNopLogger(), 2)
 	assert.Nil(t, err)
 
 	assert.Equal(t, n1, n2)
@@ -65,7 +66,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestLoadPlugin(t *testing.T) {
-	n, _ := NewWorker(newNilLog(), 1)
+	n, _ := NewWorker(newNilLog(), logger.NewNopLogger(), 1)
 	so := "./script/valid-dnt/valid-dnt.so"
 	assert.Nil(t, n.Load(so))
 	assert.NotNil(t, n.vus)
@@ -73,7 +74,7 @@ func TestLoadPlugin(t *testing.T) {
 }
 
 func TestRunPlugin(t *testing.T) {
-	n, _ := NewWorker(newNilLog(), 1)
+	n, _ := NewWorker(newNilLog(), logger.NewNopLogger(), 1)
 	so := "./script/valid-dnt/valid-dnt.so"
 	assert.Nil(t, n.Load(so))
 	assert.NotNil(t, n.vus)
@@ -87,7 +88,7 @@ func TestRunPlugin(t *testing.T) {
 }
 
 func TestCancelPlugin(t *testing.T) {
-	n, _ := NewWorker(newNilLog(), 1)
+	n, _ := NewWorker(newNilLog(), logger.NewNopLogger(), 1)
 	so := "./script/valid-forever/valid-forever.so"
 	assert.Nil(t, n.Load(so))
 
@@ -114,7 +115,7 @@ func TestCancelPlugin(t *testing.T) {
 }
 
 func TestPanicPlugin(t *testing.T) {
-	n, _ := NewWorker(newNilLog(), 1)
+	n, _ := NewWorker(newNilLog(), logger.NewNopLogger(), 1)
 	so := "./script/valid-panic/valid-panic.so"
 	assert.Nil(t, n.Load(so))
 	assert.NotNil(t, n.vus)
