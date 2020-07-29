@@ -1,10 +1,19 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
-import App from './views/App/App';
+import './css/index.css';
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route
+} from "react-router-dom";
+
 import API from './api/api';
 import config from './config/config';
-// import * as serviceWorker from './serviceWorker';
+import Title from './components/Title';
+
+const Applications = lazy(() => import('./views/ApplicationsList/Applications'));
+const CreateApplicationForm = lazy(() => import('./views/ApplicationsList/CreateApplicationForm'));
+const App = lazy(() => import('./views/App/App'));
 
 API.init({
   baseURL: config.apiEndpoint,
@@ -15,12 +24,18 @@ API.init({
 
 ReactDOM.render(
   <React.StrictMode>
-    <App/>
-  </React.StrictMode>,
+    <div className="gobench-container">
+      <Title />
+      <Router>
+        <Switch>
+          <Suspense fallback={<div />}>
+            <Route exact={true} path="/application/:appId" component={App} />
+            <Route exact={true} path="/application/create" component={CreateApplicationForm} />
+            <Route exact={true} path="/" component={Applications} />
+          </Suspense>
+        </Switch>
+      </Router>
+    </div>
+  </React.StrictMode >,
   document.getElementById('root')
 );
-
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-// serviceWorker.unregister();

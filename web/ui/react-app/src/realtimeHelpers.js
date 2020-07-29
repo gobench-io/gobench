@@ -76,25 +76,19 @@ const getChartData = (type, data) => isArray(data) ? data.map(m => ({
  * @param data
  * @returns {({data: ([]|*[]), name: string}|{data: ([]|*[]), name: string}|{data: ([]|*[]), name: string}|{data: ([]|*[]), name: string}|{data: ([]|*[]), name: string})[]|{data: *, name: *}}
  */
+const hDataKeys = ['min', 'mean', 'p99', 'max'];
 export const makeHistogramSeriesData = (data) => {
-  let hData = { min: [], max: [], p75: [], p95: [], p99: [] };
+  let hData = hDataKeys.reduce((acc, key) => ({
+    ...acc,
+    [key]: []
+  }), {});
   data.forEach(d => {
-    hData = {
-      min: [...hData.min, { x: d.time, y: (d.min).toFixed(0) || 0 }],
-      max: [...hData.max, { x: d.time, y: (d.max).toFixed(0) || 0 }],
-      p75: [...hData.p75, { x: d.time, y: (d.p75).toFixed(0) || 0 }],
-      p95: [...hData.p95, { x: d.time, y: (d.p95).toFixed(0) || 0 }],
-      p99: [...hData.p99, { x: d.time, y: (d.p99).toFixed(0) || 0 }],
-    }
+    hData = hDataKeys.reduce((acc, key) => ({
+      ...acc,
+      [key]: [...hData[key], { x: d.time, y: (d[key]).toFixed(0) || 0 }]
+    }), {});
   });
-
-  return [
-    { name: 'min', data: hData.min },
-    { name: 'max', data: hData.max },
-    { name: 'p75', data: hData.p75 },
-    { name: 'p95', data: hData.p95 },
-    { name: 'p99', data: hData.p99 }
-  ]
+  return hDataKeys.map(key => ({ name: key, data: hData[key] }));
 };
 
 /***

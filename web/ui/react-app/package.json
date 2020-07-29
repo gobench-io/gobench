@@ -1,6 +1,6 @@
 {
   "name": "gobench",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^4.2.4",
@@ -10,11 +10,14 @@
     "axios": "^0.19.2",
     "lodash": "^4.17.15",
     "moment": "^2.24.0",
+    "prismjs": "^1.20.0",
     "react": "^16.13.1",
     "react-apexcharts": "^1.3.7",
     "react-charts": "^2.0.0-beta.6",
     "react-dom": "^16.13.1",
+    "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.1",
+    "react-simple-code-editor": "^0.11.0",
     "recharts": "^1.8.5",
     "source-map-explorer": "^2.4.2"
   },

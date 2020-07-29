@@ -1,2 +1,2 @@
 export const env = 'development';
-export const apiEndpoint = 'http://localhost:3001/';
+export const apiEndpoint = 'http://localhost:8080/';
