@@ -3,9 +3,30 @@ import { get } from 'lodash';
 import { METRIC_TYPE } from '../realtimeHelpers';
 
 const GoBenchAPI = {
-  getAppInfo() {
+  getApplications() {
     return new Promise((resolve, reject) => {
-      API.axios().get(`api/application`)
+      API.axios().get(`api/applications`)
+        .then(res => resolve(get(res, 'data', null)))
+        .catch(reject);
+    });
+  },
+  createApplication(data) {
+    return new Promise((resolve, reject) => {
+      API.axios().post(`api/applications`, data)
+        .then(res => resolve(get(res, 'data', null)))
+        .catch(reject);
+    });
+  },
+  cancelApplication(id) {
+    return new Promise((resolve, reject) => {
+      API.axios().put(`api/applications/${id}/cancel`, {})
+        .then(res => resolve(get(res, 'data', null)))
+        .catch(reject);
+    });
+  },
+  getAppInfo(id) {
+    return new Promise((resolve, reject) => {
+      API.axios().get(`api/applications/${id}`)
         .then(res => resolve(get(res, 'data', null)))
         .catch(reject);
     });

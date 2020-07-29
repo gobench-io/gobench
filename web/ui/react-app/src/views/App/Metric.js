@@ -21,7 +21,7 @@ const Metric = ({ metrics, unit, timeRange }) => {
   const appData = useContext(AppContext);
   const appStatus = get(appData, 'status', '');
   const timestamp = get(appData, 'timestamp', '');
-  const isRealtime = !['finished', 'cancel'].includes(appStatus);
+  const isRealtime = appStatus === 'running';
 
   useEffect(() => {
     if (metrics.length > 0) {
@@ -53,7 +53,7 @@ const Metric = ({ metrics, unit, timeRange }) => {
     <ApexChartComponent
       height="220"
       series={chartData}
-      unit={unit}/>
+      unit={unit} />
   </Suspense>;
 };
 

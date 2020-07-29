@@ -1,6 +1,5 @@
 import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { get } from 'lodash';
-import './App.css';
 import GoBenchAPI from '../../api/gobench';
 
 const GraphComponent = lazy(() => import('./Graph'));
@@ -21,7 +20,7 @@ function Group({ group, timestamp }) {
   return (
     <div className="group">
       <div className="group-header clickable"
-           onClick={() => toggleCollapse(!isCollapse)}>
+        onClick={() => toggleCollapse(!isCollapse)}>
         <h3 title={graphs.id || ''} className="group-title">{get(group, 'name', '')}</h3>
         <span className="collapse-button">
           {isCollapse ? 'Expand' : 'Collapse'}
@@ -32,7 +31,7 @@ function Group({ group, timestamp }) {
           graphs.length > 0 ?
             graphs.map((graph, index) => {
               return !isCollapse && <Suspense key={graph.id || index} fallback={loading()}>
-                <GraphComponent graph={graph} timestamp={timestamp}/>
+                <GraphComponent graph={graph} timestamp={timestamp} />
               </Suspense>
             })
             : <p className="text-center">Cannot load graphs.</p>

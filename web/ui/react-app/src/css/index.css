@@ -1,0 +1,398 @@
+.gobench-container {
+  padding: 1rem;
+}
+
+.gobench-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 3rem;
+}
+
+.app-title {
+  margin: 0;
+  margin-bottom: 1rem;
+  color: #346cb0;
+}
+
+.btn {
+  min-height: 32px;
+  width: auto;
+  padding: 4px 12px;
+  font-size: 12px;
+  background-color: #ffffff;
+  border: none;
+  box-shadow: 3px 1px 8px rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+  margin: 4px;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background-color: #346cb0;
+  color: #ffffff;
+}
+
+.btn-cancel {
+  background-color: #555555;
+  color: #ffffff;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background: #fafafa;
+  letter-spacing: normal;
+}
+
+.app {
+  margin: 16px;
+}
+
+.app-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.app-header-left {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.application-title {
+  color: #000000;
+  padding: 0;
+  display: block;
+  margin: 0;
+  margin-right: 1rem;
+  text-transform: capitalize;
+  color: #346cb0;
+}
+
+.application-status {
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 4px;
+  text-transform: capitalize;
+  color: #ffffff;
+}
+
+h4,
+h2 {
+  margin: 4px 0;
+}
+
+.container {
+  margin: 2rem 12rem;
+}
+
+.group {
+  margin: 16px 0;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 5px;
+  background: #ffffff;
+}
+
+.group-graphs {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 0 8px;
+}
+
+.group-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+}
+
+.group-title {
+  display: block;
+  margin: 0;
+}
+
+.graph {
+  width: calc(33% - 32px);
+  height: auto;
+  margin: 16px;
+  margin-bottom: 24px;
+}
+
+.graph-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.group-header:hover {
+  background-color: #eeeeee;
+}
+
+.graph-title {
+  margin: 0;
+  display: block;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.chart {
+  width: 100%;
+  height: auto;
+  max-height: 220px;
+}
+
+.select-group {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 16px;
+  min-width: 220px;
+}
+
+select.select-box {
+  height: 36px;
+  width: auto;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  margin: 8px;
+  font-size: 14px;
+}
+
+.collapse {
+  visibility: hidden;
+  height: 0;
+}
+
+.collapse-button {
+  border: none;
+  font-size: 14px;
+  color: #346cb0;
+  outline: none;
+  padding: 4px 8px;
+}
+
+.collapse-button:hover {
+  background-color: #eeeeee;
+  border-radius: 3px;
+}
+
+.time-range-options-list {
+  clear: both;
+  list-style: none;
+  display: flex;
+  flex-direction: row;
+  float: right;
+  margin: 0;
+}
+
+.time-range-option > button {
+  padding: 4px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  font-size: 12px;
+}
+
+.time-range-option > button:hover {
+  background-color: #eeeeee;
+  border-radius: 3px;
+}
+
+.time-range-option > button.active {
+  font-weight: bold;
+}
+
+.legend {
+  clear: both;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.legend-item {
+  font-size: 12px;
+  position: relative;
+  padding: 4px 4px 4px 16px;
+  margin-right: 4px;
+  cursor: pointer;
+}
+
+.legend-item:hover {
+  background-color: #eeeeee;
+}
+
+.legend-item > span {
+  color: #000000;
+  margin: 0;
+}
+
+.legend-item.inactive {
+  opacity: 0.3;
+}
+
+.legend-item::before {
+  content: "\2022";
+  font-size: 24px;
+  position: absolute;
+  left: 4px;
+  top: -4px;
+}
+
+.text-center {
+  width: 100%;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .graph {
+    width: calc(50% - 32px);
+  }
+}
+
+@media (max-width: 400px) {
+  .graph {
+    width: calc(100% - 32px);
+  }
+}
+
+@media (min-width: 1900px) {
+  .graph {
+    width: calc(25% - 32px);
+  }
+}
+
+/*
+create-form
+*/
+.create-form {
+  width: 600px;
+}
+.text-danger {
+  color: red;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  font-size: 16px;
+  font-weight: bold;
+  margin-right: 8px;
+  margin-bottom: 16px;
+}
+
+.create-form-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.form-input {
+  height: 28px;
+  width: 220px;
+  padding: 2px 8px;
+  background-color: #fafafa;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+}
+
+.applications-list-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.applications-body {
+  padding: 1rem 0;
+}
+
+.applications-table {
+  width: 100%;
+  border-spacing: 0;
+  margin: 1rem 0;
+}
+
+.applications-table > thead {
+  text-align: left;
+}
+
+.applications-table > thead > tr > th {
+  padding: 4px 8px 4px 8px;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.applications-table > tbody {
+  text-align: left;
+}
+
+.applications-table > tbody > tr:nth-child(odd) {
+  background-color: #fafafa;
+}
+
+.applications-table > tbody > tr > td {
+  height: 40px;
+  padding: 8px;
+  border-top: 1px solid #eeeeee;
+}
+
+.card {
+  padding: 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 5px;
+  background: #ffffff;
+}
+
+.application-scenario {
+  width: 98%;
+  min-height: 50vh;
+  padding: 1rem;
+  font-size: 14px;
+  color: #2c2c2c;
+  background-color: #eeeeee;
+}
+
+.tabs {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  padding-top: 4px;
+  list-style: none;
+  clear: both;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.tab-nav-item {
+  margin: 0 16px;
+  padding: 4px 8px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: -3px;
+}
+
+.tab-nav-item.tab-active {
+  color: #346cb0;
+  border-bottom: 3px solid #346cb0;
+}
+.tab-content {
+  margin: 16px 0;
+}

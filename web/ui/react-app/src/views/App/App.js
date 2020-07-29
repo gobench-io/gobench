@@ -1,66 +1,78 @@
-import React, { useEffect, useState, lazy, Suspense } from 'react';
-import { isArray, get } from 'lodash';
-import './App.css';
+import React, { useEffect, useState } from 'react';
+import { get } from 'lodash';
 import GoBenchAPI from '../../api/gobench';
 import { AppContext } from '../../context';
+import { useParams, useHistory } from 'react-router-dom';
 
-const GroupComponent = lazy(() => import('./Group'));
-
-const loading = () => <p>Loading group...</p>;
-
-const statusColor = {
-  running: '#4dbd74',
-  init: '#ffcc00',
-  finished: '#0066ff',
-  cancel: '#ff0000'
-};
+import { statusColors } from '../../components/Status';
+import Dashboard from './Dashboard';
+import Scenario from './Scenario';
 
 const App = () => {
-  const [groups, fetchGroups] = useState([]);
   const [appData, fetchAppData] = useState(null);
   const [fetching, setFetching] = useState(false);
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const { appId } = useParams();
+  const history = useHistory();
 
   useEffect(() => {
     setFetching(true);
-    GoBenchAPI.getAppInfo().then(res => {
+    GoBenchAPI.getAppInfo(appId).then(res => {
       setFetching(false);
       fetchAppData(res);
     })
   }, []);
-  useEffect(() => {
-    if (appData) {
-      GoBenchAPI.getGroups().then(res => {
-        fetchGroups(res);
-      })
-    }
-  }, [appData]);
   const appStatus = get(appData, 'status', '');
   if (!appData && !fetching) {
     return <div className="app">
-      <p>Cannot load the application. May be your benchmark has been stopped.</p>
+      <p>Loading application benchmark</p>
     </div>
   }
 
   return !fetching && (
-    <div className="app">
+    <div className="card">
       <div className="app-header">
-        <h2>{get(appData, 'name', '') || ''}</h2>
-        <span
-          style={{
-            color: '#FFFFFF',
-            background: statusColor[appStatus] || '#bfbfbf',
-          }}>{get(appData, 'status', '')}</span>
+        <div className="app-header-left">
+          <h2 className="application-title">
+            {get(appData, 'name', '') || ''} application benchmark
+          </h2>
+          <span
+            className="application-status"
+            style={{
+              color: '#FFFFFF',
+              background: statusColors[appStatus] || '#bfbfbf',
+            }}>{get(appData, 'status', '')}</span>
+        </div>
+        <button className="btn btn-cancel" onClick={() => history.goBack()}>&lt; Back to Applications</button>
       </div>
-      <div className="container">
+      <div className="">
+        <ul className="tabs">
+          <li
+            className={`tab-nav-item ${activeTab === 'dashboard' ? 'tab-active' : ''}`}
+            onClick={() => setActiveTab('dashboard')}>
+            Dashboard
+            </li>
+          <li
+            className={`tab-nav-item ${activeTab === 'scenario' ? 'tab-active' : ''}`}
+            onClick={() => setActiveTab('scenario')}>
+            Scenario
+             </li>
+        </ul>
         <AppContext.Provider value={appData}>
-          {
-            (isArray(groups) && groups.length > 0) &&
-            groups.map((group, index) => {
-              return <Suspense key={group.id || index} fallback={loading()}>
-                <GroupComponent group={group} appData={appData}/>
-              </Suspense>
-            })
-          }
+          <div className="tab-content">
+            {
+              activeTab === 'dashboard' &&
+              <div className="tab-item">
+                <Dashboard />
+              </div>
+            }
+            {
+              activeTab === 'scenario' &&
+              <div className="tab-item">
+                <Scenario />
+              </div>
+            }
+          </div>
         </AppContext.Provider>
       </div>
     </div>
