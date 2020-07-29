@@ -27,7 +27,7 @@ const CreateApplicationForm = () => {
       name,
       scenario: btoa(unescape(encodeURIComponent(scenario)))
     }).then(result => {
-      console.log('result', result);
+      console.log('create scenario result', result);
       history.push('/')
     })
   }
