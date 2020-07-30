@@ -4,6 +4,8 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+
+	"github.com/gobench-io/gobench/logger"
 )
 
 type serverType string
@@ -20,9 +22,12 @@ type Options struct {
 	Port        int
 	ClusterPort int    // master address to solicit and connect
 	Route       string // master address for worker to connect to
+	Logger      logger.Logger
 }
 
 func setBaselineOptions(opts *Options) {
+	opts.Logger = logger.NewStdLogger()
+
 	if opts.Addr == "" {
 		opts.Addr = DEFAULT_HOST
 	}
@@ -65,6 +70,7 @@ func DefaultWorkerOptions() *Options {
 // selected flags
 func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp func()) (*Options, error) {
 	opts := &Options{}
+	setBaselineOptions(opts)
 
 	var (
 		showVersion bool

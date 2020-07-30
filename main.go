@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/gobench-io/gobench/server"
@@ -60,9 +59,8 @@ func main() {
 	}
 
 	if err := s.Start(); err != nil {
-		log.Fatalf("failed to start the server: %v", err)
 		server.PrintAndDie(err.Error())
 	}
 
-	web.Serve(s)
+	web.Serve(s, opts.Logger)
 }

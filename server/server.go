@@ -34,10 +34,8 @@ func NewServer(opts *Options) (*Server, error) {
 	s := &Server{
 		serverType: opts.ServerType,
 		isSchedule: true,
+		logger:     opts.Logger,
 	}
-
-	// default log
-	s.logger = logger.NewStdLogger()
 
 	if opts.ServerType == mtType {
 		s.master.addr = opts.Addr

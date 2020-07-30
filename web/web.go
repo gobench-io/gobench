@@ -2,7 +2,6 @@ package web
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -29,9 +28,10 @@ func (h *handler) db() *ent.Client {
 }
 
 // New return new router interface
-func newHandler(s *server.Server) *handler {
+func newHandler(s *server.Server, logger logger.Logger) *handler {
 	h := &handler{
-		s: s,
+		s:      s,
+		logger: logger,
 	}
 
 	// basic cors for more ideas, see:
@@ -109,7 +109,7 @@ func newHandler(s *server.Server) *handler {
 
 	statikFS, err := fs.New()
 	if err != nil {
-		log.Fatal(err)
+		h.logger.Fatalw("failed read statikFS", "err", err)
 	}
 
 	r.Handle("/*", http.FileServer(statikFS))
@@ -120,14 +120,14 @@ func newHandler(s *server.Server) *handler {
 }
 
 // Serve start a web server with given gobench server
-func Serve(s *server.Server) {
-	h := newHandler(s)
+func Serve(s *server.Server, logger logger.Logger) {
+	h := newHandler(s, logger)
 
 	portS := fmt.Sprintf(":%d", s.WebPort())
 
-	log.Printf("started the web server at port %s\n", portS)
+	logger.Infow("web server start", "port", portS)
 
 	if err := http.ListenAndServe(portS, h.r); err != nil {
-		log.Panicf("failed to start http server at port %s: %v", portS, err)
+		logger.Fatalw("failed start HTTP server", "port", portS, "err", err)
 	}
 }
