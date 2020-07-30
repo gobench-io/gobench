@@ -24,6 +24,7 @@ func seedServer(t *testing.T) *Server {
 	s, _ := NewServer(DefaultMasterOptions())
 	// disable the schedule
 	s.isSchedule = false
+	s.master.logger = log
 	s.master.job = &job{}
 	s.master.job.app = &ent.Application{}
 	s.master.lw, err = worker.NewWorker(&s.master, log, s.master.job.app.ID)
@@ -172,7 +173,6 @@ func Export() scenario.Vus {
 	}
 }
 
-// this function receive the ctx.Done signal
 func f1(ctx context.Context, vui int) {
 	time.Sleep(1 * time.Second)
 	log.Println("tic")

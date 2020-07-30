@@ -26,8 +26,6 @@ type Options struct {
 }
 
 func setBaselineOptions(opts *Options) {
-	opts.Logger = logger.NewStdLogger()
-
 	if opts.Addr == "" {
 		opts.Addr = DEFAULT_HOST
 	}
@@ -69,7 +67,10 @@ func DefaultWorkerOptions() *Options {
 // flags. On success, an options structure is returned configured based on the
 // selected flags
 func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp func()) (*Options, error) {
-	opts := &Options{}
+	opts := &Options{
+		Logger: logger.NewStdLogger(),
+	}
+
 	setBaselineOptions(opts)
 
 	var (
