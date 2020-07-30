@@ -16,7 +16,7 @@ import (
 )
 
 // middleware to get metric with metricID in the url param
-func metricCtx(next http.Handler) http.Handler {
+func (h *handler) metricCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// metricID is string
 		metricID, err := strconv.Atoi(chi.URLParam(r, "metricID"))
@@ -25,7 +25,7 @@ func metricCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		metric, err := db().Metric.
+		metric, err := h.db().Metric.
 			Query().
 			Where(metric.ID(metricID)).
 			Only(r.Context())
@@ -40,7 +40,7 @@ func metricCtx(next http.Handler) http.Handler {
 	})
 }
 
-func msToTime(ms string) (time.Time, error) {
+func (h *handler) msToTime(ms string) (time.Time, error) {
 	msInt, err := strconv.ParseInt(ms, 10, 64)
 	if err != nil {
 		return time.Time{}, err
@@ -50,7 +50,7 @@ func msToTime(ms string) (time.Time, error) {
 }
 
 // middleware to get `from` from query
-func timeCtx(next http.Handler) http.Handler {
+func (h *handler) timeCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var ctx context.Context
 
@@ -75,8 +75,8 @@ func timeCtx(next http.Handler) http.Handler {
 	})
 }
 
-func listMetrics(w http.ResponseWriter, r *http.Request) {
-	ms, err := db().Metric.
+func (h *handler) listMetrics(w http.ResponseWriter, r *http.Request) {
+	ms, err := h.db().Metric.
 		Query().
 		All(r.Context())
 	if err != nil {
@@ -89,7 +89,7 @@ func listMetrics(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getMetric(w http.ResponseWriter, r *http.Request) {
+func (h *handler) getMetric(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	m, ok := ctx.Value(webKey("metric")).(*ent.Metric)
 	if !ok {
@@ -102,7 +102,7 @@ func getMetric(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getMetricCounters(w http.ResponseWriter, r *http.Request) {
+func (h *handler) getMetricCounters(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	m, ok := ctx.Value(webKey("metric")).(*ent.Metric)
 	if !ok {
@@ -134,7 +134,7 @@ func getMetricCounters(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getMetricHistograms(w http.ResponseWriter, r *http.Request) {
+func (h *handler) getMetricHistograms(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	m, ok := ctx.Value(webKey("metric")).(*ent.Metric)
 	if !ok {
@@ -166,7 +166,7 @@ func getMetricHistograms(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getMetricGauges(w http.ResponseWriter, r *http.Request) {
+func (h *handler) getMetricGauges(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	m, ok := ctx.Value(webKey("metric")).(*ent.Metric)
 	if !ok {

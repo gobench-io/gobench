@@ -2,7 +2,6 @@ package web
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -10,6 +9,7 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
 	"github.com/gobench-io/gobench/ent"
+	"github.com/gobench-io/gobench/logger"
 	"github.com/gobench-io/gobench/server"
 	_ "github.com/gobench-io/gobench/web/statik"
 	"github.com/rakyll/statik/fs"
@@ -17,19 +17,22 @@ import (
 
 type webKey string
 
-var s *server.Server
-
-func intServer(ws *server.Server) {
-	s = ws
+type handler struct {
+	logger logger.Logger
+	s      *server.Server
+	r      *chi.Mux
 }
 
-func db() *ent.Client {
-	return s.DB()
+func (h *handler) db() *ent.Client {
+	return h.s.DB()
 }
 
 // New return new router interface
-func New(s *server.Server) *chi.Mux {
-	intServer(s)
+func newHandler(s *server.Server, logger logger.Logger) *handler {
+	h := &handler{
+		s:      s,
+		logger: logger,
+	}
 
 	// basic cors for more ideas, see:
 	// https://developer.github.com/v3/#cross-origin-resource-sharing
@@ -55,73 +58,76 @@ func New(s *server.Server) *chi.Mux {
 	// rest for groups
 	r.Route("/api/", func(r chi.Router) {
 		r.Route("/groups", func(r chi.Router) {
-			r.Get("/", listGroups) // GET /groups
+			r.Get("/", h.listGroups) // GET /groups
 
 			r.Route("/{groupID}", func(r chi.Router) {
-				r.Use(groupCtx)
-				r.Get("/", getGroup)
-				r.Get("/graphs", getGroupGraphs)
+				r.Use(h.groupCtx)
+				r.Get("/", h.getGroup)
+				r.Get("/graphs", h.getGroupGraphs)
 			})
 		})
 
 		// rest for graphs
 		r.Route("/graphs", func(r chi.Router) {
-			r.Get("/", listGraphs) // GET /graphs
+			r.Get("/", h.listGraphs) // GET /graphs
 
 			r.Route("/{graphID}", func(r chi.Router) {
-				r.Use(graphCtx)
-				r.Get("/", getGraph)
-				r.Get("/metrics", getGraphMetrics)
+				r.Use(h.graphCtx)
+				r.Get("/", h.getGraph)
+				r.Get("/metrics", h.getGraphMetrics)
 			})
 		})
 
 		// rest for metrics
 		r.Route("/metrics", func(r chi.Router) {
-			r.Get("/", listMetrics) // GET /metrics
+			r.Get("/", h.listMetrics) // GET /metrics
 
 			r.Route("/{metricID}", func(r chi.Router) {
-				r.Use(metricCtx, timeCtx)
+				r.Use(h.metricCtx, h.timeCtx)
 
-				r.Get("/", getMetric)
-				r.Get("/counters", getMetricCounters)
-				r.Get("/histograms", getMetricHistograms)
-				r.Get("/gauges", getMetricGauges)
+				r.Get("/", h.getMetric)
+				r.Get("/counters", h.getMetricCounters)
+				r.Get("/histograms", h.getMetricHistograms)
+				r.Get("/gauges", h.getMetricGauges)
 			})
 		})
 
 		// get the application
 		r.Route("/applications", func(r chi.Router) {
-			r.Get("/", listApplications)   // GET /applications
-			r.Post("/", createApplication) // POST /applications
+			r.Get("/", h.listApplications)   // GET /applications
+			r.Post("/", h.createApplication) // POST /applications
 
 			r.Route("/{applicationID}", func(r chi.Router) {
-				r.Use(applicationCtx)
+				r.Use(h.applicationCtx)
 
-				r.Get("/", getApplication)
-				r.Get("/groups", getApplicationGroups)
-				r.Put("/cancel", cancelApplication)
+				r.Get("/", h.getApplication)
+				r.Get("/groups", h.getApplicationGroups)
+				r.Put("/cancel", h.cancelApplication)
 			})
 		})
 	})
 
 	statikFS, err := fs.New()
 	if err != nil {
-		log.Fatal(err)
+		h.logger.Fatalw("failed read statikFS", "err", err)
 	}
 
 	r.Handle("/*", http.FileServer(statikFS))
 
-	return r
+	h.r = r
+
+	return h
 }
 
 // Serve start a web server with given gobench server
-func Serve(s *server.Server) {
-	r := New(s)
+func Serve(s *server.Server, logger logger.Logger) {
+	h := newHandler(s, logger)
+
 	portS := fmt.Sprintf(":%d", s.WebPort())
 
-	log.Printf("started the web server at port %s\n", portS)
+	logger.Infow("web server start", "port", portS)
 
-	if err := http.ListenAndServe(portS, r); err != nil {
-		log.Panicf("failed to start http server at port %s: %v", portS, err)
+	if err := http.ListenAndServe(portS, h.r); err != nil {
+		logger.Fatalw("failed start HTTP server", "port", portS, "err", err)
 	}
 }

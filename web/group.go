@@ -11,7 +11,7 @@ import (
 	"github.com/gobench-io/gobench/ent/group"
 )
 
-func groupCtx(next http.Handler) http.Handler {
+func (h *handler) groupCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		groupID, err := strconv.Atoi(chi.URLParam(r, "groupID"))
 		if err != nil {
@@ -19,7 +19,7 @@ func groupCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		group, err := db().Group.
+		group, err := h.db().Group.
 			Query().
 			Where(group.ID(groupID)).
 			Only(r.Context())
@@ -33,8 +33,8 @@ func groupCtx(next http.Handler) http.Handler {
 	})
 }
 
-func listGroups(w http.ResponseWriter, r *http.Request) {
-	gs, err := db().Group.
+func (h *handler) listGroups(w http.ResponseWriter, r *http.Request) {
+	gs, err := h.db().Group.
 		Query().
 		All(r.Context())
 	if err != nil {
@@ -47,7 +47,7 @@ func listGroups(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getGroup(w http.ResponseWriter, r *http.Request) {
+func (h *handler) getGroup(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	group, ok := ctx.Value(webKey("group")).(*ent.Group)
 	if !ok {
@@ -60,7 +60,7 @@ func getGroup(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getGroupGraphs(w http.ResponseWriter, r *http.Request) {
+func (h *handler) getGroupGraphs(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	group, ok := ctx.Value(webKey("group")).(*ent.Group)
 	if !ok {

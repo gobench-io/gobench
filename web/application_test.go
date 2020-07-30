@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/gobench-io/gobench/ent"
+	"github.com/gobench-io/gobench/logger"
 	"github.com/gobench-io/gobench/server"
 	"github.com/stretchr/testify/assert"
 )
@@ -18,7 +19,8 @@ import (
 func newAPITest() (*chi.Mux, *httptest.ResponseRecorder) {
 	server, _ := server.NewServer(server.DefaultMasterOptions())
 	_ = server.Start()
-	r := New(server)
+	h := newHandler(server, logger.NewNopLogger())
+	r := h.r
 
 	w := httptest.NewRecorder()
 
