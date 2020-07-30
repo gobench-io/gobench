@@ -18,7 +18,8 @@ import (
 func newAPITest() (*chi.Mux, *httptest.ResponseRecorder) {
 	server, _ := server.NewServer(server.DefaultMasterOptions())
 	_ = server.Start()
-	r := New(server)
+	h := newHandler(server)
+	r := h.r
 
 	w := httptest.NewRecorder()
 

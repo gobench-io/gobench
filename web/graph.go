@@ -11,7 +11,7 @@ import (
 	"github.com/gobench-io/gobench/ent/graph"
 )
 
-func graphCtx(next http.Handler) http.Handler {
+func (h *handler) graphCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		graphID, err := strconv.Atoi(chi.URLParam(r, "graphID"))
 		if err != nil {
@@ -19,7 +19,7 @@ func graphCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		g, err := db().Graph.
+		g, err := h.db().Graph.
 			Query().
 			Where(graph.ID(graphID)).
 			Only(r.Context())
@@ -33,8 +33,8 @@ func graphCtx(next http.Handler) http.Handler {
 	})
 }
 
-func listGraphs(w http.ResponseWriter, r *http.Request) {
-	graphs, err := db().Graph.
+func (h *handler) listGraphs(w http.ResponseWriter, r *http.Request) {
+	graphs, err := h.db().Graph.
 		Query().
 		All(r.Context())
 	if err != nil {
@@ -47,7 +47,7 @@ func listGraphs(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getGraph(w http.ResponseWriter, r *http.Request) {
+func (h *handler) getGraph(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	g, ok := ctx.Value(webKey("graph")).(*ent.Graph)
 	if !ok {
@@ -60,7 +60,7 @@ func getGraph(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getGraphMetrics(w http.ResponseWriter, r *http.Request) {
+func (h *handler) getGraphMetrics(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	g, ok := ctx.Value(webKey("graph")).(*ent.Graph)
 	if !ok {

@@ -14,7 +14,7 @@ import (
 	"github.com/gobench-io/gobench/server"
 )
 
-func applicationCtx(next http.Handler) http.Handler {
+func (h *handler) applicationCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		appID, err := strconv.Atoi(chi.URLParam(r, "applicationID"))
 		if err != nil {
@@ -22,7 +22,7 @@ func applicationCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		app, err := db().Application.
+		app, err := h.db().Application.
 			Query().
 			Where(application.ID(appID)).
 			Only(r.Context())
@@ -36,8 +36,8 @@ func applicationCtx(next http.Handler) http.Handler {
 	})
 }
 
-func listApplications(w http.ResponseWriter, r *http.Request) {
-	aps, err := db().Application.
+func (h *handler) listApplications(w http.ResponseWriter, r *http.Request) {
+	aps, err := h.db().Application.
 		Query().
 		Order(
 			ent.Desc(application.FieldCreatedAt),
@@ -53,7 +53,7 @@ func listApplications(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func createApplication(w http.ResponseWriter, r *http.Request) {
+func (h *handler) createApplication(w http.ResponseWriter, r *http.Request) {
 	data := &applicationRequest{}
 
 	if err := render.Bind(r, data); err != nil {
@@ -77,7 +77,7 @@ func createApplication(w http.ResponseWriter, r *http.Request) {
 	}
 	scenario := string(decScenario)
 
-	app, err := s.NewApplication(r.Context(), data.Name, scenario)
+	app, err := h.s.NewApplication(r.Context(), data.Name, scenario)
 
 	if err != nil {
 		render.Render(w, r, ErrInternalServer(err))
@@ -88,7 +88,7 @@ func createApplication(w http.ResponseWriter, r *http.Request) {
 	render.Render(w, r, newApplicationResponse(app))
 }
 
-func getApplication(w http.ResponseWriter, r *http.Request) {
+func (h *handler) getApplication(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	app, ok := ctx.Value(webKey("application")).(*ent.Application)
 	if !ok {
@@ -101,7 +101,7 @@ func getApplication(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getApplicationGroups(w http.ResponseWriter, r *http.Request) {
+func (h *handler) getApplicationGroups(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	app, ok := ctx.Value(webKey("application")).(*ent.Application)
 	if !ok {
@@ -122,7 +122,7 @@ func getApplicationGroups(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func cancelApplication(w http.ResponseWriter, r *http.Request) {
+func (h *handler) cancelApplication(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	app, ok := ctx.Value(webKey("application")).(*ent.Application)
 	if !ok {
@@ -130,7 +130,7 @@ func cancelApplication(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	na, err := s.CancelApplication(ctx, app.ID)
+	na, err := h.s.CancelApplication(ctx, app.ID)
 
 	// if err is ErrAppIsFinished, return 400 error
 	// else return 500 error
