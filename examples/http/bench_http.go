@@ -28,16 +28,22 @@ func f(ctx context.Context, vui int) {
 		return
 	}
 
-	url1 := "http://192.168.2.29"
+	url1 := "http://192.168.2.35"
 
 	headers := map[string]string{
 		// "Content-Type": "application/json",
 	}
-	go func() {
-		for {
+
+	timeout := time.After(30 * time.Second)
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-timeout:
+			return
+		default:
 			client1.Get(ctx, url1, headers)
 		}
-	}()
-
-	time.Sleep(30 * time.Second)
+	}
 }
