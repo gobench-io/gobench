@@ -151,7 +151,7 @@ func (w *Worker) Run(ctx context.Context) (err error) {
 func (w *Worker) run(ctx context.Context) (err error) {
 	finished := make(chan error)
 
-	go w.logScaled(ctx, 5*time.Second)
+	go w.logScaled(ctx, 10*time.Second)
 	go w.runScen(ctx, finished)
 
 	select {
