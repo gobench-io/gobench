@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"strconv"
+	"time"
 
 	"github.com/gobench-io/gobench/clients/nats"
 	"github.com/gobench-io/gobench/dis"
@@ -35,12 +36,18 @@ func f(ctx context.Context, vui int) {
 	// subscribe_to_self("prefix/clients/", 0)
 	_ = client.Subscribe(ctx, "hello."+strconv.Itoa(vui))
 
-	// loop(time = 5 min, rate = 1 rps)
-	rate := 1.0
-	for j := 0; j < 10; j++ {
-		dis.SleepRatePoisson(rate)
-		_ = client.Publish(ctx, "hello."+strconv.Itoa(vui), []byte("hello world"))
+	rate := 1.0 // rps
+	timeout := time.After(5 * time.Minute)
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-timeout:
+			_ = client.Disconnect(ctx)
+			return
+		default:
+			_ = client.Publish(ctx, "hello."+strconv.Itoa(vui), []byte("hello world"))
+			dis.SleepRatePoisson(rate)
+		}
 	}
-	// finally
-	_ = client.Disconnect(ctx)
 }
