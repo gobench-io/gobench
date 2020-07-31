@@ -12,6 +12,7 @@ package main
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/gobench-io/gobench/clients/mqtt"
 	"github.com/gobench-io/gobench/dis"
@@ -30,7 +31,7 @@ func Export() scenario.Vus {
 
 func f(ctx context.Context, vui int) {
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker("192.168.2.29:1883")
+	opts.AddBroker("192.168.2.35:1883")
 
 	client, err := mqtt.NewMqttClient(ctx, opts)
 	if err != nil {
@@ -46,16 +47,18 @@ func f(ctx context.Context, vui int) {
 	_ = client.SubscribeToSelf(ctx, "prefix/clients/", 0, nil)
 
 	rate := 1.0 // rps
-	for j := 0; j < 60*5; j++ {
+	timeout := time.After(5 * time.Minute)
+
+	for {
 		select {
 		case <-ctx.Done():
-			break
+			return
+		case <-timeout:
+			_ = client.Disconnect(ctx)
+			return
 		default:
 			_ = client.PublishToSelf(ctx, "prefix/clients/", 0, dis.RandomByte(150))
 			dis.SleepRatePoisson(rate)
 		}
 	}
-
-	// finally
-	_ = client.Disconnect(ctx)
 }

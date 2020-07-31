@@ -12,6 +12,7 @@ package main
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/gobench-io/gobench/clients/mqtt"
 	"github.com/gobench-io/gobench/dis"
@@ -35,7 +36,7 @@ func Export() scenario.Vus {
 
 func subf(ctx context.Context, vui int) {
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker("192.168.2.29:1883")
+	opts.AddBroker("192.168.2.35:1883")
 
 	client, err := mqtt.NewMqttClient(ctx, opts)
 	if err != nil {
@@ -49,14 +50,11 @@ func subf(ctx context.Context, vui int) {
 	}
 
 	_ = client.Subscribe(ctx, "prefix/clients/#", 0, nil)
-
-	// finally
-	// _ = client.Disconnect(ctx)
 }
 
 func pubf(ctx context.Context, vui int) {
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker("192.168.2.29:1883")
+	opts.AddBroker("192.168.2.35:1883")
 
 	client, err := mqtt.NewMqttClient(ctx, opts)
 	if err != nil {
@@ -70,13 +68,18 @@ func pubf(ctx context.Context, vui int) {
 	}
 
 	rate := 1.0 // rps
-	for j := 0; j < int(60*5*rate); j++ {
-		dis.SleepRatePoisson(rate)
-		go func() {
-			_ = client.PublishToSelf(ctx, "prefix/clients/", 0, dis.RandomByte(150))
-		}()
-	}
+	timeout := time.After(5 * time.Minute)
 
-	// finally
-	_ = client.Disconnect(ctx)
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-timeout:
+			_ = client.Disconnect(ctx)
+			return
+		default:
+			_ = client.PublishToSelf(ctx, "prefix/clients/", 0, dis.RandomByte(150))
+			dis.SleepRatePoisson(rate)
+		}
+	}
 }
