@@ -16,6 +16,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"time"
 
 	paho "github.com/eclipse/paho.mqtt.golang"
 
@@ -48,7 +49,7 @@ func clientf(ctx context.Context, vui int) {
 
 	opts := mqtt.NewClientOptions()
 	opts.
-		AddBroker("192.168.2.29:1883").
+		AddBroker("192.168.2.35:1883").
 		SetClientID(clientID)
 
 	client, err := mqtt.NewMqttClient(ctx, opts)
@@ -68,17 +69,21 @@ func clientf(ctx context.Context, vui int) {
 	}
 
 	rate := 500.0 // rps
-	for j := 0; j < int(60*5*rate); j++ {
-		dis.SleepRatePoisson(rate)
+	timeout := time.After(5 * time.Minute)
 
-		go func() {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-timeout:
+			_ = client.Disconnect(ctx)
+			return
+		default:
 			topic := fmt.Sprintf("prefix/servers/server-%d", rand.Intn(serverNum))
 			_ = client.Publish(ctx, topic, 2, dis.RandomByte(150))
-		}()
+			dis.SleepRatePoisson(rate)
+		}
 	}
-
-	// finally
-	_ = client.Disconnect(ctx)
 }
 
 func serverf(ctx context.Context, vui int) {
@@ -86,7 +91,7 @@ func serverf(ctx context.Context, vui int) {
 
 	opts := mqtt.NewClientOptions()
 	opts.
-		AddBroker("192.168.2.29:1883").
+		AddBroker("192.168.2.35:1883").
 		SetClientID(clientID)
 
 	client, err := mqtt.NewMqttClient(ctx, opts)
