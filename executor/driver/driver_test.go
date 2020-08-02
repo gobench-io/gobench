@@ -48,52 +48,43 @@ func (l *nilLog) FindCreateMetric(ctx context.Context, mmetric metrics.Metric, g
 	return nil, nil
 }
 
-func newNilLog() metricLogger {
+func newNilMetricLog() metricLogger {
 	return &nilLog{}
 }
 
 func TestNew(t *testing.T) {
 	so := "./script/valid-dnt/valid-dnt.so"
 
-	n1, err := NewDriver(newNilLog(), logger.NewNopLogger(), so, 1)
+	n1, err := NewDriver(newNilMetricLog(), logger.NewNopLogger(), so, 1)
 	assert.Nil(t, err)
-	n2, err := NewDriver(newNilLog(), logger.NewNopLogger(), so, 2)
+	n2, err := NewDriver(newNilMetricLog(), logger.NewNopLogger(), so, 2)
 	assert.Nil(t, err)
 
 	assert.Equal(t, n1, n2)
 
 	assert.Equal(t, n1.status, Idle)
 	assert.Equal(t, n1.units, make(map[string]unit))
+	assert.Len(t, *n1.vus, 1)
 
 	assert.False(t, n1.Running())
 }
 
-func TestLoadPlugin(t *testing.T) {
-	n, _ := NewDriver(newNilLog(), logger.NewNopLogger(), 1)
-	so := "./script/valid-dnt/valid-dnt.so"
-	assert.Nil(t, n.Load(so))
-	assert.NotNil(t, n.vus)
-	assert.False(t, n.Running())
-}
-
 func TestRunPlugin(t *testing.T) {
-	n, _ := NewDriver(newNilLog(), logger.NewNopLogger(), 1)
 	so := "./script/valid-dnt/valid-dnt.so"
-	assert.Nil(t, n.Load(so))
-	assert.NotNil(t, n.vus)
+	n, _ := NewDriver(newNilMetricLog(), logger.NewNopLogger(), so, 1)
+
+	assert.False(t, n.Running())
 
 	ctx := context.Background()
-
-	assert.False(t, n.Running())
 	assert.Nil(t, n.Run(ctx))
+
 	// after Run finish, the worker is in normal state
 	assert.False(t, n.Running())
 }
 
 func TestCancelPlugin(t *testing.T) {
-	n, _ := NewDriver(newNilLog(), logger.NewNopLogger(), 1)
 	so := "./script/valid-forever/valid-forever.so"
-	assert.Nil(t, n.Load(so))
+	n, _ := NewDriver(newNilMetricLog(), logger.NewNopLogger(), so, 1)
 
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -112,21 +103,7 @@ func TestCancelPlugin(t *testing.T) {
 
 	select {
 	case <-done:
-	case <-time.After(1 * time.Second):
+	case <-time.After(2 * time.Second):
 		t.Fatalf("Should have finish the running after cancel")
 	}
-}
-
-func TestPanicPlugin(t *testing.T) {
-	n, _ := NewDriver(newNilLog(), logger.NewNopLogger(), 1)
-	so := "./script/valid-panic/valid-panic.so"
-	assert.Nil(t, n.Load(so))
-	assert.NotNil(t, n.vus)
-
-	ctx := context.Background()
-
-	err := n.Run(ctx)
-	assert.EqualError(t, err, ErrAppPanic.Error())
-	// after Run finish, the worker is in normal state
-	assert.False(t, n.Running())
 }

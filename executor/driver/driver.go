@@ -77,6 +77,7 @@ func init() {
 // NewDriver returns the singleton driver
 func NewDriver(ml metricLogger, logger logger.Logger, driverPath string, appID int) (*Driver, error) {
 	driver.mu.Lock()
+
 	driver.ml = ml
 	driver.logger = logger
 	driver.units = make(map[string]unit)
@@ -97,13 +98,6 @@ func (d *Driver) unregisterGometrics() {
 	})
 }
 
-func (d *Driver) reset() {
-	d.mu.Lock()
-	d.status = Idle
-	d.units = make(map[string]unit)
-	d.mu.Unlock()
-}
-
 // load downloads the go plugin, extracts the virtual user scenario
 func (d *Driver) load(so string) error {
 	vus, err := scenario.LoadPlugin(so)
@@ -118,6 +112,13 @@ func (d *Driver) load(so string) error {
 	d.vus = &vus
 
 	return nil
+}
+
+func (d *Driver) reset() {
+	d.mu.Lock()
+	d.status = Idle
+	d.units = make(map[string]unit)
+	d.mu.Unlock()
 }
 
 // Run starts the preloaded plugin
@@ -172,40 +173,20 @@ func (d *Driver) runScen(ctx context.Context, done chan error) {
 		totalVu += vus[i].Nu
 	}
 
-	fatalErr := make(chan error)
-	wgDone := make(chan struct{})
 	var wg sync.WaitGroup
 	wg.Add(totalVu)
 
 	for i := range vus {
 		for j := 0; j < vus[i].Nu; j++ {
 			go func(i, j int) {
-
-				defer func() {
-					if r := recover(); r != nil {
-						d.logger.Errorw("recovered in runScreen", "err", r)
-						fatalErr <- ErrAppPanic
-						// return
-					}
-				}()
-
 				vus[i].Fu(ctx, j)
 				wg.Done()
 			}(i, j)
 		}
 	}
 
-	go func() {
-		wg.Wait()
-		close(wgDone)
-	}()
-
-	select {
-	case <-wgDone:
-		done <- nil
-	case err := <-fatalErr:
-		done <- err
-	}
+	wg.Wait()
+	done <- nil
 }
 
 // logScaled extract the metric log from a driver
@@ -364,9 +345,7 @@ func Notify(title string, value int64) error {
 
 	u, ok := driver.units[title]
 	if !ok {
-		driver.logger.Infow("metric not found",
-			"title", title,
-		)
+		driver.logger.Infow("metric not found", "title", title)
 		return ErrIDNotFound
 	}
 
