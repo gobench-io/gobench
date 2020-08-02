@@ -3,20 +3,21 @@ package option
 import (
 	"flag"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestConfigureOptions(t *testing.T) {
-	type testPrint struct {
-		args          []string
-		version, help func()
-	}
+type testOpts struct {
+	args          []string
+	version, help func()
+}
 
+func TestConfigureOptions(t *testing.T) {
 	version := func() {}
 	help := func() {}
 
-	testFuncs := []testPrint{
+	testFuncs := []testOpts{
 		{[]string{
 			"--agent-sock", "agent/sock",
 			"--executor-sock", "executor/sock",
@@ -38,7 +39,7 @@ func TestConfigureOptions(t *testing.T) {
 	}
 
 	// missing parameter tests
-	testErr := []testPrint{
+	testErrs := []testOpts{
 		{[]string{
 			"--executor-sock", "executor/sock",
 			"--driver-path", "driver/path",
@@ -53,11 +54,45 @@ func TestConfigureOptions(t *testing.T) {
 		}, version, help},
 	}
 
-	for _, tt := range testErr {
+	for _, tt := range testErrs {
 		fs := flag.NewFlagSet("test", flag.ContinueOnError)
 
 		opts, err := ConfigureOptions(fs, tt.args, tt.version, tt.help)
 		assert.EqualError(t, err, ErrInvalidFlags.Error())
 		assert.Nil(t, opts)
+	}
+}
+
+func TestVersionHelp(t *testing.T) {
+	ch := make(chan bool, 1)
+
+	checkPrintInvoked := func() {
+		ch <- true
+	}
+
+	usage := func() {
+		panic("should not get there")
+	}
+
+	// test the help
+	testHelps := []testOpts{
+		{[]string{"--version"}, checkPrintInvoked, usage},
+		{[]string{"-v"}, checkPrintInvoked, usage},
+		{[]string{"--help"}, usage, checkPrintInvoked},
+		{[]string{"-h"}, usage, checkPrintInvoked},
+	}
+
+	for _, tt := range testHelps {
+		fs := flag.NewFlagSet("test", flag.ContinueOnError)
+
+		opts, err := ConfigureOptions(fs, tt.args, tt.version, tt.help)
+		assert.Nil(t, err)
+		assert.Nil(t, opts)
+
+		select {
+		case <-ch:
+		case <-time.After(time.Second):
+			assert.Fail(t, "should have invoked print function for args %s", tt.args)
+		}
 	}
 }

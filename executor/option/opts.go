@@ -37,8 +37,21 @@ func ConfigureOptions(fs *flag.FlagSet, args []string,
 	if err = fs.Parse(args); err != nil {
 		return
 	}
-	// show version
-	// show help
+
+	if showHelp {
+		printHelp()
+		return
+	}
+
+	if showVersion {
+		printVersion()
+		return
+	}
+
+	if agentSock == "" || executorSock == "" || driverPath == "" {
+		err = ErrInvalidFlags
+		return
+	}
 
 	opts = &Options{}
 
