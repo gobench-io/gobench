@@ -22,6 +22,7 @@ func TestConfigureOptions(t *testing.T) {
 			"--agent-sock", "agent/sock",
 			"--executor-sock", "executor/sock",
 			"--driver-path", "driver/path",
+			"--app-id", "123",
 		}, version, help},
 	}
 
@@ -35,6 +36,7 @@ func TestConfigureOptions(t *testing.T) {
 			AgentSock:    "agent/sock",
 			ExecutorSock: "executor/sock",
 			DriverPath:   "driver/path",
+			AppID:        123,
 		}, *opts)
 	}
 
