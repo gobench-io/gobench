@@ -41,9 +41,9 @@ type unit struct {
 }
 
 type metricLogger interface {
-	Counter(context.Context, int, string, string, int64, int64) error
-	Histogram(context.Context, int, string, string, int64, gometrics.Histogram) error
-	Gauge(context.Context, int, string, string, int64, int64) error
+	Counter(context.Context, int, string, int64, int64) error
+	Histogram(context.Context, int, string, int64, gometrics.Histogram) error
+	Gauge(context.Context, int, string, int64, int64) error
 	FindCreateGroup(context.Context, metrics.Group, int) (*ent.Group, error)
 	FindCreateGraph(context.Context, metrics.Graph, int) (*ent.Graph, error)
 	FindCreateMetric(context.Context, metrics.Metric, int) (*ent.Metric, error)
@@ -74,17 +74,21 @@ func init() {
 	}
 }
 
-// NewWorker returns the singleton driver
-func NewWorker(ml metricLogger, logger logger.Logger, appID int) (*Driver, error) {
+// NewDriver returns the singleton driver
+func NewDriver(ml metricLogger, logger logger.Logger, driverPath string, appID int) (*Driver, error) {
+	driver.mu.Lock()
 	driver.ml = ml
 	driver.logger = logger
 	driver.units = make(map[string]unit)
 	driver.appID = appID
-
 	// reset metrics
 	driver.unregisterGometrics()
 
-	return &driver, nil
+	driver.mu.Unlock()
+
+	err := driver.load(driverPath)
+
+	return &driver, err
 }
 
 func (d *Driver) unregisterGometrics() {
@@ -100,8 +104,8 @@ func (d *Driver) reset() {
 	d.mu.Unlock()
 }
 
-// Load downloads the go plugin, extracts the virtual user scenario
-func (d *Driver) Load(so string) error {
+// load downloads the go plugin, extracts the virtual user scenario
+func (d *Driver) load(so string) error {
 	vus, err := scenario.LoadPlugin(so)
 	if err != nil {
 		return err
@@ -233,12 +237,12 @@ func (d *Driver) logScaledOnCue(ctx context.Context, ch chan interface{}) error 
 			for _, u := range units {
 				switch u.Type {
 				case metrics.Counter:
-					err = d.ml.Counter(ctx, u.metricID, d.id, u.Title, now, u.c.Count())
+					err = d.ml.Counter(ctx, u.metricID, u.Title, now, u.c.Count())
 				case metrics.Histogram:
 					h := u.h.Snapshot()
-					err = d.ml.Histogram(ctx, u.metricID, d.id, u.Title, now, h)
+					err = d.ml.Histogram(ctx, u.metricID, u.Title, now, h)
 				case metrics.Gauge:
-					err = d.ml.Gauge(ctx, u.metricID, d.id, u.Title, now, u.g.Value())
+					err = d.ml.Gauge(ctx, u.metricID, u.Title, now, u.g.Value())
 				}
 				if err != nil {
 					d.logger.Errorw("metric log failed",
