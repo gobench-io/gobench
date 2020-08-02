@@ -36,4 +36,28 @@ func TestConfigureOptions(t *testing.T) {
 			DriverPath:   "driver/path",
 		}, *opts)
 	}
+
+	// missing parameter tests
+	testErr := []testPrint{
+		{[]string{
+			"--executor-sock", "executor/sock",
+			"--driver-path", "driver/path",
+		}, version, help},
+		{[]string{
+			"--agent-sock", "agent/sock",
+			"--driver-path", "driver/path",
+		}, version, help},
+		{[]string{
+			"--agent-sock", "agent/sock",
+			"--executor-sock", "executor/sock",
+		}, version, help},
+	}
+
+	for _, tt := range testErr {
+		fs := flag.NewFlagSet("test", flag.ContinueOnError)
+
+		opts, err := ConfigureOptions(fs, tt.args, tt.version, tt.help)
+		assert.EqualError(t, err, ErrInvalidFlags.Error())
+		assert.Nil(t, opts)
+	}
 }

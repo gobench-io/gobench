@@ -1,13 +1,16 @@
 package option
 
 import (
+	"errors"
 	"flag"
+)
 
-	"github.com/gobench-io/gobench/logger"
+// Err messages
+var (
+	ErrInvalidFlags = errors.New("invalid flags")
 )
 
 type Options struct {
-	Logger       logger.Logger
 	AgentSock    string
 	ExecutorSock string
 	DriverPath   string // the plugin user wrote
