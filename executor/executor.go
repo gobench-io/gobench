@@ -22,7 +22,8 @@ func usage() {
 	const usageStr = `
 Usage: executor [options]
 	--executor-sock		The socket for this executor
-	...
+	--agent-sock		The socket of the agent who call this process
+	--driver-path		Location of the driver plugin
 	-h, --help			Show this message
 	-v, --version		Show version
 `
