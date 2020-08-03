@@ -147,17 +147,17 @@ func (m *master) FindCreateMetric(ctx context.Context, mmetric metrics.Metric, g
 
 // rpc interface
 
-type FCGArgs struct {
+type FCGroupArgs struct {
 	Name  string
 	AppID int
 }
-type FCGRes struct {
+type FCGroupRes struct {
 	ID int
 }
 
 // FindCreateGroupRPC find or create new group
 // return the existing/new group ent, is created, and error
-func (m *master) FindCreateGroupRPC(args *FCGArgs, reply *FCGRes) (err error) {
+func (m *master) FindCreateGroupRPC(args *FCGroupArgs, reply *FCGroupRes) (err error) {
 	ctx := context.TODO()
 
 	var eg *ent.Group
@@ -190,6 +190,53 @@ func (m *master) FindCreateGroupRPC(args *FCGArgs, reply *FCGRes) (err error) {
 			SetApplicationID(m.job.app.ID).
 			Save(ctx)
 
+		return
+	}
+
+	return
+}
+
+type FCGraphReq struct {
+	Title   string
+	Unit    string
+	GroupID int
+}
+type FCGraphRes struct {
+	ID int
+}
+
+func (m *master) FindCreateGraphRPC(req *FCGraphReq, res *FCGraphRes) (err error) {
+	ctx := context.TODO()
+
+	var egraph *ent.Graph
+
+	defer func() {
+		if err == nil {
+			res.ID = egraph.ID
+		}
+	}()
+
+	egraph, err = m.db.Graph.Query().
+		Where(
+			entGraph.TitleEQ(req.Title),
+			entGraph.UnitEQ(req.Unit),
+			entGraph.HasGroupWith(
+				entGroup.IDEQ(req.GroupID),
+			),
+		).
+		First(ctx)
+
+	// if there is one found
+	if err != nil {
+		if !ent.IsNotFound(err) {
+			return
+		}
+
+		egraph, err = m.db.Graph.Create().
+			SetTitle(req.Title).
+			SetUnit(req.Unit).
+			SetGroupID(req.GroupID).
+			Save(ctx)
 		return
 	}
 
