@@ -5,6 +5,9 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net"
+	"net/http"
+	"net/rpc"
 	"os"
 
 	"github.com/gobench-io/gobench/executor/option"
@@ -56,4 +59,24 @@ func main() {
 		printAndDie(fmt.Sprintf("%s: %s", exe, err))
 	}
 	log.Println(opts)
+
+	// create new executor
+	logger := logger.NewStdLogger()
+	e, err := NewExecutor(opts, logger)
+	if err != nil {
+		printAndDie(fmt.Sprintf("%s: %s", exe, err))
+	}
+
+	// register rpc
+	rpc.Register(e)
+	rpc.HandleHTTP()
+
+	// bind rpc to executor sock
+	sockname := opts.ExecutorSock
+	os.Remove(sockname)
+	l, err := net.Listen("unix", sockname)
+	if err != nil {
+		printAndDie(fmt.Sprintf("%s: %s", exe, err))
+	}
+	http.Serve(l, nil)
 }
