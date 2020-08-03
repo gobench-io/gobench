@@ -10,6 +10,7 @@ import (
 	"net/rpc"
 	"os"
 
+	"github.com/gobench-io/gobench/executor/executor"
 	"github.com/gobench-io/gobench/executor/option"
 	"github.com/gobench-io/gobench/logger"
 )
@@ -62,7 +63,7 @@ func main() {
 
 	// create new executor
 	logger := logger.NewStdLogger()
-	e, err := NewExecutor(opts, logger)
+	e, err := executor.NewExecutor(opts, logger)
 	if err != nil {
 		printAndDie(fmt.Sprintf("%s: %s", exe, err))
 	}
