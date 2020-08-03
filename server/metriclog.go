@@ -242,3 +242,51 @@ func (m *master) FindCreateGraphRPC(req *FCGraphReq, res *FCGraphRes) (err error
 
 	return
 }
+
+type FCMetricReq struct {
+	Title   string
+	Type    metrics.MetricType
+	GraphID int
+}
+type FCMetricRes struct {
+	ID int
+}
+
+func (m *master) FindCreateMetricRPC(req *FCMetricReq, res *FCMetricRes) (err error) {
+	ctx := context.TODO()
+
+	var emetric *ent.Metric
+
+	defer func() {
+		if err == nil {
+			res.ID = emetric.ID
+		}
+	}()
+
+	emetric, err = m.db.Metric.Query().
+		Where(
+			entMetric.TitleEQ(req.Title),
+			entMetric.TypeEQ(string(req.Type)),
+			entMetric.HasGraphWith(
+				entGraph.IDEQ(req.GraphID),
+			),
+		).
+		First(ctx)
+
+	// if there is one found
+	if err != nil {
+		if !ent.IsNotFound(err) {
+			return
+		}
+
+		emetric, err = m.db.Metric.
+			Create().
+			SetTitle(req.Title).
+			SetType(string(req.Type)).
+			SetGraphID(req.GraphID).
+			Save(ctx)
+
+		return
+	}
+	return
+}

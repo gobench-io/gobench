@@ -8,6 +8,8 @@ import (
 	entApplication "github.com/gobench-io/gobench/ent/application"
 	entGraph "github.com/gobench-io/gobench/ent/graph"
 	entGroup "github.com/gobench-io/gobench/ent/group"
+	entMetric "github.com/gobench-io/gobench/ent/metric"
+	"github.com/gobench-io/gobench/metrics"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -90,4 +92,58 @@ func TestFindCreateGraphRPC(t *testing.T) {
 	graphRes2 := new(FCGraphRes)
 	assert.Nil(t, s.master.FindCreateGraphRPC(graphReq, graphRes2))
 	assert.Equal(t, graphRes, graphRes2)
+}
+
+func TestFindCreateMetricRPC(t *testing.T) {
+	var err error
+	ctx := context.TODO()
+
+	s := seedServer(t)
+
+	s.master.job.app, err = s.NewApplication(ctx, "name", "scenario")
+	assert.Nil(t, err)
+
+	prefix := time.Now().String()
+	groupName := "HTTP (" + prefix + ")"
+
+	// create new group
+	groupRes := new(FCGroupRes)
+	assert.Nil(t, s.master.FindCreateGroupRPC(
+		&FCGroupReq{Name: groupName, AppID: s.master.job.app.ID},
+		groupRes))
+
+	// create new graph
+	graphReq := &FCGraphReq{
+		Title:   "HTTP Response",
+		Unit:    "N",
+		GroupID: groupRes.ID,
+	}
+	graphRes := new(FCGraphRes)
+	assert.Nil(t, s.master.FindCreateGraphRPC(graphReq, graphRes))
+
+	// create new metric
+	metricReq := &FCMetricReq{
+		Title:   ".http_ok",
+		Type:    metrics.Counter,
+		GraphID: graphRes.ID,
+	}
+	metricRes := new(FCMetricRes)
+	assert.Nil(t, s.master.FindCreateMetricRPC(metricReq, metricRes))
+
+	// call the same RPC, the result should be like before
+	metricRes2 := new(FCGraphRes)
+	assert.Nil(t, s.master.FindCreateGraphRPC(graphReq, metricRes2))
+	assert.Equal(t, graphRes, metricRes2)
+
+	// read from db, check with groupRes
+	metrics, err := s.master.db.Metric.Query().Where(
+		entMetric.TitleEQ(metricReq.Title),
+		entMetric.HasGraphWith(
+			entGraph.IDEQ(graphRes.ID),
+		),
+	).All(ctx)
+	assert.Nil(t, err)
+	assert.Len(t, metrics, 1)
+	m := metrics[0]
+	assert.Equal(t, m.ID, metricRes.ID)
 }
