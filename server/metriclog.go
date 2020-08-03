@@ -163,7 +163,7 @@ func (m *master) FindCreateGroupRPC(args *FCGArgs, reply *FCGRes) (err error) {
 	var eg *ent.Group
 
 	defer func() {
-		if err != nil {
+		if err == nil {
 			reply.ID = eg.ID
 		}
 	}()
