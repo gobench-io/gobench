@@ -144,3 +144,54 @@ func (m *master) FindCreateMetric(ctx context.Context, mmetric metrics.Metric, g
 	}
 	return
 }
+
+// rpc interface
+
+type FCGArgs struct {
+	Name  string
+	AppID int
+}
+type FCGRes struct {
+	ID int
+}
+
+// FindCreateGroupRPC find or create new group
+// return the existing/new group ent, is created, and error
+func (m *master) FindCreateGroupRPC(args *FCGArgs, reply *FCGRes) (err error) {
+	ctx := context.TODO()
+
+	var eg *ent.Group
+
+	defer func() {
+		if err != nil {
+			reply.ID = eg.ID
+		}
+	}()
+
+	eg, err = m.job.app.
+		QueryGroups().
+		Where(
+			entGroup.NameEQ(args.Name),
+			entGroup.HasApplicationWith(
+				entApp.IDEQ(args.AppID),
+			),
+		).
+		First(ctx)
+
+	// if there is one found
+	if err != nil {
+		if !ent.IsNotFound(err) {
+			return
+		}
+
+		eg, err = m.db.Group.
+			Create().
+			SetName(args.Name).
+			SetApplicationID(m.job.app.ID).
+			Save(ctx)
+
+		return
+	}
+
+	return
+}
