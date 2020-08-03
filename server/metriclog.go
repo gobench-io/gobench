@@ -157,23 +157,23 @@ type FCGroupRes struct {
 
 // FindCreateGroupRPC find or create new group
 // return the existing/new group ent, is created, and error
-func (m *master) FindCreateGroupRPC(args *FCGroupReq, reply *FCGroupRes) (err error) {
+func (m *master) FindCreateGroupRPC(req *FCGroupReq, res *FCGroupRes) (err error) {
 	ctx := context.TODO()
 
 	var eg *ent.Group
 
 	defer func() {
 		if err == nil {
-			reply.ID = eg.ID
+			res.ID = eg.ID
 		}
 	}()
 
 	eg, err = m.job.app.
 		QueryGroups().
 		Where(
-			entGroup.NameEQ(args.Name),
+			entGroup.NameEQ(req.Name),
 			entGroup.HasApplicationWith(
-				entApp.IDEQ(args.AppID),
+				entApp.IDEQ(req.AppID),
 			),
 		).
 		First(ctx)
@@ -186,7 +186,7 @@ func (m *master) FindCreateGroupRPC(args *FCGroupReq, reply *FCGroupRes) (err er
 
 		eg, err = m.db.Group.
 			Create().
-			SetName(args.Name).
+			SetName(req.Name).
 			SetApplicationID(m.job.app.ID).
 			Save(ctx)
 

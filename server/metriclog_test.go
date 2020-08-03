@@ -85,4 +85,9 @@ func TestFindCreateGraphRPC(t *testing.T) {
 	assert.Len(t, graphs, 1)
 	g := graphs[0]
 	assert.Equal(t, g.ID, graphRes.ID)
+
+	// call the same RPC, the result should be like before
+	graphRes2 := new(FCGraphRes)
+	assert.Nil(t, s.master.FindCreateGraphRPC(graphReq, graphRes2))
+	assert.Equal(t, graphRes, graphRes2)
 }
