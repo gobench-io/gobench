@@ -4,8 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
+	"net"
+	"net/http"
+	"net/rpc"
 	"os"
 	"os/exec"
+	"strconv"
 	"sync"
 	"time"
 
@@ -14,7 +19,6 @@ import (
 	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/ent/application"
 	"github.com/gobench-io/gobench/executor/executor"
-	"github.com/gobench-io/gobench/executor/option"
 	"github.com/gobench-io/gobench/logger"
 	"github.com/gobench-io/gobench/worker"
 )
@@ -251,30 +255,53 @@ func (m *master) jobCompile(ctx context.Context) error {
 
 // runJob run a application in a job
 // by create a local worker
-func (m *master) runJob(ctx context.Context) error {
-	var err error
+func (m *master) runJob(ctx context.Context) (err error) {
+	agentSock := "/tmp/agentsock"
+	executorSock := "/tmp/executorsock"
+	driverPath := m.job.plugin
+	appID := strconv.Itoa(m.job.app.ID)
 
-	opts := &option.Options{
-		AgentSock:    "/tmp/agentsock",
-		ExecutorSock: "/tmp/executorsock",
-		DriverPath:   m.job.plugin,
-		AppID:        m.job.app.ID,
+	cmd := exec.CommandContext(ctx, "../executor.out",
+		"--agent-sock", agentSock,
+		"--executor-sock", executorSock,
+		"--driver-path", driverPath,
+		"--app-id", appID)
+
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("failed start the local executor: %v", err)
 	}
-	if m.le, err = executor.NewExecutor(opts, m.logger); err != nil {
-		return err
+
+	// register rpc
+	rpc.Register(m)
+	rpc.HandleHTTP()
+	if err = os.Remove(agentSock); err != nil {
+		// return
+	}
+	l, err := net.Listen("unix", agentSock)
+	if err != nil {
+		return
+	}
+
+	log.Println("runJob serving rpc server")
+
+	go http.Serve(l, nil)
+
+	if err = cmd.Wait(); err != nil {
+		m.logger.Errorw("failed wait for cmd", "err", err)
+		return
 	}
 
 	// if m.lw, err = worker.NewWorker(m, m.logger, m.job.app.ID); err != nil {
 	// 	return err
 	// }
 
-	if err = m.lw.Load(m.job.plugin); err != nil {
-		return fmt.Errorf("failed load plugin: %v", err)
-	}
+	// if err = m.lw.Load(m.job.plugin); err != nil {
+	// 	return fmt.Errorf("failed load plugin: %v", err)
+	// }
 
-	if err = m.lw.Run(ctx); err != nil {
-		return err
-	}
+	// if err = m.lw.Run(ctx); err != nil {
+	// 	return err
+	// }
 
 	return nil
 }
