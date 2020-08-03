@@ -41,6 +41,7 @@ func TestDefaultWorkerOptions(t *testing.T) {
 }
 
 func TestConfigureOptions(t *testing.T) {
+	t.Skip()
 	// helper function
 	ch := make(chan bool, 1)
 	checkPrintInvoked := func() {

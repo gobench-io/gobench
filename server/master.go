@@ -13,6 +13,8 @@ import (
 
 	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/ent/application"
+	"github.com/gobench-io/gobench/executor/executor"
+	"github.com/gobench-io/gobench/executor/option"
 	"github.com/gobench-io/gobench/logger"
 	"github.com/gobench-io/gobench/worker"
 )
@@ -43,7 +45,8 @@ type master struct {
 	dbFilename string
 	db         *ent.Client
 
-	lw  *worker.Worker // local worker
+	lw  *worker.Worker     // local worker
+	le  *executor.Executor // local executor
 	job *job
 }
 
@@ -251,9 +254,19 @@ func (m *master) jobCompile(ctx context.Context) error {
 func (m *master) runJob(ctx context.Context) error {
 	var err error
 
-	if m.lw, err = worker.NewWorker(m, m.logger, m.job.app.ID); err != nil {
+	opts := &option.Options{
+		AgentSock:    "/tmp/agentsock",
+		ExecutorSock: "/tmp/executorsock",
+		DriverPath:   m.job.plugin,
+		AppID:        m.job.app.ID,
+	}
+	if m.le, err = executor.NewExecutor(opts, m.logger); err != nil {
 		return err
 	}
+
+	// if m.lw, err = worker.NewWorker(m, m.logger, m.job.app.ID); err != nil {
+	// 	return err
+	// }
 
 	if err = m.lw.Load(m.job.plugin); err != nil {
 		return fmt.Errorf("failed load plugin: %v", err)
