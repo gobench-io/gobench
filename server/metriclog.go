@@ -147,7 +147,7 @@ func (m *master) FindCreateMetric(ctx context.Context, mmetric metrics.Metric, g
 
 // rpc interface
 
-type FCGroupArgs struct {
+type FCGroupReq struct {
 	Name  string
 	AppID int
 }
@@ -157,7 +157,7 @@ type FCGroupRes struct {
 
 // FindCreateGroupRPC find or create new group
 // return the existing/new group ent, is created, and error
-func (m *master) FindCreateGroupRPC(args *FCGroupArgs, reply *FCGroupRes) (err error) {
+func (m *master) FindCreateGroupRPC(args *FCGroupReq, reply *FCGroupRes) (err error) {
 	ctx := context.TODO()
 
 	var eg *ent.Group

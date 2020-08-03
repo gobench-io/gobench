@@ -23,12 +23,12 @@ func TestFindCreateGroupRPC(t *testing.T) {
 	prefix := time.Now().String()
 	groupName := "HTTP (" + prefix + ")"
 
-	groupReply := new(FCGroupRes)
+	groupRes := new(FCGroupRes)
 	assert.Nil(t, s.master.FindCreateGroupRPC(
-		&FCGroupArgs{Name: groupName, AppID: s.master.job.app.ID},
-		groupReply))
+		&FCGroupReq{Name: groupName, AppID: s.master.job.app.ID},
+		groupRes))
 
-	// read from db, check with groupReply
+	// read from db, check with groupRes
 	groups, err := s.master.db.Group.Query().Where(
 		entGroup.Name(groupName),
 		entGroup.HasApplicationWith(
@@ -38,14 +38,14 @@ func TestFindCreateGroupRPC(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Len(t, groups, 1)
 	g := groups[0]
-	assert.Equal(t, g.ID, groupReply.ID)
+	assert.Equal(t, g.ID, groupRes.ID)
 
 	// call the same RPC, the result should be like before
-	groupReply2 := new(FCGroupRes)
+	groupRes2 := new(FCGroupRes)
 	assert.Nil(t, s.master.FindCreateGroupRPC(
-		&FCGroupArgs{Name: groupName, AppID: s.master.job.app.ID},
-		groupReply2))
-	assert.Equal(t, groupReply, groupReply2)
+		&FCGroupReq{Name: groupName, AppID: s.master.job.app.ID},
+		groupRes2))
+	assert.Equal(t, groupRes, groupRes2)
 }
 
 func TestFindCreateGraphRPC(t *testing.T) {
@@ -60,29 +60,29 @@ func TestFindCreateGraphRPC(t *testing.T) {
 	prefix := time.Now().String()
 	groupName := "HTTP (" + prefix + ")"
 
-	groupReply := new(FCGroupRes)
+	groupRes := new(FCGroupRes)
 	assert.Nil(t, s.master.FindCreateGroupRPC(
-		&FCGroupArgs{Name: groupName, AppID: s.master.job.app.ID},
-		groupReply))
+		&FCGroupReq{Name: groupName, AppID: s.master.job.app.ID},
+		groupRes))
 
 	// create new graph
 	graphReq := &FCGraphReq{
 		Title:   "HTTP Response",
 		Unit:    "N",
-		GroupID: groupReply.ID,
+		GroupID: groupRes.ID,
 	}
-	graphReply := new(FCGraphRes)
-	assert.Nil(t, s.master.FindCreateGraphRPC(graphReq, graphReply))
+	graphRes := new(FCGraphRes)
+	assert.Nil(t, s.master.FindCreateGraphRPC(graphReq, graphRes))
 
-	// read from db, check with groupReply
+	// read from db, check with groupRes
 	graphs, err := s.master.db.Graph.Query().Where(
 		entGraph.TitleEQ(graphReq.Title),
 		entGraph.HasGroupWith(
-			entGroup.IDEQ(groupReply.ID),
+			entGroup.IDEQ(groupRes.ID),
 		),
 	).All(ctx)
 	assert.Nil(t, err)
 	assert.Len(t, graphs, 1)
 	g := graphs[0]
-	assert.Equal(t, g.ID, graphReply.ID)
+	assert.Equal(t, g.ID, graphRes.ID)
 }
