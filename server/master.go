@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net"
+	"net/http"
 	"net/rpc"
 	"os"
 	"os/exec"
@@ -296,16 +298,14 @@ func (m *master) runJob(ctx context.Context) (err error) {
 	}
 
 	// register rpc
-	// rpc.Register(m)
-	// rpc.HandleHTTP()
-
-	// os.Remove(agentSock)
-	// l, err := net.Listen("unix", agentSock)
-	// if err != nil {
-	// 	return
-	// }
-
-	// go http.Serve(l, nil)
+	rpc.Register(m)
+	rpc.HandleHTTP()
+	os.Remove(agentSock)
+	l, err := net.Listen("unix", agentSock)
+	if err != nil {
+		return
+	}
+	go http.Serve(l, nil)
 
 	// m.logger.Infow("serving rpc server")
 

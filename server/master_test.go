@@ -247,7 +247,10 @@ func Export() scenario.Vus {
 }
 
 func f(ctx context.Context, vui int) {
-	httpClient.NewHttpClient(ctx, "home")
+	_, err := httpClient.NewHttpClient(ctx, "home")
+	if err != nil {
+		panic(err)
+	}
 }
 `
 
