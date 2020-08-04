@@ -221,3 +221,41 @@ func f1(ctx context.Context, vui int) {
 	err := s.master.run(ctx, j)
 	assert.EqualError(t, err, ErrAppIsCanceled.Error())
 }
+
+func TestSetup(t *testing.T) {
+	ctx := context.Background()
+	s := seedServer(t)
+
+	scenario := `
+package main
+
+import (
+	"context"
+
+	httpClient "github.com/gobench-io/gobench/clients/http"
+	"github.com/gobench-io/gobench/scenario"
+)
+
+func Export() scenario.Vus {
+	return scenario.Vus{
+		{
+			Nu:   1,
+			Rate: 1000,
+			Fu:   f,
+		},
+	}
+}
+
+func f(ctx context.Context, vui int) {
+	httpClient.NewHttpClient(ctx, "home")
+}
+`
+
+	app, _ := s.NewApplication(ctx, "http setup test", scenario)
+	j := &job{
+		app: app,
+	}
+
+	err := s.master.run(ctx, j)
+	assert.Nil(t, err)
+}
