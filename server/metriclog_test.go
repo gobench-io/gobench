@@ -25,9 +25,9 @@ func TestFindCreateGroupRPC(t *testing.T) {
 	prefix := time.Now().String()
 	groupName := "HTTP (" + prefix + ")"
 
-	groupRes := new(FCGroupRes)
+	groupRes := new(metrics.FCGroupRes)
 	assert.Nil(t, s.master.FindCreateGroupRPC(
-		&FCGroupReq{Name: groupName, AppID: s.master.job.app.ID},
+		&metrics.FCGroupReq{Name: groupName, AppID: s.master.job.app.ID},
 		groupRes))
 
 	// read from db, check with groupRes
@@ -43,9 +43,9 @@ func TestFindCreateGroupRPC(t *testing.T) {
 	assert.Equal(t, g.ID, groupRes.ID)
 
 	// call the same RPC, the result should be like before
-	groupRes2 := new(FCGroupRes)
+	groupRes2 := new(metrics.FCGroupRes)
 	assert.Nil(t, s.master.FindCreateGroupRPC(
-		&FCGroupReq{Name: groupName, AppID: s.master.job.app.ID},
+		&metrics.FCGroupReq{Name: groupName, AppID: s.master.job.app.ID},
 		groupRes2))
 	assert.Equal(t, groupRes, groupRes2)
 }
@@ -62,18 +62,18 @@ func TestFindCreateGraphRPC(t *testing.T) {
 	prefix := time.Now().String()
 	groupName := "HTTP (" + prefix + ")"
 
-	groupRes := new(FCGroupRes)
+	groupRes := new(metrics.FCGroupRes)
 	assert.Nil(t, s.master.FindCreateGroupRPC(
-		&FCGroupReq{Name: groupName, AppID: s.master.job.app.ID},
+		&metrics.FCGroupReq{Name: groupName, AppID: s.master.job.app.ID},
 		groupRes))
 
 	// create new graph
-	graphReq := &FCGraphReq{
+	graphReq := &metrics.FCGraphReq{
 		Title:   "HTTP Response",
 		Unit:    "N",
 		GroupID: groupRes.ID,
 	}
-	graphRes := new(FCGraphRes)
+	graphRes := new(metrics.FCGraphRes)
 	assert.Nil(t, s.master.FindCreateGraphRPC(graphReq, graphRes))
 
 	// read from db, check with groupRes
@@ -89,7 +89,7 @@ func TestFindCreateGraphRPC(t *testing.T) {
 	assert.Equal(t, g.ID, graphRes.ID)
 
 	// call the same RPC, the result should be like before
-	graphRes2 := new(FCGraphRes)
+	graphRes2 := new(metrics.FCGraphRes)
 	assert.Nil(t, s.master.FindCreateGraphRPC(graphReq, graphRes2))
 	assert.Equal(t, graphRes, graphRes2)
 }
@@ -107,31 +107,31 @@ func TestFindCreateMetricRPC(t *testing.T) {
 	groupName := "HTTP (" + prefix + ")"
 
 	// create new group
-	groupRes := new(FCGroupRes)
+	groupRes := new(metrics.FCGroupRes)
 	assert.Nil(t, s.master.FindCreateGroupRPC(
-		&FCGroupReq{Name: groupName, AppID: s.master.job.app.ID},
+		&metrics.FCGroupReq{Name: groupName, AppID: s.master.job.app.ID},
 		groupRes))
 
 	// create new graph
-	graphReq := &FCGraphReq{
+	graphReq := &metrics.FCGraphReq{
 		Title:   "HTTP Response",
 		Unit:    "N",
 		GroupID: groupRes.ID,
 	}
-	graphRes := new(FCGraphRes)
+	graphRes := new(metrics.FCGraphRes)
 	assert.Nil(t, s.master.FindCreateGraphRPC(graphReq, graphRes))
 
 	// create new metric
-	metricReq := &FCMetricReq{
+	metricReq := &metrics.FCMetricReq{
 		Title:   ".http_ok",
 		Type:    metrics.Counter,
 		GraphID: graphRes.ID,
 	}
-	metricRes := new(FCMetricRes)
+	metricRes := new(metrics.FCMetricRes)
 	assert.Nil(t, s.master.FindCreateMetricRPC(metricReq, metricRes))
 
 	// call the same RPC, the result should be like before
-	metricRes2 := new(FCGraphRes)
+	metricRes2 := new(metrics.FCGraphRes)
 	assert.Nil(t, s.master.FindCreateGraphRPC(graphReq, metricRes2))
 	assert.Equal(t, graphRes, metricRes2)
 

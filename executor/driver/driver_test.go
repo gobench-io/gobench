@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/logger"
 	"github.com/gobench-io/gobench/metrics"
 	gometrics "github.com/rcrowley/go-metrics"
@@ -33,17 +32,17 @@ func (l *nilLog) Gauge(ctx context.Context, mID int, title string, time int64, g
 }
 
 func (l *nilLog) FindCreateGroup(ctx context.Context, mg metrics.Group, appID int) (
-	*ent.Group, error,
+	*metrics.FCGroupRes, error,
 ) {
 	return nil, nil
 }
 func (l *nilLog) FindCreateGraph(ctx context.Context, mgraph metrics.Graph, groupID int) (
-	*ent.Graph, error,
+	*metrics.FCGraphRes, error,
 ) {
 	return nil, nil
 }
 func (l *nilLog) FindCreateMetric(ctx context.Context, mmetric metrics.Metric, graphID int) (
-	*ent.Metric, error,
+	*metrics.FCMetricRes, error,
 ) {
 	return nil, nil
 }

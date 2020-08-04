@@ -147,17 +147,9 @@ func (m *master) FindCreateMetric(ctx context.Context, mmetric metrics.Metric, g
 
 // rpc interface
 
-type FCGroupReq struct {
-	Name  string
-	AppID int
-}
-type FCGroupRes struct {
-	ID int
-}
-
 // FindCreateGroupRPC find or create new group
 // return the existing/new group ent, is created, and error
-func (m *master) FindCreateGroupRPC(req *FCGroupReq, res *FCGroupRes) (err error) {
+func (m *master) FindCreateGroupRPC(req *metrics.FCGroupReq, res *metrics.FCGroupRes) (err error) {
 	ctx := context.TODO()
 
 	var eg *ent.Group
@@ -196,16 +188,7 @@ func (m *master) FindCreateGroupRPC(req *FCGroupReq, res *FCGroupRes) (err error
 	return
 }
 
-type FCGraphReq struct {
-	Title   string
-	Unit    string
-	GroupID int
-}
-type FCGraphRes struct {
-	ID int
-}
-
-func (m *master) FindCreateGraphRPC(req *FCGraphReq, res *FCGraphRes) (err error) {
+func (m *master) FindCreateGraphRPC(req *metrics.FCGraphReq, res *metrics.FCGraphRes) (err error) {
 	ctx := context.TODO()
 
 	var egraph *ent.Graph
@@ -243,16 +226,7 @@ func (m *master) FindCreateGraphRPC(req *FCGraphReq, res *FCGraphRes) (err error
 	return
 }
 
-type FCMetricReq struct {
-	Title   string
-	Type    metrics.MetricType
-	GraphID int
-}
-type FCMetricRes struct {
-	ID int
-}
-
-func (m *master) FindCreateMetricRPC(req *FCMetricReq, res *FCMetricRes) (err error) {
+func (m *master) FindCreateMetricRPC(req *metrics.FCMetricReq, res *metrics.FCMetricRes) (err error) {
 	ctx := context.TODO()
 
 	var emetric *ent.Metric

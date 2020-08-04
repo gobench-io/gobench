@@ -26,3 +26,35 @@ type Group struct {
 	Name   string
 	Graphs []Graph
 }
+
+// rpc
+
+// FCGroupReq for find or create group rpc request
+type FCGroupReq struct {
+	Name  string
+	AppID int
+}
+
+type FCGroupRes struct {
+	ID int
+}
+
+// FCGraphReq for find or create graph rpc request
+type FCGraphReq struct {
+	Title   string
+	Unit    string
+	GroupID int
+}
+type FCGraphRes struct {
+	ID int
+}
+
+// FCMetricReq for find or create metric rpc request
+type FCMetricReq struct {
+	Title   string
+	Type    MetricType
+	GraphID int
+}
+type FCMetricRes struct {
+	ID int
+}

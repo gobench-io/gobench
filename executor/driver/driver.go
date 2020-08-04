@@ -7,7 +7,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/logger"
 	"github.com/gobench-io/gobench/metrics"
 	"github.com/gobench-io/gobench/scenario"
@@ -40,13 +39,14 @@ type unit struct {
 	g        gometrics.Gauge
 }
 
+// todo: do not use ent, but normal struct
 type metricLogger interface {
 	Counter(context.Context, int, string, int64, int64) error
 	Histogram(context.Context, int, string, int64, gometrics.Histogram) error
 	Gauge(context.Context, int, string, int64, int64) error
-	FindCreateGroup(context.Context, metrics.Group, int) (*ent.Group, error)
-	FindCreateGraph(context.Context, metrics.Graph, int) (*ent.Graph, error)
-	FindCreateMetric(context.Context, metrics.Metric, int) (*ent.Metric, error)
+	FindCreateGroup(context.Context, metrics.Group, int) (*metrics.FCGroupRes, error)
+	FindCreateGraph(context.Context, metrics.Graph, int) (*metrics.FCGraphRes, error)
+	FindCreateMetric(context.Context, metrics.Metric, int) (*metrics.FCMetricRes, error)
 }
 
 // Driver is the main structure for a running driver

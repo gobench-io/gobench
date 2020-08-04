@@ -2,8 +2,8 @@ package executor
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/metrics"
 	gometrics "github.com/rcrowley/go-metrics"
 )
@@ -23,19 +23,30 @@ func (e *Executor) Gauge(ctx context.Context, mID int, title string, time int64,
 }
 
 func (e *Executor) FindCreateGroup(ctx context.Context, mg metrics.Group, appID int) (
-	eg *ent.Group, err error,
+	res *metrics.FCGroupRes, err error,
 ) {
-	return nil, nil
+	res = new(metrics.FCGroupRes)
+
+	req := &metrics.FCGroupReq{
+		Name:  mg.Name,
+		AppID: appID,
+	}
+	// todo: should call Agent.FindCreateGroupRPC
+	if err = e.rc.Call("Master.FindCreateGroupRPC", req, res); err != nil {
+		err = fmt.Errorf("rpc FindCreateGroup: %v", err)
+		return
+	}
+	return
 }
 
 func (e *Executor) FindCreateGraph(ctx context.Context, mgraph metrics.Graph, groupID int) (
-	egraph *ent.Graph, err error,
+	res *metrics.FCGraphRes, err error,
 ) {
 	return nil, nil
 }
 
 func (e *Executor) FindCreateMetric(ctx context.Context, mmetric metrics.Metric, graphID int) (
-	emetric *ent.Metric, err error,
+	res *metrics.FCMetricRes, err error,
 ) {
 	return nil, nil
 }
