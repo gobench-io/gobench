@@ -17,14 +17,7 @@ func (e *Executor) Start(req *bool, res *bool) (err error) {
 	return
 }
 
-// IsReady returns true if the executor RPC is ready with given appID
-func (e *Executor) IsReady(req *int, res *bool) (err error) {
-	if e.appID == *req {
-		*res = true
-	}
-	return
-}
-
+// Terminate shutdown this executor process
 func (e *Executor) Terminate(req *int, res *bool) (err error) {
 	os.Exit(*req)
 	*res = true

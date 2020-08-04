@@ -264,23 +264,29 @@ func (m *master) runJob(ctx context.Context) (err error) {
 		"--driver-path", driverPath,
 		"--app-id", appID)
 
-	// stderr, err := cmd.StderrPipe()
-	// stdout, err := cmd.StdoutPipe()
-	// if err != nil {
-	// 	m.logger.Errorw("failed get stderr from cmd", "err", err)
-	// 	return
-	// }
-	// go func() {
-	// 	slurp, _ := ioutil.ReadAll(stderr)
-	// 	// m.logger.Infow("log", "slurp", slurp)
-	// 	fmt.Printf("slurp stderr %s\n", slurp)
-	// }()
-	// go func() {
-	// 	slurp, _ := ioutil.ReadAll(stdout)
-	// 	// m.logger.Infow("log", "slurp", slurp)
-	// 	fmt.Printf("slurp stdout %s\n", slurp)
-	// }()
+	// get the stderr log
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		err = fmt.Errorf("cmd pipe stderr: %v", err)
+		return
+	}
+	go func() {
+		slurp, _ := ioutil.ReadAll(stderr)
+		fmt.Printf("%s\n", string(slurp))
+	}()
 
+	// get the stdout log
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		err = fmt.Errorf("cmd pipe stdout: %v", err)
+		return
+	}
+	go func() {
+		slurp, _ := ioutil.ReadAll(stdout)
+		fmt.Printf("%s\n", string(slurp))
+	}()
+
+	// start the cmd, does not wait for it to complete
 	if err = cmd.Start(); err != nil {
 		err = fmt.Errorf("executor start: %v", err)
 		return
