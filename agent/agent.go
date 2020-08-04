@@ -9,12 +9,14 @@ type metricLoggerRPC interface {
 }
 
 type Agent struct {
-	ml metricLoggerRPC
+	// when local agent, inherit from master
+	// when remote agent, ... todo
+	metricLoggerRPC
 }
 
 func NewAgent(ml metricLoggerRPC) (*Agent, error) {
 	a := *&Agent{
-		ml: ml,
+		metricLoggerRPC: ml,
 	}
 	return &a, nil
 }

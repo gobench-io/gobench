@@ -31,22 +31,49 @@ func (e *Executor) FindCreateGroup(ctx context.Context, mg metrics.Group, appID 
 		Name:  mg.Name,
 		AppID: appID,
 	}
-	// todo: should call Agent.FindCreateGroupRPC
-	if err = e.rc.Call("Master.FindCreateGroupRPC", req, res); err != nil {
+
+	if err = e.rc.Call("Agent.FindCreateGroup", req, res); err != nil {
 		err = fmt.Errorf("rpc FindCreateGroup: %v", err)
 		return
 	}
+
 	return
 }
 
 func (e *Executor) FindCreateGraph(ctx context.Context, mgraph metrics.Graph, groupID int) (
 	res *metrics.FCGraphRes, err error,
 ) {
-	return nil, nil
+	res = new(metrics.FCGraphRes)
+
+	req := &metrics.FCGraphReq{
+		Title:   mgraph.Title,
+		Unit:    mgraph.Unit,
+		GroupID: groupID,
+	}
+
+	if err = e.rc.Call("Agent.FindCreateGraph", req, res); err != nil {
+		err = fmt.Errorf("rpc FindCreateGraph: %v", err)
+		return
+	}
+
+	return
 }
 
 func (e *Executor) FindCreateMetric(ctx context.Context, mmetric metrics.Metric, graphID int) (
 	res *metrics.FCMetricRes, err error,
 ) {
-	return nil, nil
+	res = new(metrics.FCMetricRes)
+
+	req := &metrics.FCMetricReq{
+		Title:   mmetric.Title,
+		Type:    mmetric.Type,
+		GraphID: graphID,
+	}
+
+	if err = e.rc.Call("Agent.FindCreateMetric", req, res); err != nil {
+		err = fmt.Errorf("rpc FindCreateMetric: %v", err)
+		return
+	}
+
+	return
 }
