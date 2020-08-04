@@ -112,18 +112,30 @@ func (m *master) run(ctx context.Context, j *job) (err error) {
 	m.job = j
 
 	defer func() {
+		je := jobFinished
+
+		// normalize je
 		if err != nil {
 			m.logger.Infow("failed run job",
 				"application id", m.job.app.ID,
 				"err", err,
 			)
-			je := jobError
-			if errors.Is(err, worker.ErrAppCancel) {
+			je = jobError
+
+			if ctx.Err() != nil {
 				je = jobCancel
+				err = ErrAppIsCanceled
 			}
-			ctx := context.TODO()
-			m.jobTo(ctx, je)
 		}
+
+		// create new context
+		ctx := context.TODO()
+		_ = m.jobTo(ctx, je)
+
+		m.logger.Infow("job new status",
+			"application id", m.job.app.ID,
+			"status", m.job.app.Status,
+		)
 	}()
 
 	m.logger.Infow("job new status",
@@ -160,15 +172,6 @@ func (m *master) run(ctx context.Context, j *job) (err error) {
 	if err = m.runJob(ctx); err != nil {
 		return
 	}
-
-	if err = m.jobTo(ctx, jobFinished); err != nil {
-		return
-	}
-
-	m.logger.Infow("job new status",
-		"application id", m.job.app.ID,
-		"status", m.job.app.Status,
-	)
 
 	return
 }

@@ -24,4 +24,5 @@ const (
 var (
 	ErrAppNotRunning = errors.New("application is not running")
 	ErrAppIsFinished = errors.New("application is finished already")
+	ErrAppIsCanceled = errors.New("application is canceled")
 )

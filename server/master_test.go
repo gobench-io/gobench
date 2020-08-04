@@ -219,5 +219,5 @@ func f1(ctx context.Context, vui int) {
 	}()
 
 	err := s.master.run(ctx, j)
-	assert.EqualError(t, err, worker.ErrAppCancel.Error())
+	assert.EqualError(t, err, ErrAppIsCanceled.Error())
 }
