@@ -12,7 +12,7 @@ import (
 )
 
 func seedServer(t *testing.T) *Server {
-	log := logger.NewNopLogger()
+	log := logger.NewStdLogger()
 
 	var err error
 	s, _ := NewServer(DefaultMasterOptions())

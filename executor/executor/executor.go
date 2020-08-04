@@ -8,12 +8,14 @@ import (
 
 type Executor struct {
 	logger logger.Logger
+	appID  int
 	driver *driver.Driver
 }
 
 func NewExecutor(opts *option.Options, logger logger.Logger) (e *Executor, err error) {
 	e = &Executor{
 		logger: logger,
+		appID:  opts.AppID,
 	}
 
 	e.driver, err = driver.NewDriver(e, logger, opts.DriverPath, opts.AppID)

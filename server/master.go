@@ -4,9 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
-	"net"
-	"net/http"
 	"net/rpc"
 	"os"
 	"os/exec"
@@ -267,27 +264,69 @@ func (m *master) runJob(ctx context.Context) (err error) {
 		"--driver-path", driverPath,
 		"--app-id", appID)
 
-	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("failed start the local executor: %v", err)
-	}
+	// stderr, err := cmd.StderrPipe()
+	// stdout, err := cmd.StdoutPipe()
+	// if err != nil {
+	// 	m.logger.Errorw("failed get stderr from cmd", "err", err)
+	// 	return
+	// }
+	// go func() {
+	// 	slurp, _ := ioutil.ReadAll(stderr)
+	// 	// m.logger.Infow("log", "slurp", slurp)
+	// 	fmt.Printf("slurp stderr %s\n", slurp)
+	// }()
+	// go func() {
+	// 	slurp, _ := ioutil.ReadAll(stdout)
+	// 	// m.logger.Infow("log", "slurp", slurp)
+	// 	fmt.Printf("slurp stdout %s\n", slurp)
+	// }()
 
-	// register rpc
-	rpc.Register(m)
-	rpc.HandleHTTP()
-	if err = os.Remove(agentSock); err != nil {
-		// return
-	}
-	l, err := net.Listen("unix", agentSock)
-	if err != nil {
+	if err = cmd.Start(); err != nil {
+		err = fmt.Errorf("executor start: %v", err)
 		return
 	}
 
-	log.Println("runJob serving rpc server")
+	// register rpc
+	// rpc.Register(m)
+	// rpc.HandleHTTP()
 
-	go http.Serve(l, nil)
+	// os.Remove(agentSock)
+	// l, err := net.Listen("unix", agentSock)
+	// if err != nil {
+	// 	return
+	// }
+
+	// go http.Serve(l, nil)
+
+	// m.logger.Infow("serving rpc server")
+
+	// waiting for the executor rpc to be ready
+
+	b := time.Now()
+	client, err := waitForReady(ctx, executorSock, 2*time.Second)
+	if err != nil {
+		err = fmt.Errorf("rpc dial: %v", err)
+		return
+	}
+	m.logger.Infow("local executor is ready", "startup", time.Now().Sub(b))
+
+	m.logger.Infow("local executor to run driver")
+
+	req := true
+	res := new(bool)
+	if err = client.Call("Executor.Start", &req, &res); err != nil {
+		err = fmt.Errorf("rpc start: %v", err)
+		return
+	}
+
+	m.logger.Infow("local executor is shutting down")
+	terReq := 0
+	terRes := new(bool)
+	// ignore error
+	_ = client.Call("Executor.Terminate", &terReq, &terRes)
 
 	if err = cmd.Wait(); err != nil {
-		m.logger.Errorw("failed wait for cmd", "err", err)
+		m.logger.Errorw("executor wait", "err", err)
 		return
 	}
 
@@ -304,4 +343,53 @@ func (m *master) runJob(ctx context.Context) (err error) {
 	// }
 
 	return nil
+}
+
+func waitForReady(ctx context.Context, executorSock string, expiredIn time.Duration) (
+	*rpc.Client, error,
+) {
+	timeout := time.After(expiredIn)
+	sleep := 500 * time.Millisecond
+	for {
+		time.Sleep(sleep)
+
+		select {
+		case <-ctx.Done():
+			return nil, errors.New("cancel")
+		case <-timeout:
+			return nil, errors.New("timeout")
+		default:
+			client, err := rpc.DialHTTP("unix", executorSock)
+			if err != nil {
+				continue
+			}
+			return client, nil
+		}
+	}
+}
+
+func executorToReady(ctx context.Context, client *rpc.Client, appID int, timeout time.Duration) (
+	success bool,
+) {
+	t := time.After(timeout)
+
+	for {
+		time.Sleep(1 * time.Second)
+		select {
+		case <-ctx.Done():
+			return
+		case <-t:
+			return
+		default:
+			req := appID
+			res := new(bool)
+			if err := client.Call("Executor.IsReady", &req, &res); err != nil {
+				continue
+			}
+			if *res {
+				success = true
+				return
+			}
+		}
+	}
 }
