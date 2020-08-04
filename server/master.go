@@ -322,25 +322,13 @@ func (m *master) runJob(ctx context.Context) (err error) {
 	m.logger.Infow("local executor is shutting down")
 	terReq := 0
 	terRes := new(bool)
-	// ignore error
+	// ignore error, since when the executor is terminated, this rpc will fail
 	_ = client.Call("Executor.Terminate", &terReq, &terRes)
 
 	if err = cmd.Wait(); err != nil {
 		m.logger.Errorw("executor wait", "err", err)
 		return
 	}
-
-	// if m.lw, err = worker.NewWorker(m, m.logger, m.job.app.ID); err != nil {
-	// 	return err
-	// }
-
-	// if err = m.lw.Load(m.job.plugin); err != nil {
-	// 	return fmt.Errorf("failed load plugin: %v", err)
-	// }
-
-	// if err = m.lw.Run(ctx); err != nil {
-	// 	return err
-	// }
 
 	return nil
 }
@@ -349,7 +337,7 @@ func waitForReady(ctx context.Context, executorSock string, expiredIn time.Durat
 	*rpc.Client, error,
 ) {
 	timeout := time.After(expiredIn)
-	sleep := 500 * time.Millisecond
+	sleep := 10 * time.Millisecond
 	for {
 		time.Sleep(sleep)
 
@@ -364,32 +352,6 @@ func waitForReady(ctx context.Context, executorSock string, expiredIn time.Durat
 				continue
 			}
 			return client, nil
-		}
-	}
-}
-
-func executorToReady(ctx context.Context, client *rpc.Client, appID int, timeout time.Duration) (
-	success bool,
-) {
-	t := time.After(timeout)
-
-	for {
-		time.Sleep(1 * time.Second)
-		select {
-		case <-ctx.Done():
-			return
-		case <-t:
-			return
-		default:
-			req := appID
-			res := new(bool)
-			if err := client.Call("Executor.IsReady", &req, &res); err != nil {
-				continue
-			}
-			if *res {
-				success = true
-				return
-			}
 		}
 	}
 }
