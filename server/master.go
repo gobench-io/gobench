@@ -15,9 +15,9 @@ import (
 
 	"context"
 
+	"github.com/gobench-io/gobench/agent"
 	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/ent/application"
-	"github.com/gobench-io/gobench/executor/executor"
 	"github.com/gobench-io/gobench/logger"
 	"github.com/gobench-io/gobench/worker"
 )
@@ -48,8 +48,7 @@ type master struct {
 	dbFilename string
 	db         *ent.Client
 
-	lw  *worker.Worker     // local worker
-	le  *executor.Executor // local executor
+	lw  *worker.Worker // local worker
 	job *job
 }
 
@@ -298,7 +297,9 @@ func (m *master) runJob(ctx context.Context) (err error) {
 	}
 
 	// register rpc
-	rpc.Register(m)
+	// todo
+	la, _ := agent.NewAgent(m)
+	rpc.Register(la)
 	rpc.HandleHTTP()
 	os.Remove(agentSock)
 	l, err := net.Listen("unix", agentSock)

@@ -7,7 +7,6 @@ import (
 
 	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/logger"
-	"github.com/gobench-io/gobench/worker"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -21,7 +20,6 @@ func seedServer(t *testing.T) *Server {
 	s.master.logger = log
 	s.master.job = &job{}
 	s.master.job.app = &ent.Application{}
-	s.master.lw, err = worker.NewWorker(&s.master, log, s.master.job.app.ID)
 	assert.Nil(t, err)
 	assert.Nil(t, s.Start())
 

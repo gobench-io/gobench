@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFindCreateGroupRPC(t *testing.T) {
+func TestFindCreateGroup(t *testing.T) {
 	var err error
 	ctx := context.TODO()
 
@@ -26,7 +26,7 @@ func TestFindCreateGroupRPC(t *testing.T) {
 	groupName := "HTTP (" + prefix + ")"
 
 	groupRes := new(metrics.FCGroupRes)
-	assert.Nil(t, s.master.FindCreateGroupRPC(
+	assert.Nil(t, s.master.FindCreateGroup(
 		&metrics.FCGroupReq{Name: groupName, AppID: s.master.job.app.ID},
 		groupRes))
 
@@ -44,13 +44,13 @@ func TestFindCreateGroupRPC(t *testing.T) {
 
 	// call the same RPC, the result should be like before
 	groupRes2 := new(metrics.FCGroupRes)
-	assert.Nil(t, s.master.FindCreateGroupRPC(
+	assert.Nil(t, s.master.FindCreateGroup(
 		&metrics.FCGroupReq{Name: groupName, AppID: s.master.job.app.ID},
 		groupRes2))
 	assert.Equal(t, groupRes, groupRes2)
 }
 
-func TestFindCreateGraphRPC(t *testing.T) {
+func TestFindCreateGraph(t *testing.T) {
 	var err error
 	ctx := context.TODO()
 
@@ -63,7 +63,7 @@ func TestFindCreateGraphRPC(t *testing.T) {
 	groupName := "HTTP (" + prefix + ")"
 
 	groupRes := new(metrics.FCGroupRes)
-	assert.Nil(t, s.master.FindCreateGroupRPC(
+	assert.Nil(t, s.master.FindCreateGroup(
 		&metrics.FCGroupReq{Name: groupName, AppID: s.master.job.app.ID},
 		groupRes))
 
@@ -74,7 +74,7 @@ func TestFindCreateGraphRPC(t *testing.T) {
 		GroupID: groupRes.ID,
 	}
 	graphRes := new(metrics.FCGraphRes)
-	assert.Nil(t, s.master.FindCreateGraphRPC(graphReq, graphRes))
+	assert.Nil(t, s.master.FindCreateGraph(graphReq, graphRes))
 
 	// read from db, check with groupRes
 	graphs, err := s.master.db.Graph.Query().Where(
@@ -90,11 +90,11 @@ func TestFindCreateGraphRPC(t *testing.T) {
 
 	// call the same RPC, the result should be like before
 	graphRes2 := new(metrics.FCGraphRes)
-	assert.Nil(t, s.master.FindCreateGraphRPC(graphReq, graphRes2))
+	assert.Nil(t, s.master.FindCreateGraph(graphReq, graphRes2))
 	assert.Equal(t, graphRes, graphRes2)
 }
 
-func TestFindCreateMetricRPC(t *testing.T) {
+func TestFindCreateMetric(t *testing.T) {
 	var err error
 	ctx := context.TODO()
 
@@ -108,7 +108,7 @@ func TestFindCreateMetricRPC(t *testing.T) {
 
 	// create new group
 	groupRes := new(metrics.FCGroupRes)
-	assert.Nil(t, s.master.FindCreateGroupRPC(
+	assert.Nil(t, s.master.FindCreateGroup(
 		&metrics.FCGroupReq{Name: groupName, AppID: s.master.job.app.ID},
 		groupRes))
 
@@ -119,7 +119,7 @@ func TestFindCreateMetricRPC(t *testing.T) {
 		GroupID: groupRes.ID,
 	}
 	graphRes := new(metrics.FCGraphRes)
-	assert.Nil(t, s.master.FindCreateGraphRPC(graphReq, graphRes))
+	assert.Nil(t, s.master.FindCreateGraph(graphReq, graphRes))
 
 	// create new metric
 	metricReq := &metrics.FCMetricReq{
@@ -128,11 +128,11 @@ func TestFindCreateMetricRPC(t *testing.T) {
 		GraphID: graphRes.ID,
 	}
 	metricRes := new(metrics.FCMetricRes)
-	assert.Nil(t, s.master.FindCreateMetricRPC(metricReq, metricRes))
+	assert.Nil(t, s.master.FindCreateMetric(metricReq, metricRes))
 
 	// call the same RPC, the result should be like before
 	metricRes2 := new(metrics.FCGraphRes)
-	assert.Nil(t, s.master.FindCreateGraphRPC(graphReq, metricRes2))
+	assert.Nil(t, s.master.FindCreateGraph(graphReq, metricRes2))
 	assert.Equal(t, graphRes, metricRes2)
 
 	// read from db, check with groupRes
