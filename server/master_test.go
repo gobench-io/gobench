@@ -220,7 +220,7 @@ func f1(ctx context.Context, vui int) {
 	assert.EqualError(t, err, ErrAppIsCanceled.Error())
 }
 
-func TestSetup(t *testing.T) {
+func TestMetricLogSetup(t *testing.T) {
 	ctx := context.Background()
 	s := seedServer(t)
 
@@ -252,7 +252,7 @@ func f(ctx context.Context, vui int) {
 }
 `
 
-	app, _ := s.NewApplication(ctx, "http setup test", scenario)
+	app, _ := s.NewApplication(ctx, "http metric log setup test", scenario)
 	j := &job{
 		app: app,
 	}

@@ -1,7 +1,6 @@
 package agent
 
 import (
-	"log"
 	"net"
 	"net/http"
 	"net/rpc"
@@ -21,29 +20,33 @@ type Agent struct {
 	// when this is the remote agent, ... todo
 	metricLoggerRPC
 	socket string
+	rs     *rpc.Server
 }
 
 func NewAgent(ml metricLoggerRPC) (*Agent, error) {
-	a := *&Agent{
+	a := &Agent{
 		metricLoggerRPC: ml,
+		rs:              rpc.NewServer(),
 	}
-	return &a, nil
+	return a, nil
 }
 
 func (a *Agent) StartSocketServer(socket string) error {
-	log.Printf("-- default server: %p\n", rpc.DefaultServer)
-	rpc.Register(a)
-	rpc.HandleHTTP()
-	os.Remove(socket)
+	a.socket = socket
 
+	a.rs.Register(a)
+
+	serverMux := http.NewServeMux()
+	serverMux.Handle(rpc.DefaultRPCPath, a.rs)
+	serverMux.Handle(rpc.DefaultDebugPath, a.rs)
+
+	os.Remove(socket)
 	l, err := net.Listen("unix", socket)
 	if err != nil {
 		return err
 	}
 
-	a.socket = socket
-
-	go http.Serve(l, nil)
+	go http.Serve(l, serverMux)
 
 	return nil
 }

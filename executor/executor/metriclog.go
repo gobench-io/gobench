@@ -11,14 +11,17 @@ import (
 // metricLog interface implementer for the Executor
 
 func (e *Executor) Counter(ctx context.Context, mID int, title string, time, c int64) error {
+	e.logger.Infow("-- executor log counter")
 	return nil
 }
 
 func (e *Executor) Histogram(ctx context.Context, mID int, title string, time int64, h gometrics.Histogram) error {
+	e.logger.Infow("-- executor log executor")
 	return nil
 }
 
 func (e *Executor) Gauge(ctx context.Context, mID int, title string, time int64, g int64) error {
+	e.logger.Infow("-- executor log gauge")
 	return nil
 }
 
