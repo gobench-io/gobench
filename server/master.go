@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"net"
-	"net/http"
 	"net/rpc"
 	"os"
 	"os/exec"
@@ -19,7 +17,6 @@ import (
 	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/ent/application"
 	"github.com/gobench-io/gobench/logger"
-	"github.com/gobench-io/gobench/worker"
 )
 
 // job status. The job is in either pending, provisioning, running, finished
@@ -48,7 +45,7 @@ type master struct {
 	dbFilename string
 	db         *ent.Client
 
-	lw  *worker.Worker // local worker
+	la  *agent.Agent // local agent
 	job *job
 }
 
@@ -257,10 +254,10 @@ func (m *master) jobCompile(ctx context.Context) error {
 // runJob run a application in a job
 // by create a local worker
 func (m *master) runJob(ctx context.Context) (err error) {
-	agentSock := "/tmp/agentsock"
-	executorSock := "/tmp/executorsock"
 	driverPath := m.job.plugin
 	appID := strconv.Itoa(m.job.app.ID)
+	agentSock := m.la.GetSocketName()
+	executorSock := fmt.Sprintf("/tmp/executorsock-%s", appID)
 
 	cmd := exec.CommandContext(ctx, "../executor.out",
 		"--agent-sock", agentSock,
@@ -296,22 +293,7 @@ func (m *master) runJob(ctx context.Context) (err error) {
 		return
 	}
 
-	// register rpc
-	// todo
-	la, _ := agent.NewAgent(m)
-	rpc.Register(la)
-	rpc.HandleHTTP()
-	os.Remove(agentSock)
-	l, err := net.Listen("unix", agentSock)
-	if err != nil {
-		return
-	}
-	go http.Serve(l, nil)
-
-	// m.logger.Infow("serving rpc server")
-
 	// waiting for the executor rpc to be ready
-
 	b := time.Now()
 	client, err := waitForReady(ctx, executorSock, 2*time.Second)
 	if err != nil {

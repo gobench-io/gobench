@@ -26,6 +26,7 @@ func NewExecutor(opts *option.Options, logger logger.Logger) (e *Executor, err e
 		return
 	}
 
+	// establishes a connection and then invokes NewClient on the connection
 	e.rc, err = rpc.DialHTTP("unix", opts.AgentSock)
 	if err != nil {
 		return

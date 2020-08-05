@@ -7,6 +7,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/gobench-io/gobench/agent"
 	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/ent/application"
 	"github.com/gobench-io/gobench/logger"
@@ -27,11 +28,11 @@ type Server struct {
 }
 
 // NewServer return a new server with provided options
-func NewServer(opts *Options) (*Server, error) {
+func NewServer(opts *Options) (s *Server, err error) {
 	// default db name
 	dbFilename := "./gobench.sqlite3"
 
-	s := &Server{
+	s = &Server{
 		serverType: opts.ServerType,
 		isSchedule: true,
 		logger:     opts.Logger,
@@ -43,6 +44,7 @@ func NewServer(opts *Options) (*Server, error) {
 		s.master.clusterPort = opts.ClusterPort
 		s.master.dbFilename = dbFilename
 		s.master.logger = s.logger
+		s.master.la, err = agent.NewAgent(&s.master)
 	}
 
 	if opts.ServerType == wkType {
@@ -52,16 +54,20 @@ func NewServer(opts *Options) (*Server, error) {
 }
 
 // Start begin a gobench server
-func (s *Server) Start() error {
-	if err := s.master.setupDb(); err != nil {
-		return err
+func (s *Server) Start() (err error) {
+	if err = s.master.setupDb(); err != nil {
+		return
 	}
 
 	s.handleSignals()
 
 	go s.master.schedule()
 
-	return nil
+	// start the local agent socket server that communicate with local executor
+	agentSocket := "/tmp/gobench-agentsocket"
+	err = s.master.la.StartSocketServer(agentSocket)
+
+	return
 }
 
 // DB returns the db client
