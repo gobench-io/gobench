@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"strings"
 	"testing"
 	"time"
 
@@ -47,7 +48,7 @@ func TestVersionHelp(t *testing.T) {
 	}
 }
 
-func TestConfigureOptions(t *testing.T) {
+func TestExecutorOption(t *testing.T) {
 	version := func() {}
 	help := func() {}
 
@@ -77,12 +78,12 @@ func TestConfigureOptions(t *testing.T) {
 
 	// missing parameter tests
 	testErrs := []testOpts{
-		{[]string{
-			"--agent-sock", "agent/sock",
-			"--executor-sock", "executor/sock",
-			"--driver-path", "driver/path",
-			"--app-id", "123",
-		}, version, help},
+		// {[]string{
+		// 	"--agent-sock", "agent/sock",
+		// 	"--executor-sock", "executor/sock",
+		// 	"--driver-path", "driver/path",
+		// 	"--app-id", "123",
+		// }, version, help},
 		{[]string{
 			"--mode", "executor",
 			"--executor-sock", "executor/sock",
@@ -107,4 +108,36 @@ func TestConfigureOptions(t *testing.T) {
 		assert.EqualError(t, err, ErrInvalidFlags.Error())
 		assert.Nil(t, opts)
 	}
+}
+
+func TestMasterOption(t *testing.T) {
+	// helper function
+	mustNotFail := func(args []string) *Options {
+		fs := flag.NewFlagSet("test", flag.ContinueOnError)
+		opts, err := ConfigureOptions(fs, args, usage, usage)
+		if err != nil {
+			t.Fatalf("Error on config: %v", err)
+		}
+		return opts
+	}
+
+	mustFail := func(args []string, errContent ...string) {
+		fs := flag.NewFlagSet("test", flag.ContinueOnError)
+		opts, err := ConfigureOptions(fs, args, usage, usage)
+		if opts != nil || err == nil {
+			t.Fatalf("Expect no opts and err, got %v and %v", opts, err)
+		}
+		for _, content := range errContent {
+			if strings.Contains(err.Error(), content) {
+				return
+			}
+		}
+		t.Fatalf("Expect error contain any of %v, got %v", errContent, err)
+	}
+
+	// check mode
+	mustFail([]string{"--mode", "not existed"}, "mode must be either master, agent, or executor")
+
+	opts := mustNotFail([]string{"-p", "3000"})
+	assert.Equal(t, opts.Port, 3000)
 }
