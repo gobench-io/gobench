@@ -68,17 +68,25 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 		return
 	}
 
-	if agentSock == "" || executorSock == "" || driverPath == "" || appID < 0 {
-		err = ErrInvalidFlags
+	mode := mode(modeS)
+
+	if mode == Executor {
+		if agentSock == "" || executorSock == "" || driverPath == "" || appID < 0 {
+			err = ErrInvalidFlags
+			return
+		}
+
+		opts = &Options{}
+
+		opts.AgentSock = agentSock
+		opts.ExecutorSock = executorSock
+		opts.DriverPath = driverPath
+		opts.AppID = appID
+
 		return
 	}
 
-	opts = &Options{}
-
-	opts.AgentSock = agentSock
-	opts.ExecutorSock = executorSock
-	opts.DriverPath = driverPath
-	opts.AppID = appID
+	err = ErrInvalidFlags
 
 	return
 }

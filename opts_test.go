@@ -78,14 +78,23 @@ func TestConfigureOptions(t *testing.T) {
 	// missing parameter tests
 	testErrs := []testOpts{
 		{[]string{
+			"--agent-sock", "agent/sock",
+			"--executor-sock", "executor/sock",
+			"--driver-path", "driver/path",
+			"--app-id", "123",
+		}, version, help},
+		{[]string{
+			"--mode", "executor",
 			"--executor-sock", "executor/sock",
 			"--driver-path", "driver/path",
 		}, version, help},
 		{[]string{
+			"--mode", "executor",
 			"--agent-sock", "agent/sock",
 			"--driver-path", "driver/path",
 		}, version, help},
 		{[]string{
+			"--mode", "executor",
 			"--agent-sock", "agent/sock",
 			"--executor-sock", "executor/sock",
 		}, version, help},
