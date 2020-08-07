@@ -11,6 +11,7 @@ import (
 	"github.com/gobench-io/gobench/logger"
 )
 
+// Options is for creating new executor object
 type Options struct {
 	AgentSock    string
 	ExecutorSock string
@@ -18,6 +19,7 @@ type Options struct {
 	AppID        int
 }
 
+// Executor struct
 type Executor struct {
 	logger       logger.Logger
 	agentSock    string
@@ -28,6 +30,8 @@ type Executor struct {
 	rc     *rpc.Client
 }
 
+// NewExecutor creates a new executor
+// also load the plugin from driver path
 func NewExecutor(opts *Options, logger logger.Logger) (e *Executor, err error) {
 	e = &Executor{
 		logger:       logger,
@@ -42,7 +46,7 @@ func NewExecutor(opts *Options, logger logger.Logger) (e *Executor, err error) {
 }
 
 // Serve starts a rpc server at the executor socket
-// and connect to agent via agent socket
+// and connects to the agent via agent socket
 func (e *Executor) Serve() (err error) {
 	// establishes a connection
 	e.rc, err = rpc.DialHTTP("unix", e.agentSock)
