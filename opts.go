@@ -32,10 +32,13 @@ type Options struct {
 	Port int
 }
 
+// func (o Options) String() string {
+// 	return fmt.Sprintf("mode: %s\n", string(o.Mode))
+// }
+
 func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp func()) (
 	*Options, error,
 ) {
-	opts := &Options{}
 	var err error
 
 	var (
@@ -84,9 +87,13 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 		return nil, nil
 	}
 
-	mode := mode(modeS)
+	log.Println("modeS", modeS)
 
-	if mode == Executor {
+	opts := &Options{
+		Mode: mode(modeS),
+	}
+
+	if opts.Mode == Executor {
 		if agentSock == "" || executorSock == "" || driverPath == "" || appID < 0 {
 			err := ErrInvalidFlags
 			return nil, err
@@ -99,7 +106,7 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 
 		return opts, nil
 	}
-	if mode == Master {
+	if opts.Mode == Master {
 		opts.Port = port
 		return opts, nil
 	}
