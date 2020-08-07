@@ -12,14 +12,20 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/logger"
-	"github.com/gobench-io/gobench/server"
+	"github.com/gobench-io/gobench/master"
 	"github.com/stretchr/testify/assert"
 )
 
 func newAPITest() (*chi.Mux, *httptest.ResponseRecorder) {
-	server, _ := server.NewServer(server.DefaultMasterOptions())
-	_ = server.Start()
-	h := newHandler(server, logger.NewNopLogger())
+	logger := logger.NewNopLogger()
+	m, _ := master.NewMaster(&master.Options{
+		Addr:   "0.0.0.0",
+		Port:   8080,
+		DbPath: "./gobench.sqlite3",
+	}, logger)
+
+	_ = m.Start()
+	h := newHandler(m, logger)
 	r := h.r
 
 	w := httptest.NewRecorder()
