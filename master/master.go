@@ -212,8 +212,6 @@ func (m *Master) setupDb() error {
 		return fmt.Errorf("failed creating schema resources: %v", err)
 	}
 
-	log.Println("client: %+v\n", client)
-
 	m.db = client
 
 	return nil
