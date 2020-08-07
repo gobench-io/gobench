@@ -33,7 +33,7 @@ const (
 	jobError        jobState = "error"
 )
 
-type master struct {
+type Master struct {
 	mu          sync.Mutex
 	addr        string // host name
 	port        int    // api port
@@ -62,7 +62,7 @@ type Options struct {
 	DbPath string
 }
 
-func NewMaster(opts *Options, logger logger.Logger) (m *master, err error) {
+func NewMaster(opts *Options, logger logger.Logger) (m *Master, err error) {
 	m = &master{
 		add:        opts.Addr,
 		port:       opts.Port,
@@ -78,7 +78,7 @@ func NewMaster(opts *Options, logger logger.Logger) (m *master, err error) {
 	return
 }
 
-func (m *master) Start() (err error) {
+func (m *Master) Start() (err error) {
 	if err = m.setupDb()
 
 	m.handleSignals()
@@ -93,11 +93,11 @@ func (m *master) Start() (err error) {
 }
 
 // DB returns the db client
-func (m *master) DB() *ent.Client {
+func (m *Master) DB() *ent.Client {
 	return m.db
 }
 
-func (m *master) finish(status status) error {
+func (m *Master) finish(status status) error {
 	m.logger.Infow("server is shutting down")
 
 	m.mu.Lock()
@@ -110,13 +110,13 @@ func (m *master) finish(status status) error {
 }
 
 // WebPort returns the master HTTP web port
-func (m *master) WebPort() int {
+func (m *Master) WebPort() int {
 	return m.port
 }
 
 // NewApplication create a new application with a name and a scenario
 // return the application id and error
-func (m *master) NewApplication(ctx context.Context, name, scenario string) (
+func (m *Master) NewApplication(ctx context.Context, name, scenario string) (
 	*ent.Application, error,
 	) {
 	return m.db.Application.
@@ -132,7 +132,7 @@ func (m *master) NewApplication(ctx context.Context, name, scenario string) (
 // if the app is finished/error, return ErrAppIsFinished error
 // if the app is canceled, return with current app status
 // else update app status with cancel
-func (m *master) CancelApplication(ctx context.Context, appID int) (*ent.Application, error) {
+func (m *Master) CancelApplication(ctx context.Context, appID int) (*ent.Application, error) {
 	err := m.cancel(ctx, appID)
 
 	if err == nil {
@@ -176,7 +176,7 @@ func (m *master) CancelApplication(ctx context.Context, appID int) (*ent.Applica
 }
 
 // cleanupDB is the helper function to cleanup the DB for testing
-func (m *master) cleanupDB() error {
+func (m *Master) cleanupDB() error {
 	ctx := context.TODO()
 	_, err := m.db.Application.Delete().Exec(ctx)
 	return err
@@ -185,7 +185,7 @@ func (m *master) cleanupDB() error {
 
 // to is the function to set new state for an application
 // save new state to the db
-func (m *master) jobTo(ctx context.Context, state jobState) (err error) {
+func (m *Master) jobTo(ctx context.Context, state jobState) (err error) {
 	m.job.app, err = m.job.app.Update().
 		SetStatus(string(state)).
 		Save(ctx)
@@ -194,7 +194,7 @@ func (m *master) jobTo(ctx context.Context, state jobState) (err error) {
 }
 
 // setupDb setup the db in the master
-func (m *master) setupDb() error {
+func (m *Master) setupDb() error {
 	filename := m.dbFilename
 	client, err := ent.Open(
 		"sqlite3",
@@ -215,7 +215,7 @@ func (m *master) setupDb() error {
 }
 
 // schedule get a pending application from the db if there is no active job
-func (m *master) schedule() {
+func (m *Master) schedule() {
 	for {
 		ctx, cancel := context.WithCancel(context.Background())
 		time.Sleep(1 * time.Second)
@@ -233,7 +233,7 @@ func (m *master) schedule() {
 	}
 }
 
-func (m *master) run(ctx context.Context, j *job) (err error) {
+func (m *Master) run(ctx context.Context, j *job) (err error) {
 	// create new job from the application
 	m.job = j
 
@@ -303,7 +303,7 @@ func (m *master) run(ctx context.Context, j *job) (err error) {
 }
 
 // cancel terminates a running job with the same app ID
-func (m *master) cancel(ctx context.Context, appID int) error {
+func (m *Master) cancel(ctx context.Context, appID int) error {
 	if m.job == nil {
 		return ErrAppNotRunning
 	}
@@ -318,12 +318,12 @@ func (m *master) cancel(ctx context.Context, appID int) error {
 
 // provision compiles a scenario to golang plugin, distribute the application to
 // worker. Return success when the workers confirm that the plugin is ready
-func (m *master) provision() (*ent.Application, error) {
+func (m *Master) provision() (*ent.Application, error) {
 	// compile
 	return nil, nil
 }
 
-func (m *master) nextApplication(ctx context.Context) (*ent.Application, error) {
+func (m *Master) nextApplication(ctx context.Context) (*ent.Application, error) {
 	app, err := m.db.
 		Application.
 		Query().
@@ -340,7 +340,7 @@ func (m *master) nextApplication(ctx context.Context) (*ent.Application, error) 
 
 // jobCompile using go to compile a scenario in plugin build mode
 // the result is path to so file
-func (m *master) jobCompile(ctx context.Context) error {
+func (m *Master) jobCompile(ctx context.Context) error {
 	var path string
 
 	scen := m.job.app.Scenario
@@ -381,7 +381,7 @@ func (m *master) jobCompile(ctx context.Context) error {
 
 // runJob run a application in a job
 // by create a local worker
-func (m *master) runJob(ctx context.Context) (err error) {
+func (m *Master) runJob(ctx context.Context) (err error) {
 	driverPath := m.job.plugin
 	appID := strconv.Itoa(m.job.app.ID)
 	agentSock := m.la.GetSocketName()

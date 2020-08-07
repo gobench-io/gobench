@@ -6,7 +6,7 @@ import (
 	"syscall"
 )
 
-func (m *master) handleSignals() {
+func (m *Master) handleSignals() {
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT)
 

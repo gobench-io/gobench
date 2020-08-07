@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/gobench-io/gobench/server"
+	"github.com/gobench-io/gobench/executor"
+	"github.com/gobench-io/gobench/logger"
+	"github.com/gobench-io/gobench/master"
 	"github.com/gobench-io/gobench/web"
 )
 
@@ -65,15 +67,34 @@ func main() {
 		printAndDie(fmt.Sprintf("%s: %s", exe, err))
 	}
 
-	s, err := server.NewServer(opts)
+	logger := logger.NewStdLogger()
 
-	if err != nil {
-		printAndDie(fmt.Sprintf("%s: %s", exe, err))
+	if opts.Mode == Master {
+		m, err := master.NewMaster(&master.Options{
+			Port: opts.Port,
+		}, logger)
+		if err != nil {
+			printAndDie(fmt.Sprintf("%s: %s", exe, err))
+		}
+
+		m.Start()
+		web.Serve(m, logger)
+
+		return
 	}
 
-	if err := s.Start(); err != nil {
-		printAndDie(err.Error())
-	}
+	if opts.Mode == Executor {
+		e, err := executor.NewExecutor(&executor.Options{
+			AgentSock:    opts.agentSock,
+			ExecutorSock: opts.executorSock,
+			DriverPath:   opts.driverPath,
+			AppID:        opts.AppID,
+		})
+		if err != nil {
+			printAndDie(fmt.Sprintf("%s: %s", exe, err))
+		}
+		e.Serve()
 
-	web.Serve(s, opts.Logger)
+		return
+	}
 }

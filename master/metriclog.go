@@ -13,7 +13,7 @@ import (
 	entMetric "github.com/gobench-io/gobench/ent/metric"
 )
 
-func (m *master) Counter(ctx context.Context, mID int, wid, title string, time, c int64) error {
+func (m *Master) Counter(ctx context.Context, mID int, wid, title string, time, c int64) error {
 	_, err := m.db.Counter.Create().
 		SetWID(wid).
 		SetMetricID(mID).
@@ -23,7 +23,7 @@ func (m *master) Counter(ctx context.Context, mID int, wid, title string, time, 
 	return err
 }
 
-func (m *master) Histogram(ctx context.Context, mID int, wid, title string, time int64, h gometrics.Histogram) error {
+func (m *Master) Histogram(ctx context.Context, mID int, wid, title string, time int64, h gometrics.Histogram) error {
 	ps := h.Percentiles([]float64{0.5, 0.75, 0.95, 0.99, 0.999})
 	_, err := m.db.Histogram.Create().
 		SetWID(wid).
@@ -43,7 +43,7 @@ func (m *master) Histogram(ctx context.Context, mID int, wid, title string, time
 	return err
 }
 
-func (m *master) Gauge(ctx context.Context, mID int, wid, title string, time int64, g int64) error {
+func (m *Master) Gauge(ctx context.Context, mID int, wid, title string, time int64, g int64) error {
 	_, err := m.db.Gauge.Create().
 		SetWID(wid).
 		SetMetricID(mID).
@@ -57,7 +57,7 @@ func (m *master) Gauge(ctx context.Context, mID int, wid, title string, time int
 
 // FindCreateGroupRPC find or create new group
 // return the existing/new group ent, is created, and error
-func (m *master) FindCreateGroup(req *metrics.FCGroupReq, res *metrics.FCGroupRes) (err error) {
+func (m *Master) FindCreateGroup(req *metrics.FCGroupReq, res *metrics.FCGroupRes) (err error) {
 	ctx := context.TODO()
 
 	var eg *ent.Group
@@ -96,7 +96,7 @@ func (m *master) FindCreateGroup(req *metrics.FCGroupReq, res *metrics.FCGroupRe
 	return
 }
 
-func (m *master) FindCreateGraph(req *metrics.FCGraphReq, res *metrics.FCGraphRes) (err error) {
+func (m *Master) FindCreateGraph(req *metrics.FCGraphReq, res *metrics.FCGraphRes) (err error) {
 	ctx := context.TODO()
 
 	var egraph *ent.Graph
@@ -134,7 +134,7 @@ func (m *master) FindCreateGraph(req *metrics.FCGraphReq, res *metrics.FCGraphRe
 	return
 }
 
-func (m *master) FindCreateMetric(req *metrics.FCMetricReq, res *metrics.FCMetricRes) (err error) {
+func (m *Master) FindCreateMetric(req *metrics.FCMetricReq, res *metrics.FCMetricRes) (err error) {
 	ctx := context.TODO()
 
 	var emetric *ent.Metric
