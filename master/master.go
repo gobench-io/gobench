@@ -1,4 +1,4 @@
-package server
+package master
 
 import (
 	"errors"
@@ -42,8 +42,9 @@ type master struct {
 	logger logger.Logger
 
 	// database
-	dbFilename string
-	db         *ent.Client
+	isScheduled bool
+	dbFilename  string
+	db          *ent.Client
 
 	la  *agent.Agent // local agent
 	job *job
@@ -54,6 +55,133 @@ type job struct {
 	plugin string // plugin path
 	cancel context.CancelFunc
 }
+
+type Options struct {
+	Port   int
+	Addr   string
+	DbPath string
+}
+
+func NewMaster(opts *Options, logger logger.Logger) (m *master, err error) {
+	m = &master{
+		add:        opts.Addr,
+		port:       opts.Port,
+		dbFilename: opts.DbPath,
+		logger:     logger,
+	}
+	la, err := agent.NewAgent(m)
+	if err != nil {
+		return
+	}
+	m.la = la
+
+	return
+}
+
+func (m *master) Start() (err error) {
+	if err = m.setupDb()
+
+	m.handleSignals()
+
+	go m.schedule()
+
+	// start the local agent socket server that communicate with local executor
+	agentSocket := "/tmp/gobench-agentsocket"
+	err = m.la.StartSocketServer(agentSocket)
+
+	return
+}
+
+// DB returns the db client
+func (m *master) DB() *ent.Client {
+	return m.db
+}
+
+func (m *master) finish(status status) error {
+	m.logger.Infow("server is shutting down")
+
+	m.mu.Lock()
+	m.status = status
+	m.mu.Unlock()
+
+	// todo: if there is a running scenario, shutdown
+	// todo: send email if needed
+	return m.db.Close()
+}
+
+// WebPort returns the master HTTP web port
+func (m *master) WebPort() int {
+	return m.port
+}
+
+// NewApplication create a new application with a name and a scenario
+// return the application id and error
+func (m *master) NewApplication(ctx context.Context, name, scenario string) (
+	*ent.Application, error,
+	) {
+	return m.db.Application.
+		Create().
+		SetName(name).
+		SetScenario(scenario).
+		SetStatus(string(jobPending)).
+		Save(ctx)
+}
+
+// CancelApplication terminates an application
+// if the app is running, send cancel signal
+// if the app is finished/error, return ErrAppIsFinished error
+// if the app is canceled, return with current app status
+// else update app status with cancel
+func (m *master) CancelApplication(ctx context.Context, appID int) (*ent.Application, error) {
+	err := m.cancel(ctx, appID)
+
+	if err == nil {
+		return m.db.Application.
+			Query().
+			Where(application.ID(appID)).
+			Only(ctx)
+	}
+
+	// if err and err is not the app is not running
+	if err != nil && !errors.Is(err, ErrAppNotRunning) {
+		return nil, err
+	}
+
+	// if the app is not running, update directly on the db
+	// query the app
+	// if the app status is finished or error, return error
+	// if the app status is cancel (already), just return
+	// else, update the app table
+	app, err := m.db.Application.
+		Query().
+		Where(application.ID(appID)).
+		Only(ctx)
+
+	if err != nil {
+		return app, err
+	}
+
+	if app.Status == string(jobCancel) {
+		return app, nil
+	}
+	if app.Status == string(jobFinished) || app.Status == string(jobError) {
+		return app, ErrAppIsFinished
+	}
+
+	// else, update the status on db
+	return m.db.Application.
+		UpdateOneID(appID).
+		SetStatus(string(jobCancel)).
+		Save(ctx)
+}
+
+// cleanupDB is the helper function to cleanup the DB for testing
+func (m *master) cleanupDB() error {
+	ctx := context.TODO()
+	_, err := m.db.Application.Delete().Exec(ctx)
+	return err
+}
+
 
 // to is the function to set new state for an application
 // save new state to the db
