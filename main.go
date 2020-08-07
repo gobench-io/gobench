@@ -85,11 +85,11 @@ func main() {
 
 	if opts.Mode == Executor {
 		e, err := executor.NewExecutor(&executor.Options{
-			AgentSock:    opts.agentSock,
-			ExecutorSock: opts.executorSock,
-			DriverPath:   opts.driverPath,
+			AgentSock:    opts.AgentSock,
+			ExecutorSock: opts.ExecutorSock,
+			DriverPath:   opts.DriverPath,
 			AppID:        opts.AppID,
-		})
+		}, logger)
 		if err != nil {
 			printAndDie(fmt.Sprintf("%s: %s", exe, err))
 		}

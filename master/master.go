@@ -39,6 +39,7 @@ type Master struct {
 	port        int    // api port
 	clusterPort int    // cluster port
 
+	status status
 	logger logger.Logger
 
 	// database
@@ -63,8 +64,8 @@ type Options struct {
 }
 
 func NewMaster(opts *Options, logger logger.Logger) (m *Master, err error) {
-	m = &master{
-		add:        opts.Addr,
+	m = &Master{
+		addr:       opts.Addr,
 		port:       opts.Port,
 		dbFilename: opts.DbPath,
 		logger:     logger,
@@ -79,7 +80,9 @@ func NewMaster(opts *Options, logger logger.Logger) (m *Master, err error) {
 }
 
 func (m *Master) Start() (err error) {
-	if err = m.setupDb()
+	if err = m.setupDb(); err != nil {
+		return
+	}
 
 	m.handleSignals()
 
@@ -118,7 +121,7 @@ func (m *Master) WebPort() int {
 // return the application id and error
 func (m *Master) NewApplication(ctx context.Context, name, scenario string) (
 	*ent.Application, error,
-	) {
+) {
 	return m.db.Application.
 		Create().
 		SetName(name).
@@ -181,7 +184,6 @@ func (m *Master) cleanupDB() error {
 	_, err := m.db.Application.Delete().Exec(ctx)
 	return err
 }
-
 
 // to is the function to set new state for an application
 // save new state to the db
