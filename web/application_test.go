@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func newAPITest() (*chi.Mux, *httptest.ResponseRecorder) {
+func newAPITest(t *testing.T) (*chi.Mux, *httptest.ResponseRecorder) {
 	logger := logger.NewNopLogger()
 	m, _ := master.NewMaster(&master.Options{
 		Addr:   "0.0.0.0",
@@ -24,7 +24,8 @@ func newAPITest() (*chi.Mux, *httptest.ResponseRecorder) {
 		DbPath: "./gobench.sqlite3",
 	}, logger)
 
-	_ = m.Start()
+	err := m.Start()
+	assert.Nil(t, err)
 	h := newHandler(m, logger)
 	r := h.r
 
@@ -34,7 +35,7 @@ func newAPITest() (*chi.Mux, *httptest.ResponseRecorder) {
 }
 
 func newApp(t *testing.T) *ent.Application {
-	r, w := newAPITest()
+	r, w := newAPITest(t)
 	name := "name 1"
 	scenario := "scenario 1"
 	encScenario := base64.StdEncoding.EncodeToString([]byte(scenario))
@@ -57,7 +58,7 @@ func newApp(t *testing.T) *ent.Application {
 }
 
 func TestListApplications(t *testing.T) {
-	r, w := newAPITest()
+	r, w := newAPITest(t)
 	req, _ := http.NewRequest("GET", "/api/applications", nil)
 	r.ServeHTTP(w, req)
 
@@ -66,7 +67,7 @@ func TestListApplications(t *testing.T) {
 
 func TestCreateApplications(t *testing.T) {
 	t.Run("successful request", func(t *testing.T) {
-		r, w := newAPITest()
+		r, w := newAPITest(t)
 		name := "name"
 		scenario := "this is the scenario"
 		encScenario := base64.StdEncoding.EncodeToString([]byte(scenario))
@@ -90,7 +91,7 @@ func TestCreateApplications(t *testing.T) {
 	})
 
 	t.Run("invalid request - without Name", func(t *testing.T) {
-		r, w := newAPITest()
+		r, w := newAPITest(t)
 		reqBody, _ := json.Marshal(map[string]string{
 			"Scenario": "this is the scenario",
 		})
@@ -108,7 +109,7 @@ func TestCreateApplications(t *testing.T) {
 	})
 
 	t.Run("invalid request - without Scenario", func(t *testing.T) {
-		r, w := newAPITest()
+		r, w := newAPITest(t)
 		reqBody, _ := json.Marshal(map[string]string{
 			"Name": "name",
 		})
@@ -128,7 +129,7 @@ func TestCreateApplications(t *testing.T) {
 
 func TestGetApplication(t *testing.T) {
 	t.Run("not found request", func(t *testing.T) {
-		r, w := newAPITest()
+		r, w := newAPITest(t)
 		req, _ := http.NewRequest("GET", "/api/applications/not-a-number", nil)
 		r.ServeHTTP(w, req)
 
@@ -143,7 +144,7 @@ func TestGetApplication(t *testing.T) {
 	t.Run("successful request", func(t *testing.T) {
 		app := newApp(t)
 
-		r, w := newAPITest()
+		r, w := newAPITest(t)
 		req, _ := http.NewRequest(
 			"GET",
 			fmt.Sprintf("/api/applications/%d", app.ID),
@@ -161,7 +162,7 @@ func TestGetApplication(t *testing.T) {
 func TestCancelApplication(t *testing.T) {
 	app := newApp(t)
 
-	r, w := newAPITest()
+	r, w := newAPITest(t)
 	req, _ := http.NewRequest(
 		"PUT",
 		fmt.Sprintf("/api/applications/%d/cancel", app.ID),

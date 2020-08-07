@@ -87,8 +87,6 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 		return nil, nil
 	}
 
-	log.Println("modeS", modeS)
-
 	opts := &Options{
 		Mode: mode(modeS),
 	}

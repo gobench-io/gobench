@@ -17,6 +17,8 @@ import (
 	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/ent/application"
 	"github.com/gobench-io/gobench/logger"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 // job status. The job is in either pending, provisioning, running, finished
@@ -210,7 +212,8 @@ func (m *Master) setupDb() error {
 		return fmt.Errorf("failed creating schema resources: %v", err)
 	}
 
-	m.dbFilename = filename
+	log.Println("client: %+v\n", client)
+
 	m.db = client
 
 	return nil
