@@ -39,6 +39,18 @@ func usage() {
 	os.Exit(0)
 }
 
+// printAndDie print message to Stderr and exit error
+func printAndDie(msg string) {
+	fmt.Fprintln(os.Stderr, msg)
+	os.Exit(1)
+}
+
+// printVersionAndExit will print our version and exit.
+func printVersionAndExit() {
+	fmt.Printf("gobench: v%s\n", VERSION)
+	os.Exit(0)
+}
+
 func main() {
 	exe := "gobench"
 
@@ -46,20 +58,21 @@ func main() {
 	fs := flag.NewFlagSet(exe, flag.ExitOnError)
 	fs.Usage = usage
 
-	opts, err := server.ConfigureOptions(fs, os.Args[1:],
-		server.PrintVersionAndExit,
+	opts, err := ConfigureOptions(fs, os.Args[1:],
+		printVersionAndExit,
 		fs.Usage)
 	if err != nil {
-		server.PrintAndDie(fmt.Sprintf("%s: %s", exe, err))
+		printAndDie(fmt.Sprintf("%s: %s", exe, err))
 	}
 
 	s, err := server.NewServer(opts)
+
 	if err != nil {
-		server.PrintAndDie(fmt.Sprintf("%s: %s", exe, err))
+		printAndDie(fmt.Sprintf("%s: %s", exe, err))
 	}
 
 	if err := s.Start(); err != nil {
-		server.PrintAndDie(err.Error())
+		printAndDie(err.Error())
 	}
 
 	web.Serve(s, opts.Logger)

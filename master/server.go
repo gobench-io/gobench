@@ -3,8 +3,6 @@ package server
 import (
 	"context"
 	"errors"
-	"fmt"
-	"os"
 	"sync"
 
 	"github.com/gobench-io/gobench/agent"
@@ -156,16 +154,4 @@ func (s *Server) cleanupDB() error {
 	ctx := context.TODO()
 	_, err := s.master.db.Application.Delete().Exec(ctx)
 	return err
-}
-
-// PrintAndDie print message to Stderr and exit error
-func PrintAndDie(msg string) {
-	fmt.Fprintln(os.Stderr, msg)
-	os.Exit(1)
-}
-
-// PrintVersionAndExit will print our version and exit.
-func PrintVersionAndExit() {
-	fmt.Printf("gobench: v%s\n", VERSION)
-	os.Exit(0)
 }

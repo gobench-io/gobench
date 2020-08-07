@@ -11,6 +11,7 @@ type mode string
 const (
 	Executor mode = "executor"
 	Master   mode = "master"
+	Agent    mode = "agent"
 )
 
 // Err messages
