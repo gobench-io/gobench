@@ -24,10 +24,9 @@ func (m *Master) Counter(req *metrics.CounterReq, res *metrics.CounterRes) (
 		SetTime(req.Time).
 		SetCount(req.Count).
 		Save(ctx)
-	res = &metrics.CounterRes{
-		AppID:   m.job.app.ID,
-		Success: true,
-	}
+
+	res.AppID = m.job.app.ID
+	res.Success = true
 
 	return
 }
@@ -54,10 +53,8 @@ func (m *Master) Histogram(req *metrics.HistogramReq, res *metrics.HistogramRes)
 		SetP999(req.P999).
 		Save(ctx)
 
-	res = &metrics.HistogramRes{
-		AppID:   m.job.app.ID,
-		Success: true,
-	}
+	res.AppID = m.job.app.ID
+	res.Success = true
 
 	return
 }
@@ -68,30 +65,18 @@ func (m *Master) Gauge(req *metrics.GaugeReq, res *metrics.GaugeRes) (
 	// todo: check appID condition
 	ctx := context.TODO()
 
-	_, err := m.db.Gauge.Create().
+	_, err = m.db.Gauge.Create().
 		SetWID(req.EID).
 		SetMetricID(req.MID).
 		SetTime(req.Time).
 		SetValue(req.Gauge).
 		Save(ctx)
 
-	res = &metrics.GaugeRes{
-		AppID:   m.job.app.ID,
-		Success: true,
-	}
+	res.AppID = m.job.app.ID
+	res.Success = true
 
 	return
 }
-
-// func (m *Master) Gauge(ctx context.Context, mID int, wid, title string, time int64, g int64) error {
-// 	_, err := m.db.Gauge.Create().
-// 		SetWID(wid).
-// 		SetMetricID(mID).
-// 		SetTime(time).
-// 		SetValue(g).
-// 		Save(ctx)
-// 	return err
-// }
 
 // FindCreateGroup find or create new group
 // return the existing/new group ent, is created, and error
