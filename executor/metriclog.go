@@ -10,13 +10,46 @@ import (
 
 // metricLog interface implementer for the Executor
 
-func (e *Executor) Counter(ctx context.Context, mID int, title string, time, c int64) error {
-	e.logger.Infow("-- executor log counter")
+func (e *Executor) Counter(ctx context.Context, mID int, title string, time, c int64) (
+	err error,
+) {
+	res := new(metrics.CounterRes)
+
+	req := &metrics.CounterReq{
+		EID:   e.id,
+		AppID: e.appID,
+		MID:   mID,
+		Title: title,
+		Time:  time,
+		Count: c,
+	}
+
+	if err = e.rc.Call("Agent.Counter", req, res); err != nil {
+		err = fmt.Errorf("rpc Counter: %v", err)
+		return
+	}
+
 	return nil
 }
 
 func (e *Executor) Histogram(ctx context.Context, mID int, title string, time int64, h gometrics.Histogram) error {
-	e.logger.Infow("-- executor log executor")
+	res := new(metrics.HistogramReq)
+
+	req := &metrics.HistogramRes{
+		EID:   e.id,
+		AppID: e.appID,
+		MID:   mID,
+		Title: title,
+		Time:  time,
+		Count: c,
+	}
+
+	if err = e.rc.Call("Agent.Counter", req, res); err != nil {
+		err = fmt.Errorf("rpc Counter: %v", err)
+		return
+	}
+
+	return nil
 	return nil
 }
 

@@ -1,6 +1,7 @@
 package executor
 
 import (
+	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -21,6 +22,7 @@ type Options struct {
 
 // Executor struct
 type Executor struct {
+	id           string
 	logger       logger.Logger
 	agentSock    string
 	executorSock string
@@ -33,7 +35,13 @@ type Executor struct {
 // NewExecutor creates a new executor
 // also load the plugin from driver path
 func NewExecutor(opts *Options, logger logger.Logger) (e *Executor, err error) {
+	// id is the combination of hostname and pid
+	hostname, _ := os.Hostname()
+	pid := os.Getpid()
+	id := fmt.Sprintf("%s-%d", hostname, pid)
+
 	e = &Executor{
+		id:           id,
 		logger:       logger,
 		agentSock:    opts.AgentSock,
 		executorSock: opts.ExecutorSock,

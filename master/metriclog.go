@@ -5,7 +5,6 @@ import (
 
 	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/metrics"
-	gometrics "github.com/rcrowley/go-metrics"
 
 	entApp "github.com/gobench-io/gobench/ent/application"
 	entGraph "github.com/gobench-io/gobench/ent/graph"
@@ -13,49 +12,88 @@ import (
 	entMetric "github.com/gobench-io/gobench/ent/metric"
 )
 
-func (m *Master) Counter(ctx context.Context, mID int, wid, title string, time, c int64) error {
-	_, err := m.db.Counter.Create().
-		SetWID(wid).
-		SetMetricID(mID).
-		SetTime(time).
-		SetCount(c).
+func (m *Master) Counter(req *metrics.CounterReq, res *metrics.CounterRes) (
+	err error,
+) {
+	// todo: check appID condition
+	ctx := context.TODO()
+
+	_, err = m.db.Counter.Create().
+		SetWID(req.EID).
+		SetMetricID(req.MID).
+		SetTime(req.Time).
+		SetCount(req.Count).
 		Save(ctx)
-	return err
+	res = &metrics.CounterRes{
+		AppID:   m.job.app.ID,
+		Success: true,
+	}
+
+	return
 }
 
-func (m *Master) Histogram(ctx context.Context, mID int, wid, title string, time int64, h gometrics.Histogram) error {
-	ps := h.Percentiles([]float64{0.5, 0.75, 0.95, 0.99, 0.999})
-	_, err := m.db.Histogram.Create().
-		SetWID(wid).
-		SetMetricID(mID).
-		SetTime(time).
-		SetCount(h.Count()).
-		SetMin(h.Min()).
-		SetMax(h.Max()).
-		SetMean(h.Mean()).
-		SetStddev(h.StdDev()).
-		SetMedian(ps[0]).
-		SetP75(ps[1]).
-		SetP95(ps[2]).
-		SetP99(ps[3]).
-		SetP999(ps[4]).
+func (m *Master) Histogram(req *metrics.HistogramReq, res *metrics.HistogramRes) (
+	err error,
+) {
+	// todo: check appID condition
+	ctx := context.TODO()
+
+	_, err = m.db.Histogram.Create().
+		SetWID(req.EID).
+		SetMetricID(req.MID).
+		SetTime(req.Time).
+		SetCount(req.Count).
+		SetMin(req.Min).
+		SetMax(req.Max).
+		SetMean(req.Mean).
+		SetStddev(req.Stddev).
+		SetMedian(req.Median).
+		SetP75(req.P75).
+		SetP95(req.P95).
+		SetP99(req.P99).
+		SetP999(req.P999).
 		Save(ctx)
-	return err
+
+	res = &metrics.HistogramRes{
+		AppID:   m.job.app.ID,
+		Success: true,
+	}
+
+	return
 }
 
-func (m *Master) Gauge(ctx context.Context, mID int, wid, title string, time int64, g int64) error {
+func (m *Master) Gauge(req *metrics.GaugeReq, res *metrics.GaugeRes) (
+	err error,
+) {
+	// todo: check appID condition
+	ctx := context.TODO()
+
 	_, err := m.db.Gauge.Create().
-		SetWID(wid).
-		SetMetricID(mID).
-		SetTime(time).
-		SetValue(g).
+		SetWID(req.EID).
+		SetMetricID(req.MID).
+		SetTime(req.Time).
+		SetValue(req.Gauge).
 		Save(ctx)
-	return err
+
+	res = &metrics.GaugeRes{
+		AppID:   m.job.app.ID,
+		Success: true,
+	}
+
+	return
 }
 
-// rpc interface
+// func (m *Master) Gauge(ctx context.Context, mID int, wid, title string, time int64, g int64) error {
+// 	_, err := m.db.Gauge.Create().
+// 		SetWID(wid).
+// 		SetMetricID(mID).
+// 		SetTime(time).
+// 		SetValue(g).
+// 		Save(ctx)
+// 	return err
+// }
 
-// FindCreateGroupRPC find or create new group
+// FindCreateGroup find or create new group
 // return the existing/new group ent, is created, and error
 func (m *Master) FindCreateGroup(req *metrics.FCGroupReq, res *metrics.FCGroupRes) (err error) {
 	ctx := context.TODO()

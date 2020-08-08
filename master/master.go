@@ -385,6 +385,7 @@ func (m *Master) jobCompile(ctx context.Context) error {
 // runJob run a application in a job
 // by create a local worker
 func (m *Master) runJob(ctx context.Context) (err error) {
+	// todo: move this to agent
 	driverPath := m.job.plugin
 	appID := strconv.Itoa(m.job.app.ID)
 	agentSock := m.la.GetSocketName()

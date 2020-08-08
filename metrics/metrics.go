@@ -58,3 +58,52 @@ type FCMetricReq struct {
 type FCMetricRes struct {
 	ID int
 }
+
+type basedReqMetric struct {
+	EID   string // executor ID
+	AppID int    // app ID
+	MID   int    // metric ID
+	Title string
+	Time  int64
+}
+type basedResMetric struct {
+	Success bool
+	AppID   int
+}
+
+type HistogramValues struct {
+	Count  int64
+	Min    int64
+	Max    int64
+	Mean   float64
+	Stddev float64
+	Median float64
+	P75    float64
+	P95    float64
+	P99    float64
+	P999   float64
+}
+
+type CounterReq struct {
+	basedReqMetric
+	Count int64
+}
+type CounterRes struct {
+	basedResMetric
+}
+
+type HistogramReq struct {
+	basedReqMetric
+	HistogramValues
+}
+type HistogramRes struct {
+	basedResMetric
+}
+
+type GaugeReq struct {
+	basedReqMetric
+	Gauge int64
+}
+type GaugeRes struct {
+	basedResMetric
+}
