@@ -71,7 +71,8 @@ func main() {
 
 	if opts.Mode == Master {
 		m, err := master.NewMaster(&master.Options{
-			Port: opts.Port,
+			Port:   opts.Port,
+			DbPath: "./gobench.sqlite3",
 		}, logger)
 		if err != nil {
 			printAndDie(fmt.Sprintf("%s: %s", exe, err))
