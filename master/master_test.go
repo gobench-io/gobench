@@ -13,9 +13,10 @@ import (
 func seedMaster(t *testing.T) *Master {
 	logger := logger.NewStdLogger()
 	m, err := NewMaster(&Options{
-		Addr:   "0.0.0.0",
-		Port:   8080,
-		DbPath: "./gobench.sqlite3",
+		Addr:    "0.0.0.0",
+		Port:    8080,
+		DbPath:  "./gobench.sqlite3",
+		Program: "gobench",
 	}, logger)
 
 	// disable the schedule
