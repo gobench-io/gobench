@@ -391,7 +391,8 @@ func (m *Master) runJob(ctx context.Context) (err error) {
 	agentSock := m.la.GetSocketName()
 	executorSock := fmt.Sprintf("/tmp/executorsock-%s", appID)
 
-	cmd := exec.CommandContext(ctx, "executor.out",
+	cmd := exec.CommandContext(ctx, "gobench.out",
+		"--mode", "executor",
 		"--agent-sock", agentSock,
 		"--executor-sock", executorSock,
 		"--driver-path", driverPath,

@@ -59,13 +59,13 @@ type FCMetricRes struct {
 	ID int
 }
 
-type basedReqMetric struct {
+type BasedReqMetric struct {
 	EID   string // executor ID
 	AppID int    // app ID
 	MID   int    // metric ID
 	Time  int64
 }
-type basedResMetric struct {
+type BasedResMetric struct {
 	Success bool
 	AppID   int
 }
@@ -84,25 +84,25 @@ type HistogramValues struct {
 }
 
 type CounterReq struct {
-	basedReqMetric
+	BasedReqMetric
 	Count int64
 }
 type CounterRes struct {
-	basedResMetric
+	BasedResMetric
 }
 
 type HistogramReq struct {
-	basedReqMetric
+	BasedReqMetric
 	HistogramValues
 }
 type HistogramRes struct {
-	basedResMetric
+	BasedResMetric
 }
 
 type GaugeReq struct {
-	basedReqMetric
+	BasedReqMetric
 	Gauge int64
 }
 type GaugeRes struct {
-	basedResMetric
+	BasedResMetric
 }
