@@ -18,20 +18,16 @@ func loadValidPlugin(d *Driver) error {
 // nil metric logger
 type nilLog struct{}
 
-func (l *nilLog) Counter(req *metrics.CounterReq, res *metrics.CounterRes) (
-	err error,
-) {
-	return
+func (l *nilLog) Counter(ctx context.Context, mID int, title string, time, c int64) error {
+	return nil
 }
-func (l *nilLog) Histogram(req *metrics.HistogramReq, res *metrics.HistogramRes) (
-	err error,
-) {
-	return
+
+func (l *nilLog) Histogram(ctx context.Context, mID int, title string, time int64, h metrics.HistogramValues) error {
+	return nil
 }
-func (l *nilLog) Gauge(req *metrics.GaugeReq, res *metrics.GaugeRes) (
-	err error,
-) {
-	return
+
+func (l *nilLog) Gauge(ctx context.Context, mID int, title string, time int64, g int64) error {
+	return nil
 }
 
 func (l *nilLog) FindCreateGroup(ctx context.Context, mg metrics.Group, appID int) (
