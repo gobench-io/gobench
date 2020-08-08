@@ -60,7 +60,7 @@ func main() {
 	fs := flag.NewFlagSet(exe, flag.ExitOnError)
 	fs.Usage = usage
 
-	opts, err := ConfigureOptions(fs, os.Args[1:],
+	opts, err := ConfigureOptions(fs, os.Args[0:],
 		printVersionAndExit,
 		fs.Usage)
 	if err != nil {
@@ -73,7 +73,7 @@ func main() {
 		m, err := master.NewMaster(&master.Options{
 			Port:    opts.Port,
 			Program: opts.Program,
-			DbPath:  "./gobench.sqlite3",
+			DbPath:  opts.DbPath,
 		}, logger)
 		if err != nil {
 			printAndDie(fmt.Sprintf("%s: %s", exe, err))
