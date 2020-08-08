@@ -15,12 +15,12 @@ func (e *Executor) Counter(ctx context.Context, mID int, title string, time, c i
 	res := new(metrics.CounterRes)
 
 	req := &metrics.CounterReq{
-		EID:   e.id,
-		AppID: e.appID,
-		MID:   mID,
-		Time:  time,
 		Count: c,
 	}
+	req.EID = e.id
+	req.AppID = e.appID
+	req.MID = mID
+	req.Time = time
 
 	if err = e.rc.Call("Agent.Counter", req, res); err != nil {
 		err = fmt.Errorf("rpc Counter: %v", err)
@@ -36,12 +36,12 @@ func (e *Executor) Histogram(ctx context.Context, mID int, title string, time in
 	res := new(metrics.HistogramRes)
 
 	req := &metrics.HistogramReq{
-		EID:   e.id,
-		AppID: e.appID,
-		MID:   mID,
-		Time:  time,
-		h,
+		HistogramValues: h,
 	}
+	req.EID = e.id
+	req.AppID = e.appID
+	req.MID = mID
+	req.Time = time
 
 	if err = e.rc.Call("Agent.Histogram", req, res); err != nil {
 		err = fmt.Errorf("rpc Histogram: %v", err)
@@ -54,15 +54,15 @@ func (e *Executor) Histogram(ctx context.Context, mID int, title string, time in
 func (e *Executor) Gauge(ctx context.Context, mID int, title string, time int64, g int64) (
 	err error,
 ) {
-	res := new(metrics.HistogramReq)
+	res := new(metrics.GaugeRes)
 
-	req := &metrics.HistogramRes{
-		EID:   e.id,
-		AppID: e.appID,
-		MID:   mID,
-		Time:  time,
+	req := &metrics.GaugeReq{
 		Gauge: g,
 	}
+	req.EID = e.id
+	req.AppID = e.appID
+	req.MID = mID
+	req.Time = time
 
 	if err = e.rc.Call("Agent.Gauge", req, res); err != nil {
 		err = fmt.Errorf("rpc Gauge: %v", err)
