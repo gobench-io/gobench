@@ -3,6 +3,8 @@ package main
 import (
 	"errors"
 	"flag"
+	"os"
+	"path/filepath"
 )
 
 type mode string
@@ -75,7 +77,7 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 	// master
 	fs.IntVar(&port, "p", DEFAULT_PORT, "Port of the master server.")
 	fs.IntVar(&port, "port", DEFAULT_PORT, "Port of the master server.")
-	fs.StringVar(&dbPath, "db", DEFAULT_DB_PATH, "Location of the database.")
+	fs.StringVar(&dbPath, "db", "", "Name of the database.")
 
 	program := args[0]
 	if err = fs.Parse(args[1:]); err != nil {
@@ -111,6 +113,13 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 		return opts, nil
 	}
 	if opts.Mode == Master {
+		if dbPath == "" {
+			home, err := os.UserHomeDir()
+			if err != nil {
+				return opts, err
+			}
+			dbPath = filepath.Join(home, DEFAULT_DB_NAME)
+		}
 		opts.Port = port
 		opts.DbPath = dbPath
 		return opts, nil

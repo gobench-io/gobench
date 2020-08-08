@@ -68,6 +68,11 @@ type Options struct {
 }
 
 func NewMaster(opts *Options, logger logger.Logger) (m *Master, err error) {
+	logger.Infow("new master program",
+		"port", opts.Port,
+		"db file path", opts.DbPath,
+	)
+
 	m = &Master{
 		addr:       opts.Addr,
 		port:       opts.Port,

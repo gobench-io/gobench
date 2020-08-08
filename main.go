@@ -79,7 +79,10 @@ func main() {
 			printAndDie(fmt.Sprintf("%s: %s", exe, err))
 		}
 
-		m.Start()
+		err = m.Start()
+		if err != nil {
+			printAndDie(fmt.Sprintf("%s: %s", exe, err))
+		}
 		web.Serve(m, logger)
 
 		return
