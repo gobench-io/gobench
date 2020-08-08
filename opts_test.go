@@ -27,10 +27,10 @@ func TestVersionHelp(t *testing.T) {
 
 	// test the help
 	testHelps := []testOpts{
-		{[]string{"--version"}, checkPrintInvoked, usage},
-		{[]string{"-v"}, checkPrintInvoked, usage},
-		{[]string{"--help"}, usage, checkPrintInvoked},
-		{[]string{"-h"}, usage, checkPrintInvoked},
+		{[]string{"me", "--version"}, checkPrintInvoked, usage},
+		{[]string{"me", "-v"}, checkPrintInvoked, usage},
+		{[]string{"me", "--help"}, usage, checkPrintInvoked},
+		{[]string{"me", "-h"}, usage, checkPrintInvoked},
 	}
 
 	for _, tt := range testHelps {
@@ -54,6 +54,7 @@ func TestExecutorOption(t *testing.T) {
 
 	testFuncs := []testOpts{
 		{[]string{
+			"me",
 			"--mode", "executor",
 			"--agent-sock", "agent/sock",
 			"--executor-sock", "executor/sock",
@@ -70,6 +71,7 @@ func TestExecutorOption(t *testing.T) {
 		assert.NotNil(t, opts)
 		assert.Equal(t, Options{
 			Mode:         Executor,
+			Program:      "me",
 			AgentSock:    "agent/sock",
 			ExecutorSock: "executor/sock",
 			DriverPath:   "driver/path",
@@ -86,16 +88,19 @@ func TestExecutorOption(t *testing.T) {
 		// 	"--app-id", "123",
 		// }, version, help},
 		{[]string{
+			"me",
 			"--mode", "executor",
 			"--executor-sock", "executor/sock",
 			"--driver-path", "driver/path",
 		}, version, help},
 		{[]string{
+			"me",
 			"--mode", "executor",
 			"--agent-sock", "agent/sock",
 			"--driver-path", "driver/path",
 		}, version, help},
 		{[]string{
+			"me",
 			"--mode", "executor",
 			"--agent-sock", "agent/sock",
 			"--executor-sock", "executor/sock",
@@ -137,11 +142,11 @@ func TestMasterOption(t *testing.T) {
 	}
 
 	// check mode
-	mustFail([]string{"--mode", "not existed"}, "mode must be either master, agent, or executor")
+	mustFail([]string{"me", "--mode", "not existed"}, "mode must be either master, agent, or executor")
 
-	opts := mustNotFail([]string{"-p", "3000"})
+	opts := mustNotFail([]string{"me", "-p", "3000"})
 	assert.Equal(t, opts.Port, 3000)
 
-	opts = mustNotFail([]string{"-db", "./foo.sqlite3"})
+	opts = mustNotFail([]string{"me", "-db", "./foo.sqlite3"})
 	assert.Equal(t, opts.DbPath, "./foo.sqlite3")
 }

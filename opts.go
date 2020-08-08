@@ -20,7 +20,8 @@ var (
 )
 
 type Options struct {
-	Mode mode
+	Mode    mode
+	Program string
 
 	// executor mode
 	AgentSock    string
@@ -76,7 +77,8 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 	fs.IntVar(&port, "port", DEFAULT_PORT, "Port of the master server.")
 	fs.StringVar(&dbPath, "db", DEFAULT_DB_PATH, "Location of the database.")
 
-	if err = fs.Parse(args); err != nil {
+	program := args[0]
+	if err = fs.Parse(args[1:]); err != nil {
 		return nil, err
 	}
 
@@ -91,7 +93,8 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 	}
 
 	opts := &Options{
-		Mode: mode(modeS),
+		Mode:    mode(modeS),
+		Program: program,
 	}
 
 	if opts.Mode == Executor {

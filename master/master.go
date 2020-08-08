@@ -41,8 +41,9 @@ type Master struct {
 	port        int    // api port
 	clusterPort int    // cluster port
 
-	status status
-	logger logger.Logger
+	status  status
+	logger  logger.Logger
+	program string
 
 	// database
 	isScheduled bool
@@ -60,9 +61,10 @@ type job struct {
 }
 
 type Options struct {
-	Port   int
-	Addr   string
-	DbPath string
+	Port    int
+	Addr    string
+	DbPath  string
+	Program string
 }
 
 func NewMaster(opts *Options, logger logger.Logger) (m *Master, err error) {
@@ -71,6 +73,7 @@ func NewMaster(opts *Options, logger logger.Logger) (m *Master, err error) {
 		port:       opts.Port,
 		dbFilename: opts.DbPath,
 		logger:     logger,
+		program:    opts.Program,
 	}
 	la, err := agent.NewAgent(m)
 	if err != nil {
