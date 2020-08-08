@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/gobench-io/gobench/metrics"
-	gometrics "github.com/rcrowley/go-metrics"
 )
 
 // metricLog interface implementer for the Executor
@@ -19,7 +18,6 @@ func (e *Executor) Counter(ctx context.Context, mID int, title string, time, c i
 		EID:   e.id,
 		AppID: e.appID,
 		MID:   mID,
-		Title: title,
 		Time:  time,
 		Count: c,
 	}
@@ -32,29 +30,45 @@ func (e *Executor) Counter(ctx context.Context, mID int, title string, time, c i
 	return nil
 }
 
-func (e *Executor) Histogram(ctx context.Context, mID int, title string, time int64, h gometrics.Histogram) error {
+func (e *Executor) Histogram(ctx context.Context, mID int, title string, time int64, h metrics.HistogramValues) (
+	err error,
+) {
+	res := new(metrics.HistogramRes)
+
+	req := &metrics.HistogramReq{
+		EID:   e.id,
+		AppID: e.appID,
+		MID:   mID,
+		Time:  time,
+		h,
+	}
+
+	if err = e.rc.Call("Agent.Histogram", req, res); err != nil {
+		err = fmt.Errorf("rpc Histogram: %v", err)
+		return
+	}
+
+	return nil
+}
+
+func (e *Executor) Gauge(ctx context.Context, mID int, title string, time int64, g int64) (
+	err error,
+) {
 	res := new(metrics.HistogramReq)
 
 	req := &metrics.HistogramRes{
 		EID:   e.id,
 		AppID: e.appID,
 		MID:   mID,
-		Title: title,
 		Time:  time,
-		Count: c,
+		Gauge: g,
 	}
 
-	if err = e.rc.Call("Agent.Counter", req, res); err != nil {
-		err = fmt.Errorf("rpc Counter: %v", err)
+	if err = e.rc.Call("Agent.Gauge", req, res); err != nil {
+		err = fmt.Errorf("rpc Gauge: %v", err)
 		return
 	}
 
-	return nil
-	return nil
-}
-
-func (e *Executor) Gauge(ctx context.Context, mID int, title string, time int64, g int64) error {
-	e.logger.Infow("-- executor log gauge")
 	return nil
 }
 

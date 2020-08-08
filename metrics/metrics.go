@@ -63,7 +63,6 @@ type basedReqMetric struct {
 	EID   string // executor ID
 	AppID int    // app ID
 	MID   int    // metric ID
-	Title string
 	Time  int64
 }
 type basedResMetric struct {

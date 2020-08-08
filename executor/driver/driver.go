@@ -42,7 +42,7 @@ type unit struct {
 // todo: do not use ent, but normal struct
 type metricLogger interface {
 	Counter(context.Context, int, string, int64, int64) error
-	Histogram(context.Context, int, string, int64, gometrics.Histogram) error
+	Histogram(context.Context, int, string, int64, metrics.HistogramValues) error
 	Gauge(context.Context, int, string, int64, int64) error
 	FindCreateGroup(context.Context, metrics.Group, int) (*metrics.FCGroupRes, error)
 	FindCreateGraph(context.Context, metrics.Graph, int) (*metrics.FCGraphRes, error)
@@ -221,14 +221,26 @@ func (d *Driver) logScaledOnCue(ctx context.Context, ch chan interface{}) error 
 					err = d.ml.Counter(ctx, u.metricID, u.Title, now, u.c.Count())
 				case metrics.Histogram:
 					h := u.h.Snapshot()
-					err = d.ml.Histogram(ctx, u.metricID, u.Title, now, h)
+					ps := h.Percentiles([]float64{0.5, 0.75, 0.95, 0.99, 0.999})
+					hv := metrics.HistogramValues{
+						Count:  h.Count(),
+						Min:    h.Min(),
+						Max:    h.Max(),
+						Mean:   h.Mean(),
+						Stddev: h.StdDev(),
+						Median: ps[0],
+						P75:    ps[1],
+						P95:    ps[2],
+						P99:    ps[3],
+						P999:   ps[4],
+					}
+					err = d.ml.Histogram(ctx, u.metricID, u.Title, now, hv)
 				case metrics.Gauge:
 					err = d.ml.Gauge(ctx, u.metricID, u.Title, now, u.g.Value())
 				}
+
 				if err != nil {
-					d.logger.Errorw("metric log failed",
-						"err", err,
-					)
+					d.logger.Errorw("metric log failed", "err", err)
 				}
 			}
 		case <-ctx.Done():
