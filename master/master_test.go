@@ -10,41 +10,43 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func seedServer(t *testing.T) *Server {
-	log := logger.NewStdLogger()
+func seedMaster(t *testing.T) *Master {
+	logger := logger.NewStdLogger()
+	m, err := NewMaster(&Options{
+		Addr:   "0.0.0.0",
+		Port:   8080,
+		DbPath: "./gobench.sqlite3",
+	}, logger)
 
-	var err error
-	s, _ := NewServer(DefaultMasterOptions())
 	// disable the schedule
-	s.isSchedule = false
-	s.master.logger = log
-	s.master.job = &job{}
-	s.master.job.app = &ent.Application{}
+	m.isScheduled = false
+	m.job = &job{}
+	m.job.app = &ent.Application{}
 	assert.Nil(t, err)
-	assert.Nil(t, s.Start())
+	assert.Nil(t, m.Start())
 
-	return s
+	return m
 }
 
 func TestNextApplication(t *testing.T) {
 	t.Run("empty application", func(t *testing.T) {
 		ctx := context.Background()
-		s := seedServer(t)
-		assert.Nil(t, s.cleanupDB())
-		_, err := s.master.nextApplication(ctx)
+		m := seedMaster(t)
+		assert.Nil(t, m.cleanupDB())
+		_, err := m.nextApplication(ctx)
 		assert.True(t, ent.IsNotFound(err))
 	})
 
 	t.Run("one application", func(t *testing.T) {
 		ctx := context.Background()
-		s := seedServer(t)
-		assert.Nil(t, s.cleanupDB())
+		m := seedMaster(t)
+		assert.Nil(t, m.cleanupDB())
 
-		_, err := s.NewApplication(ctx, "name", "scenario")
+		_, err := m.NewApplication(ctx, "name", "scenario")
 		assert.Nil(t, err)
 
 		// the next application is not nil
-		a, err := s.master.nextApplication(ctx)
+		a, err := m.nextApplication(ctx)
 		assert.Nil(t, err)
 		assert.Equal(t, a.Name, "name")
 		assert.Equal(t, a.Scenario, "scenario")
@@ -53,15 +55,15 @@ func TestNextApplication(t *testing.T) {
 
 	t.Run("two applications", func(t *testing.T) {
 		ctx := context.Background()
-		s := seedServer(t)
+		m := seedMaster(t)
 
-		_, err := s.NewApplication(ctx, "name", "scenario")
+		_, err := m.NewApplication(ctx, "name", "scenario")
 		assert.Nil(t, err)
-		_, err = s.NewApplication(ctx, "name 2", "scenario 2")
+		_, err = m.NewApplication(ctx, "name 2", "scenario 2")
 		assert.Nil(t, err)
 
 		// applications is fifo, the next application is name
-		a, err := s.master.nextApplication(ctx)
+		a, err := m.nextApplication(ctx)
 		assert.Nil(t, err)
 		assert.Equal(t, a.Name, "name")
 		assert.Equal(t, a.Scenario, "scenario")
@@ -73,8 +75,8 @@ func TestCompile(t *testing.T) {
 	t.Run("invalid scenario", func(t *testing.T) {
 		ctx := context.Background()
 
-		s := seedServer(t)
-		s.master.job.app.Scenario = `
+		m := seedMaster(t)
+		m.job.app.Scenario = `
 package main
 
 import (
@@ -97,15 +99,15 @@ func Export() scenario.Vus {
 }
 // missing f1 function`
 
-		err := s.master.jobCompile(ctx)
+		err := m.jobCompile(ctx)
 		assert.EqualError(t, err, "failed compiling the scenario: exit status 2")
-		assert.NoFileExists(t, s.master.job.plugin)
+		assert.NoFileExists(t, m.job.plugin)
 	})
 
 	t.Run("valid scenario", func(t *testing.T) {
 		ctx := context.Background()
-		s := seedServer(t)
-		s.master.job.app.Scenario = `
+		m := seedMaster(t)
+		m.job.app.Scenario = `
 package main
 
 import (
@@ -134,16 +136,16 @@ func f1(ctx context.Context, vui int) {
 		time.Sleep(1 * time.Second)
 	}
 }`
-		err := s.master.jobCompile(ctx)
+		err := m.jobCompile(ctx)
 		assert.Nil(t, err)
-		assert.FileExists(t, s.master.job.plugin)
+		assert.FileExists(t, m.job.plugin)
 	})
 }
 
 func TestRun(t *testing.T) {
 	ctx := context.Background()
-	s := seedServer(t)
-	s.master.job.app.Scenario = `
+	m := seedMaster(t)
+	m.job.app.Scenario = `
 package main
 
 import (
@@ -170,15 +172,15 @@ func f1(ctx context.Context, vui int) {
 	log.Println("tic")
 }`
 
-	err := s.master.jobCompile(ctx)
+	err := m.jobCompile(ctx)
 	assert.Nil(t, err)
 	// should run for mor than 1 seconds
-	assert.Nil(t, s.master.runJob(ctx))
+	assert.Nil(t, m.runJob(ctx))
 }
 
 func TestCancel(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
-	s := seedServer(t)
+	m := seedMaster(t)
 
 	scenario := `
 package main
@@ -203,7 +205,7 @@ func f1(ctx context.Context, vui int) {
 	for {}
 }`
 
-	app, _ := s.NewApplication(ctx, "cancel test", scenario)
+	app, _ := m.NewApplication(ctx, "cancel test", scenario)
 	j := &job{
 		app:    app,
 		cancel: cancel,
@@ -211,18 +213,18 @@ func f1(ctx context.Context, vui int) {
 
 	go func() {
 		time.Sleep(1 * time.Second)
-		assert.Equal(t, string(jobRunning), s.master.job.app.Status, "should run after 1 second")
+		assert.Equal(t, string(jobRunning), m.job.app.Status, "should run after 1 second")
 
-		assert.Nil(t, s.master.cancel(ctx, app.ID))
+		assert.Nil(t, m.cancel(ctx, app.ID))
 	}()
 
-	err := s.master.run(ctx, j)
+	err := m.run(ctx, j)
 	assert.EqualError(t, err, ErrAppIsCanceled.Error())
 }
 
 func TestMetricLogSetup(t *testing.T) {
 	ctx := context.Background()
-	s := seedServer(t)
+	m := seedMaster(t)
 
 	scenario := `
 package main
@@ -252,11 +254,11 @@ func f(ctx context.Context, vui int) {
 }
 `
 
-	app, _ := s.NewApplication(ctx, "http metric log setup test", scenario)
+	app, _ := m.NewApplication(ctx, "http metric log setup test", scenario)
 	j := &job{
 		app: app,
 	}
 
-	err := s.master.run(ctx, j)
+	err := m.run(ctx, j)
 	assert.Nil(t, err)
 }

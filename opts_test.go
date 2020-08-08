@@ -69,6 +69,7 @@ func TestExecutorOption(t *testing.T) {
 		assert.Nil(t, err, "err on ConfigureOptions")
 		assert.NotNil(t, opts)
 		assert.Equal(t, Options{
+			Mode:         Executor,
 			AgentSock:    "agent/sock",
 			ExecutorSock: "executor/sock",
 			DriverPath:   "driver/path",
@@ -140,4 +141,7 @@ func TestMasterOption(t *testing.T) {
 
 	opts := mustNotFail([]string{"-p", "3000"})
 	assert.Equal(t, opts.Port, 3000)
+
+	opts = mustNotFail([]string{"-db", "./foo.sqlite3"})
+	assert.Equal(t, opts.DbPath, "./foo.sqlite3")
 }

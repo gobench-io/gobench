@@ -17,21 +17,21 @@ func TestFindCreateGroup(t *testing.T) {
 	var err error
 	ctx := context.TODO()
 
-	s := seedServer(t)
+	m := seedMaster(t)
 
-	s.master.job.app, err = s.NewApplication(ctx, "name", "scenario")
+	m.job.app, err = m.NewApplication(ctx, "name", "scenario")
 	assert.Nil(t, err)
 
 	prefix := time.Now().String()
 	groupName := "HTTP (" + prefix + ")"
 
 	groupRes := new(metrics.FCGroupRes)
-	assert.Nil(t, s.master.FindCreateGroup(
-		&metrics.FCGroupReq{Name: groupName, AppID: s.master.job.app.ID},
+	assert.Nil(t, m.FindCreateGroup(
+		&metrics.FCGroupReq{Name: groupName, AppID: m.job.app.ID},
 		groupRes))
 
 	// read from db, check with groupRes
-	groups, err := s.master.db.Group.Query().Where(
+	groups, err := m.db.Group.Query().Where(
 		entGroup.Name(groupName),
 		entGroup.HasApplicationWith(
 			entApplication.NameEQ("name"),
@@ -44,8 +44,8 @@ func TestFindCreateGroup(t *testing.T) {
 
 	// call the same RPC, the result should be like before
 	groupRes2 := new(metrics.FCGroupRes)
-	assert.Nil(t, s.master.FindCreateGroup(
-		&metrics.FCGroupReq{Name: groupName, AppID: s.master.job.app.ID},
+	assert.Nil(t, m.FindCreateGroup(
+		&metrics.FCGroupReq{Name: groupName, AppID: m.job.app.ID},
 		groupRes2))
 	assert.Equal(t, groupRes, groupRes2)
 }
@@ -54,17 +54,17 @@ func TestFindCreateGraph(t *testing.T) {
 	var err error
 	ctx := context.TODO()
 
-	s := seedServer(t)
+	m := seedMaster(t)
 
-	s.master.job.app, err = s.NewApplication(ctx, "name", "scenario")
+	m.job.app, err = m.NewApplication(ctx, "name", "scenario")
 	assert.Nil(t, err)
 
 	prefix := time.Now().String()
 	groupName := "HTTP (" + prefix + ")"
 
 	groupRes := new(metrics.FCGroupRes)
-	assert.Nil(t, s.master.FindCreateGroup(
-		&metrics.FCGroupReq{Name: groupName, AppID: s.master.job.app.ID},
+	assert.Nil(t, m.FindCreateGroup(
+		&metrics.FCGroupReq{Name: groupName, AppID: m.job.app.ID},
 		groupRes))
 
 	// create new graph
@@ -74,10 +74,10 @@ func TestFindCreateGraph(t *testing.T) {
 		GroupID: groupRes.ID,
 	}
 	graphRes := new(metrics.FCGraphRes)
-	assert.Nil(t, s.master.FindCreateGraph(graphReq, graphRes))
+	assert.Nil(t, m.FindCreateGraph(graphReq, graphRes))
 
 	// read from db, check with groupRes
-	graphs, err := s.master.db.Graph.Query().Where(
+	graphs, err := m.db.Graph.Query().Where(
 		entGraph.TitleEQ(graphReq.Title),
 		entGraph.HasGroupWith(
 			entGroup.IDEQ(groupRes.ID),
@@ -90,7 +90,7 @@ func TestFindCreateGraph(t *testing.T) {
 
 	// call the same RPC, the result should be like before
 	graphRes2 := new(metrics.FCGraphRes)
-	assert.Nil(t, s.master.FindCreateGraph(graphReq, graphRes2))
+	assert.Nil(t, m.FindCreateGraph(graphReq, graphRes2))
 	assert.Equal(t, graphRes, graphRes2)
 }
 
@@ -98,9 +98,9 @@ func TestFindCreateMetric(t *testing.T) {
 	var err error
 	ctx := context.TODO()
 
-	s := seedServer(t)
+	m := seedMaster(t)
 
-	s.master.job.app, err = s.NewApplication(ctx, "name", "scenario")
+	m.job.app, err = m.NewApplication(ctx, "name", "scenario")
 	assert.Nil(t, err)
 
 	prefix := time.Now().String()
@@ -108,8 +108,8 @@ func TestFindCreateMetric(t *testing.T) {
 
 	// create new group
 	groupRes := new(metrics.FCGroupRes)
-	assert.Nil(t, s.master.FindCreateGroup(
-		&metrics.FCGroupReq{Name: groupName, AppID: s.master.job.app.ID},
+	assert.Nil(t, m.FindCreateGroup(
+		&metrics.FCGroupReq{Name: groupName, AppID: m.job.app.ID},
 		groupRes))
 
 	// create new graph
@@ -119,7 +119,7 @@ func TestFindCreateMetric(t *testing.T) {
 		GroupID: groupRes.ID,
 	}
 	graphRes := new(metrics.FCGraphRes)
-	assert.Nil(t, s.master.FindCreateGraph(graphReq, graphRes))
+	assert.Nil(t, m.FindCreateGraph(graphReq, graphRes))
 
 	// create new metric
 	metricReq := &metrics.FCMetricReq{
@@ -128,15 +128,15 @@ func TestFindCreateMetric(t *testing.T) {
 		GraphID: graphRes.ID,
 	}
 	metricRes := new(metrics.FCMetricRes)
-	assert.Nil(t, s.master.FindCreateMetric(metricReq, metricRes))
+	assert.Nil(t, m.FindCreateMetric(metricReq, metricRes))
 
 	// call the same RPC, the result should be like before
 	metricRes2 := new(metrics.FCGraphRes)
-	assert.Nil(t, s.master.FindCreateGraph(graphReq, metricRes2))
+	assert.Nil(t, m.FindCreateGraph(graphReq, metricRes2))
 	assert.Equal(t, graphRes, metricRes2)
 
 	// read from db, check with groupRes
-	metrics, err := s.master.db.Metric.Query().Where(
+	metrics, err := m.db.Metric.Query().Where(
 		entMetric.TitleEQ(metricReq.Title),
 		entMetric.HasGraphWith(
 			entGraph.IDEQ(graphRes.ID),
@@ -144,6 +144,6 @@ func TestFindCreateMetric(t *testing.T) {
 	).All(ctx)
 	assert.Nil(t, err)
 	assert.Len(t, metrics, 1)
-	m := metrics[0]
-	assert.Equal(t, m.ID, metricRes.ID)
+	m0 := metrics[0]
+	assert.Equal(t, m0.ID, metricRes.ID)
 }

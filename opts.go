@@ -29,7 +29,8 @@ type Options struct {
 	AppID        int
 
 	// master mode
-	Port int
+	Port   int
+	DbPath string
 }
 
 // func (o Options) String() string {
@@ -54,7 +55,8 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 		appID        int
 
 		// master mode
-		port int
+		port   int
+		dbPath string
 	)
 	fs.BoolVar(&showVersion, "v", false, "Print version information")
 	fs.BoolVar(&showVersion, "version", false, "Print version information")
@@ -72,6 +74,7 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 	// master
 	fs.IntVar(&port, "p", DEFAULT_PORT, "Port of the master server.")
 	fs.IntVar(&port, "port", DEFAULT_PORT, "Port of the master server.")
+	fs.StringVar(&dbPath, "db", DEFAULT_DB_PATH, "Location of the database.")
 
 	if err = fs.Parse(args); err != nil {
 		return nil, err
@@ -106,6 +109,7 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 	}
 	if opts.Mode == Master {
 		opts.Port = port
+		opts.DbPath = dbPath
 		return opts, nil
 	}
 
