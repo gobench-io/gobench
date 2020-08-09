@@ -26,9 +26,6 @@ install:
 test: install
 	go build -buildmode=plugin -o scenario/test/valid.so scenario/test/scripts/valid/valid.go
 	go build -buildmode=plugin -o scenario/test/invalid.so scenario/test/scripts/invalid/invalid.go
-	go build -buildmode=plugin -o worker/script/valid-forever/valid-forever.so worker/script/valid-forever/valid-forever.go
-	go build -buildmode=plugin -o worker/script/valid-dnt/valid-dnt.so worker/script/valid-dnt/valid-dnt.go
-	go build -buildmode=plugin -o worker/script/valid-panic/valid-panic.so worker/script/valid-panic/valid-panic.go
 
 	go build -buildmode=plugin -o executor/driver/script/valid-forever/valid-forever.so executor/driver/script/valid-forever/valid-forever.go
 	go build -buildmode=plugin -o executor/driver/script/valid-dnt/valid-dnt.so executor/driver/script/valid-dnt/valid-dnt.go
