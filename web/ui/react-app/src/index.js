@@ -4,7 +4,8 @@ import './css/index.css';
 import {
   BrowserRouter as Router,
   Switch,
-  Route
+  Route,
+	HashRouter
 } from "react-router-dom";
 
 import API from './api/api';
@@ -27,6 +28,7 @@ ReactDOM.render(
     <div className="gobench-container">
       <Title />
       <Router>
+			<HashRouter>
         <Switch>
           <Suspense fallback={<div />}>
             <Route exact={true} path="/application/:appId" component={App} />
@@ -34,6 +36,7 @@ ReactDOM.render(
             <Route exact={true} path="/" component={Applications} />
           </Suspense>
         </Switch>
+			</HashRouter>
       </Router>
     </div>
   </React.StrictMode >,
