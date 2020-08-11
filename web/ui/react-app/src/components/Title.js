@@ -1,8 +1,13 @@
-import React from 'react';
+import React from 'react'
+import { Link } from 'react-router-dom'
 
-const Title = () => <div className="gobench-title">
-  <h1 className="app-title">Gobench</h1>
-  <span style={{ marginBottom: '8px' }}>A distributed benchmark tool with Golang</span>
-</div>;
+const Title = () => {
+  return (
+    <div className='gobench-title'>
+      <Link className='app-title' to='/'>
+        <h1> Gobench</h1>
+      </Link>
+    </div>)
+}
 
-export default Title;
+export default Title
