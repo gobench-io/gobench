@@ -26,11 +26,11 @@ API.init({
 ReactDOM.render(
   <React.StrictMode>
     <div className='gobench-container'>
-      <Title />
       <Router>
         <HashRouter>
           <Switch>
             <Suspense fallback={<div />}>
+              <Title />
               <Route exact path='/application/:appId' component={App} />
               <Route exact path='/application/create' component={CreateApplicationForm} />
               <Route exact path='/' component={Applications} />
