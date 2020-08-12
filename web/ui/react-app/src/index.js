@@ -11,6 +11,7 @@ import {
 import API from './api/api'
 import config from './config/config'
 import Layout from './components/Layout'
+import Notification from './components/Notification'
 
 const Applications = lazy(() => import('./views/ApplicationsList/Applications'))
 const CreateApplicationForm = lazy(() => import('./views/ApplicationsList/CreateApplicationForm'))
@@ -28,13 +29,15 @@ ReactDOM.render(
     <Router>
       <HashRouter>
         <Switch>
-          <Layout>
-            <Suspense fallback={<div />}>
-              <Route exact path='/application/create' component={CreateApplicationForm} />
-              <Route exact path='/application/:appId' component={App} />
-              <Route exact path='/' component={Applications} />
-            </Suspense>
-          </Layout>
+          <Notification>
+            <Layout>
+              <Suspense fallback={<div />}>
+                <Route exact path='/application/create' component={CreateApplicationForm} />
+                <Route exact path='/application/:appId' component={App} />
+                <Route exact path='/' component={Applications} />
+              </Suspense>
+            </Layout>
+          </Notification>
         </Switch>
       </HashRouter>
     </Router>

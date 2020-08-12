@@ -1,18 +1,19 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { Layout, Breadcrumb } from 'antd'
-import { Link } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
 import MenuLeft from './menu'
 import { RiseOutlined } from '@ant-design/icons'
 import { useInterval, INTERVAL } from '../../realtimeHelpers'
 import GoBenchAPI from '../../api/gobench'
-import { statusColors, iconStatus } from '../Status'
-import { ApplicationsListContext, SpinnerContext } from '../../context'
+import { ApplicationsListContext, SpinnerContext, ErrorContext } from '../../context'
 import 'antd/dist/antd.css'
 import './style.css'
 
 const { Header, Content, Footer, Sider } = Layout
 
 const MainLayout = (props) => {
+  window._history = useHistory()
+  const em = useContext(ErrorContext)
   const [collapse, setCollapse] = useState(false)
   const [app, setApp] = useState({})
   const [fetching, setIsFetching] = useState(true)
@@ -25,9 +26,38 @@ const MainLayout = (props) => {
     })
   }
 
+  const submitCreate = ({ name, scenario }) => {
+    if (!name || name.trim() === '') {
+      em.setError({
+        type: 'error',
+        message: 'name is required.',
+        description: 'name of a application represent to a scenario. It will show on sidebar.'
+      })
+      return
+    }
+    if (!scenario || scenario.trim() === '') {
+      em.setError({
+        type: 'error',
+        message: 'description is required.',
+        description: 'description of a application should be filled in.'
+      })
+      return
+    }
+    GoBenchAPI.createApplication({
+      name,
+      scenario: btoa(unescape(encodeURIComponent(scenario)))
+    }).then(result => {
+      console.log('create scenario result', result)
+      window._history.push('/')
+    })
+  }
+
   useEffect(() => {
     if (!app.cancelRunApplication) {
       setApp({ ...app, cancelRunApplication })
+    }
+    if (!app.submitCreate) {
+      setApp({ ...app, submitCreate })
     }
     if (!app.apps) {
       GoBenchAPI.getApplications().then(apps => {
@@ -35,7 +65,7 @@ const MainLayout = (props) => {
         setIsFetching(false)
       })
     }
-  }, [app, cancelRunApplication])
+  }, [app, cancelRunApplication, submitCreate])
 
   useInterval(() => {
     if (app.apps && app.apps.length > 0) {
@@ -67,8 +97,8 @@ const MainLayout = (props) => {
             <Header className='site-layout-background' style={{ padding: 0, textAlign: 'center' }}>
               <Link to='/'><img width='150' src='resources/gobench-logo-full.png' /></Link>
             </Header>
-            <Content style={{ margin: '0 16px' }}>
-              <Breadcrumb style={{ margin: '16px 0' }}>
+            <Content style={{ margin: '1 16px' }}>
+              <Breadcrumb style={{ margin: '15px 25px' }}>
                 <Breadcrumb.Item>Applications</Breadcrumb.Item>
               </Breadcrumb>
               <div className='site-layout-background' style={{ padding: 24, minHeight: 360 }}>
