@@ -56,31 +56,31 @@ func groups() []metrics.Group {
 	cpuGroup := metrics.Group{
 		Name: "CPU",
 		Graphs: []metrics.Graph{
-			metrics.Graph{
+			{
 				Title: "CPU Cores",
 				Unit:  "N",
 				Metrics: []metrics.Metric{
-					metrics.Metric{
+					{
 						Title: cpuCount,
 						Type:  metrics.Gauge,
 					},
 				},
 			},
-			metrics.Graph{
+			{
 				Title: "CGO Calls",
 				Unit:  "N",
 				Metrics: []metrics.Metric{
-					metrics.Metric{
+					{
 						Title: cpuCgoCall,
 						Type:  metrics.Gauge,
 					},
 				},
 			},
-			metrics.Graph{
+			{
 				Title: "Goroutines",
 				Unit:  "N",
 				Metrics: []metrics.Metric{
-					metrics.Metric{
+					{
 						Title: cpuGoroutines,
 						Type:  metrics.Gauge,
 					},
@@ -91,51 +91,51 @@ func groups() []metrics.Group {
 	memGroup := metrics.Group{
 		Name: "Memory",
 		Graphs: []metrics.Graph{
-			metrics.Graph{
+			{
 				Title: "Allocated Heap",
 				Unit:  "Byte",
 				Metrics: []metrics.Metric{
-					metrics.Metric{
+					{
 						Title: memAlloc,
 						Type:  metrics.Gauge,
 					},
 				},
 			},
-			metrics.Graph{
+			{
 				Title: "Cumulative Freed Heap",
 				Unit:  "Byte",
 				Metrics: []metrics.Metric{
-					metrics.Metric{
+					{
 						Title: memFrees,
 						Type:  metrics.Gauge,
 					},
 				},
 			},
-			metrics.Graph{
+			{
 				Title: "Completed GC Cycles",
 				Unit:  "N",
 				Metrics: []metrics.Metric{
-					metrics.Metric{
+					{
 						Title: memGcCount,
 						Type:  metrics.Gauge,
 					},
 				},
 			},
-			metrics.Graph{
+			{
 				Title: "Last GC Finished",
 				Unit:  "ns (Unix epoch)",
 				Metrics: []metrics.Metric{
-					metrics.Metric{
+					{
 						Title: memGcLast,
 						Type:  metrics.Gauge,
 					},
 				},
 			},
-			metrics.Graph{
+			{
 				Title: "Target Next GC Cycle",
 				Unit:  "Byte",
 				Metrics: []metrics.Metric{
-					metrics.Metric{
+					{
 						Title: memGcNext,
 						Type:  metrics.Gauge,
 					},
@@ -151,71 +151,71 @@ func groups() []metrics.Group {
 			// 		},
 			// 	},
 			// },
-			metrics.Graph{
+			{
 				Title: "Total GC Pause",
 				Unit:  "ns",
 				Metrics: []metrics.Metric{
-					metrics.Metric{
+					{
 						Title: memGcPauseTotal,
 						Type:  metrics.Gauge,
 					},
 				},
 			},
-			metrics.Graph{
+			{
 				Title: "GC Metadata",
 				Unit:  "Byte",
 				Metrics: []metrics.Metric{
-					metrics.Metric{
+					{
 						Title: memGcSys,
 						Type:  metrics.Gauge,
 					},
 				},
 			},
-			metrics.Graph{
+			{
 				Title: "Pointer Lookups",
 				Unit:  "N",
 				Metrics: []metrics.Metric{
-					metrics.Metric{
+					{
 						Title: memLookups,
 						Type:  metrics.Gauge,
 					},
 				},
 			},
-			metrics.Graph{
+			{
 				Title: "Cumulative Heap Objects Allocated",
 				Unit:  "N",
 				Metrics: []metrics.Metric{
-					metrics.Metric{
+					{
 						Title: memMalloc,
 						Type:  metrics.Gauge,
 					},
 				},
 			},
-			metrics.Graph{
+			{
 				Title: "Miscellaneous off-heap Runtime Allocation",
 				Unit:  "N",
 				Metrics: []metrics.Metric{
-					metrics.Metric{
+					{
 						Title: memOthersys,
 						Type:  metrics.Gauge,
 					},
 				},
 			},
-			metrics.Graph{
+			{
 				Title: "Total Mem from the OS",
 				Unit:  "Byte",
 				Metrics: []metrics.Metric{
-					metrics.Metric{
+					{
 						Title: memSys,
 						Type:  metrics.Gauge,
 					},
 				},
 			},
-			metrics.Graph{
+			{
 				Title: "Cumulative Allocated for Heap Objects",
 				Unit:  "Byte",
 				Metrics: []metrics.Metric{
-					metrics.Metric{
+					{
 						Title: memTotalalloc,
 						Type:  metrics.Gauge,
 					},
@@ -226,61 +226,61 @@ func groups() []metrics.Group {
 	heapGroup := metrics.Group{
 		Name: "Heap",
 		Graphs: []metrics.Graph{
-			metrics.Graph{
+			{
 				Title: "Heap Allocated Objects",
 				Unit:  "Byte",
 				Metrics: []metrics.Metric{
-					metrics.Metric{
+					{
 						Title: memHeapAlloc,
 						Type:  metrics.Gauge,
 					},
 				},
 			},
-			metrics.Graph{
+			{
 				Title: "Heap Idle (unused) Spans",
 				Unit:  "Byte",
 				Metrics: []metrics.Metric{
-					metrics.Metric{
+					{
 						Title: memHeapIdle,
 						Type:  metrics.Gauge,
 					},
 				},
 			},
-			metrics.Graph{
+			{
 				Title: "Heap In-use Spans",
 				Unit:  "Byte",
 				Metrics: []metrics.Metric{
-					metrics.Metric{
+					{
 						Title: memHeapInuse,
 						Type:  metrics.Gauge,
 					},
 				},
 			},
-			metrics.Graph{
+			{
 				Title: "Heap Allocated Object",
 				Unit:  "Byte",
 				Metrics: []metrics.Metric{
-					metrics.Metric{
+					{
 						Title: memHeapObjects,
 						Type:  metrics.Gauge,
 					},
 				},
 			},
-			metrics.Graph{
+			{
 				Title: "Physical Memory Returned to OS",
 				Unit:  "Byte",
 				Metrics: []metrics.Metric{
-					metrics.Metric{
+					{
 						Title: memHeapReleased,
 						Type:  metrics.Gauge,
 					},
 				},
 			},
-			metrics.Graph{
+			{
 				Title: "Heap Memory Obtained from the OS",
 				Unit:  "Byte",
 				Metrics: []metrics.Metric{
-					metrics.Metric{
+					{
 						Title: memHeapSys,
 						Type:  metrics.Gauge,
 					},
@@ -291,61 +291,61 @@ func groups() []metrics.Group {
 	memStackGroup := metrics.Group{
 		Name: "Mem Stack",
 		Graphs: []metrics.Graph{
-			metrics.Graph{
+			{
 				Title: "In-use Stack Spans",
 				Unit:  "Byte",
 				Metrics: []metrics.Metric{
-					metrics.Metric{
+					{
 						Title: memStackInuse,
 						Type:  metrics.Gauge,
 					},
 				},
 			},
-			metrics.Graph{
+			{
 				Title: "Stack Memory Obtained from the OS",
 				Unit:  "Byte",
 				Metrics: []metrics.Metric{
-					metrics.Metric{
+					{
 						Title: memStackSys,
 						Type:  metrics.Gauge,
 					},
 				},
 			},
-			metrics.Graph{
+			{
 				Title: "Allocated mcache Structures",
 				Unit:  "Byte",
 				Metrics: []metrics.Metric{
-					metrics.Metric{
+					{
 						Title: memStackMcacheInuse,
 						Type:  metrics.Gauge,
 					},
 				},
 			},
-			metrics.Graph{
+			{
 				Title: "Memory Obtained from the OS for mcache Structures",
 				Unit:  "Byte",
 				Metrics: []metrics.Metric{
-					metrics.Metric{
+					{
 						Title: memStackMcacheSys,
 						Type:  metrics.Gauge,
 					},
 				},
 			},
-			metrics.Graph{
+			{
 				Title: "Allocated mspan Structures",
 				Unit:  "Byte",
 				Metrics: []metrics.Metric{
-					metrics.Metric{
+					{
 						Title: memStackMspanInuse,
 						Type:  metrics.Gauge,
 					},
 				},
 			},
-			metrics.Graph{
+			{
 				Title: "Memory Obtained from the OS for mspan Structures",
 				Unit:  "Byte",
 				Metrics: []metrics.Metric{
-					metrics.Metric{
+					{
 						Title: memStackMspanSys,
 						Type:  metrics.Gauge,
 					},
