@@ -10,7 +10,7 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/logger"
-	"github.com/gobench-io/gobench/server"
+	"github.com/gobench-io/gobench/master"
 	_ "github.com/gobench-io/gobench/web/statik"
 	"github.com/rakyll/statik/fs"
 )
@@ -19,7 +19,7 @@ type webKey string
 
 type handler struct {
 	logger logger.Logger
-	s      *server.Server
+	s      *master.Master
 	r      *chi.Mux
 }
 
@@ -28,7 +28,7 @@ func (h *handler) db() *ent.Client {
 }
 
 // New return new router interface
-func newHandler(s *server.Server, logger logger.Logger) *handler {
+func newHandler(s *master.Master, logger logger.Logger) *handler {
 	h := &handler{
 		s:      s,
 		logger: logger,
@@ -120,7 +120,7 @@ func newHandler(s *server.Server, logger logger.Logger) *handler {
 }
 
 // Serve start a web server with given gobench server
-func Serve(s *server.Server, logger logger.Logger) {
+func Serve(s *master.Master, logger logger.Logger) {
 	h := newHandler(s, logger)
 
 	portS := fmt.Sprintf(":%d", s.WebPort())

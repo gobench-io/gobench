@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/gobench-io/gobench/server"
+	"github.com/gobench-io/gobench/executor"
+	"github.com/gobench-io/gobench/logger"
+	"github.com/gobench-io/gobench/master"
 	"github.com/gobench-io/gobench/web"
 )
 
@@ -39,6 +41,18 @@ func usage() {
 	os.Exit(0)
 }
 
+// printAndDie print message to Stderr and exit error
+func printAndDie(msg string) {
+	fmt.Fprintln(os.Stderr, msg)
+	os.Exit(1)
+}
+
+// printVersionAndExit will print our version and exit.
+func printVersionAndExit() {
+	fmt.Printf("gobench: v%s\n", VERSION)
+	os.Exit(0)
+}
+
 func main() {
 	exe := "gobench"
 
@@ -46,21 +60,46 @@ func main() {
 	fs := flag.NewFlagSet(exe, flag.ExitOnError)
 	fs.Usage = usage
 
-	opts, err := server.ConfigureOptions(fs, os.Args[1:],
-		server.PrintVersionAndExit,
+	opts, err := ConfigureOptions(fs, os.Args[0:],
+		printVersionAndExit,
 		fs.Usage)
 	if err != nil {
-		server.PrintAndDie(fmt.Sprintf("%s: %s", exe, err))
+		printAndDie(fmt.Sprintf("%s: %s", exe, err))
 	}
 
-	s, err := server.NewServer(opts)
-	if err != nil {
-		server.PrintAndDie(fmt.Sprintf("%s: %s", exe, err))
+	logger := logger.NewStdLogger()
+
+	if opts.Mode == Master {
+		m, err := master.NewMaster(&master.Options{
+			Port:    opts.Port,
+			Program: opts.Program,
+			DbPath:  opts.DbPath,
+		}, logger)
+		if err != nil {
+			printAndDie(fmt.Sprintf("%s: %s", exe, err))
+		}
+
+		err = m.Start()
+		if err != nil {
+			printAndDie(fmt.Sprintf("%s: %s", exe, err))
+		}
+		web.Serve(m, logger)
+
+		return
 	}
 
-	if err := s.Start(); err != nil {
-		server.PrintAndDie(err.Error())
-	}
+	if opts.Mode == Executor {
+		e, err := executor.NewExecutor(&executor.Options{
+			AgentSock:    opts.AgentSock,
+			ExecutorSock: opts.ExecutorSock,
+			DriverPath:   opts.DriverPath,
+			AppID:        opts.AppID,
+		}, logger)
+		if err != nil {
+			printAndDie(fmt.Sprintf("%s: %s", exe, err))
+		}
+		e.Serve()
 
-	web.Serve(s, opts.Logger)
+		return
+	}
 }

@@ -1,4 +1,4 @@
-package server
+package master
 
 import (
 	"os"
@@ -6,7 +6,7 @@ import (
 	"syscall"
 )
 
-func (s *Server) handleSignals() {
+func (m *Master) handleSignals() {
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT)
 
@@ -14,7 +14,7 @@ func (s *Server) handleSignals() {
 		for sig := range sc {
 			switch sig {
 			case syscall.SIGINT:
-				s.finish(statusCancel)
+				m.finish(statusCancel)
 				os.Exit(0)
 			}
 		}

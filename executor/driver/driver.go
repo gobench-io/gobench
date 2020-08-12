@@ -1,14 +1,12 @@
-package worker
+package driver
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"sync"
 	"time"
 
-	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/logger"
 	"github.com/gobench-io/gobench/metrics"
 	"github.com/gobench-io/gobench/scenario"
@@ -18,13 +16,13 @@ import (
 // Error
 var (
 	ErrIDNotFound    = errors.New("id not found")
-	ErrNodeIsRunning = errors.New("worker is running")
+	ErrNodeIsRunning = errors.New("driver is running")
 
 	ErrAppCancel = errors.New("application is cancel")
 	ErrAppPanic  = errors.New("application is panic")
 )
 
-// worker status. the worker is in either idle, or running state
+// driver status. the driver is in either idle, or running state
 type status string
 
 const (
@@ -41,27 +39,24 @@ type unit struct {
 	g        gometrics.Gauge
 }
 
+// todo: do not use ent, but normal struct
 type metricLogger interface {
-	Counter(context.Context, int, string, string, int64, int64) error
-	Histogram(context.Context, int, string, string, int64, gometrics.Histogram) error
-	Gauge(context.Context, int, string, string, int64, int64) error
-	FindCreateGroup(context.Context, metrics.Group, int) (*ent.Group, error)
-	FindCreateGraph(context.Context, metrics.Graph, int) (*ent.Graph, error)
-	FindCreateMetric(context.Context, metrics.Metric, int) (*ent.Metric, error)
+	Counter(context.Context, int, string, int64, int64) error
+	Histogram(context.Context, int, string, int64, metrics.HistogramValues) error
+	Gauge(context.Context, int, string, int64, int64) error
+	FindCreateGroup(context.Context, metrics.Group, int) (*metrics.FCGroupRes, error)
+	FindCreateGraph(context.Context, metrics.Graph, int) (*metrics.FCGraphRes, error)
+	FindCreateMetric(context.Context, metrics.Metric, int) (*metrics.FCMetricRes, error)
 }
 
-// Worker is the main structure for a running worker
+// Driver is the main structure for a running driver
 // contains host information, the scenario (plugin)
 // and gometrics unit
-type Worker struct {
-	mu       sync.Mutex
-	id       string
-	hostname string
-	pid      int
-
+type Driver struct {
+	mu         sync.Mutex
 	appID      int
 	status     status
-	pluginPath string
+	driverPath string
 	vus        *scenario.Vus
 
 	units map[string]unit // title - gometrics
@@ -70,89 +65,85 @@ type Worker struct {
 	ml     metricLogger
 }
 
-// the singleton worker variable
-var worker Worker
+// the singleton driver variable
+var driver Driver
 
 func init() {
-	hostname, _ := os.Hostname()
-	pid := os.Getpid()
-	// id return the identification of the worker which is the combination of
-	// hostname and pid
-	id := fmt.Sprintf("%s-%d", hostname, pid)
-
-	worker = Worker{
-		id:       id,
-		pid:      pid,
-		hostname: hostname,
-		status:   Idle,
+	driver = Driver{
+		status: Idle,
 	}
 }
 
-// NewWorker returns the singleton worker
-func NewWorker(ml metricLogger, logger logger.Logger, appID int) (*Worker, error) {
-	worker.ml = ml
-	worker.logger = logger
-	worker.units = make(map[string]unit)
-	worker.appID = appID
+// NewDriver returns the singleton driver
+func NewDriver(ml metricLogger, logger logger.Logger, driverPath string, appID int) (*Driver, error) {
+	driver.mu.Lock()
 
+	driver.ml = ml
+	driver.logger = logger
+	driver.units = make(map[string]unit)
+	driver.appID = appID
 	// reset metrics
-	worker.unregisterGometrics()
+	driver.unregisterGometrics()
 
-	return &worker, nil
+	driver.mu.Unlock()
+
+	err := driver.load(driverPath)
+
+	return &driver, err
 }
 
-func (w *Worker) unregisterGometrics() {
+func (d *Driver) unregisterGometrics() {
 	gometrics.Each(func(name string, i interface{}) {
 		gometrics.Unregister(name)
 	})
 }
 
-func (w *Worker) reset() {
-	w.mu.Lock()
-	w.status = Idle
-	w.units = make(map[string]unit)
-	w.mu.Unlock()
-}
-
-// Load downloads the go plugin, extracts the virtual user scenario
-func (w *Worker) Load(so string) error {
+// load downloads the go plugin, extracts the virtual user scenario
+func (d *Driver) load(so string) error {
 	vus, err := scenario.LoadPlugin(so)
 	if err != nil {
 		return err
 	}
 
-	w.mu.Lock()
-	defer w.mu.Unlock()
+	d.mu.Lock()
+	defer d.mu.Unlock()
 
-	w.pluginPath = so
-	w.vus = &vus
+	d.driverPath = so
+	d.vus = &vus
 
 	return nil
 }
 
-// Run starts the preloaded plugin
-// return error if the worker is running already
-func (w *Worker) Run(ctx context.Context) (err error) {
-	w.mu.Lock()
+func (d *Driver) reset() {
+	d.mu.Lock()
+	d.status = Idle
+	d.units = make(map[string]unit)
+	d.mu.Unlock()
+}
 
-	if w.status == Running {
-		w.mu.Unlock()
+// Run starts the preloaded plugin
+// return error if the driver is running already
+func (d *Driver) Run(ctx context.Context) (err error) {
+	d.mu.Lock()
+
+	if d.status == Running {
+		d.mu.Unlock()
 		return ErrNodeIsRunning
 	}
 
-	w.status = Running
-	w.mu.Unlock()
+	d.status = Running
+	d.mu.Unlock()
 
-	err = w.run(ctx)
+	err = d.run(ctx)
 
 	return err
 }
 
-func (w *Worker) run(ctx context.Context) (err error) {
+func (d *Driver) run(ctx context.Context) (err error) {
 	finished := make(chan error)
 
-	go w.logScaled(ctx, 10*time.Second)
-	go w.runScen(ctx, finished)
+	go d.logScaled(ctx, 10*time.Second)
+	go d.runScen(ctx, finished)
 
 	select {
 	case err = <-finished:
@@ -160,69 +151,47 @@ func (w *Worker) run(ctx context.Context) (err error) {
 		err = ErrAppCancel
 	}
 
-	// when finish, reset the worker
-	w.reset()
+	// when finish, reset the driver
+	d.reset()
 
 	return
 }
 
 // Running returns a bool value indicating that the working is running
-func (w *Worker) Running() bool {
-	w.mu.Lock()
-	defer w.mu.Unlock()
+func (d *Driver) Running() bool {
+	d.mu.Lock()
+	defer d.mu.Unlock()
 
-	return w.status == Running
+	return d.status == Running
 }
 
-func (w *Worker) runScen(ctx context.Context, done chan error) {
+func (d *Driver) runScen(ctx context.Context, done chan error) {
 	var totalVu int
 
-	vus := *w.vus
+	vus := *d.vus
 	for i := range vus {
 		totalVu += vus[i].Nu
 	}
 
-	fatalErr := make(chan error)
-	wgDone := make(chan struct{})
 	var wg sync.WaitGroup
 	wg.Add(totalVu)
 
 	for i := range vus {
 		for j := 0; j < vus[i].Nu; j++ {
 			go func(i, j int) {
-
-				defer func() {
-					if r := recover(); r != nil {
-						w.logger.Errorw("recovered in runScreen",
-							"err", r,
-						)
-						fatalErr <- ErrAppPanic
-						// return
-					}
-				}()
-
 				vus[i].Fu(ctx, j)
 				wg.Done()
 			}(i, j)
 		}
 	}
 
-	go func() {
-		wg.Wait()
-		close(wgDone)
-	}()
-
-	select {
-	case <-wgDone:
-		done <- nil
-	case err := <-fatalErr:
-		done <- err
-	}
+	wg.Wait()
+	done <- nil
 }
 
-// logScaled extract the metric log from a worker
+// logScaled extract the metric log from a driver
 // should run this function in a routine
-func (w *Worker) logScaled(ctx context.Context, freq time.Duration) {
+func (d *Driver) logScaled(ctx context.Context, freq time.Duration) {
 	ch := make(chan interface{})
 
 	go func(channel chan interface{}) {
@@ -231,39 +200,51 @@ func (w *Worker) logScaled(ctx context.Context, freq time.Duration) {
 		}
 	}(ch)
 
-	if err := w.logScaledOnCue(ctx, ch); err != nil {
-		w.logger.Fatalw("failed logScaledOnCue", "err", err)
+	if err := d.logScaledOnCue(ctx, ch); err != nil {
+		d.logger.Fatalw("failed logScaledOnCue", "err", err)
 	}
 }
 
-func (w *Worker) logScaledOnCue(ctx context.Context, ch chan interface{}) error {
+func (d *Driver) logScaledOnCue(ctx context.Context, ch chan interface{}) error {
 	var err error
 	for {
 		select {
 		case <-ch:
 			now := timestampMs()
-			w.mu.Lock()
-			units := w.units
-			w.mu.Unlock()
+			d.mu.Lock()
+			units := d.units
+			d.mu.Unlock()
 
 			for _, u := range units {
 				switch u.Type {
 				case metrics.Counter:
-					err = w.ml.Counter(ctx, u.metricID, w.id, u.Title, now, u.c.Count())
+					err = d.ml.Counter(ctx, u.metricID, u.Title, now, u.c.Count())
 				case metrics.Histogram:
 					h := u.h.Snapshot()
-					err = w.ml.Histogram(ctx, u.metricID, w.id, u.Title, now, h)
+					ps := h.Percentiles([]float64{0.5, 0.75, 0.95, 0.99, 0.999})
+					hv := metrics.HistogramValues{
+						Count:  h.Count(),
+						Min:    h.Min(),
+						Max:    h.Max(),
+						Mean:   h.Mean(),
+						Stddev: h.StdDev(),
+						Median: ps[0],
+						P75:    ps[1],
+						P95:    ps[2],
+						P99:    ps[3],
+						P999:   ps[4],
+					}
+					err = d.ml.Histogram(ctx, u.metricID, u.Title, now, hv)
 				case metrics.Gauge:
-					err = w.ml.Gauge(ctx, u.metricID, w.id, u.Title, now, u.g.Value())
+					err = d.ml.Gauge(ctx, u.metricID, u.Title, now, u.g.Value())
 				}
+
 				if err != nil {
-					w.logger.Errorw("metric log failed",
-						"err", err,
-					)
+					d.logger.Errorw("metric log failed", "err", err)
 				}
 			}
 		case <-ctx.Done():
-			w.logger.Infow("logScaledOnCue canceled")
+			d.logger.Infow("logScaledOnCue canceled")
 			return nil
 		}
 	}
@@ -273,32 +254,32 @@ func timestampMs() int64 {
 	return time.Now().UnixNano() / 1e6 // ms
 }
 
-// Setup is used for the worker to report the metrics that it will generate
+// Setup is used for the driver to report the metrics that it will generate
 func Setup(groups []metrics.Group) error {
 	ctx := context.TODO()
 
 	units := make(map[string]unit)
 
-	worker.mu.Lock()
-	defer worker.mu.Unlock()
+	driver.mu.Lock()
+	defer driver.mu.Unlock()
 
 	for _, group := range groups {
 		// create a new group if not existed
-		egroup, err := worker.ml.FindCreateGroup(ctx, group, worker.appID)
+		egroup, err := driver.ml.FindCreateGroup(ctx, group, driver.appID)
 		if err != nil {
 			return fmt.Errorf("failed create group: %v", err)
 		}
 
 		for _, graph := range group.Graphs {
 			// create new graph if not existed
-			egraph, err := worker.ml.FindCreateGraph(ctx, graph, egroup.ID)
+			egraph, err := driver.ml.FindCreateGraph(ctx, graph, egroup.ID)
 			if err != nil {
 				return fmt.Errorf("failed create graph: %v", err)
 			}
 
 			for _, m := range graph.Metrics {
 				// create new metric if not existed
-				emetric, err := worker.ml.FindCreateMetric(ctx, m, egraph.ID)
+				emetric, err := driver.ml.FindCreateMetric(ctx, m, egraph.ID)
 				if err != nil {
 					return fmt.Errorf("failed create metric: %v", err)
 				}
@@ -359,7 +340,7 @@ func Setup(groups []metrics.Group) error {
 
 	// aggregate units
 	for k, v := range units {
-		worker.units[k] = v
+		driver.units[k] = v
 	}
 
 	return nil
@@ -371,14 +352,12 @@ func Setup(groups []metrics.Group) error {
 // a. The title has never ever register before
 // b. The session is cancel but the scenario does not handle the ctx.Done signal
 func Notify(title string, value int64) error {
-	worker.mu.Lock()
-	defer worker.mu.Unlock()
+	driver.mu.Lock()
+	defer driver.mu.Unlock()
 
-	u, ok := worker.units[title]
+	u, ok := driver.units[title]
 	if !ok {
-		worker.logger.Infow("metric not found",
-			"title", title,
-		)
+		driver.logger.Infow("metric not found", "title", title)
 		return ErrIDNotFound
 	}
 

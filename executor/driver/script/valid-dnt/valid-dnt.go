@@ -21,5 +21,4 @@ func Export() scenario.Vus {
 }
 
 // this func does nothing
-func f1(ctx context.Context, vui int) {
-}
+func f1(ctx context.Context, vui int) {}

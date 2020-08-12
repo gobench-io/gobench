@@ -26,3 +26,83 @@ type Group struct {
 	Name   string
 	Graphs []Graph
 }
+
+// rpc
+
+// FCGroupReq for find or create group rpc request
+type FCGroupReq struct {
+	Name  string
+	AppID int
+}
+
+type FCGroupRes struct {
+	ID int
+}
+
+// FCGraphReq for find or create graph rpc request
+type FCGraphReq struct {
+	Title   string
+	Unit    string
+	GroupID int
+}
+type FCGraphRes struct {
+	ID int
+}
+
+// FCMetricReq for find or create metric rpc request
+type FCMetricReq struct {
+	Title   string
+	Type    MetricType
+	GraphID int
+}
+type FCMetricRes struct {
+	ID int
+}
+
+type BasedReqMetric struct {
+	EID   string // executor ID
+	AppID int    // app ID
+	MID   int    // metric ID
+	Time  int64
+}
+type BasedResMetric struct {
+	Success bool
+	AppID   int
+}
+
+type HistogramValues struct {
+	Count  int64
+	Min    int64
+	Max    int64
+	Mean   float64
+	Stddev float64
+	Median float64
+	P75    float64
+	P95    float64
+	P99    float64
+	P999   float64
+}
+
+type CounterReq struct {
+	BasedReqMetric
+	Count int64
+}
+type CounterRes struct {
+	BasedResMetric
+}
+
+type HistogramReq struct {
+	BasedReqMetric
+	HistogramValues
+}
+type HistogramRes struct {
+	BasedResMetric
+}
+
+type GaugeReq struct {
+	BasedReqMetric
+	Gauge int64
+}
+type GaugeRes struct {
+	BasedResMetric
+}
