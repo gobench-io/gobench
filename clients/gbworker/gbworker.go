@@ -6,8 +6,8 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/gobench-io/gobench/executor/driver"
 	"github.com/gobench-io/gobench/metrics"
-	"github.com/gobench-io/gobench/worker"
 )
 
 // cpu
@@ -365,7 +365,7 @@ func groups() []metrics.Group {
 func NewInternalClient(ctx *context.Context) (InternalClient, error) {
 	client := InternalClient{}
 
-	if err := worker.Setup(groups()); err != nil {
+	if err := driver.Setup(groups()); err != nil {
 		return client, err
 	}
 	return client, nil
@@ -397,41 +397,41 @@ func (c *InternalClient) operate() error {
 		if !c.run {
 			break
 		}
-		worker.Notify(cpuCount, int64(runtime.NumCPU()))
-		worker.Notify(cpuCgoCall, int64(runtime.NumCgoCall()))
-		worker.Notify(cpuGoroutines, int64(runtime.NumGoroutine()))
+		driver.Notify(cpuCount, int64(runtime.NumCPU()))
+		driver.Notify(cpuCgoCall, int64(runtime.NumCgoCall()))
+		driver.Notify(cpuGoroutines, int64(runtime.NumGoroutine()))
 
 		var stats runtime.MemStats
 		runtime.ReadMemStats(&stats)
-		worker.Notify(memAlloc, int64(stats.Alloc))
-		worker.Notify(memFrees, int64(stats.Frees))
-		worker.Notify(memGcCount, int64(stats.NumGC))
-		worker.Notify(memGcLast, int64(stats.LastGC))
-		worker.Notify(memGcNext, int64(stats.NextGC))
-		// worker.Notify(memGcPause, int64(stats.PauseNs))
-		worker.Notify(memGcPauseTotal, int64(stats.PauseTotalNs))
+		driver.Notify(memAlloc, int64(stats.Alloc))
+		driver.Notify(memFrees, int64(stats.Frees))
+		driver.Notify(memGcCount, int64(stats.NumGC))
+		driver.Notify(memGcLast, int64(stats.LastGC))
+		driver.Notify(memGcNext, int64(stats.NextGC))
+		// driver.Notify(memGcPause, int64(stats.PauseNs))
+		driver.Notify(memGcPauseTotal, int64(stats.PauseTotalNs))
 
-		worker.Notify(memLookups, int64(stats.Lookups))
-		worker.Notify(memMalloc, int64(stats.Mallocs))
-		worker.Notify(memOthersys, int64(stats.OtherSys))
-		worker.Notify(memSys, int64(stats.Sys))
-		worker.Notify(memTotalalloc, int64(stats.TotalAlloc))
+		driver.Notify(memLookups, int64(stats.Lookups))
+		driver.Notify(memMalloc, int64(stats.Mallocs))
+		driver.Notify(memOthersys, int64(stats.OtherSys))
+		driver.Notify(memSys, int64(stats.Sys))
+		driver.Notify(memTotalalloc, int64(stats.TotalAlloc))
 
 		// heap
-		worker.Notify(memHeapAlloc, int64(stats.HeapAlloc))
-		worker.Notify(memHeapIdle, int64(stats.HeapIdle))
-		worker.Notify(memHeapInuse, int64(stats.HeapInuse))
-		worker.Notify(memHeapObjects, int64(stats.HeapObjects))
-		worker.Notify(memHeapReleased, int64(stats.HeapReleased))
-		worker.Notify(memHeapSys, int64(stats.HeapReleased))
+		driver.Notify(memHeapAlloc, int64(stats.HeapAlloc))
+		driver.Notify(memHeapIdle, int64(stats.HeapIdle))
+		driver.Notify(memHeapInuse, int64(stats.HeapInuse))
+		driver.Notify(memHeapObjects, int64(stats.HeapObjects))
+		driver.Notify(memHeapReleased, int64(stats.HeapReleased))
+		driver.Notify(memHeapSys, int64(stats.HeapReleased))
 
 		// stack
-		worker.Notify(memStackInuse, int64(stats.StackInuse))
-		worker.Notify(memStackSys, int64(stats.StackSys))
-		worker.Notify(memStackMcacheInuse, int64(stats.MCacheInuse))
-		worker.Notify(memStackMcacheSys, int64(stats.MCacheSys))
-		worker.Notify(memStackMspanInuse, int64(stats.MSpanInuse))
-		worker.Notify(memStackMspanSys, int64(stats.MSpanSys))
+		driver.Notify(memStackInuse, int64(stats.StackInuse))
+		driver.Notify(memStackSys, int64(stats.StackSys))
+		driver.Notify(memStackMcacheInuse, int64(stats.MCacheInuse))
+		driver.Notify(memStackMcacheSys, int64(stats.MCacheSys))
+		driver.Notify(memStackMspanInuse, int64(stats.MSpanInuse))
+		driver.Notify(memStackMspanSys, int64(stats.MSpanSys))
 	}
 
 	return nil
