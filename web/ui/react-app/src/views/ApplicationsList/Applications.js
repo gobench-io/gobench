@@ -68,6 +68,13 @@ const Applications = () => {
                               >
                                 Cancel
                               </button>}
+                            {['finished'].includes(status) &&
+                              <button
+                                className='btn btn-primary'
+                                onClick={() => app.submitCreate({...application,name:`${application.name}-${Date.UTC()}`})}
+                              >
+                               Clone 
+                              </button>}
                           </div>
                         </td>
                       </tr>
