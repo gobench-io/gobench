@@ -55,8 +55,29 @@ const MainLayout = (props) => {
       window._history.push('/')
     })
   })
+  const deleteApplication = useCallback(({ id }) => {
+    if (!id) {
+      em.setError({
+        type: 'error',
+        message: 'missing parameter.',
+        description:
+          'missing id params.'
+      })
+      return
+    }
+    GoBenchAPI.deleteApplication(id).then((result) => {
+      GoBenchAPI.getApplications().then((apps) => {
+        setApp({ ...app, apps })
+        setIsFetching(false)
+      })
+      window._history.push('/')
+    })
+  })
 
   useEffect(() => {
+    if (!app.deleteApplication) {
+      setApp({ ...app, deleteApplication })
+    }
     if (!app.cancelRunApplication) {
       setApp({ ...app, cancelRunApplication })
     }
