@@ -1,20 +1,17 @@
-import React, { useEffect, useState, useContext } from 'react'
+import React, { useContext } from 'react'
 import { get } from 'lodash'
 import TimeAgo from 'react-timeago'
-import GoBenchAPI from '../../api/gobench'
 import { useHistory } from 'react-router-dom'
-import { useInterval, INTERVAL } from '../../realtimeHelpers'
 import Status from '../../components/Status'
-import { ApplicationsListContext, SpinnerContext } from '../../context'
-
+import { RootContext, SpinnerContext } from '../../context'
 
 const Applications = () => {
   const history = useHistory()
-const	app = useContext(ApplicationsListContext)
-	const applications = app.apps || []
-	const isFetching = useContext(SpinnerContext)
-  return <div >
-  <div className='card'>
+  const	app = useContext(RootContext)
+  const applications = app.apps || []
+  const isFetching = useContext(SpinnerContext)
+  return <div>
+    <div className='card'>
       <div className='applications-list-header'>
         <h2>Applications</h2>
         <button
@@ -26,7 +23,7 @@ const	app = useContext(ApplicationsListContext)
       </div>
       <div className='applications-body'>
         {
-          isFetching                             
+          isFetching
             ? <div>Loading applications</div>
             : <table className='applications-table'>
               <thead>
@@ -53,33 +50,34 @@ const	app = useContext(ApplicationsListContext)
                           <Status status={application.status} />
                         </td>
                         <td style={{ width: '15%' }}>
-												<TimeAgo date={application.created_at} />
+                          <TimeAgo date={application.created_at} />
                         </td>
                         <td style={{ width: '33%' }}>
                           <div style={{ float: 'right' }}>
                             {['finished', 'running', 'cancel'].includes(status) &&
                               <button
-className='btn btn-primary'
+                                className='btn btn-primary'
                                 onClick={() => history.push(`/application/${application.id}`)}
                               >
                                 View Details
                               </button>}
                             {['running', 'pending'].includes(status) &&
-                              <button className='btn btn-cancel'>
-                                 onClick={() => app.cancelRunApplication(application.id)} 
-                                >
+                              <button
+                                className='btn btn-cancel'
+                                onClick={() => app.cancelRunApplication(application.id)}
+                              >
                                 Cancel
                               </button>}
                           </div>
                         </td>
-                             </tr>
+                      </tr>
                     })
                 }
               </tbody>
-              </table>
+            </table>
         }
       </div>
     </div>
-       </div>
-};
+  </div>
+}
 export default Applications

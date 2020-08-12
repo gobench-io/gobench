@@ -1,14 +1,13 @@
 import { notification } from 'antd'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState,useCallback } from 'react'
 import { ErrorContext } from '../../context'
 
 const Notification = (props) => {
-  const setError = (errorMessage) => {
+  const setError = useCallback((errorMessage) => {
     setEm({
-      ...em,
       ...errorMessage
     })
-  }
+  })
   const [em, setEm] = useState({ setError })
   useEffect(() => {
     if (em.type) {

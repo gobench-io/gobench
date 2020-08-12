@@ -6,11 +6,11 @@ import 'prismjs/components/prism-go'
 import { useHistory } from 'react-router-dom'
 
 import '../../css/editor.css'
-import { ApplicationsListContext } from '../../context'
+import { RootContext } from '../../context'
 
 const CreateApplicationForm = () => {
   const history = useHistory()
-  const app = useContext(ApplicationsListContext)
+  const app = useContext(RootContext)
   const [name, onChangeName] = useState('')
   const [code, onChangeEditor] = useState('')
 

@@ -2,12 +2,12 @@ import React, { useContext, useEffect, useState } from 'react'
 import { Menu } from 'antd'
 import { PieChartOutlined, AreaChartOutlined } from '@ant-design/icons'
 import { Link } from 'react-router-dom'
-import { ApplicationsListContext } from '../../context'
+import { RootContext } from '../../context'
 import { statusColors, iconStatus } from '../Status'
 const { Item } = Menu
 
 const MenuLeft = (props) => {
-  const app = useContext(ApplicationsListContext)
+  const app = useContext(RootContext)
   const [menus, setMenus] = useState([])
   useEffect(() => {
     if (app.apps) {
