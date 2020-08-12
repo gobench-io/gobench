@@ -35,3 +35,8 @@ background: aliceblue!important;
 .ant-layout-sider-trigger span{
 color: #114411;
 }
+.app-small-timestamp{
+margin-left: 20px;
+    margin-top: -15px;
+    margin-bottom: 20px;
+}
