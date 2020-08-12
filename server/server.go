@@ -152,6 +152,26 @@ func (s *Server) cleanupDB() error {
 	return err
 }
 
+// DeleteApplication a finished/canceled/error application
+func (s *Server) DeleteApplication(ctx context.Context, appID int) error {
+	app, err := s.master.db.Application.
+		Query().
+		Where(application.ID(appID)).
+		Only(ctx)
+
+	if err != nil {
+		return err
+	}
+
+	if app.Status != string(jobCancel) && app.Status != string(jobFinished) && app.Status != string(jobError) {
+		return fmt.Errorf(ErrCantDeleteApp.Error(), string(app.Status))
+	}
+
+	return s.master.db.Application.
+		DeleteOneID(appID).
+		Exec(ctx)
+}
+
 // PrintAndDie print message to Stderr and exit error
 func PrintAndDie(msg string) {
 	fmt.Fprintln(os.Stderr, msg)
