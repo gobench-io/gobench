@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useContext } from 'react'
 import { get } from 'lodash'
+import TimeAgo from 'react-timeago'
 import GoBenchAPI from '../../api/gobench'
 import { useHistory } from 'react-router-dom'
 import { useInterval, INTERVAL } from '../../realtimeHelpers'
 import Status from '../../components/Status'
 import { ApplicationsListContext, SpinnerContext } from '../../context'
+
 
 const Applications = () => {
   const history = useHistory()
@@ -31,7 +33,7 @@ const	app = useContext(ApplicationsListContext)
                 <tr>
                   <th>Application Name</th>
                   <th>Status</th>
-                  <th>Day created</th>
+                  <th>Date created</th>
                   <th />
                 </tr>
               </thead>
@@ -51,7 +53,7 @@ const	app = useContext(ApplicationsListContext)
                           <Status status={application.status} />
                         </td>
                         <td style={{ width: '15%' }}>
-                          <Status status={application.status} />
+												<TimeAgo date={application.created_at} />
                         </td>
                         <td style={{ width: '33%' }}>
                           <div style={{ float: 'right' }}>
