@@ -7,12 +7,13 @@ import (
 	"github.com/gobench-io/gobench/metrics"
 	"github.com/mackerelio/go-osstat/cpu"
 	"github.com/mackerelio/go-osstat/loadavg"
+	"github.com/mackerelio/go-osstat/memory"
 	"github.com/mackerelio/go-osstat/network"
 )
 
-// load average
 const slLA1 string = "LA1"
 const cpuUser string = "CPU"
+const ramUsing string = "RAM"
 
 // systemload report the current host system load like cpu, ram, and network
 // status
@@ -38,6 +39,16 @@ func (d *Driver) systemloadSetup() (err error) {
 				Metrics: []metrics.Metric{
 					{
 						Title: cpuUser,
+						Type:  metrics.Gauge,
+					},
+				},
+			},
+			{
+				Title: "RAM",
+				Unit:  "%",
+				Metrics: []metrics.Metric{
+					{
+						Title: ramUsing,
 						Type:  metrics.Gauge,
 					},
 				},
@@ -143,6 +154,11 @@ func (d *Driver) systemloadRun(ctx context.Context) (err error) {
 			// update prv values
 			cpuPre = cpuNow
 			cpuPreTime = now
+		}
+
+		if mem, err := memory.Get(); err == nil {
+			r := float64(mem.Used) / float64(mem.Total) * 100.0
+			Notify(ramUsing, int64(r))
 		}
 	}
 

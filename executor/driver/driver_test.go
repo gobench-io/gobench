@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/gobench-io/gobench/logger"
-	"github.com/gobench-io/gobench/metrics"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -15,47 +14,12 @@ func loadValidPlugin(d *Driver) error {
 	return d.load(so)
 }
 
-// nil metric logger
-type nilLog struct{}
-
-func (l *nilLog) Counter(ctx context.Context, mID int, title string, time, c int64) error {
-	return nil
-}
-
-func (l *nilLog) Histogram(ctx context.Context, mID int, title string, time int64, h metrics.HistogramValues) error {
-	return nil
-}
-
-func (l *nilLog) Gauge(ctx context.Context, mID int, title string, time int64, g int64) error {
-	return nil
-}
-
-func (l *nilLog) FindCreateGroup(ctx context.Context, mg metrics.Group, appID int) (
-	*metrics.FCGroupRes, error,
-) {
-	return nil, nil
-}
-func (l *nilLog) FindCreateGraph(ctx context.Context, mgraph metrics.Graph, groupID int) (
-	*metrics.FCGraphRes, error,
-) {
-	return nil, nil
-}
-func (l *nilLog) FindCreateMetric(ctx context.Context, mmetric metrics.Metric, graphID int) (
-	*metrics.FCMetricRes, error,
-) {
-	return nil, nil
-}
-
-func newNilMetricLog() metricLogger {
-	return &nilLog{}
-}
-
 func TestNew(t *testing.T) {
 	so := "./script/valid-dnt/valid-dnt.so"
 
-	n1, err := NewDriver(newNilMetricLog(), logger.NewNopLogger(), so, 1)
+	n1, err := NewDriver(newNopMetricLog(), logger.NewNopLogger(), so, 1)
 	assert.Nil(t, err)
-	n2, err := NewDriver(newNilMetricLog(), logger.NewNopLogger(), so, 2)
+	n2, err := NewDriver(newNopMetricLog(), logger.NewNopLogger(), so, 2)
 	assert.Nil(t, err)
 
 	assert.Equal(t, n1, n2)
@@ -69,7 +33,7 @@ func TestNew(t *testing.T) {
 
 func TestRunPlugin(t *testing.T) {
 	so := "./script/valid-dnt/valid-dnt.so"
-	n, _ := NewDriver(newNilMetricLog(), logger.NewNopLogger(), so, 1)
+	n, _ := NewDriver(newNopMetricLog(), logger.NewNopLogger(), so, 1)
 
 	assert.False(t, n.Running())
 
@@ -82,7 +46,7 @@ func TestRunPlugin(t *testing.T) {
 
 func TestCancelPlugin(t *testing.T) {
 	so := "./script/valid-forever/valid-forever.so"
-	n, _ := NewDriver(newNilMetricLog(), logger.NewNopLogger(), so, 1)
+	n, _ := NewDriver(newNopMetricLog(), logger.NewNopLogger(), so, 1)
 
 	ctx, cancel := context.WithCancel(context.Background())
 
