@@ -163,7 +163,7 @@ func (s *Server) DeleteApplication(ctx context.Context, appID int) error {
 		return err
 	}
 
-	if app.Status != string(jobCancel) && app.Status != string(jobFinished) && app.Status != string(jobError) {
+	if app.Status != string(jobCancel) && app.Status != string(jobFinished) && app.Status != string(jobError) && app.Status != string(jobPending) {
 		return fmt.Errorf(ErrCantDeleteApp.Error(), string(app.Status))
 	}
 
