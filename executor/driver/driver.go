@@ -99,10 +99,15 @@ func (d *Driver) unregisterGometrics() {
 }
 
 // load downloads the go plugin, extracts the virtual user scenario
-func (d *Driver) load(so string) error {
+func (d *Driver) load(so string) (err error) {
 	vus, err := scenario.LoadPlugin(so)
 	if err != nil {
-		return err
+		return
+	}
+
+	// setup driver system load
+	if err = d.systemloadRun(); err != nil {
+		return
 	}
 
 	d.mu.Lock()
@@ -111,7 +116,7 @@ func (d *Driver) load(so string) error {
 	d.driverPath = so
 	d.vus = &vus
 
-	return nil
+	return
 }
 
 func (d *Driver) reset() {
