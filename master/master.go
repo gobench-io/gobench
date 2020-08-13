@@ -140,6 +140,27 @@ func (m *Master) NewApplication(ctx context.Context, name, scenario string) (
 		Save(ctx)
 }
 
+// DeleteApplication a pending/finished/canceled/error application
+func (m *Master) DeleteApplication(ctx context.Context, appID int) error {
+	app, err := m.db.Application.
+		Query().
+		Where(application.ID(appID)).
+		Only(ctx)
+
+	if err != nil {
+		return err
+	}
+
+	if app.Status != string(jobPending) && app.Status != string(jobCancel) &&
+		app.Status != string(jobFinished) && app.Status != string(jobError) {
+		return fmt.Errorf(ErrCantDeleteApp.Error(), string(app.Status))
+	}
+
+	return m.db.Application.
+		DeleteOneID(appID).
+		Exec(ctx)
+}
+
 // CancelApplication terminates an application
 // if the app is running, send cancel signal
 // if the app is finished/error, return ErrAppIsFinished error

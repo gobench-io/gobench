@@ -148,3 +148,20 @@ func (h *handler) cancelApplication(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+func (h *handler) deleteApplication(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	app, ok := ctx.Value(webKey("application")).(*ent.Application)
+	if !ok {
+		http.Error(w, http.StatusText(422), 422)
+		return
+	}
+	if err := h.s.DeleteApplication(ctx, app.ID); err != nil {
+		http.Error(w, http.StatusText(400), 400)
+		return
+	}
+
+	if err := render.Render(w, r, newApplicationResponse(nil)); err != nil {
+		render.Render(w, r, ErrRender(err))
+		return
+	}
+}

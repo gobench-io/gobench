@@ -101,6 +101,7 @@ func newHandler(s *master.Master, logger logger.Logger) *handler {
 				r.Use(h.applicationCtx)
 
 				r.Get("/", h.getApplication)
+				r.Delete("/", h.deleteApplication)
 				r.Get("/groups", h.getApplicationGroups)
 				r.Put("/cancel", h.cancelApplication)
 			})

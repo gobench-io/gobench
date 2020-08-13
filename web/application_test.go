@@ -176,3 +176,17 @@ func TestCancelApplication(t *testing.T) {
 	_ = json.Unmarshal(w.Body.Bytes(), &resApp)
 	assert.Equal(t, resApp.Status, "cancel")
 }
+
+func TestDeleteApplication(t *testing.T) {
+	app := newApp(t)
+
+	r, w := newAPITest(t)
+	req, _ := http.NewRequest(
+		"DELETE",
+		fmt.Sprintf("/api/applications/%d", app.ID),
+		nil,
+	)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, 200, w.Code)
+}
