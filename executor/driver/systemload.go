@@ -5,12 +5,14 @@ import (
 	"time"
 
 	"github.com/gobench-io/gobench/metrics"
+	"github.com/mackerelio/go-osstat/cpu"
 	"github.com/mackerelio/go-osstat/loadavg"
 	"github.com/mackerelio/go-osstat/network"
 )
 
 // load average
 const slLA1 string = "LA1"
+const cpuUser string = "CPU"
 
 // systemload report the current host system load like cpu, ram, and network
 // status
@@ -31,33 +33,48 @@ func (d *Driver) systemloadSetup() (err error) {
 				},
 			},
 			{
-				Title:   "Network transmit",
-				Unit:    "KiB/s",
-				Metrics: []metrics.Metric{},
-			},
-			{
-				Title:   "Network receive",
-				Unit:    "KiB/s",
-				Metrics: []metrics.Metric{},
+				Title: "CPU",
+				Unit:  "%",
+				Metrics: []metrics.Metric{
+					{
+						Title: cpuUser,
+						Type:  metrics.Gauge,
+					},
+				},
 			},
 		},
 	}
 
+	// generate network metrics
 	nss, err := network.Get()
 	if err != nil {
 		return
 	}
+	txMetrics := make([]metrics.Metric, 0, len(nss))
+	rxMetrics := make([]metrics.Metric, 0, len(nss))
 	for _, ns := range nss {
-		group.Graphs[1].Metrics = append(group.Graphs[1].Metrics, metrics.Metric{
+		// txMetrics = append(txMetrics, metrics.Metric{
+		txMetrics = append(txMetrics, metrics.Metric{
 			Title: ns.Name + " transmit",
 			Type:  metrics.Gauge,
 		})
-		group.Graphs[2].Metrics = append(group.Graphs[2].Metrics, metrics.Metric{
+		rxMetrics = append(rxMetrics, metrics.Metric{
 			Title: ns.Name + " receive",
 			Type:  metrics.Gauge,
 		})
 	}
+	group.Graphs = append(group.Graphs, metrics.Graph{
+		Title:   "Network transmit",
+		Unit:    "KiB/s",
+		Metrics: txMetrics,
+	})
+	group.Graphs = append(group.Graphs, metrics.Graph{
+		Title:   "Network receive",
+		Unit:    "KiB/s",
+		Metrics: rxMetrics,
+	})
 
+	// finally
 	groups := []metrics.Group{
 		group,
 	}
@@ -84,12 +101,17 @@ func (d *Driver) systemloadRun(ctx context.Context) (err error) {
 	nssPre := make(map[string]rtxBytes)
 	nssPreTime := time.Now()
 
+	var cpuPre *cpu.Stats
+	cpuPreTime := time.Now()
+
 	for range ch {
+		// load average
 		if la, err := loadavg.Get(); err == nil {
 			la1 := int64(la.Loadavg1 * 100)
 			Notify(slLA1, la1)
 		}
 
+		// network status
 		if nss, err := network.Get(); err == nil {
 			now := time.Now()
 			for _, ns := range nss {
@@ -109,6 +131,18 @@ func (d *Driver) systemloadRun(ctx context.Context) (err error) {
 				}
 			}
 			nssPreTime = now
+		}
+
+		if cpuNow, err := cpu.Get(); err == nil {
+			now := time.Now()
+			diffTime := now.Sub(cpuPreTime).Seconds()
+			if cpuPre != nil {
+				user := float64(cpuNow.User-cpuPre.User) / diffTime
+				Notify(cpuUser, int64(user))
+			}
+			// update prv values
+			cpuPre = cpuNow
+			cpuPreTime = now
 		}
 	}
 
