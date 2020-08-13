@@ -140,7 +140,7 @@ func (m *Master) NewApplication(ctx context.Context, name, scenario string) (
 		Save(ctx)
 }
 
-// DeleteApplication a finished/canceled/error application
+// DeleteApplication a pending/finished/canceled/error application
 func (m *Master) DeleteApplication(ctx context.Context, appID int) error {
 	app, err := m.db.Application.
 		Query().
@@ -151,7 +151,8 @@ func (m *Master) DeleteApplication(ctx context.Context, appID int) error {
 		return err
 	}
 
-	if app.Status != string(jobCancel) && app.Status != string(jobFinished) && app.Status != string(jobError) {
+	if app.Status != string(jobPending) && app.Status != string(jobCancel) &&
+		app.Status != string(jobFinished) && app.Status != string(jobError) {
 		return fmt.Errorf(ErrCantDeleteApp.Error(), string(app.Status))
 	}
 
