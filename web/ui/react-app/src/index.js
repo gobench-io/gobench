@@ -10,7 +10,8 @@ import {
 
 import API from './api/api'
 import config from './config/config'
-import Title from './components/Title'
+import Layout from './components/Layout'
+import Notification from './components/Notification'
 
 const Applications = lazy(() => import('./views/ApplicationsList/Applications'))
 const CreateApplicationForm = lazy(() => import('./views/ApplicationsList/CreateApplicationForm'))
@@ -25,20 +26,21 @@ API.init({
 
 ReactDOM.render(
   <React.StrictMode>
-    <div className='gobench-container'>
-      <Router>
-        <HashRouter>
-          <Switch>
-            <Suspense fallback={<div />}>
-              <Title />
-              <Route exact path='/application/:appId' component={App} />
-              <Route exact path='/application/create' component={CreateApplicationForm} />
-              <Route exact path='/' component={Applications} />
-            </Suspense>
-          </Switch>
-        </HashRouter>
-      </Router>
-    </div>
+    <Router>
+      <HashRouter>
+        <Switch>
+          <Notification>
+            <Layout>
+              <Suspense fallback={<div />}>
+                <Route exact path='/application/create' component={CreateApplicationForm} />
+                <Route exact path='/application/:appId' component={App} />
+                <Route exact path='/' component={Applications} />
+              </Suspense>
+            </Layout>
+          </Notification>
+        </Switch>
+      </HashRouter>
+    </Router>
   </React.StrictMode>,
   document.getElementById('root')
 )
