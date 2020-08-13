@@ -9,7 +9,7 @@ import { RootContext, SpinnerContext, ErrorContext } from '../../context'
 import 'antd/dist/antd.css'
 import './style.css'
 
-const { Header, Content, Footer, Sider } = Layout
+const { Header, Content, Sider } = Layout
 
 const MainLayout = (props) => {
   window._history = useHistory()
@@ -60,8 +60,7 @@ const MainLayout = (props) => {
       em.setError({
         type: 'error',
         message: 'missing parameter.',
-        description:
-          'missing id params.'
+        description: 'missing id params.'
       })
       return
     }
@@ -90,7 +89,7 @@ const MainLayout = (props) => {
         setIsFetching(false)
       })
     }
-  }, [app, cancelRunApplication, submitCreate])
+  }, [app, cancelRunApplication, deleteApplication, submitCreate])
 
   useInterval(() => {
     if (app.apps && app.apps.length > 0) {
@@ -118,7 +117,7 @@ const MainLayout = (props) => {
                   <img
                     alt='not displayed'
                     width='125'
-                    src='/resources/gobench-logo.png'
+                    src='/resources/gobench-logo-full.png'
                   />
                 </Link>
               )}
@@ -135,7 +134,7 @@ const MainLayout = (props) => {
               className='site-layout-background'
               style={{ padding: 0, textAlign: 'center' }}
             >
-              <Link to='/'>
+              <Link to='https://github.com/gobench-io/gobench/wiki'>
                 <img
                   alt='not displayed'
                   width='150'
@@ -154,19 +153,6 @@ const MainLayout = (props) => {
                 {props.children}
               </div>
             </Content>
-            <Footer style={{ textAlign: 'center' }}>
-              Gobench ©2020 Created by
-              <Link
-                className='gobench-sponsor'
-                to='https://github.com/gobench-io/gobench'
-              >
-                <img
-                  alt='not displayed'
-                  width='120'
-                  src='https://camo.githubusercontent.com/974d4b314bb0c8293c13a778dc0d72bc3ad7abf4/68747470733a2f2f766572696b2d7374617469632e73332d75732d776573742d322e616d617a6f6e6177732e636f6d2f6c6f676f2f766572696b5f6c6f676f2e737667'
-                />
-              </Link>
-            </Footer>
           </Layout>
         </SpinnerContext.Provider>
       </RootContext.Provider>
