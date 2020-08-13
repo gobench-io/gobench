@@ -1,6 +1,7 @@
 package driver
 
 import (
+	"context"
 	"time"
 
 	"github.com/gobench-io/gobench/metrics"
@@ -38,7 +39,8 @@ func (d *Driver) systemloadSetup() (err error) {
 }
 
 // systemloadRun start collect the metrics
-func (d *Driver) systemloadRun() (err error) {
+// todo: handle cancel or finish signal
+func (d *Driver) systemloadRun(ctx context.Context) (err error) {
 	ch := make(chan interface{})
 	freq := 1 * time.Second
 

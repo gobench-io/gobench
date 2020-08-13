@@ -106,7 +106,7 @@ func (d *Driver) load(so string) (err error) {
 	}
 
 	// setup driver system load
-	if err = d.systemloadRun(); err != nil {
+	if err = d.systemloadSetup(); err != nil {
 		return
 	}
 
@@ -149,6 +149,7 @@ func (d *Driver) run(ctx context.Context) (err error) {
 
 	go d.logScaled(ctx, 10*time.Second)
 	go d.runScen(ctx, finished)
+	go d.systemloadRun(ctx)
 
 	select {
 	case err = <-finished:
