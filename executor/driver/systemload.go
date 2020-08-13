@@ -2,10 +2,12 @@ package driver
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/gobench-io/gobench/metrics"
 	"github.com/mackerelio/go-osstat/loadavg"
+	"github.com/mackerelio/go-osstat/network"
 )
 
 // load average
@@ -21,7 +23,7 @@ func (d *Driver) systemloadSetup() (err error) {
 		Graphs: []metrics.Graph{
 			{
 				Title: "Load average",
-				Unit:  "%",
+				Unit:  "*100",
 				Metrics: []metrics.Metric{
 					{
 						Title: slLA1,
@@ -29,8 +31,25 @@ func (d *Driver) systemloadSetup() (err error) {
 					},
 				},
 			},
+			{
+				Title:   "Network transmit (bytes)",
+				Unit:    "Bytes",
+				Metrics: []metrics.Metric{},
+			},
 		},
 	}
+
+	nss, err := network.Get()
+	if err != nil {
+		return
+	}
+	for _, ns := range nss {
+		group.Graphs[1].Metrics = append(group.Graphs[1].Metrics, metrics.Metric{
+			Title: ns.Name,
+			Type:  metrics.Gauge,
+		})
+	}
+
 	groups := []metrics.Group{
 		group,
 	}
@@ -51,8 +70,10 @@ func (d *Driver) systemloadRun(ctx context.Context) (err error) {
 	}(ch)
 
 	for range ch {
-		if la, err := loadavg.Get(); err != nil {
-			Notify(slLA1, int64(la.Loadavg1*100))
+		if la, err := loadavg.Get(); err == nil {
+			la1 := int64(la.Loadavg1 * 100)
+			log.Printf("la1: %d\n", la1)
+			Notify(slLA1, la1)
 		}
 	}
 

@@ -105,11 +105,6 @@ func (d *Driver) load(so string) (err error) {
 		return
 	}
 
-	// setup driver system load
-	if err = d.systemloadSetup(); err != nil {
-		return
-	}
-
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
@@ -129,6 +124,11 @@ func (d *Driver) reset() {
 // Run starts the preloaded plugin
 // return error if the driver is running already
 func (d *Driver) Run(ctx context.Context) (err error) {
+	// first, setup driver system load
+	if err = d.systemloadSetup(); err != nil {
+		return
+	}
+
 	d.mu.Lock()
 
 	if d.status == Running {
