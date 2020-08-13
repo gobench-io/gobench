@@ -111,6 +111,18 @@ func (d *Driver) reset() {
 	d.mu.Unlock()
 }
 
+// SetNopMetricLog update the driver metric logger to the nop one. Mostly use
+// for testing
+func (d *Driver) SetNopMetricLog() error {
+	nop := newNopMetricLog()
+
+	d.mu.Lock()
+	d.ml = nop
+	d.mu.Unlock()
+
+	return nil
+}
+
 // Run starts the preloaded plugin
 // return error if the driver is running already
 func (d *Driver) Run(ctx context.Context) (err error) {

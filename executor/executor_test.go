@@ -17,8 +17,11 @@ func TestStart(t *testing.T) {
 	logger := logger.NewNopLogger()
 
 	e, err := NewExecutor(opts, logger)
-
 	assert.Nil(t, err)
+
+	// setup nop metric logger for the driver
+	assert.Nil(t, e.driver.SetNopMetricLog())
+
 	args := true
 	reply := new(bool)
 
