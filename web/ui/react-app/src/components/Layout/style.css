@@ -1,42 +1,53 @@
-
 .logo {
   height: 32px;
   background: rgba(255, 255, 255, 0.2);
   margin: 16px;
-   color: white;
-    font-weight: 600;
-    text-align: center;
+  color: white;
+  font-weight: 600;
+  text-align: center;
 }
-  [data-theme="dark"] .site-layout .site-layout-background {
-    background: #141414;
-  }
+[data-theme="dark"] .site-layout .site-layout-background {
+  background: #141414;
+}
 
 .site-layout .site-layout-background {
   background: #fff;
 }
-.btn-status{
-    text-transform: capitalize;            
-        margin-left:5px                   
-}                                          
-.menu-label{                                          
-  text-transform: capitalize;                         
-}                                                     
-.benchmark-sider{                                     
-  min-width: 258px;                                   
-  width: 258px;                                       
-}                                                     
-.ant-layout-sider{
-	background:#fff;
+.btn-status {
+  text-transform: capitalize;
+  margin-left: 5px;
+}
+.menu-label {
+  text-transform: capitalize;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+}
+.menu-label-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+}
+.benchmark-sider {
+  min-width: 258px;
+  width: 258px;
+}
+.ant-layout-sider {
+  background: #fff;
 }
 
 .ant-layout-sider-trigger {
-background: aliceblue!important;
+  background: aliceblue !important;
 }
-.ant-layout-sider-trigger span{
-color: #114411;
+.ant-layout-sider-trigger span {
+  color: #114411;
 }
-.app-small-timestamp{
-margin-left: 20px;
-    margin-top: -15px;
-    margin-bottom: 20px;
+.app-small-timestamp {
+  margin-left: 20px;
+  margin-top: -15px;
+  margin-bottom: 20px;
+}
+.ant-menu-inline-collapsed .application-status {
+  display: none;
 }

@@ -1,16 +1,6 @@
 import React from 'react'
 import Icon from '@ant-design/icons'
 
-const Status = ({ status = '' }) => {
-  return <span
-    className='application-status'
-    style={{ background: statusColors[status] || '#bfbfbf' }}
-  >
-    {status}
-  </span>
-}
-
-export default Status
 
 export const statusColors = {
   running: '#52c41a',
@@ -41,3 +31,14 @@ export const iconStatus = (status) => {
       return Icon.WarningOutlined
   }
 }
+
+const Status = ({ status = '', shortcut = false }) => {
+  return <span
+    className='application-status'
+    style={{ background: statusColors[status] || '#bfbfbf' }}
+  >
+    {shortcut ? status.slice(0, 1).toUpperCase() : status}
+  </span>
+}
+
+export default Status
