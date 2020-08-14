@@ -146,7 +146,7 @@ func f1(ctx context.Context, vui int) {
 func TestRun(t *testing.T) {
 	ctx := context.Background()
 	m := seedMaster(t)
-	m.job.app.Scenario = `
+	scenario := `
 package main
 
 import (
@@ -172,9 +172,15 @@ func f1(ctx context.Context, vui int) {
 	time.Sleep(1 * time.Second)
 	log.Println("tic")
 }`
-
-	err := m.jobCompile(ctx)
+	app, err := m.NewApplication(ctx, "test run", scenario)
 	assert.Nil(t, err)
+
+	m.job = &job{
+		app: app,
+	}
+
+	assert.Nil(t, m.jobCompile(ctx))
+
 	// should run for mor than 1 seconds
 	assert.Nil(t, m.runJob(ctx))
 }

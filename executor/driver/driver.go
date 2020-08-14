@@ -39,16 +39,6 @@ type unit struct {
 	g        gometrics.Gauge
 }
 
-// todo: do not use ent, but normal struct
-type metricLogger interface {
-	Counter(context.Context, int, string, int64, int64) error
-	Histogram(context.Context, int, string, int64, metrics.HistogramValues) error
-	Gauge(context.Context, int, string, int64, int64) error
-	FindCreateGroup(context.Context, metrics.Group, int) (*metrics.FCGroupRes, error)
-	FindCreateGraph(context.Context, metrics.Graph, int) (*metrics.FCGraphRes, error)
-	FindCreateMetric(context.Context, metrics.Metric, int) (*metrics.FCMetricRes, error)
-}
-
 // Driver is the main structure for a running driver
 // contains host information, the scenario (plugin)
 // and gometrics unit
@@ -99,10 +89,10 @@ func (d *Driver) unregisterGometrics() {
 }
 
 // load downloads the go plugin, extracts the virtual user scenario
-func (d *Driver) load(so string) error {
+func (d *Driver) load(so string) (err error) {
 	vus, err := scenario.LoadPlugin(so)
 	if err != nil {
-		return err
+		return
 	}
 
 	d.mu.Lock()
@@ -111,7 +101,7 @@ func (d *Driver) load(so string) error {
 	d.driverPath = so
 	d.vus = &vus
 
-	return nil
+	return
 }
 
 func (d *Driver) reset() {
@@ -121,9 +111,26 @@ func (d *Driver) reset() {
 	d.mu.Unlock()
 }
 
+// SetNopMetricLog update the driver metric logger to the nop one. Mostly use
+// for testing
+func (d *Driver) SetNopMetricLog() error {
+	nop := newNopMetricLog()
+
+	d.mu.Lock()
+	d.ml = nop
+	d.mu.Unlock()
+
+	return nil
+}
+
 // Run starts the preloaded plugin
 // return error if the driver is running already
 func (d *Driver) Run(ctx context.Context) (err error) {
+	// first, setup driver system load
+	if err = d.systemloadSetup(); err != nil {
+		return
+	}
+
 	d.mu.Lock()
 
 	if d.status == Running {
@@ -142,8 +149,11 @@ func (d *Driver) Run(ctx context.Context) (err error) {
 func (d *Driver) run(ctx context.Context) (err error) {
 	finished := make(chan error)
 
+	// when the runScen finished, we should stop the logScaled and systemloadRun
+	// also; however, not necessary since the executor will be shutdown anyway
 	go d.logScaled(ctx, 10*time.Second)
 	go d.runScen(ctx, finished)
+	go d.systemloadRun(ctx)
 
 	select {
 	case err = <-finished:
@@ -165,7 +175,7 @@ func (d *Driver) Running() bool {
 	return d.status == Running
 }
 
-func (d *Driver) runScen(ctx context.Context, done chan error) {
+func (d *Driver) runScen(ctx context.Context, done chan<- error) {
 	var totalVu int
 
 	vus := *d.vus
