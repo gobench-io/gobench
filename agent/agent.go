@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/gobench-io/gobench/logger"
 	"github.com/gobench-io/gobench/metrics"
 )
 
@@ -29,13 +30,15 @@ type Agent struct {
 	// when this is the local agent, inherit from master
 	// when this is the remote agent, ... todo
 	metricLoggerRPC
+	logger logger.Logger
 	socket string
 	rs     *rpc.Server
 }
 
-func NewAgent(ml metricLoggerRPC) (*Agent, error) {
+func NewAgent(ml metricLoggerRPC, logger logger.Logger) (*Agent, error) {
 	a := &Agent{
 		metricLoggerRPC: ml,
+		logger:          logger,
 		rs:              rpc.NewServer(),
 	}
 	return a, nil
