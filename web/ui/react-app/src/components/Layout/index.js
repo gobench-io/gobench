@@ -52,7 +52,7 @@ const MainLayout = (props) => {
         setApp({ ...app, apps })
         setIsFetching(false)
       })
-      window._history.push('/')
+      window._history.push(`/application/${result.id}`)
     })
   })
   const deleteApplication = useCallback(({ id }) => {
