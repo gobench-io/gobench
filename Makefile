@@ -48,3 +48,5 @@ build-web-ui:
 	cd web/ui/react-app && yarn build
 update-statik: build-web-ui
 	statik
+run:
+	go run .
