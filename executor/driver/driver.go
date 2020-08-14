@@ -149,6 +149,8 @@ func (d *Driver) Run(ctx context.Context) (err error) {
 func (d *Driver) run(ctx context.Context) (err error) {
 	finished := make(chan error)
 
+	// when the runScen finished, we should stop the logScaled and systemloadRun
+	// also; however, not necessary since the executor will be shutdown anyway
 	go d.logScaled(ctx, 10*time.Second)
 	go d.runScen(ctx, finished)
 	go d.systemloadRun(ctx)
@@ -173,7 +175,7 @@ func (d *Driver) Running() bool {
 	return d.status == Running
 }
 
-func (d *Driver) runScen(ctx context.Context, done chan error) {
+func (d *Driver) runScen(ctx context.Context, done chan<- error) {
 	var totalVu int
 
 	vus := *d.vus

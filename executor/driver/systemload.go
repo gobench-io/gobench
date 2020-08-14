@@ -98,7 +98,6 @@ type rtxBytes struct {
 }
 
 // systemloadRun start collect the metrics
-// todo: handle cancel or finish signal
 func (d *Driver) systemloadRun(ctx context.Context) (err error) {
 	ch := make(chan interface{})
 	freq := 1 * time.Second
@@ -115,52 +114,57 @@ func (d *Driver) systemloadRun(ctx context.Context) (err error) {
 	var cpuPre *cpu.Stats
 	cpuPreTime := time.Now()
 
-	for range ch {
-		// load average
-		if la, err := loadavg.Get(); err == nil {
-			la1 := int64(la.Loadavg1 * 100)
-			Notify(slLA1, la1)
-		}
+	for {
+		select {
+		case <-ctx.Done():
+			d.logger.Infow("systemloadRun canceled")
+			return nil
 
-		// network status
-		if nss, err := network.Get(); err == nil {
-			now := time.Now()
-			for _, ns := range nss {
-				prv, ok := nssPre[ns.Name]
-				if ok {
-					diffTime := now.Sub(nssPreTime).Seconds()
+		case <-ch:
+			// load average
+			if la, err := loadavg.Get(); err == nil {
+				la1 := int64(la.Loadavg1 * 100)
+				Notify(slLA1, la1)
+			}
 
-					tx := float64(ns.TxBytes-prv.txBytes) / diffTime // Bps
-					rx := float64(ns.RxBytes-prv.rxBytes) / diffTime // Bps
-					Notify(ns.Name+" transmit", int64(tx/1000))      // KBps
-					Notify(ns.Name+" receive", int64(rx/1000))       // KBps
+			// network status
+			if nss, err := network.Get(); err == nil {
+				now := time.Now()
+				for _, ns := range nss {
+					prv, ok := nssPre[ns.Name]
+					if ok {
+						diffTime := now.Sub(nssPreTime).Seconds()
+
+						tx := float64(ns.TxBytes-prv.txBytes) / diffTime // Bps
+						rx := float64(ns.RxBytes-prv.rxBytes) / diffTime // Bps
+						Notify(ns.Name+" transmit", int64(tx/1000))      // KBps
+						Notify(ns.Name+" receive", int64(rx/1000))       // KBps
+					}
+					// update prv values
+					nssPre[ns.Name] = rtxBytes{
+						rxBytes: ns.RxBytes,
+						txBytes: ns.TxBytes,
+					}
+				}
+				nssPreTime = now
+			}
+
+			if cpuNow, err := cpu.Get(); err == nil {
+				now := time.Now()
+				diffTime := now.Sub(cpuPreTime).Seconds()
+				if cpuPre != nil {
+					user := float64(cpuNow.User-cpuPre.User) / diffTime
+					Notify(cpuUser, int64(user))
 				}
 				// update prv values
-				nssPre[ns.Name] = rtxBytes{
-					rxBytes: ns.RxBytes,
-					txBytes: ns.TxBytes,
-				}
+				cpuPre = cpuNow
+				cpuPreTime = now
 			}
-			nssPreTime = now
-		}
 
-		if cpuNow, err := cpu.Get(); err == nil {
-			now := time.Now()
-			diffTime := now.Sub(cpuPreTime).Seconds()
-			if cpuPre != nil {
-				user := float64(cpuNow.User-cpuPre.User) / diffTime
-				Notify(cpuUser, int64(user))
+			if mem, err := memory.Get(); err == nil {
+				r := float64(mem.Used) / float64(mem.Total) * 100.0
+				Notify(ramUsing, int64(r))
 			}
-			// update prv values
-			cpuPre = cpuNow
-			cpuPreTime = now
-		}
-
-		if mem, err := memory.Get(); err == nil {
-			r := float64(mem.Used) / float64(mem.Total) * 100.0
-			Notify(ramUsing, int64(r))
 		}
 	}
-
-	return
 }
