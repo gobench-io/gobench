@@ -72,6 +72,23 @@ const MainLayout = (props) => {
       window._history.push('/')
     })
   })
+  const deleteApplication = useCallback(({ id }) => {
+    if (!id) {
+      em.setError({
+        type: 'error',
+        message: 'missing parameter.',
+        description: 'missing id params.'
+      })
+      return
+    }
+    GoBenchAPI.deleteApplication(id).then((result) => {
+      GoBenchAPI.getApplications().then((apps) => {
+        setApp({ ...app, apps })
+        setIsFetching(false)
+      })
+      window._history.push('/')
+    })
+  })
   useEffect(() => {
     if (!app.deleteApplication) {
       setApp({ ...app, deleteApplication })
@@ -111,15 +128,15 @@ const MainLayout = (props) => {
               {collapse ? (
                 <RiseOutlined style={{ color: '#1890ff' }} />
               ) : (
-                <Link to='/'>
-                  {' '}
-                  <img
-                    alt='not displayed'
-                    width='125'
-                    src='/resources/gobench-logo.png'
-                  />
-                </Link>
-              )}
+                  <Link to='/'>
+                    {' '}
+                    <img
+                      alt='not displayed'
+                      width='125'
+                      src='/resources/gobench-logo.png'
+                    />
+                  </Link>
+                )}
             </h2>
             <MenuLeft
               className='benchmark-menu'
