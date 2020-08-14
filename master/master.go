@@ -99,7 +99,7 @@ func (m *Master) Start() (err error) {
 	go m.schedule()
 
 	// start the local agent socket server that communicate with local executor
-	agentSocket := "/tmp/gobench-agentsocket"
+	agentSocket := fmt.Sprintf("/tmp/gobench-agentsocket-%d", os.Getpid())
 	err = m.la.StartSocketServer(agentSocket)
 
 	return
@@ -436,7 +436,7 @@ func (m *Master) runJob(ctx context.Context) (err error) {
 
 	// waiting for the executor rpc to be ready
 	b := time.Now()
-	client, err := waitForReady(ctx, executorSock, 2*time.Second)
+	client, err := waitForReady(ctx, executorSock, 5*time.Second)
 	if err != nil {
 		err = fmt.Errorf("rpc dial: %v", err)
 		return
