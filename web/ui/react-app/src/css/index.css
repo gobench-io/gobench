@@ -14,7 +14,7 @@
   margin: 0;
   margin-bottom: 1rem;
   color: #346cb0;
-	text-decoration: none;
+  text-decoration: none;
 }
 
 .btn {
@@ -92,18 +92,11 @@ h2 {
 
 .group {
   margin: 16px 0;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  border-radius: 5px;
   background: #ffffff;
 }
 
 .group-graphs {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  align-items: flex-start;
-  padding: 0 8px;
+  margin: 8px 0;
 }
 
 .group-header {
@@ -111,7 +104,9 @@ h2 {
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  padding: 16px;
+  padding: 4px 16px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 5px;
 }
 
 .group-title {
@@ -120,10 +115,10 @@ h2 {
 }
 
 .graph {
-  width: calc(33% - 32px);
-  height: auto;
-  margin: 16px;
-  margin-bottom: 24px;
+  height: 300px;
+  width: 100%;
+  padding: 8px 16px;
+  background-color: rgba(44, 44, 44, 0.04);
 }
 
 .graph-header {
@@ -132,15 +127,17 @@ h2 {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
+  font-weight: bold;
 }
 
 .group-header:hover {
-  background-color: #eeeeee;
+  background-color: rgba(44, 44, 44, 0.04);
 }
 
 .graph-title {
   margin: 0;
   display: block;
+  font-size: 14px;
 }
 
 .clickable {
@@ -257,24 +254,6 @@ select.select-box {
 .text-center {
   width: 100%;
   text-align: center;
-}
-
-@media (max-width: 900px) {
-  .graph {
-    width: calc(50% - 32px);
-  }
-}
-
-@media (max-width: 400px) {
-  .graph {
-    width: calc(100% - 32px);
-  }
-}
-
-@media (min-width: 1900px) {
-  .graph {
-    width: calc(25% - 32px);
-  }
 }
 
 /*
@@ -396,4 +375,8 @@ create-form
 }
 .tab-content {
   margin: 16px 0;
+}
+
+.apexcharts-legend {
+  height: 40px;
 }

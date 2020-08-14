@@ -1,5 +1,5 @@
-import React, { lazy, useEffect, useState, Suspense, useContext } from 'react';
-import { get, isArray } from 'lodash';
+import React, { lazy, useEffect, useState, Suspense, useContext } from 'react'
+import { get, isArray } from 'lodash'
 import {
   useInterval,
   getMetricData,
@@ -8,53 +8,52 @@ import {
   makeHistogramSeriesData,
   INTERVAL,
   METRIC_TYPE,
-} from '../../realtimeHelpers';
-import { AppContext } from '../../context';
+} from '../../realtimeHelpers'
+import { AppContext } from '../../context'
 
-const ApexChartComponent = lazy(() => import('./ApexChart'));
+const ApexChartComponent = lazy(() => import('./ApexChart'))
 
-const loading = () => <p>Loading chart...</p>;
+const loading = () => <p>Loading chart...</p>
 
 
 const Metric = ({ metrics, unit, timeRange }) => {
-  const [data, fetchMetricData] = useState([]);
-  const appData = useContext(AppContext);
-  const appStatus = get(appData, 'status', '');
-  const timestamp = get(appData, 'timestamp', '');
-  const isRealtime = appStatus === 'running';
+  const [data, fetchMetricData] = useState([])
+  const appData = useContext(AppContext)
+  const appStatus = get(appData, 'status', '')
+  const timestamp = get(appData, 'timestamp', '')
+  const isRealtime = appStatus === 'running'
 
   useEffect(() => {
     if (metrics.length > 0) {
       getMetricData(metrics, timeRange, timestamp, isRealtime).then(res => {
-        fetchMetricData(res);
-      });
+        fetchMetricData(res)
+      })
     }
-  }, [metrics]);
+  }, [metrics])
   useInterval(() => {
     getMetricDataInterval(metrics, data)
       .then(res => {
-        fetchMetricData(res);
-      });
-  }, isRealtime ? INTERVAL : null);
-  const metricType = get(data, '[0].type', '');
-  let series;
+        fetchMetricData(res)
+      })
+  }, isRealtime ? INTERVAL : null)
+  const metricType = get(data, '[0].type', '')
+  let series
   if (metricType === METRIC_TYPE.HISTOGRAM) {
-    series = [...makeHistogramSeriesData(get(data, '[0].chartData.data', []))];
+    series = [...makeHistogramSeriesData(get(data, '[0].chartData.data', []))]
   } else {
     if (isArray(data)) {
       series = data.map(d => get(d, 'chartData', {
         name: d.title,
         data: []
-      }));
+      }))
     }
   }
-  const chartData = isRealtime ? makeChartDataByTimeRange(series, timeRange) : series;
+  const chartData = isRealtime ? makeChartDataByTimeRange(series, timeRange) : series
   return <Suspense fallback={loading()}>
     <ApexChartComponent
-      height="220"
       series={chartData}
       unit={unit} />
-  </Suspense>;
-};
+  </Suspense>
+}
 
-export default Metric;
+export default Metric

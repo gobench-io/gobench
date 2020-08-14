@@ -1,12 +1,11 @@
-import React, { useMemo } from 'react';
-import ReactApexChart from "react-apexcharts";
+import React, { useMemo } from 'react'
+import ReactApexChart from "react-apexcharts"
 
-const ApexChart = ({ series, unit }) => {
+const ApexChart = ({ series = [], unit }) => {
   const options = {
     colors: ['#0000ff', '#00ff00', '#ff9933', '#996600', '#6600cc'],
     chart: {
       type: 'line',
-      height: '220',
       animations: {
         enabled: false
       },
@@ -23,9 +22,6 @@ const ApexChart = ({ series, unit }) => {
           download: false,
         }
       },
-      // noData: {
-      //   text: 'No data'
-      // },
       zoom: {
         type: 'x',
         enabled: true,
@@ -72,12 +68,11 @@ const ApexChart = ({ series, unit }) => {
         show: true
       },
       tickAmount: 4,
-      min: 0,
       title: {
         text: unit,
         rotate: 0,
         offsetX: 40,
-        offsetY: -80,
+        offsetY: -90,
         style: {
           color: undefined,
           fontSize: '11px',
@@ -96,7 +91,7 @@ const ApexChart = ({ series, unit }) => {
       showForSingleSeries: true,
       showForNullSeries: true,
       showForZeroSeries: true,
-      horizontalAlign: 'center',
+      horizontalAlign: series.length > 4 ? 'left' : 'center',
       fontSize: '12px',
       labels: {
         colors: '#000'
@@ -106,14 +101,14 @@ const ApexChart = ({ series, unit }) => {
         height: 8,
       }
     },
-  };
-  const seriesMemo = useMemo(() => series, [series]);
-
+  }
+  const seriesMemo = useMemo(() => series, [series])
   return <div className="chart">
     <ReactApexChart
+      height="250"
       options={options}
       series={seriesMemo}
-      type="line" height="200"/>
-  </div>;
-};
-export default ApexChart;
+      type="line" />
+  </div>
+}
+export default ApexChart

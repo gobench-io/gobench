@@ -3,7 +3,7 @@ import { Menu } from 'antd'
 import { PieChartOutlined, AreaChartOutlined } from '@ant-design/icons'
 import { Link } from 'react-router-dom'
 import { RootContext } from '../../context'
-import { statusColors, iconStatus } from '../Status'
+import Status, { statusColors, iconStatus } from '../Status'
 const { Item } = Menu
 
 const MenuLeft = (props) => {
@@ -35,11 +35,13 @@ const menuItem = (items) => {
     ? items.map((item, index) => (
       <Item
         key={`sub-${index}`}
-        icon={<AreaChartOutlined style={{ color: item.color }} />}
       >
         <Link className='menu-label' to={item.link}>
-          {item.label}
-          <span className='btn-status application-status' style={{ backgroundColor: item.color }}>{item.status}</span>
+          <AreaChartOutlined style={{ color: item.color }} />
+          <span className="menu-label-title">{item.label}</span>
+          <div style={{ marginLeft: 'auto' }}>
+            <Status status={item.status} shortcut />
+          </div>
         </Link>
       </Item>
     )) : null
