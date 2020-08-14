@@ -4,6 +4,7 @@ import TimeAgo from 'react-timeago'
 import { useHistory } from 'react-router-dom'
 import Status from '../../components/Status'
 import { RootContext, SpinnerContext } from '../../context'
+import { Button, Popconfirm } from 'antd'
 
 const Applications = () => {
   const history = useHistory()
@@ -61,26 +62,18 @@ const Applications = () => {
                             {['finished', 'running', 'cancel'].includes(
                               status
                             ) && (
-                              <button
-                                className='btn btn-primary'
+                              <Button
+                                type='primary'
                                 onClick={() =>
                                   history.push(`/application/${application.id}`)}
                               >
-                                View Details
-                              </button>
-                            )}
-                            {['running', 'pending'].includes(status) && (
-                              <button
-                                className='btn btn-cancel'
-                                onClick={() =>
-                                  app.cancelRunApplication(application.id)}
-                              >
-                                Cancel
-                              </button>
+                                Detail
+                              </Button>
                             )}
                             {['finished'].includes(status) && (
-                              <button
-                                className='btn btn-primary'
+                              <Button
+                                style={{ marginLeft: 5 }}
+                                type='default'
                                 onClick={() =>
                                   app.submitCreate({
                                     ...application,
@@ -88,7 +81,44 @@ const Applications = () => {
                                   })}
                               >
                                 Clone
-                              </button>
+                              </Button>
+                            )}
+                            {['running', 'pending'].includes(status) && (
+                              <Popconfirm
+                                title={`Are you sure cancel application ${application.name}?`}
+                                onConfirm={() =>
+                                  app.cancelRunApplication(application.id)}
+                                okText='Yes'
+                                cancelText='No'
+                              >
+                                <Button
+                                  type='dashed'
+                                  style={{ marginLeft: 5 }}
+                                  danger
+                                >
+                                Cancel
+                                </Button>
+                              </Popconfirm>
+                            )}
+                            {['finished', 'pending', 'error', 'cancel'].includes(status) && (
+                              <Popconfirm
+                                title={`Are you sure delete application ${application.name}?`}
+                                onConfirm={() =>
+                                  app.deleteApplication({
+                                    ...application,
+                                    name: `${application.name}-${timestamp}`
+                                  })}
+                                okText='Yes'
+                                cancelText='No'
+                              >
+                                <Button
+                                  type='primary'
+                                  style={{ marginLeft: 5 }}
+                                  danger
+                                >
+                                Delete
+                                </Button>
+                              </Popconfirm>
                             )}
                           </div>
                         </td>
