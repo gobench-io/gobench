@@ -44,3 +44,7 @@ ent:
 # generate statik file for web ui
 statik:
 	statik -src=./web/ui/react-app/build -dest=./web -f
+build-web-ui:
+	cd web/ui/react-app && yarn build
+update-statik: build-web-ui
+	statik
