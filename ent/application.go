@@ -26,6 +26,8 @@ type Application struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Scenario holds the value of the "scenario" field.
 	Scenario string `json:"scenario,omitempty"`
+	// Tags holds the value of the "tags" field.
+	Tags string `json:"tags,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ApplicationQuery when eager-loading is set.
 	Edges ApplicationEdges `json:"edges"`
@@ -69,6 +71,7 @@ func (*Application) scanValues() []interface{} {
 		&sql.NullTime{},   // created_at
 		&sql.NullTime{},   // updated_at
 		&sql.NullString{}, // scenario
+		&sql.NullString{}, // tags
 	}
 }
 
@@ -108,6 +111,11 @@ func (a *Application) assignValues(values ...interface{}) error {
 		return fmt.Errorf("unexpected type %T for field scenario", values[4])
 	} else if value.Valid {
 		a.Scenario = value.String
+	}
+	if value, ok := values[5].(*sql.NullString); !ok {
+		return fmt.Errorf("unexpected type %T for field tags", values[5])
+	} else if value.Valid {
+		a.Tags = value.String
 	}
 	return nil
 }
@@ -155,6 +163,8 @@ func (a *Application) String() string {
 	builder.WriteString(a.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", scenario=")
 	builder.WriteString(a.Scenario)
+	builder.WriteString(", tags=")
+	builder.WriteString(a.Tags)
 	builder.WriteByte(')')
 	return builder.String()
 }

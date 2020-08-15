@@ -15,7 +15,8 @@ const (
 	FieldStatus    = "status"     // FieldCreatedAt holds the string denoting the created_at vertex property in the database.
 	FieldCreatedAt = "created_at" // FieldUpdatedAt holds the string denoting the updated_at vertex property in the database.
 	FieldUpdatedAt = "updated_at" // FieldScenario holds the string denoting the scenario vertex property in the database.
-	FieldScenario  = "scenario"
+	FieldScenario  = "scenario"   // FieldTags holds the string denoting the tags vertex property in the database.
+	FieldTags      = "tags"
 
 	// EdgeGroups holds the string denoting the groups edge name in mutations.
 	EdgeGroups = "groups"
@@ -48,6 +49,7 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldScenario,
+	FieldTags,
 }
 
 var (

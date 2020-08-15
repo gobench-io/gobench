@@ -68,6 +68,12 @@ func (au *ApplicationUpdate) SetScenario(s string) *ApplicationUpdate {
 	return au
 }
 
+// SetTags sets the tags field.
+func (au *ApplicationUpdate) SetTags(s string) *ApplicationUpdate {
+	au.mutation.SetTags(s)
+	return au
+}
+
 // AddGroupIDs adds the groups edge to Group by ids.
 func (au *ApplicationUpdate) AddGroupIDs(ids ...int) *ApplicationUpdate {
 	au.mutation.AddGroupIDs(ids...)
@@ -237,6 +243,13 @@ func (au *ApplicationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: application.FieldScenario,
 		})
 	}
+	if value, ok := au.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: application.FieldTags,
+		})
+	}
 	if nodes := au.mutation.RemovedGroupsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -366,6 +379,12 @@ func (auo *ApplicationUpdateOne) SetUpdatedAt(t time.Time) *ApplicationUpdateOne
 // SetScenario sets the scenario field.
 func (auo *ApplicationUpdateOne) SetScenario(s string) *ApplicationUpdateOne {
 	auo.mutation.SetScenario(s)
+	return auo
+}
+
+// SetTags sets the tags field.
+func (auo *ApplicationUpdateOne) SetTags(s string) *ApplicationUpdateOne {
+	auo.mutation.SetTags(s)
 	return auo
 }
 
@@ -534,6 +553,13 @@ func (auo *ApplicationUpdateOne) sqlSave(ctx context.Context) (a *Application, e
 			Type:   field.TypeString,
 			Value:  value,
 			Column: application.FieldScenario,
+		})
+	}
+	if value, ok := auo.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: application.FieldTags,
 		})
 	}
 	if nodes := auo.mutation.RemovedGroupsIDs(); len(nodes) > 0 {
