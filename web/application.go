@@ -187,7 +187,7 @@ func (h *handler) setApplicationTags(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	app, err := h.s.SetApplicationTags(ctx, app.ID, app.Tags)
+	app, err := h.s.SetApplicationTags(ctx, app.ID, data.Tags)
 
 	if err != nil {
 		render.Render(w, r, ErrInternalServer(err))
