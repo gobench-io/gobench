@@ -2,6 +2,10 @@
 
 package eventlog
 
+import (
+	"time"
+)
+
 const (
 	// Label holds the string label denoting the eventlog type in the database.
 	Label = "event_log"
@@ -41,3 +45,12 @@ var Columns = []string{
 var ForeignKeys = []string{
 	"application_event_logs",
 }
+
+var (
+	// DefaultName holds the default value on creation for the name field.
+	DefaultName string
+	// DefaultLevel holds the default value on creation for the level field.
+	DefaultLevel string
+	// DefaultCreatedAt holds the default value on creation for the created_at field.
+	DefaultCreatedAt func() time.Time
+)

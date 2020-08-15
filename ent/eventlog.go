@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/facebookincubator/ent/dialect/sql"
 	"github.com/gobench-io/gobench/ent/application"
@@ -25,7 +26,7 @@ type EventLog struct {
 	// Source holds the value of the "source" field.
 	Source string `json:"source"`
 	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt string `json:"created_at"`
+	CreatedAt time.Time `json:"created_at"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the EventLogQuery when eager-loading is set.
 	Edges                  EventLogEdges `json:"edges"`
@@ -63,7 +64,7 @@ func (*EventLog) scanValues() []interface{} {
 		&sql.NullString{}, // message
 		&sql.NullString{}, // level
 		&sql.NullString{}, // source
-		&sql.NullString{}, // created_at
+		&sql.NullTime{},   // created_at
 	}
 }
 
@@ -106,10 +107,10 @@ func (el *EventLog) assignValues(values ...interface{}) error {
 	} else if value.Valid {
 		el.Source = value.String
 	}
-	if value, ok := values[4].(*sql.NullString); !ok {
+	if value, ok := values[4].(*sql.NullTime); !ok {
 		return fmt.Errorf("unexpected type %T for field created_at", values[4])
 	} else if value.Valid {
-		el.CreatedAt = value.String
+		el.CreatedAt = value.Time
 	}
 	values = values[5:]
 	if len(values) == len(eventlog.ForeignKeys) {
@@ -160,7 +161,7 @@ func (el *EventLog) String() string {
 	builder.WriteString(", source=")
 	builder.WriteString(el.Source)
 	builder.WriteString(", created_at=")
-	builder.WriteString(el.CreatedAt)
+	builder.WriteString(el.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

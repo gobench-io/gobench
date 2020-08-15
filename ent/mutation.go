@@ -1244,7 +1244,7 @@ type EventLogMutation struct {
 	message             *string
 	level               *string
 	source              *string
-	created_at          *string
+	created_at          *time.Time
 	clearedFields       map[string]struct{}
 	applications        *int
 	clearedapplications bool
@@ -1480,12 +1480,12 @@ func (m *EventLogMutation) ResetSource() {
 }
 
 // SetCreatedAt sets the created_at field.
-func (m *EventLogMutation) SetCreatedAt(s string) {
-	m.created_at = &s
+func (m *EventLogMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
 }
 
 // CreatedAt returns the created_at value in the mutation.
-func (m *EventLogMutation) CreatedAt() (r string, exists bool) {
+func (m *EventLogMutation) CreatedAt() (r time.Time, exists bool) {
 	v := m.created_at
 	if v == nil {
 		return
@@ -1497,7 +1497,7 @@ func (m *EventLogMutation) CreatedAt() (r string, exists bool) {
 // If the EventLog object wasn't provided to the builder, the object is fetched
 // from the database.
 // An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *EventLogMutation) OldCreatedAt(ctx context.Context) (v string, err error) {
+func (m *EventLogMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldCreatedAt is allowed only on UpdateOne operations")
 	}
@@ -1660,7 +1660,7 @@ func (m *EventLogMutation) SetField(name string, value ent.Value) error {
 		m.SetSource(v)
 		return nil
 	case eventlog.FieldCreatedAt:
-		v, ok := value.(string)
+		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
