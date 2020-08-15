@@ -25,7 +25,7 @@ func (Log) Fields() []ent.Field {
 // Edges of the Log.
 func (Log) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("owner", Application.Type).
+		edge.From("applications", Application.Type).
 			Ref("logs").
 			Unique(),
 	}
