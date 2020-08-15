@@ -74,6 +74,14 @@ func (au *ApplicationUpdate) SetTags(s string) *ApplicationUpdate {
 	return au
 }
 
+// SetNillableTags sets the tags field if the given value is not nil.
+func (au *ApplicationUpdate) SetNillableTags(s *string) *ApplicationUpdate {
+	if s != nil {
+		au.SetTags(*s)
+	}
+	return au
+}
+
 // AddGroupIDs adds the groups edge to Group by ids.
 func (au *ApplicationUpdate) AddGroupIDs(ids ...int) *ApplicationUpdate {
 	au.mutation.AddGroupIDs(ids...)
@@ -385,6 +393,14 @@ func (auo *ApplicationUpdateOne) SetScenario(s string) *ApplicationUpdateOne {
 // SetTags sets the tags field.
 func (auo *ApplicationUpdateOne) SetTags(s string) *ApplicationUpdateOne {
 	auo.mutation.SetTags(s)
+	return auo
+}
+
+// SetNillableTags sets the tags field if the given value is not nil.
+func (auo *ApplicationUpdateOne) SetNillableTags(s *string) *ApplicationUpdateOne {
+	if s != nil {
+		auo.SetTags(*s)
+	}
 	return auo
 }
 

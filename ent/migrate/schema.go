@@ -16,7 +16,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "scenario", Type: field.TypeString, Size: 2147483647},
-		{Name: "tags", Type: field.TypeString},
+		{Name: "tags", Type: field.TypeString, Default: ""},
 	}
 	// ApplicationsTable holds the schema information for the "applications" table.
 	ApplicationsTable = &schema.Table{

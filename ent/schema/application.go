@@ -24,7 +24,8 @@ func (Application) Fields() []ent.Field {
 			Default(time.Now).
 			UpdateDefault(time.Now),
 		field.Text("scenario"),
-		field.String("tags"),
+		field.String("tags").
+			Default(""),
 	}
 }
 

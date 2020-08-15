@@ -224,6 +224,14 @@ func (m *Master) CancelApplication(ctx context.Context, appID int) (*ent.Applica
 	return app, err
 }
 
+// SetApplicationTags set application tags
+func (m *Master) SetApplicationTags(ctx context.Context, appID int, tags string) (*ent.Application, error) {
+	return m.db.Application.
+		UpdateOneID(appID).
+		SetTags(tags).
+		Save(ctx)
+}
+
 // cleanupDB is the helper function to cleanup the DB for testing
 func (m *Master) cleanupDB() error {
 	ctx := context.TODO()

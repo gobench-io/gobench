@@ -40,4 +40,8 @@ func init() {
 	eventlogDescCreatedAt := eventlogFields[4].Descriptor()
 	// eventlog.DefaultCreatedAt holds the default value on creation for the created_at field.
 	eventlog.DefaultCreatedAt = eventlogDescCreatedAt.Default.(func() time.Time)
+	// applicationDescTags is the schema descriptor for tags field.
+	applicationDescTags := applicationFields[5].Descriptor()
+	// application.DefaultTags holds the default value on creation for the tags field.
+	application.DefaultTags = applicationDescTags.Default.(string)
 }

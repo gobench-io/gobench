@@ -74,6 +74,14 @@ func (ac *ApplicationCreate) SetTags(s string) *ApplicationCreate {
 	return ac
 }
 
+// SetNillableTags sets the tags field if the given value is not nil.
+func (ac *ApplicationCreate) SetNillableTags(s *string) *ApplicationCreate {
+	if s != nil {
+		ac.SetTags(*s)
+	}
+	return ac
+}
+
 // AddGroupIDs adds the groups edge to Group by ids.
 func (ac *ApplicationCreate) AddGroupIDs(ids ...int) *ApplicationCreate {
 	ac.mutation.AddGroupIDs(ids...)
@@ -124,7 +132,8 @@ func (ac *ApplicationCreate) Save(ctx context.Context) (*Application, error) {
 		return nil, errors.New("ent: missing required field \"scenario\"")
 	}
 	if _, ok := ac.mutation.Tags(); !ok {
-		return nil, errors.New("ent: missing required field \"tags\"")
+		v := application.DefaultTags
+		ac.mutation.SetTags(v)
 	}
 	var (
 		err  error

@@ -105,6 +105,7 @@ func newHandler(s *master.Master, logger logger.Logger) *handler {
 				r.Put("/cancel", h.cancelApplication)
 				r.Get("/groups", h.getApplicationGroups)
 				r.Get("/logs", h.getEventLogs)
+				r.Patch("/tags", h.setApplicationTags)
 			})
 		})
 	})
