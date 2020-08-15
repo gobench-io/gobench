@@ -140,7 +140,7 @@ func (m *Master) NewApplication(ctx context.Context, name, scenario string) (
 		return nil, err
 	}
 
-	m.LogEvent(ctx, fmt.Sprintf("applicated is %s", app.Status), "master:newApplication", "", "")
+	m.LogEvent(ctx, app.ID, fmt.Sprintf("application is %s", app.Status), "master:newApplication", "", "")
 
 	return app, err
 }
@@ -217,7 +217,7 @@ func (m *Master) CancelApplication(ctx context.Context, appID int) (*ent.Applica
 		return app, err
 	}
 
-	m.LogEvent(ctx, fmt.Sprintf("application status change from %s to %s", currentStatus, app.Status), "master:cancelApplication", "", "")
+	m.LogEvent(ctx, 0, fmt.Sprintf("application status change from %s to %s", currentStatus, app.Status), "master:cancelApplication", "", "")
 
 	return app, err
 }
@@ -238,7 +238,7 @@ func (m *Master) jobTo(ctx context.Context, state jobState) (err error) {
 		SetStatus(string(state)).
 		Save(ctx)
 
-	m.LogEvent(ctx, fmt.Sprintf("application status change from %s to %s", currentStatus, m.job.app.Status), "master:jobTo", "", "")
+	m.LogEvent(ctx, 0, fmt.Sprintf("application status change from %s to %s", currentStatus, m.job.app.Status), "master:jobTo", "", "")
 
 	return
 }
@@ -296,13 +296,13 @@ func (m *Master) run(ctx context.Context, j *job) (err error) {
 				"err", err,
 			)
 
-			m.LogEvent(ctx, err.Error(), "master:run", "error", "")
+			m.LogEvent(ctx, 0, err.Error(), "master:run", "error", "")
 			je = jobError
 
 			if ctx.Err() != nil {
 				je = jobCancel
 				err = ErrAppIsCanceled
-				m.LogEvent(ctx, err.Error(), "master:run", "error", "")
+				m.LogEvent(ctx, 0, err.Error(), "master:run", "error", "")
 			}
 		}
 
@@ -332,7 +332,7 @@ func (m *Master) run(ctx context.Context, j *job) (err error) {
 	)
 
 	if err = m.jobCompile(ctx); err != nil {
-		m.LogEvent(ctx, err.Error(), "master:run:jobCompile", "error", "")
+		m.LogEvent(ctx, 0, err.Error(), "master:run:jobCompile", "error", "")
 		return
 	}
 	// todo: ditribute the plugin to other worker when run in cloud mode
@@ -349,7 +349,7 @@ func (m *Master) run(ctx context.Context, j *job) (err error) {
 	)
 
 	if err = m.runJob(ctx); err != nil {
-		m.LogEvent(ctx, err.Error(), "master:run", "error", "")
+		m.LogEvent(ctx, 0, err.Error(), "master:run", "error", "")
 		return
 	}
 
@@ -439,12 +439,17 @@ func (m *Master) runJob(ctx context.Context) (err error) {
 }
 
 // LogEvent log event for application
-func (m *Master) LogEvent(ctx context.Context, message, source, level, name string) {
+func (m *Master) LogEvent(ctx context.Context, appID int, message, source, level, name string) {
 
 	q := m.db.EventLog.
 		Create().
 		SetMessage(message).
 		SetSource(source)
+	if appID != 0 {
+		q.SetApplicationsID(appID)
+	} else {
+		q.SetApplicationsID(m.job.app.ID)
+	}
 	if name != "" {
 		q.SetName(name)
 	}

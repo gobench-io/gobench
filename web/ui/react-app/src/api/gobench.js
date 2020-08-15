@@ -90,6 +90,13 @@ const GoBenchAPI = {
             .catch(reject)
         })
     }
+  },
+  getEventLogs (id) {
+    return new Promise((resolve, reject) => {
+      API.axios().get(`api/applications/${id}/logs`)
+        .then(res => resolve(get(res, 'data', [])))
+        .catch(reject)
+    })
   }
 }
 

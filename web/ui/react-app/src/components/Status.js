@@ -9,7 +9,8 @@ export const statusColors = {
   cancel: '#595959',
   pending: '#faad14',
   provisioning: '#00bcd4',
-  error: '#f5222d'
+  error: '#f5222d',
+  info: 'default'
 }
 export const iconStatus = (status) => {
   switch (status) {
