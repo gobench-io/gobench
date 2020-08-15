@@ -176,6 +176,27 @@ func TestCancelApplication(t *testing.T) {
 	_ = json.Unmarshal(w.Body.Bytes(), &resApp)
 	assert.Equal(t, resApp.Status, "cancel")
 }
+func TestSetApplicationTag(t *testing.T) {
+	app := newApp(t)
+
+	r, w := newAPITest(t)
+
+	reqBody, _ := json.Marshal(map[string]string{
+		"tags": "test,test2,test3",
+	})
+
+	req, _ := http.NewRequest(
+		"PATCH",
+		fmt.Sprintf("/api/applications/%d/tags", app.ID),
+		bytes.NewBuffer(reqBody),
+	)
+
+	req.Header.Set("Content-Type", "application/json")
+
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, 200, w.Code)
+}
 
 func TestDeleteApplication(t *testing.T) {
 	app := newApp(t)
