@@ -90,6 +90,13 @@ const GoBenchAPI = {
         .then(res => resolve(get(res, 'data', [])))
         .catch(reject)
     })
+  },
+  setApplicationTags (id, tags) {
+    return new Promise((resolve, reject) => {
+      API.axios().patch(`api/applications/${id}/tags`, { tags })
+        .then(res => resolve(get(res, 'data', {})))
+        .catch(reject)
+    })
   }
 }
 
