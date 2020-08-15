@@ -31,6 +31,6 @@ func (Application) Fields() []ent.Field {
 func (Application) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("groups", Group.Type),
-		edge.To("logs", Log.Type),
+		edge.To("eventLogs", EventLog.Type),
 	}
 }

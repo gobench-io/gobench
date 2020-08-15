@@ -16,6 +16,8 @@ type Tx struct {
 	Application *ApplicationClient
 	// Counter is the client for interacting with the Counter builders.
 	Counter *CounterClient
+	// EventLog is the client for interacting with the EventLog builders.
+	EventLog *EventLogClient
 	// Gauge is the client for interacting with the Gauge builders.
 	Gauge *GaugeClient
 	// Graph is the client for interacting with the Graph builders.
@@ -85,6 +87,7 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.Application = NewApplicationClient(tx.config)
 	tx.Counter = NewCounterClient(tx.config)
+	tx.EventLog = NewEventLogClient(tx.config)
 	tx.Gauge = NewGaugeClient(tx.config)
 	tx.Graph = NewGraphClient(tx.config)
 	tx.Group = NewGroupClient(tx.config)

@@ -6,13 +6,13 @@ import (
 	"github.com/facebookincubator/ent/schema/field"
 )
 
-// Log holds the schema definition for the Log entity.
-type Log struct {
+// EventLog holds the schema definition for the EventLog entity.
+type EventLog struct {
 	ent.Schema
 }
 
-// Fields of the Log.
-func (Log) Fields() []ent.Field {
+// Fields of the EventLog.
+func (EventLog) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name").Immutable().StructTag(`json:"name"`),
 		field.String("message").Immutable().StructTag(`json:"message"`),
@@ -22,11 +22,11 @@ func (Log) Fields() []ent.Field {
 	}
 }
 
-// Edges of the Log.
-func (Log) Edges() []ent.Edge {
+// Edges of the EventLog.
+func (EventLog) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("applications", Application.Type).
-			Ref("logs").
+			Ref("eventLogs").
 			Unique(),
 	}
 }
