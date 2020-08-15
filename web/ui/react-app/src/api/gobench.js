@@ -1,89 +1,96 @@
-import API from './api';
-import { get } from 'lodash';
-import { METRIC_TYPE } from '../realtimeHelpers';
+import API from './api'
+import { get } from 'lodash'
+import { METRIC_TYPE } from '../realtimeHelpers'
 
 const GoBenchAPI = {
-  getApplications() {
+  getApplications () {
     return new Promise((resolve, reject) => {
-      API.axios().get(`api/applications`)
+      API.axios().get('api/applications')
         .then(res => resolve(get(res, 'data', [])))
-        .catch(reject);
-    });
+        .catch(reject)
+    })
   },
-  createApplication(data) {
+  createApplication (data) {
     return new Promise((resolve, reject) => {
-      API.axios().post(`api/applications`, data)
+      API.axios().post('api/applications', data)
         .then(res => resolve(get(res, 'data', null)))
-        .catch(reject);
-    });
+        .catch(reject)
+    })
   },
-  cancelApplication(id) {
+  cancelApplication (id) {
     return new Promise((resolve, reject) => {
       API.axios().put(`api/applications/${id}/cancel`, {})
         .then(res => resolve(get(res, 'data', null)))
-        .catch(reject);
-    });
+        .catch(reject)
+    })
   },
-  getAppInfo(id) {
+  getAppInfo (id) {
     return new Promise((resolve, reject) => {
       API.axios().get(`api/applications/${id}`)
         .then(res => resolve(get(res, 'data', null)))
-        .catch(reject);
-    });
+        .catch(reject)
+    })
   },
-  getGroups(appId) {
+  getGroups (appId) {
     return new Promise((resolve, reject) => {
       API.axios().get(`api/applications/${appId}/groups`)
         .then(res => resolve(get(res, 'data', [])))
-        .catch(reject);
-    });
+        .catch(reject)
+    })
   },
-  getGraphs(id) {
+  getGraphs (id) {
     return new Promise((resolve, reject) => {
       API.axios().get(`api/groups/${id}/graphs`)
         .then(res => resolve(get(res, 'data', [])))
-        .catch(reject);
-    });
+        .catch(reject)
+    })
   },
-  getMetrics(id) {
+  getMetrics (id) {
     return new Promise((resolve, reject) => {
       API.axios().get(`api/graphs/${id}/metrics`)
         .then(res => resolve(get(res, 'data', [])))
-        .catch(reject);
-    });
+        .catch(reject)
+    })
   },
-  getMetricData(id = 0, type = 'counter', fromTime = null, toTime = null) {
-    const from = fromTime ? `?from=${fromTime}` : '';
-    const end = toTime ? `&end=${toTime}` : '';
+  getMetricData (id = 0, type = 'counter', fromTime = null, toTime = null) {
+    const from = fromTime ? `?from=${fromTime}` : ''
+    const end = toTime ? `&end=${toTime}` : ''
     switch (type) {
       case METRIC_TYPE.COUNTER:
         return new Promise((resolve, reject) => {
           API.axios().get(`api/metrics/${id}/counters${from}${end}`)
             .then(res => resolve(get(res, 'data', [])))
-            .catch(reject);
-        });
+            .catch(reject)
+        })
 
       case METRIC_TYPE.HISTOGRAM:
         return new Promise((resolve, reject) => {
           API.axios().get(`api/metrics/${id}/histograms${from}${end}`)
             .then(res => resolve(get(res, 'data', [])))
-            .catch(reject);
-        });
+            .catch(reject)
+        })
 
       case METRIC_TYPE.GAUGE:
         return new Promise((resolve, reject) => {
           API.axios().get(`api/metrics/${id}/gauges${from}${end}`)
             .then(res => resolve(get(res, 'data', [])))
-            .catch(reject);
-        });
+            .catch(reject)
+        })
       default:
         return new Promise((resolve, reject) => {
           API.axios().get(`api/metrics/${id}`)
             .then(res => resolve(get(res, 'data', [])))
-            .catch(reject);
-        });
+            .catch(reject)
+        })
     }
+  },
+  getEventLogs (id) {
+    return new Promise((resolve, reject) => {
+      API.axios().get(`api/applications/${id}/logs`)
+        .then(res => resolve(get(res, 'data', [])))
+        .catch(reject)
+    })
   }
-};
+}
 
-export default GoBenchAPI;
+export default GoBenchAPI

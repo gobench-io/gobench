@@ -44,78 +44,78 @@ const App = (props) => {
           <p>Loading...</p>
         </div>
       ) : (
-          <div key={props.match.params.appId}>
-            <div className='app-header'>
-              <div className='app-header-left'>
-                <h2 className='application-title'>
-                  {get(appData, 'name', '') || ''} application benchmark
+        <div key={props.match.params.appId}>
+          <div className='app-header'>
+            <div className='app-header-left'>
+              <h2 className='application-title'>
+                {get(appData, 'name', '') || ''} application benchmark
               </h2>
-                <span
-                  className='application-status'
-                  style={{
-                    color: '#FFFFFF',
-                    background: statusColors[appStatus] || '#bfbfbf'
-                  }}
-                >
-                  {get(appData, 'status', '')}
-                </span>
-              </div>
-              <Button type="ghost" onClick={() => history.goBack()}>
+              <span
+                className='application-status'
+                style={{
+                  color: '#FFFFFF',
+                  background: statusColors[appStatus] || '#bfbfbf'
+                }}
+              >
+                {get(appData, 'status', '')}
+              </span>
+            </div>
+            <Button type='ghost' onClick={() => history.goBack()}>
                 &lt; Back to Applications
             </Button>
-            </div>
-            <div className='app-small-timestamp'>
-              <small>{get(appData, 'created_at', '')}</small>
-            </div>
-            <div className=''>
-              <ul className='tabs'>
-                <li
-                  className={`tab-nav-item ${
+          </div>
+          <div className='app-small-timestamp'>
+            <small>{get(appData, 'created_at', '')}</small>
+          </div>
+          <div className=''>
+            <ul className='tabs'>
+              <li
+                className={`tab-nav-item ${
                     activeTab === 'dashboard' ? 'tab-active' : ''
-                    }`}
-                  onClick={() => setActiveTab('dashboard')}
-                >
+                }`}
+                onClick={() => setActiveTab('dashboard')}
+              >
                   Dashboard
               </li>
-                <li
-                  className={`tab-nav-item ${
+              <li
+                className={`tab-nav-item ${
                     activeTab === 'scenario' ? 'tab-active' : ''
-                    }`}
-                  onClick={() => setActiveTab('scenario')}
-                >
+                }`}
+                onClick={() => setActiveTab('scenario')}
+              >
                   Scenario
               </li>
-                <li
-                  className={`tab-nav-item ${
+              <li
+                className={`tab-nav-item ${
                     activeTab === 'logs' ? 'tab-active' : ''
-                    }`}
-                  onClick={() => setActiveTab('logs')}
-                >
+                }`}
+                onClick={() => setActiveTab('logs')}
+              >
                   Logs
               </li>
-              </ul>
-              <AppContext.Provider value={appData}>
-                <div className='tab-content'>
-                  {activeTab === 'dashboard' && (
-                    <div className='tab-item'>
-                      <Dashboard />
-                    </div>
-                  )}
-                  {activeTab === 'scenario' && (
-                    <div className='tab-item'>
-                      <Scenario />
-                    </div>
-                  )}
-                  {activeTab === 'logs' && (
-                    <div className='tab-item'>
-                      <Logs />
-                    </div>
-                  )}
-                </div>
-              </AppContext.Provider>
-            </div>
+            </ul>
+            <AppContext.Provider value={appData}>
+              <div className='tab-content'>
+                {activeTab === 'dashboard' && (
+                  <div className='tab-item'>
+                    <Dashboard />
+                  </div>
+                )}
+                {activeTab === 'scenario' && (
+                  <div className='tab-item'>
+                    <Scenario />
+                  </div>
+                )}
+                {activeTab === 'logs' && (
+                  <div className='tab-item'>
+                    <Logs {...props} />
+                  </div>
+                )}
+              </div>
+            </AppContext.Provider>
           </div>
-        )}
+        </div>
+      )}
     </div>
   )
 }
