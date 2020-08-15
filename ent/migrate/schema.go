@@ -50,11 +50,11 @@ var (
 	// EventLogsColumns holds the columns for the "event_logs" table.
 	EventLogsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "name", Type: field.TypeString},
+		{Name: "name", Type: field.TypeString, Default: "application"},
 		{Name: "message", Type: field.TypeString},
-		{Name: "level", Type: field.TypeString},
+		{Name: "level", Type: field.TypeString, Default: "info"},
 		{Name: "source", Type: field.TypeString},
-		{Name: "created_at", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
 		{Name: "application_event_logs", Type: field.TypeInt, Nullable: true},
 	}
 	// EventLogsTable holds the schema information for the "event_logs" table.

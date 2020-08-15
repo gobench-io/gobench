@@ -3,6 +3,8 @@
 package eventlog
 
 import (
+	"time"
+
 	"github.com/facebookincubator/ent/dialect/sql"
 	"github.com/facebookincubator/ent/dialect/sql/sqlgraph"
 	"github.com/gobench-io/gobench/ent/predicate"
@@ -120,7 +122,7 @@ func Source(v string) predicate.EventLog {
 }
 
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
-func CreatedAt(v string) predicate.EventLog {
+func CreatedAt(v time.Time) predicate.EventLog {
 	return predicate.EventLog(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldCreatedAt), v))
 	})
@@ -571,21 +573,21 @@ func SourceContainsFold(v string) predicate.EventLog {
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
-func CreatedAtEQ(v string) predicate.EventLog {
+func CreatedAtEQ(v time.Time) predicate.EventLog {
 	return predicate.EventLog(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldCreatedAt), v))
 	})
 }
 
 // CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
-func CreatedAtNEQ(v string) predicate.EventLog {
+func CreatedAtNEQ(v time.Time) predicate.EventLog {
 	return predicate.EventLog(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldCreatedAt), v))
 	})
 }
 
 // CreatedAtIn applies the In predicate on the "created_at" field.
-func CreatedAtIn(vs ...string) predicate.EventLog {
+func CreatedAtIn(vs ...time.Time) predicate.EventLog {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -602,7 +604,7 @@ func CreatedAtIn(vs ...string) predicate.EventLog {
 }
 
 // CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
-func CreatedAtNotIn(vs ...string) predicate.EventLog {
+func CreatedAtNotIn(vs ...time.Time) predicate.EventLog {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -619,65 +621,30 @@ func CreatedAtNotIn(vs ...string) predicate.EventLog {
 }
 
 // CreatedAtGT applies the GT predicate on the "created_at" field.
-func CreatedAtGT(v string) predicate.EventLog {
+func CreatedAtGT(v time.Time) predicate.EventLog {
 	return predicate.EventLog(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldCreatedAt), v))
 	})
 }
 
 // CreatedAtGTE applies the GTE predicate on the "created_at" field.
-func CreatedAtGTE(v string) predicate.EventLog {
+func CreatedAtGTE(v time.Time) predicate.EventLog {
 	return predicate.EventLog(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldCreatedAt), v))
 	})
 }
 
 // CreatedAtLT applies the LT predicate on the "created_at" field.
-func CreatedAtLT(v string) predicate.EventLog {
+func CreatedAtLT(v time.Time) predicate.EventLog {
 	return predicate.EventLog(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldCreatedAt), v))
 	})
 }
 
 // CreatedAtLTE applies the LTE predicate on the "created_at" field.
-func CreatedAtLTE(v string) predicate.EventLog {
+func CreatedAtLTE(v time.Time) predicate.EventLog {
 	return predicate.EventLog(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldCreatedAt), v))
-	})
-}
-
-// CreatedAtContains applies the Contains predicate on the "created_at" field.
-func CreatedAtContains(v string) predicate.EventLog {
-	return predicate.EventLog(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldCreatedAt), v))
-	})
-}
-
-// CreatedAtHasPrefix applies the HasPrefix predicate on the "created_at" field.
-func CreatedAtHasPrefix(v string) predicate.EventLog {
-	return predicate.EventLog(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldCreatedAt), v))
-	})
-}
-
-// CreatedAtHasSuffix applies the HasSuffix predicate on the "created_at" field.
-func CreatedAtHasSuffix(v string) predicate.EventLog {
-	return predicate.EventLog(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldCreatedAt), v))
-	})
-}
-
-// CreatedAtEqualFold applies the EqualFold predicate on the "created_at" field.
-func CreatedAtEqualFold(v string) predicate.EventLog {
-	return predicate.EventLog(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldCreatedAt), v))
-	})
-}
-
-// CreatedAtContainsFold applies the ContainsFold predicate on the "created_at" field.
-func CreatedAtContainsFold(v string) predicate.EventLog {
-	return predicate.EventLog(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldCreatedAt), v))
 	})
 }
 

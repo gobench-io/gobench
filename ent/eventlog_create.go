@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/facebookincubator/ent/dialect/sql/sqlgraph"
 	"github.com/facebookincubator/ent/schema/field"
@@ -26,6 +27,14 @@ func (elc *EventLogCreate) SetName(s string) *EventLogCreate {
 	return elc
 }
 
+// SetNillableName sets the name field if the given value is not nil.
+func (elc *EventLogCreate) SetNillableName(s *string) *EventLogCreate {
+	if s != nil {
+		elc.SetName(*s)
+	}
+	return elc
+}
+
 // SetMessage sets the message field.
 func (elc *EventLogCreate) SetMessage(s string) *EventLogCreate {
 	elc.mutation.SetMessage(s)
@@ -38,6 +47,14 @@ func (elc *EventLogCreate) SetLevel(s string) *EventLogCreate {
 	return elc
 }
 
+// SetNillableLevel sets the level field if the given value is not nil.
+func (elc *EventLogCreate) SetNillableLevel(s *string) *EventLogCreate {
+	if s != nil {
+		elc.SetLevel(*s)
+	}
+	return elc
+}
+
 // SetSource sets the source field.
 func (elc *EventLogCreate) SetSource(s string) *EventLogCreate {
 	elc.mutation.SetSource(s)
@@ -45,8 +62,16 @@ func (elc *EventLogCreate) SetSource(s string) *EventLogCreate {
 }
 
 // SetCreatedAt sets the created_at field.
-func (elc *EventLogCreate) SetCreatedAt(s string) *EventLogCreate {
-	elc.mutation.SetCreatedAt(s)
+func (elc *EventLogCreate) SetCreatedAt(t time.Time) *EventLogCreate {
+	elc.mutation.SetCreatedAt(t)
+	return elc
+}
+
+// SetNillableCreatedAt sets the created_at field if the given value is not nil.
+func (elc *EventLogCreate) SetNillableCreatedAt(t *time.Time) *EventLogCreate {
+	if t != nil {
+		elc.SetCreatedAt(*t)
+	}
 	return elc
 }
 
@@ -72,19 +97,22 @@ func (elc *EventLogCreate) SetApplications(a *Application) *EventLogCreate {
 // Save creates the EventLog in the database.
 func (elc *EventLogCreate) Save(ctx context.Context) (*EventLog, error) {
 	if _, ok := elc.mutation.Name(); !ok {
-		return nil, errors.New("ent: missing required field \"name\"")
+		v := eventlog.DefaultName
+		elc.mutation.SetName(v)
 	}
 	if _, ok := elc.mutation.Message(); !ok {
 		return nil, errors.New("ent: missing required field \"message\"")
 	}
 	if _, ok := elc.mutation.Level(); !ok {
-		return nil, errors.New("ent: missing required field \"level\"")
+		v := eventlog.DefaultLevel
+		elc.mutation.SetLevel(v)
 	}
 	if _, ok := elc.mutation.Source(); !ok {
 		return nil, errors.New("ent: missing required field \"source\"")
 	}
 	if _, ok := elc.mutation.CreatedAt(); !ok {
-		return nil, errors.New("ent: missing required field \"created_at\"")
+		v := eventlog.DefaultCreatedAt()
+		elc.mutation.SetCreatedAt(v)
 	}
 	var (
 		err  error
@@ -167,7 +195,7 @@ func (elc *EventLogCreate) sqlSave(ctx context.Context) (*EventLog, error) {
 	}
 	if value, ok := elc.mutation.CreatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
+			Type:   field.TypeTime,
 			Value:  value,
 			Column: eventlog.FieldCreatedAt,
 		})
