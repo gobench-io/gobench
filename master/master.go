@@ -217,7 +217,7 @@ func (m *Master) CancelApplication(ctx context.Context, appID int) (*ent.Applica
 		return app, err
 	}
 
-	m.LogEvent(ctx, 0, fmt.Sprintf("application status change from %s to %s", currentStatus, app.Status), "master:cancelApplication", "", "")
+	m.LogEvent(ctx, app.ID, fmt.Sprintf("application status change from %s to %s", currentStatus, app.Status), "master:cancelApplication", "", "")
 
 	return app, err
 }
@@ -238,7 +238,7 @@ func (m *Master) jobTo(ctx context.Context, state jobState) (err error) {
 		SetStatus(string(state)).
 		Save(ctx)
 
-	m.LogEvent(ctx, 0, fmt.Sprintf("application status change from %s to %s", currentStatus, m.job.app.Status), "master:jobTo", "", "")
+	m.LogEvent(ctx, m.job.app.ID, fmt.Sprintf("application status change from %s to %s", currentStatus, m.job.app.Status), "master:jobTo", "", "")
 
 	return
 }
@@ -296,13 +296,13 @@ func (m *Master) run(ctx context.Context, j *job) (err error) {
 				"err", err,
 			)
 
-			m.LogEvent(ctx, 0, err.Error(), "master:run", "error", "")
+			m.LogEvent(ctx, m.job.app.ID, err.Error(), "master:run", "error", "")
 			je = jobError
 
 			if ctx.Err() != nil {
 				je = jobCancel
 				err = ErrAppIsCanceled
-				m.LogEvent(ctx, 0, err.Error(), "master:run", "error", "")
+				m.LogEvent(ctx, m.job.app.ID, err.Error(), "master:run", "error", "")
 			}
 		}
 
@@ -332,7 +332,7 @@ func (m *Master) run(ctx context.Context, j *job) (err error) {
 	)
 
 	if err = m.jobCompile(ctx); err != nil {
-		m.LogEvent(ctx, 0, err.Error(), "master:run:jobCompile", "error", "")
+		m.LogEvent(ctx, m.job.app.ID, err.Error(), "master:run:jobCompile", "error", "")
 		return
 	}
 	// todo: ditribute the plugin to other worker when run in cloud mode
@@ -349,7 +349,7 @@ func (m *Master) run(ctx context.Context, j *job) (err error) {
 	)
 
 	if err = m.runJob(ctx); err != nil {
-		m.LogEvent(ctx, 0, err.Error(), "master:run", "error", "")
+		m.LogEvent(ctx, m.job.app.ID, err.Error(), "master:run", "error", "")
 		return
 	}
 
