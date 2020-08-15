@@ -35,9 +35,11 @@ type Application struct {
 type ApplicationEdges struct {
 	// Groups holds the value of the groups edge.
 	Groups []*Group
+	// EventLogs holds the value of the eventLogs edge.
+	EventLogs []*EventLog
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // GroupsOrErr returns the Groups value or an error if the edge
@@ -47,6 +49,15 @@ func (e ApplicationEdges) GroupsOrErr() ([]*Group, error) {
 		return e.Groups, nil
 	}
 	return nil, &NotLoadedError{edge: "groups"}
+}
+
+// EventLogsOrErr returns the EventLogs value or an error if the edge
+// was not loaded in eager-loading.
+func (e ApplicationEdges) EventLogsOrErr() ([]*EventLog, error) {
+	if e.loadedTypes[1] {
+		return e.EventLogs, nil
+	}
+	return nil, &NotLoadedError{edge: "eventLogs"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -104,6 +115,11 @@ func (a *Application) assignValues(values ...interface{}) error {
 // QueryGroups queries the groups edge of the Application.
 func (a *Application) QueryGroups() *GroupQuery {
 	return (&ApplicationClient{config: a.config}).QueryGroups(a)
+}
+
+// QueryEventLogs queries the eventLogs edge of the Application.
+func (a *Application) QueryEventLogs() *EventLogQuery {
+	return (&ApplicationClient{config: a.config}).QueryEventLogs(a)
 }
 
 // Update returns a builder for updating this Application.

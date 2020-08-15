@@ -641,6 +641,34 @@ func HasGroupsWith(preds ...predicate.Group) predicate.Application {
 	})
 }
 
+// HasEventLogs applies the HasEdge predicate on the "eventLogs" edge.
+func HasEventLogs() predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(EventLogsTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, EventLogsTable, EventLogsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasEventLogsWith applies the HasEdge predicate on the "eventLogs" edge with a given conditions (other predicates).
+func HasEventLogsWith(preds ...predicate.EventLog) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(EventLogsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, EventLogsTable, EventLogsColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups list of predicates with the AND operator between them.
 func And(predicates ...predicate.Application) predicate.Application {
 	return predicate.Application(func(s *sql.Selector) {
