@@ -78,7 +78,7 @@ func NewMaster(opts *Options, logger logger.Logger) (m *Master, err error) {
 		logger:     logger,
 		program:    opts.Program,
 	}
-	la, err := agent.NewAgent(m, logger)
+	la, err := agent.NewLocalAgent(m, logger)
 	if err != nil {
 		return
 	}

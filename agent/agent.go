@@ -35,7 +35,7 @@ type Agent struct {
 	rs     *rpc.Server
 }
 
-func NewAgent(ml metricLoggerRPC, logger logger.Logger) (*Agent, error) {
+func NewLocalAgent(ml metricLoggerRPC, logger logger.Logger) (*Agent, error) {
 	a := &Agent{
 		metricLoggerRPC: ml,
 		logger:          logger,
@@ -64,12 +64,8 @@ func (a *Agent) StartSocketServer(socket string) error {
 	return nil
 }
 
-func (a *Agent) GetSocketName() string {
-	return a.socket
-}
-
 func (a *Agent) RunJob(ctx context.Context, program, driverPath string, appID int) (err error) {
-	agentSock := a.GetSocketName()
+	agentSock := a.socket
 	executorSock := fmt.Sprintf("/tmp/executorsock-%d", appID)
 
 	cmd := exec.CommandContext(ctx, program,
