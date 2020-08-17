@@ -116,7 +116,7 @@ func TestExecutorOption(t *testing.T) {
 	}
 }
 
-func TestMasterOption(t *testing.T) {
+func TestOptions(t *testing.T) {
 	// helper function
 	mustNotFail := func(args []string) *Options {
 		fs := flag.NewFlagSet("test", flag.ContinueOnError)
@@ -141,12 +141,21 @@ func TestMasterOption(t *testing.T) {
 		t.Fatalf("Expect error contain any of %v, got %v", errContent, err)
 	}
 
-	// check mode
-	mustFail([]string{"me", "--mode", "not existed"}, "mode must be either master, agent, or executor")
+	t.Run("master options", func(t *testing.T) {
+		// check mode
+		mustFail([]string{"me", "--mode", "not existed"}, "mode must be either master, agent, or executor")
 
-	opts := mustNotFail([]string{"me", "-p", "3000"})
-	assert.Equal(t, opts.Port, 3000)
+		opts := mustNotFail([]string{"me", "-p", "3000"})
+		assert.Equal(t, opts.Port, 3000)
 
-	opts = mustNotFail([]string{"me", "-db", "./foo.sqlite3"})
-	assert.Equal(t, opts.DbPath, "./foo.sqlite3")
+		opts = mustNotFail([]string{"me", "-db", "./foo.sqlite3"})
+		assert.Equal(t, opts.DbPath, "./foo.sqlite3")
+
+	})
+
+	t.Run("agent options", func(t *testing.T) {
+		opts := mustNotFail([]string{"me", "--mode", "agent", "--route", "abc.xyz:1234"})
+		assert.Equal(t, "abc.xyz:123", opts.Route)
+		assert.Equal(t, "6890", opts.ClusterPort)
+	})
 }

@@ -6,6 +6,6 @@ const (
 
 	DEFAULT_HOST         = "0.0.0.0"
 	DEFAULT_PORT         = 8080
-	DEFAULT_CLUSTER_PORT = 8081
+	DEFAULT_CLUSTER_PORT = 6890
 	DEFAULT_DB_NAME      = "gobench.sqlite3"
 )

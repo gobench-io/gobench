@@ -34,6 +34,10 @@ type Options struct {
 	// master mode
 	Port   int
 	DbPath string
+
+	// agent mode
+	Route       string
+	ClusterPort int
 }
 
 // func (o Options) String() string {
@@ -60,6 +64,10 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 		// master mode
 		port   int
 		dbPath string
+
+		// agent mode
+		route       string
+		clusterPort int
 	)
 	fs.BoolVar(&showVersion, "v", false, "Print version information")
 	fs.BoolVar(&showVersion, "version", false, "Print version information")
@@ -78,6 +86,10 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 	fs.IntVar(&port, "p", DEFAULT_PORT, "Port of the master server.")
 	fs.IntVar(&port, "port", DEFAULT_PORT, "Port of the master server.")
 	fs.StringVar(&dbPath, "db", "", "Name of the database.")
+
+	// agent
+	fs.IntVar(&clusterPort, "clusterPort", DEFAULT_CLUSTER_PORT, "Cluster port to solicit and connect.")
+	fs.StringVar(&route, "route", "", "Master address to solicit routes.")
 
 	program := args[0]
 	if err = fs.Parse(args[1:]); err != nil {
