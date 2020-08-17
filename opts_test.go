@@ -143,7 +143,8 @@ func TestOptions(t *testing.T) {
 
 	t.Run("master options", func(t *testing.T) {
 		// check mode
-		mustFail([]string{"me", "--mode", "not existed"}, "mode must be either master, agent, or executor")
+		mustFail([]string{"me", "--mode", "not existed"},
+			"mode must be either master, agent, or executor")
 
 		// check default master
 		opts := mustNotFail([]string{"me"})
@@ -163,11 +164,13 @@ func TestOptions(t *testing.T) {
 	t.Run("agent options", func(t *testing.T) {
 		mustFail([]string{"me", "--mode", "agent"}, "must have route to a master")
 
-		opts := mustNotFail([]string{"me", "--mode", "agent", "--route", "abc.xyz:1234"})
+		opts := mustNotFail([]string{"me", "--mode", "agent",
+			"--route", "abc.xyz:1234"})
 		assert.Equal(t, "abc.xyz:1234", opts.Route)
 		assert.Equal(t, DEFAULT_CLUSTER_PORT, opts.ClusterPort)
 
-		opts = mustNotFail([]string{"me", "--mode", "agent", "--route", "abc.xyz:1234", "--clusterPort", "4567"})
+		opts = mustNotFail([]string{"me", "--mode", "agent",
+			"--route", "abc.xyz:1234", "--clusterPort", "4567"})
 		assert.Equal(t, 4567, opts.ClusterPort)
 	})
 }
