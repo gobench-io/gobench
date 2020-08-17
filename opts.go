@@ -133,7 +133,17 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 			dbPath = filepath.Join(home, DEFAULT_DB_NAME)
 		}
 		opts.Port = port
+		opts.ClusterPort = clusterPort
 		opts.DbPath = dbPath
+		return opts, nil
+	}
+
+	if opts.Mode == Agent {
+		if route == "" {
+			return nil, errors.New("agent must have route to a master")
+		}
+		opts.Route = route
+		opts.ClusterPort = clusterPort
 		return opts, nil
 	}
 

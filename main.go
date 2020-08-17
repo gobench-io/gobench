@@ -26,7 +26,8 @@ Usage: gobench [options]
 
 Master Options:
     -a, --addr <host>   Bind to host address (default: 0.0.0.0)
-    -p, --port <port>   Use port for web client (default: 8080).
+	-p, --port <port>   Use port for web client (default: 8080).
+	-db <file>          Location for the server database (default: ${HOME}/gobench.sqlite3)
 
 Agent Options:
     --route <host:port> The master address to solicit routes.

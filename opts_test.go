@@ -145,7 +145,14 @@ func TestOptions(t *testing.T) {
 		// check mode
 		mustFail([]string{"me", "--mode", "not existed"}, "mode must be either master, agent, or executor")
 
-		opts := mustNotFail([]string{"me", "-p", "3000"})
+		// check default master
+		opts := mustNotFail([]string{"me"})
+		assert.Equal(t, Master, opts.Mode)
+		assert.Equal(t, DEFAULT_PORT, opts.Port)
+		assert.Equal(t, DEFAULT_CLUSTER_PORT, opts.ClusterPort)
+		assert.Contains(t, opts.DbPath, DEFAULT_DB_NAME)
+
+		opts = mustNotFail([]string{"me", "-p", "3000"})
 		assert.Equal(t, opts.Port, 3000)
 
 		opts = mustNotFail([]string{"me", "-db", "./foo.sqlite3"})
@@ -154,8 +161,13 @@ func TestOptions(t *testing.T) {
 	})
 
 	t.Run("agent options", func(t *testing.T) {
+		mustFail([]string{"me", "--mode", "agent"}, "must have route to a master")
+
 		opts := mustNotFail([]string{"me", "--mode", "agent", "--route", "abc.xyz:1234"})
-		assert.Equal(t, "abc.xyz:123", opts.Route)
-		assert.Equal(t, "6890", opts.ClusterPort)
+		assert.Equal(t, "abc.xyz:1234", opts.Route)
+		assert.Equal(t, DEFAULT_CLUSTER_PORT, opts.ClusterPort)
+
+		opts = mustNotFail([]string{"me", "--mode", "agent", "--route", "abc.xyz:1234", "--clusterPort", "4567"})
+		assert.Equal(t, 4567, opts.ClusterPort)
 	})
 }
