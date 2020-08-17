@@ -17,23 +17,27 @@ import (
 var usageStr = `
 Usage: gobench [options]
 
-Server Options:
-	-a, --addr <host>		Bind to host address (default: 0.0.0.0)
-	-p, --port <port>		Use port for web client (default: 6891).
-							Worker does not need this option.
-	-m, --master			Run server as master mode
-	-w, --worker 			Run server as worker mode
+    --mode <mode>       Server mode. Must be one of the master, agent, executor mode.
+                        Default is master
+    --cluster-port <port>   Cluster port to solicit and connect (default: 6890)
+                            Master and agent are required to have this option
+    -h, --help          Show this message
+    -v, --version       Show version
 
-Cluster Options
-		--cluster-port <port>	Cluster port to solicit and connect (default: 6890)
-							Master is required to have this option
-		--route <host:port> The master address to solicit routes.
-							Every worker must have this option sothat worker can
-							connect to a master
+Master Options:
+    -a, --addr <host>   Bind to host address (default: 0.0.0.0)
+    -p, --port <port>   Use port for web client (default: 8080).
 
-Common Options:
-	-h, --help				Show this message
-	-v, --version			Show version
+Agent Options:
+    --route <host:port> The master address to solicit routes.
+                        Every worker must have this option sothat worker can connect to a master
+
+Executor Options:
+    --agent-sock <file>     Unix socket address the local agent is listening to
+    --executor-soc <file>   Unix socket address this executor will listen to
+    --driver-path <file>    Location of the driver that this executor will execute
+    --app-id <id>           ID of the application that this executor will run
+
 `
 
 func usage() {
