@@ -31,13 +31,15 @@ type Options struct {
 	DriverPath   string // the plugin user wrote
 	AppID        int
 
+	// master, agent mode
+	ClusterPort int
+
 	// master mode
 	Port   int
 	DbPath string
 
 	// agent mode
-	Route       string
-	ClusterPort int
+	Route string
 }
 
 // func (o Options) String() string {
@@ -89,6 +91,8 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 
 	// agent
 	fs.IntVar(&clusterPort, "clusterPort", DEFAULT_CLUSTER_PORT, "Cluster port to solicit and connect.")
+
+	// master + agent
 	fs.StringVar(&route, "route", "", "Master address to solicit routes.")
 
 	program := args[0]
