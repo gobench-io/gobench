@@ -4,10 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"net/rpc"
 	"os"
 	"os/exec"
-	"strconv"
 	"sync"
 	"time"
 
@@ -80,7 +78,7 @@ func NewMaster(opts *Options, logger logger.Logger) (m *Master, err error) {
 		logger:     logger,
 		program:    opts.Program,
 	}
-	la, err := agent.NewAgent(m)
+	la, err := agent.NewAgent(m, logger)
 	if err != nil {
 		return
 	}
@@ -411,101 +409,7 @@ func (m *Master) jobCompile(ctx context.Context) error {
 	return nil
 }
 
-// runJob run a application in a job
-// by create a local worker
+// runJob runs the already compiled plugin, uses agent workhouse
 func (m *Master) runJob(ctx context.Context) (err error) {
-	// todo: move this to agent
-	driverPath := m.job.plugin
-	appID := strconv.Itoa(m.job.app.ID)
-	agentSock := m.la.GetSocketName()
-	executorSock := fmt.Sprintf("/tmp/executorsock-%s", appID)
-
-	cmd := exec.CommandContext(ctx, m.program,
-		"--mode", "executor",
-		"--agent-sock", agentSock,
-		"--executor-sock", executorSock,
-		"--driver-path", driverPath,
-		"--app-id", appID)
-
-	// get the stderr log
-	stderr, err := cmd.StderrPipe()
-	if err != nil {
-		err = fmt.Errorf("cmd pipe stderr: %v", err)
-		return
-	}
-	go func() {
-		slurp, _ := ioutil.ReadAll(stderr)
-		fmt.Printf("%s\n", string(slurp))
-	}()
-
-	// get the stdout log
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		err = fmt.Errorf("cmd pipe stdout: %v", err)
-		return
-	}
-	go func() {
-		slurp, _ := ioutil.ReadAll(stdout)
-		fmt.Printf("%s\n", string(slurp))
-	}()
-
-	// start the cmd, does not wait for it to complete
-	if err = cmd.Start(); err != nil {
-		err = fmt.Errorf("executor start: %v", err)
-		return
-	}
-
-	// waiting for the executor rpc to be ready
-	b := time.Now()
-	client, err := waitForReady(ctx, executorSock, 5*time.Second)
-	if err != nil {
-		err = fmt.Errorf("rpc dial: %v", err)
-		return
-	}
-	m.logger.Infow("local executor is ready", "startup", time.Now().Sub(b))
-
-	m.logger.Infow("local executor to run driver")
-
-	req := true
-	res := new(bool)
-	if err = client.Call("Executor.Start", &req, &res); err != nil {
-		err = fmt.Errorf("rpc start: %v", err)
-		return
-	}
-
-	m.logger.Infow("local executor is shutting down")
-	terReq := 0
-	terRes := new(bool)
-	// ignore error, since when the executor is terminated, this rpc will fail
-	_ = client.Call("Executor.Terminate", &terReq, &terRes)
-
-	if err = cmd.Wait(); err != nil {
-		m.logger.Errorw("executor wait", "err", err)
-		return
-	}
-
-	return nil
-}
-
-func waitForReady(ctx context.Context, executorSock string, expiredIn time.Duration) (
-	*rpc.Client, error,
-) {
-	timeout := time.After(expiredIn)
-	sleep := 10 * time.Millisecond
-	for {
-		time.Sleep(sleep)
-
-		select {
-		case <-ctx.Done():
-			return nil, errors.New("cancel")
-		case <-timeout:
-			return nil, errors.New("timeout")
-		default:
-			client, err := rpc.DialHTTP("unix", executorSock)
-			if err != nil {
-				continue
-			}
-			return client, nil
-		}
-	}
+	return m.la.RunJob(ctx, m.program, m.job.plugin, m.job.app.ID)
 }
