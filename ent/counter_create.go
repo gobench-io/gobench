@@ -57,16 +57,15 @@ func (cc *CounterCreate) SetMetric(m *Metric) *CounterCreate {
 	return cc.SetMetricID(m.ID)
 }
 
+// Mutation returns the CounterMutation object of the builder.
+func (cc *CounterCreate) Mutation() *CounterMutation {
+	return cc.mutation
+}
+
 // Save creates the Counter in the database.
 func (cc *CounterCreate) Save(ctx context.Context) (*Counter, error) {
-	if _, ok := cc.mutation.Time(); !ok {
-		return nil, errors.New("ent: missing required field \"time\"")
-	}
-	if _, ok := cc.mutation.Count(); !ok {
-		return nil, errors.New("ent: missing required field \"count\"")
-	}
-	if _, ok := cc.mutation.WID(); !ok {
-		return nil, errors.New("ent: missing required field \"wID\"")
+	if err := cc.preSave(); err != nil {
+		return nil, err
 	}
 	var (
 		err  error
@@ -104,7 +103,33 @@ func (cc *CounterCreate) SaveX(ctx context.Context) *Counter {
 	return v
 }
 
+func (cc *CounterCreate) preSave() error {
+	if _, ok := cc.mutation.Time(); !ok {
+		return &ValidationError{Name: "time", err: errors.New("ent: missing required field \"time\"")}
+	}
+	if _, ok := cc.mutation.Count(); !ok {
+		return &ValidationError{Name: "count", err: errors.New("ent: missing required field \"count\"")}
+	}
+	if _, ok := cc.mutation.WID(); !ok {
+		return &ValidationError{Name: "wID", err: errors.New("ent: missing required field \"wID\"")}
+	}
+	return nil
+}
+
 func (cc *CounterCreate) sqlSave(ctx context.Context) (*Counter, error) {
+	c, _spec := cc.createSpec()
+	if err := sqlgraph.CreateNode(ctx, cc.driver, _spec); err != nil {
+		if cerr, ok := isSQLConstraintError(err); ok {
+			err = cerr
+		}
+		return nil, err
+	}
+	id := _spec.ID.Value.(int64)
+	c.ID = int(id)
+	return c, nil
+}
+
+func (cc *CounterCreate) createSpec() (*Counter, *sqlgraph.CreateSpec) {
 	var (
 		c     = &Counter{config: cc.config}
 		_spec = &sqlgraph.CreateSpec{
@@ -158,13 +183,71 @@ func (cc *CounterCreate) sqlSave(ctx context.Context) (*Counter, error) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if err := sqlgraph.CreateNode(ctx, cc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
-		}
-		return nil, err
+	return c, _spec
+}
+
+// CounterCreateBulk is the builder for creating a bulk of Counter entities.
+type CounterCreateBulk struct {
+	config
+	builders []*CounterCreate
+}
+
+// Save creates the Counter entities in the database.
+func (ccb *CounterCreateBulk) Save(ctx context.Context) ([]*Counter, error) {
+	specs := make([]*sqlgraph.CreateSpec, len(ccb.builders))
+	nodes := make([]*Counter, len(ccb.builders))
+	mutators := make([]Mutator, len(ccb.builders))
+	for i := range ccb.builders {
+		func(i int, root context.Context) {
+			builder := ccb.builders[i]
+			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
+				if err := builder.preSave(); err != nil {
+					return nil, err
+				}
+				mutation, ok := m.(*CounterMutation)
+				if !ok {
+					return nil, fmt.Errorf("unexpected mutation type %T", m)
+				}
+				builder.mutation = mutation
+				nodes[i], specs[i] = builder.createSpec()
+				var err error
+				if i < len(mutators)-1 {
+					_, err = mutators[i+1].Mutate(root, ccb.builders[i+1].mutation)
+				} else {
+					// Invoke the actual operation on the latest mutation in the chain.
+					if err = sqlgraph.BatchCreate(ctx, ccb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
+						if cerr, ok := isSQLConstraintError(err); ok {
+							err = cerr
+						}
+					}
+				}
+				mutation.done = true
+				if err != nil {
+					return nil, err
+				}
+				id := specs[i].ID.Value.(int64)
+				nodes[i].ID = int(id)
+				return nodes[i], nil
+			})
+			for i := len(builder.hooks) - 1; i >= 0; i-- {
+				mut = builder.hooks[i](mut)
+			}
+			mutators[i] = mut
+		}(i, ctx)
 	}
-	id := _spec.ID.Value.(int64)
-	c.ID = int(id)
-	return c, nil
+	if len(mutators) > 0 {
+		if _, err := mutators[0].Mutate(ctx, ccb.builders[0].mutation); err != nil {
+			return nil, err
+		}
+	}
+	return nodes, nil
+}
+
+// SaveX calls Save and panics if Save returns an error.
+func (ccb *CounterCreateBulk) SaveX(ctx context.Context) []*Counter {
+	v, err := ccb.Save(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
 }

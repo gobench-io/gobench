@@ -220,8 +220,8 @@ func (mq *MetricQuery) OnlyID(ctx context.Context) (id int, err error) {
 	return
 }
 
-// OnlyXID is like OnlyID, but panics if an error occurs.
-func (mq *MetricQuery) OnlyXID(ctx context.Context) int {
+// OnlyIDX is like OnlyID, but panics if an error occurs.
+func (mq *MetricQuery) OnlyIDX(ctx context.Context) int {
 	id, err := mq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -702,6 +702,32 @@ func (mgb *MetricGroupBy) StringsX(ctx context.Context) []string {
 	return v
 }
 
+// String returns a single string from group-by. It is only allowed when querying group-by with one field.
+func (mgb *MetricGroupBy) String(ctx context.Context) (_ string, err error) {
+	var v []string
+	if v, err = mgb.Strings(ctx); err != nil {
+		return
+	}
+	switch len(v) {
+	case 1:
+		return v[0], nil
+	case 0:
+		err = &NotFoundError{metric.Label}
+	default:
+		err = fmt.Errorf("ent: MetricGroupBy.Strings returned %d results when one was expected", len(v))
+	}
+	return
+}
+
+// StringX is like String, but panics if an error occurs.
+func (mgb *MetricGroupBy) StringX(ctx context.Context) string {
+	v, err := mgb.String(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
 // Ints returns list of ints from group-by. It is only allowed when querying group-by with one field.
 func (mgb *MetricGroupBy) Ints(ctx context.Context) ([]int, error) {
 	if len(mgb.fields) > 1 {
@@ -717,6 +743,32 @@ func (mgb *MetricGroupBy) Ints(ctx context.Context) ([]int, error) {
 // IntsX is like Ints, but panics if an error occurs.
 func (mgb *MetricGroupBy) IntsX(ctx context.Context) []int {
 	v, err := mgb.Ints(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
+// Int returns a single int from group-by. It is only allowed when querying group-by with one field.
+func (mgb *MetricGroupBy) Int(ctx context.Context) (_ int, err error) {
+	var v []int
+	if v, err = mgb.Ints(ctx); err != nil {
+		return
+	}
+	switch len(v) {
+	case 1:
+		return v[0], nil
+	case 0:
+		err = &NotFoundError{metric.Label}
+	default:
+		err = fmt.Errorf("ent: MetricGroupBy.Ints returned %d results when one was expected", len(v))
+	}
+	return
+}
+
+// IntX is like Int, but panics if an error occurs.
+func (mgb *MetricGroupBy) IntX(ctx context.Context) int {
+	v, err := mgb.Int(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -744,6 +796,32 @@ func (mgb *MetricGroupBy) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
+// Float64 returns a single float64 from group-by. It is only allowed when querying group-by with one field.
+func (mgb *MetricGroupBy) Float64(ctx context.Context) (_ float64, err error) {
+	var v []float64
+	if v, err = mgb.Float64s(ctx); err != nil {
+		return
+	}
+	switch len(v) {
+	case 1:
+		return v[0], nil
+	case 0:
+		err = &NotFoundError{metric.Label}
+	default:
+		err = fmt.Errorf("ent: MetricGroupBy.Float64s returned %d results when one was expected", len(v))
+	}
+	return
+}
+
+// Float64X is like Float64, but panics if an error occurs.
+func (mgb *MetricGroupBy) Float64X(ctx context.Context) float64 {
+	v, err := mgb.Float64(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
 // Bools returns list of bools from group-by. It is only allowed when querying group-by with one field.
 func (mgb *MetricGroupBy) Bools(ctx context.Context) ([]bool, error) {
 	if len(mgb.fields) > 1 {
@@ -759,6 +837,32 @@ func (mgb *MetricGroupBy) Bools(ctx context.Context) ([]bool, error) {
 // BoolsX is like Bools, but panics if an error occurs.
 func (mgb *MetricGroupBy) BoolsX(ctx context.Context) []bool {
 	v, err := mgb.Bools(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
+// Bool returns a single bool from group-by. It is only allowed when querying group-by with one field.
+func (mgb *MetricGroupBy) Bool(ctx context.Context) (_ bool, err error) {
+	var v []bool
+	if v, err = mgb.Bools(ctx); err != nil {
+		return
+	}
+	switch len(v) {
+	case 1:
+		return v[0], nil
+	case 0:
+		err = &NotFoundError{metric.Label}
+	default:
+		err = fmt.Errorf("ent: MetricGroupBy.Bools returned %d results when one was expected", len(v))
+	}
+	return
+}
+
+// BoolX is like Bool, but panics if an error occurs.
+func (mgb *MetricGroupBy) BoolX(ctx context.Context) bool {
+	v, err := mgb.Bool(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -832,6 +936,32 @@ func (ms *MetricSelect) StringsX(ctx context.Context) []string {
 	return v
 }
 
+// String returns a single string from selector. It is only allowed when selecting one field.
+func (ms *MetricSelect) String(ctx context.Context) (_ string, err error) {
+	var v []string
+	if v, err = ms.Strings(ctx); err != nil {
+		return
+	}
+	switch len(v) {
+	case 1:
+		return v[0], nil
+	case 0:
+		err = &NotFoundError{metric.Label}
+	default:
+		err = fmt.Errorf("ent: MetricSelect.Strings returned %d results when one was expected", len(v))
+	}
+	return
+}
+
+// StringX is like String, but panics if an error occurs.
+func (ms *MetricSelect) StringX(ctx context.Context) string {
+	v, err := ms.String(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
 // Ints returns list of ints from selector. It is only allowed when selecting one field.
 func (ms *MetricSelect) Ints(ctx context.Context) ([]int, error) {
 	if len(ms.fields) > 1 {
@@ -847,6 +977,32 @@ func (ms *MetricSelect) Ints(ctx context.Context) ([]int, error) {
 // IntsX is like Ints, but panics if an error occurs.
 func (ms *MetricSelect) IntsX(ctx context.Context) []int {
 	v, err := ms.Ints(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
+// Int returns a single int from selector. It is only allowed when selecting one field.
+func (ms *MetricSelect) Int(ctx context.Context) (_ int, err error) {
+	var v []int
+	if v, err = ms.Ints(ctx); err != nil {
+		return
+	}
+	switch len(v) {
+	case 1:
+		return v[0], nil
+	case 0:
+		err = &NotFoundError{metric.Label}
+	default:
+		err = fmt.Errorf("ent: MetricSelect.Ints returned %d results when one was expected", len(v))
+	}
+	return
+}
+
+// IntX is like Int, but panics if an error occurs.
+func (ms *MetricSelect) IntX(ctx context.Context) int {
+	v, err := ms.Int(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -874,6 +1030,32 @@ func (ms *MetricSelect) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
+// Float64 returns a single float64 from selector. It is only allowed when selecting one field.
+func (ms *MetricSelect) Float64(ctx context.Context) (_ float64, err error) {
+	var v []float64
+	if v, err = ms.Float64s(ctx); err != nil {
+		return
+	}
+	switch len(v) {
+	case 1:
+		return v[0], nil
+	case 0:
+		err = &NotFoundError{metric.Label}
+	default:
+		err = fmt.Errorf("ent: MetricSelect.Float64s returned %d results when one was expected", len(v))
+	}
+	return
+}
+
+// Float64X is like Float64, but panics if an error occurs.
+func (ms *MetricSelect) Float64X(ctx context.Context) float64 {
+	v, err := ms.Float64(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
 // Bools returns list of bools from selector. It is only allowed when selecting one field.
 func (ms *MetricSelect) Bools(ctx context.Context) ([]bool, error) {
 	if len(ms.fields) > 1 {
@@ -889,6 +1071,32 @@ func (ms *MetricSelect) Bools(ctx context.Context) ([]bool, error) {
 // BoolsX is like Bools, but panics if an error occurs.
 func (ms *MetricSelect) BoolsX(ctx context.Context) []bool {
 	v, err := ms.Bools(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
+// Bool returns a single bool from selector. It is only allowed when selecting one field.
+func (ms *MetricSelect) Bool(ctx context.Context) (_ bool, err error) {
+	var v []bool
+	if v, err = ms.Bools(ctx); err != nil {
+		return
+	}
+	switch len(v) {
+	case 1:
+		return v[0], nil
+	case 0:
+		err = &NotFoundError{metric.Label}
+	default:
+		err = fmt.Errorf("ent: MetricSelect.Bools returned %d results when one was expected", len(v))
+	}
+	return
+}
+
+// BoolX is like Bool, but panics if an error occurs.
+func (ms *MetricSelect) BoolX(ctx context.Context) bool {
+	v, err := ms.Bool(ctx)
 	if err != nil {
 		panic(err)
 	}

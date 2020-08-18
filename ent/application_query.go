@@ -159,8 +159,8 @@ func (aq *ApplicationQuery) OnlyID(ctx context.Context) (id int, err error) {
 	return
 }
 
-// OnlyXID is like OnlyID, but panics if an error occurs.
-func (aq *ApplicationQuery) OnlyXID(ctx context.Context) int {
+// OnlyIDX is like OnlyID, but panics if an error occurs.
+func (aq *ApplicationQuery) OnlyIDX(ctx context.Context) int {
 	id, err := aq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -514,6 +514,32 @@ func (agb *ApplicationGroupBy) StringsX(ctx context.Context) []string {
 	return v
 }
 
+// String returns a single string from group-by. It is only allowed when querying group-by with one field.
+func (agb *ApplicationGroupBy) String(ctx context.Context) (_ string, err error) {
+	var v []string
+	if v, err = agb.Strings(ctx); err != nil {
+		return
+	}
+	switch len(v) {
+	case 1:
+		return v[0], nil
+	case 0:
+		err = &NotFoundError{application.Label}
+	default:
+		err = fmt.Errorf("ent: ApplicationGroupBy.Strings returned %d results when one was expected", len(v))
+	}
+	return
+}
+
+// StringX is like String, but panics if an error occurs.
+func (agb *ApplicationGroupBy) StringX(ctx context.Context) string {
+	v, err := agb.String(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
 // Ints returns list of ints from group-by. It is only allowed when querying group-by with one field.
 func (agb *ApplicationGroupBy) Ints(ctx context.Context) ([]int, error) {
 	if len(agb.fields) > 1 {
@@ -529,6 +555,32 @@ func (agb *ApplicationGroupBy) Ints(ctx context.Context) ([]int, error) {
 // IntsX is like Ints, but panics if an error occurs.
 func (agb *ApplicationGroupBy) IntsX(ctx context.Context) []int {
 	v, err := agb.Ints(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
+// Int returns a single int from group-by. It is only allowed when querying group-by with one field.
+func (agb *ApplicationGroupBy) Int(ctx context.Context) (_ int, err error) {
+	var v []int
+	if v, err = agb.Ints(ctx); err != nil {
+		return
+	}
+	switch len(v) {
+	case 1:
+		return v[0], nil
+	case 0:
+		err = &NotFoundError{application.Label}
+	default:
+		err = fmt.Errorf("ent: ApplicationGroupBy.Ints returned %d results when one was expected", len(v))
+	}
+	return
+}
+
+// IntX is like Int, but panics if an error occurs.
+func (agb *ApplicationGroupBy) IntX(ctx context.Context) int {
+	v, err := agb.Int(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -556,6 +608,32 @@ func (agb *ApplicationGroupBy) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
+// Float64 returns a single float64 from group-by. It is only allowed when querying group-by with one field.
+func (agb *ApplicationGroupBy) Float64(ctx context.Context) (_ float64, err error) {
+	var v []float64
+	if v, err = agb.Float64s(ctx); err != nil {
+		return
+	}
+	switch len(v) {
+	case 1:
+		return v[0], nil
+	case 0:
+		err = &NotFoundError{application.Label}
+	default:
+		err = fmt.Errorf("ent: ApplicationGroupBy.Float64s returned %d results when one was expected", len(v))
+	}
+	return
+}
+
+// Float64X is like Float64, but panics if an error occurs.
+func (agb *ApplicationGroupBy) Float64X(ctx context.Context) float64 {
+	v, err := agb.Float64(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
 // Bools returns list of bools from group-by. It is only allowed when querying group-by with one field.
 func (agb *ApplicationGroupBy) Bools(ctx context.Context) ([]bool, error) {
 	if len(agb.fields) > 1 {
@@ -571,6 +649,32 @@ func (agb *ApplicationGroupBy) Bools(ctx context.Context) ([]bool, error) {
 // BoolsX is like Bools, but panics if an error occurs.
 func (agb *ApplicationGroupBy) BoolsX(ctx context.Context) []bool {
 	v, err := agb.Bools(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
+// Bool returns a single bool from group-by. It is only allowed when querying group-by with one field.
+func (agb *ApplicationGroupBy) Bool(ctx context.Context) (_ bool, err error) {
+	var v []bool
+	if v, err = agb.Bools(ctx); err != nil {
+		return
+	}
+	switch len(v) {
+	case 1:
+		return v[0], nil
+	case 0:
+		err = &NotFoundError{application.Label}
+	default:
+		err = fmt.Errorf("ent: ApplicationGroupBy.Bools returned %d results when one was expected", len(v))
+	}
+	return
+}
+
+// BoolX is like Bool, but panics if an error occurs.
+func (agb *ApplicationGroupBy) BoolX(ctx context.Context) bool {
+	v, err := agb.Bool(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -644,6 +748,32 @@ func (as *ApplicationSelect) StringsX(ctx context.Context) []string {
 	return v
 }
 
+// String returns a single string from selector. It is only allowed when selecting one field.
+func (as *ApplicationSelect) String(ctx context.Context) (_ string, err error) {
+	var v []string
+	if v, err = as.Strings(ctx); err != nil {
+		return
+	}
+	switch len(v) {
+	case 1:
+		return v[0], nil
+	case 0:
+		err = &NotFoundError{application.Label}
+	default:
+		err = fmt.Errorf("ent: ApplicationSelect.Strings returned %d results when one was expected", len(v))
+	}
+	return
+}
+
+// StringX is like String, but panics if an error occurs.
+func (as *ApplicationSelect) StringX(ctx context.Context) string {
+	v, err := as.String(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
 // Ints returns list of ints from selector. It is only allowed when selecting one field.
 func (as *ApplicationSelect) Ints(ctx context.Context) ([]int, error) {
 	if len(as.fields) > 1 {
@@ -659,6 +789,32 @@ func (as *ApplicationSelect) Ints(ctx context.Context) ([]int, error) {
 // IntsX is like Ints, but panics if an error occurs.
 func (as *ApplicationSelect) IntsX(ctx context.Context) []int {
 	v, err := as.Ints(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
+// Int returns a single int from selector. It is only allowed when selecting one field.
+func (as *ApplicationSelect) Int(ctx context.Context) (_ int, err error) {
+	var v []int
+	if v, err = as.Ints(ctx); err != nil {
+		return
+	}
+	switch len(v) {
+	case 1:
+		return v[0], nil
+	case 0:
+		err = &NotFoundError{application.Label}
+	default:
+		err = fmt.Errorf("ent: ApplicationSelect.Ints returned %d results when one was expected", len(v))
+	}
+	return
+}
+
+// IntX is like Int, but panics if an error occurs.
+func (as *ApplicationSelect) IntX(ctx context.Context) int {
+	v, err := as.Int(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -686,6 +842,32 @@ func (as *ApplicationSelect) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
+// Float64 returns a single float64 from selector. It is only allowed when selecting one field.
+func (as *ApplicationSelect) Float64(ctx context.Context) (_ float64, err error) {
+	var v []float64
+	if v, err = as.Float64s(ctx); err != nil {
+		return
+	}
+	switch len(v) {
+	case 1:
+		return v[0], nil
+	case 0:
+		err = &NotFoundError{application.Label}
+	default:
+		err = fmt.Errorf("ent: ApplicationSelect.Float64s returned %d results when one was expected", len(v))
+	}
+	return
+}
+
+// Float64X is like Float64, but panics if an error occurs.
+func (as *ApplicationSelect) Float64X(ctx context.Context) float64 {
+	v, err := as.Float64(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
 // Bools returns list of bools from selector. It is only allowed when selecting one field.
 func (as *ApplicationSelect) Bools(ctx context.Context) ([]bool, error) {
 	if len(as.fields) > 1 {
@@ -701,6 +883,32 @@ func (as *ApplicationSelect) Bools(ctx context.Context) ([]bool, error) {
 // BoolsX is like Bools, but panics if an error occurs.
 func (as *ApplicationSelect) BoolsX(ctx context.Context) []bool {
 	v, err := as.Bools(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
+// Bool returns a single bool from selector. It is only allowed when selecting one field.
+func (as *ApplicationSelect) Bool(ctx context.Context) (_ bool, err error) {
+	var v []bool
+	if v, err = as.Bools(ctx); err != nil {
+		return
+	}
+	switch len(v) {
+	case 1:
+		return v[0], nil
+	case 0:
+		err = &NotFoundError{application.Label}
+	default:
+		err = fmt.Errorf("ent: ApplicationSelect.Bools returned %d results when one was expected", len(v))
+	}
+	return
+}
+
+// BoolX is like Bool, but panics if an error occurs.
+func (as *ApplicationSelect) BoolX(ctx context.Context) bool {
+	v, err := as.Bool(ctx)
 	if err != nil {
 		panic(err)
 	}

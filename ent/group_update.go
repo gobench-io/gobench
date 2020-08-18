@@ -63,6 +63,11 @@ func (gu *GroupUpdate) AddGraphs(g ...*Graph) *GroupUpdate {
 	return gu.AddGraphIDs(ids...)
 }
 
+// Mutation returns the GroupMutation object of the builder.
+func (gu *GroupUpdate) Mutation() *GroupMutation {
+	return gu.mutation
+}
+
 // ClearApplication clears the application edge to Application.
 func (gu *GroupUpdate) ClearApplication() *GroupUpdate {
 	gu.mutation.ClearApplication()
@@ -279,6 +284,11 @@ func (guo *GroupUpdateOne) AddGraphs(g ...*Graph) *GroupUpdateOne {
 	return guo.AddGraphIDs(ids...)
 }
 
+// Mutation returns the GroupMutation object of the builder.
+func (guo *GroupUpdateOne) Mutation() *GroupMutation {
+	return guo.mutation
+}
+
 // ClearApplication clears the application edge to Application.
 func (guo *GroupUpdateOne) ClearApplication() *GroupUpdateOne {
 	guo.mutation.ClearApplication()
@@ -365,7 +375,7 @@ func (guo *GroupUpdateOne) sqlSave(ctx context.Context) (gr *Group, err error) {
 	}
 	id, ok := guo.mutation.ID()
 	if !ok {
-		return nil, fmt.Errorf("missing Group.ID for update")
+		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Group.ID for update")}
 	}
 	_spec.Node.ID.Value = id
 	if guo.mutation.ApplicationCleared() {

@@ -6,19 +6,31 @@ const (
 	// Label holds the string label denoting the histogram type in the database.
 	Label = "histogram"
 	// FieldID holds the string denoting the id field in the database.
-	FieldID     = "id"     // FieldTime holds the string denoting the time vertex property in the database.
-	FieldTime   = "time"   // FieldCount holds the string denoting the count vertex property in the database.
-	FieldCount  = "count"  // FieldMin holds the string denoting the min vertex property in the database.
-	FieldMin    = "min"    // FieldMax holds the string denoting the max vertex property in the database.
-	FieldMax    = "max"    // FieldMean holds the string denoting the mean vertex property in the database.
-	FieldMean   = "mean"   // FieldStddev holds the string denoting the stddev vertex property in the database.
-	FieldStddev = "stddev" // FieldMedian holds the string denoting the median vertex property in the database.
-	FieldMedian = "median" // FieldP75 holds the string denoting the p75 vertex property in the database.
-	FieldP75    = "p75"    // FieldP95 holds the string denoting the p95 vertex property in the database.
-	FieldP95    = "p95"    // FieldP99 holds the string denoting the p99 vertex property in the database.
-	FieldP99    = "p99"    // FieldP999 holds the string denoting the p999 vertex property in the database.
-	FieldP999   = "p999"   // FieldWID holds the string denoting the wid vertex property in the database.
-	FieldWID    = "w_id"
+	FieldID = "id"
+	// FieldTime holds the string denoting the time field in the database.
+	FieldTime = "time"
+	// FieldCount holds the string denoting the count field in the database.
+	FieldCount = "count"
+	// FieldMin holds the string denoting the min field in the database.
+	FieldMin = "min"
+	// FieldMax holds the string denoting the max field in the database.
+	FieldMax = "max"
+	// FieldMean holds the string denoting the mean field in the database.
+	FieldMean = "mean"
+	// FieldStddev holds the string denoting the stddev field in the database.
+	FieldStddev = "stddev"
+	// FieldMedian holds the string denoting the median field in the database.
+	FieldMedian = "median"
+	// FieldP75 holds the string denoting the p75 field in the database.
+	FieldP75 = "p75"
+	// FieldP95 holds the string denoting the p95 field in the database.
+	FieldP95 = "p95"
+	// FieldP99 holds the string denoting the p99 field in the database.
+	FieldP99 = "p99"
+	// FieldP999 holds the string denoting the p999 field in the database.
+	FieldP999 = "p999"
+	// FieldWID holds the string denoting the wid field in the database.
+	FieldWID = "w_id"
 
 	// EdgeMetric holds the string denoting the metric edge name in mutations.
 	EdgeMetric = "metric"

@@ -82,6 +82,11 @@ func (au *ApplicationUpdate) AddGroups(g ...*Group) *ApplicationUpdate {
 	return au.AddGroupIDs(ids...)
 }
 
+// Mutation returns the ApplicationMutation object of the builder.
+func (au *ApplicationUpdate) Mutation() *ApplicationMutation {
+	return au.mutation
+}
+
 // RemoveGroupIDs removes the groups edge to Group by ids.
 func (au *ApplicationUpdate) RemoveGroupIDs(ids ...int) *ApplicationUpdate {
 	au.mutation.RemoveGroupIDs(ids...)
@@ -315,6 +320,11 @@ func (auo *ApplicationUpdateOne) AddGroups(g ...*Group) *ApplicationUpdateOne {
 	return auo.AddGroupIDs(ids...)
 }
 
+// Mutation returns the ApplicationMutation object of the builder.
+func (auo *ApplicationUpdateOne) Mutation() *ApplicationMutation {
+	return auo.mutation
+}
+
 // RemoveGroupIDs removes the groups edge to Group by ids.
 func (auo *ApplicationUpdateOne) RemoveGroupIDs(ids ...int) *ApplicationUpdateOne {
 	auo.mutation.RemoveGroupIDs(ids...)
@@ -399,7 +409,7 @@ func (auo *ApplicationUpdateOne) sqlSave(ctx context.Context) (a *Application, e
 	}
 	id, ok := auo.mutation.ID()
 	if !ok {
-		return nil, fmt.Errorf("missing Application.ID for update")
+		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Application.ID for update")}
 	}
 	_spec.Node.ID.Value = id
 	if value, ok := auo.mutation.Name(); ok {

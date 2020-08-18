@@ -6,9 +6,11 @@ const (
 	// Label holds the string label denoting the graph type in the database.
 	Label = "graph"
 	// FieldID holds the string denoting the id field in the database.
-	FieldID    = "id"    // FieldTitle holds the string denoting the title vertex property in the database.
-	FieldTitle = "title" // FieldUnit holds the string denoting the unit vertex property in the database.
-	FieldUnit  = "unit"
+	FieldID = "id"
+	// FieldTitle holds the string denoting the title field in the database.
+	FieldTitle = "title"
+	// FieldUnit holds the string denoting the unit field in the database.
+	FieldUnit = "unit"
 
 	// EdgeGroup holds the string denoting the group edge name in mutations.
 	EdgeGroup = "group"

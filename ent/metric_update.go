@@ -101,6 +101,11 @@ func (mu *MetricUpdate) AddGauges(g ...*Gauge) *MetricUpdate {
 	return mu.AddGaugeIDs(ids...)
 }
 
+// Mutation returns the MetricMutation object of the builder.
+func (mu *MetricUpdate) Mutation() *MetricMutation {
+	return mu.mutation
+}
+
 // ClearGraph clears the graph edge to Graph.
 func (mu *MetricUpdate) ClearGraph() *MetricUpdate {
 	mu.mutation.ClearGraph()
@@ -466,6 +471,11 @@ func (muo *MetricUpdateOne) AddGauges(g ...*Gauge) *MetricUpdateOne {
 	return muo.AddGaugeIDs(ids...)
 }
 
+// Mutation returns the MetricMutation object of the builder.
+func (muo *MetricUpdateOne) Mutation() *MetricMutation {
+	return muo.mutation
+}
+
 // ClearGraph clears the graph edge to Graph.
 func (muo *MetricUpdateOne) ClearGraph() *MetricUpdateOne {
 	muo.mutation.ClearGraph()
@@ -582,7 +592,7 @@ func (muo *MetricUpdateOne) sqlSave(ctx context.Context) (m *Metric, err error) 
 	}
 	id, ok := muo.mutation.ID()
 	if !ok {
-		return nil, fmt.Errorf("missing Metric.ID for update")
+		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Metric.ID for update")}
 	}
 	_spec.Node.ID.Value = id
 	if value, ok := muo.mutation.GetType(); ok {
