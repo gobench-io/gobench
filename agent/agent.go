@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/gobench-io/gobench/logger"
@@ -19,16 +20,19 @@ import (
 type Options struct {
 	Route       string
 	ClusterPort int
+	Socket      string
 }
 
 type Agent struct {
 	// when this is the local agent, inherit from master
 	// when this is the remote agent, ... todo
-	metricLoggerRPC
+
+	mu sync.Mutex
 
 	route       string
-	clusterPort string
+	clusterPort int
 
+	ml     metricLoggerRPC
 	logger logger.Logger
 	socket string
 	rs     *rpc.Server // rpc server to be served via unix socket
@@ -36,33 +40,36 @@ type Agent struct {
 
 func NewLocalAgent(ml metricLoggerRPC, logger logger.Logger) (*Agent, error) {
 	a := &Agent{
-		metricLoggerRPC: ml,
-		logger:          logger,
-		rs:              rpc.NewServer(),
+		ml:     ml,
+		logger: logger,
+		rs:     rpc.NewServer(),
 	}
 	return a, nil
 }
 
 func NewAgent(opts *Options, ml metricLoggerRPC, logger logger.Logger) (*Agent, error) {
 	a := &Agent{
-		metricLoggerRPC: ml,
-		logger:          logger,
-		rs:              rpc.NewServer(),
+		route:       opts.Route,
+		clusterPort: opts.ClusterPort,
+		socket:      opts.Socket,
+		logger:      logger,
+		ml:          ml,
+		rs:          rpc.NewServer(),
 	}
 	return a, nil
 }
 
-func (a *Agent) StartSocketServer(socket string) error {
-	a.socket = socket
-
-	a.rs.Register(a)
+func (a *Agent) StartSocketServer() error {
+	if err := a.rs.RegisterName("Agent", a.ml); err != nil {
+		return err
+	}
 
 	serverMux := http.NewServeMux()
 	serverMux.Handle(rpc.DefaultRPCPath, a.rs)
 	serverMux.Handle(rpc.DefaultDebugPath, a.rs)
 
-	os.Remove(socket)
-	l, err := net.Listen("unix", socket)
+	os.Remove(a.socket)
+	l, err := net.Listen("unix", a.socket)
 	if err != nil {
 		return err
 	}

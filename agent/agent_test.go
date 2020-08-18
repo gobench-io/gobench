@@ -13,10 +13,10 @@ func TestNewAgent(t *testing.T) {
 		ClusterPort: 2345,
 	}
 	logger := logger.NewNopLogger()
+	ml := newNopMetricLog()
 
-	e, err := NewAgent(opts, ml, logger)
+	_, err := NewAgent(opts, ml, logger)
 	assert.Nil(t, err)
-
 }
 
 func TestStartAgent(t *testing.T) {
