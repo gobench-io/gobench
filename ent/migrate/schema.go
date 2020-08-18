@@ -47,6 +47,31 @@ var (
 			},
 		},
 	}
+	// EventLogsColumns holds the columns for the "event_logs" table.
+	EventLogsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString, Default: "application"},
+		{Name: "message", Type: field.TypeString},
+		{Name: "level", Type: field.TypeString, Default: "info"},
+		{Name: "source", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "application_event_logs", Type: field.TypeInt, Nullable: true},
+	}
+	// EventLogsTable holds the schema information for the "event_logs" table.
+	EventLogsTable = &schema.Table{
+		Name:       "event_logs",
+		Columns:    EventLogsColumns,
+		PrimaryKey: []*schema.Column{EventLogsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "event_logs_applications_eventLogs",
+				Columns: []*schema.Column{EventLogsColumns[6]},
+
+				RefColumns: []*schema.Column{ApplicationsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// GaugesColumns holds the columns for the "gauges" table.
 	GaugesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -171,6 +196,7 @@ var (
 	Tables = []*schema.Table{
 		ApplicationsTable,
 		CountersTable,
+		EventLogsTable,
 		GaugesTable,
 		GraphsTable,
 		GroupsTable,
@@ -181,6 +207,7 @@ var (
 
 func init() {
 	CountersTable.ForeignKeys[0].RefTable = MetricsTable
+	EventLogsTable.ForeignKeys[0].RefTable = ApplicationsTable
 	GaugesTable.ForeignKeys[0].RefTable = MetricsTable
 	GraphsTable.ForeignKeys[0].RefTable = GroupsTable
 	GroupsTable.ForeignKeys[0].RefTable = ApplicationsTable

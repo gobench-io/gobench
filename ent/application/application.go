@@ -19,6 +19,8 @@ const (
 
 	// EdgeGroups holds the string denoting the groups edge name in mutations.
 	EdgeGroups = "groups"
+	// EdgeEventLogs holds the string denoting the eventlogs edge name in mutations.
+	EdgeEventLogs = "eventLogs"
 
 	// Table holds the table name of the application in the database.
 	Table = "applications"
@@ -29,6 +31,13 @@ const (
 	GroupsInverseTable = "groups"
 	// GroupsColumn is the table column denoting the groups relation/edge.
 	GroupsColumn = "application_groups"
+	// EventLogsTable is the table the holds the eventLogs relation/edge.
+	EventLogsTable = "event_logs"
+	// EventLogsInverseTable is the table name for the EventLog entity.
+	// It exists in this package in order to avoid circular dependency with the "eventlog" package.
+	EventLogsInverseTable = "event_logs"
+	// EventLogsColumn is the table column denoting the eventLogs relation/edge.
+	EventLogsColumn = "application_event_logs"
 )
 
 // Columns holds all SQL columns for application fields.

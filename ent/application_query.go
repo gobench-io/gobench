@@ -13,6 +13,7 @@ import (
 	"github.com/facebookincubator/ent/dialect/sql/sqlgraph"
 	"github.com/facebookincubator/ent/schema/field"
 	"github.com/gobench-io/gobench/ent/application"
+	"github.com/gobench-io/gobench/ent/eventlog"
 	"github.com/gobench-io/gobench/ent/group"
 	"github.com/gobench-io/gobench/ent/predicate"
 )
@@ -26,7 +27,8 @@ type ApplicationQuery struct {
 	unique     []string
 	predicates []predicate.Application
 	// eager-loading edges.
-	withGroups *GroupQuery
+	withGroups    *GroupQuery
+	withEventLogs *EventLogQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -67,6 +69,24 @@ func (aq *ApplicationQuery) QueryGroups() *GroupQuery {
 			sqlgraph.From(application.Table, application.FieldID, aq.sqlQuery()),
 			sqlgraph.To(group.Table, group.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, application.GroupsTable, application.GroupsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryEventLogs chains the current query on the eventLogs edge.
+func (aq *ApplicationQuery) QueryEventLogs() *EventLogQuery {
+	query := &EventLogQuery{config: aq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(application.Table, application.FieldID, aq.sqlQuery()),
+			sqlgraph.To(eventlog.Table, eventlog.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, application.EventLogsTable, application.EventLogsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
 		return fromU, nil
@@ -264,6 +284,17 @@ func (aq *ApplicationQuery) WithGroups(opts ...func(*GroupQuery)) *ApplicationQu
 	return aq
 }
 
+//  WithEventLogs tells the query-builder to eager-loads the nodes that are connected to
+// the "eventLogs" edge. The optional arguments used to configure the query builder of the edge.
+func (aq *ApplicationQuery) WithEventLogs(opts ...func(*EventLogQuery)) *ApplicationQuery {
+	query := &EventLogQuery{config: aq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	aq.withEventLogs = query
+	return aq
+}
+
 // GroupBy used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -330,8 +361,9 @@ func (aq *ApplicationQuery) sqlAll(ctx context.Context) ([]*Application, error) 
 	var (
 		nodes       = []*Application{}
 		_spec       = aq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			aq.withGroups != nil,
+			aq.withEventLogs != nil,
 		}
 	)
 	_spec.ScanValues = func() []interface{} {
@@ -380,6 +412,34 @@ func (aq *ApplicationQuery) sqlAll(ctx context.Context) ([]*Application, error) 
 				return nil, fmt.Errorf(`unexpected foreign-key "application_groups" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.Groups = append(node.Edges.Groups, n)
+		}
+	}
+
+	if query := aq.withEventLogs; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*Application)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+		}
+		query.withFKs = true
+		query.Where(predicate.EventLog(func(s *sql.Selector) {
+			s.Where(sql.InValues(application.EventLogsColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.application_event_logs
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "application_event_logs" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "application_event_logs" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.EventLogs = append(node.Edges.EventLogs, n)
 		}
 	}
 

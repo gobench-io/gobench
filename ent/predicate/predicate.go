@@ -12,6 +12,9 @@ type Application func(*sql.Selector)
 // Counter is the predicate function for counter builders.
 type Counter func(*sql.Selector)
 
+// EventLog is the predicate function for eventlog builders.
+type EventLog func(*sql.Selector)
+
 // Gauge is the predicate function for gauge builders.
 type Gauge func(*sql.Selector)
 

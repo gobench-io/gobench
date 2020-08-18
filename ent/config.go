@@ -26,6 +26,7 @@ type config struct {
 type hooks struct {
 	Application []ent.Hook
 	Counter     []ent.Hook
+	EventLog    []ent.Hook
 	Gauge       []ent.Hook
 	Graph       []ent.Hook
 	Group       []ent.Hook
