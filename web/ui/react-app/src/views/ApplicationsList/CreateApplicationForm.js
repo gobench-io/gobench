@@ -3,21 +3,33 @@ import Editor from 'react-simple-code-editor'
 import { highlight, languages } from 'prismjs/components/prism-core'
 import 'prismjs/components/prism-clike'
 import 'prismjs/components/prism-go'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router-dom'
 
 import '../../css/editor.css'
 import { RootContext } from '../../context'
+import { Space } from 'antd'
 
-const CreateApplicationForm = (props) => {
+const CreateApplicationForm = () => {
   const history = useHistory()
+  const location = useLocation()
   const app = useContext(RootContext)
   const [name, onChangeName] = useState('')
   const [code, onChangeEditor] = useState('')
+  const [cloned, setClone] = useState('')
+
+  const now = new Date()
+  const timestamp = `${now.getUTCFullYear()}-${now.getUTCMonth()}-${now.getUTCDate()}-${now.getUTCHours()}-${now.getUTCMinutes()}-${now.getUTCSeconds()}`
+  const params = new URLSearchParams(location.search)
+  const n = params.get('n')
 
   useEffect(() => {
-    if (props.name) {
-      onChangeName(props.name)
-      onChangeEditor(props.code)
+    if (!cloned && app.apps) {
+      const _app = app.apps.find(x => x.name === n)
+      if (_app) {
+        onChangeName(`${n}-${timestamp}`)
+        onChangeEditor(_app.scenario)
+        setClone(true)
+      }
     }
   })
 
@@ -33,7 +45,7 @@ const CreateApplicationForm = (props) => {
               app.submitCreate({ name, scenario: code })
             }}
           >
-            Create Application
+            {n ? 'Clone Application' : 'Create Application'}
           </button>
           <button
             className='btn btn-cancel'

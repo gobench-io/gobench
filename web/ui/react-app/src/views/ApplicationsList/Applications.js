@@ -11,8 +11,6 @@ const Applications = () => {
   const app = useContext(RootContext)
   const applications = app.apps || []
   const isFetching = useContext(SpinnerContext)
-  const now = new Date()
-  const timestamp = `${now.getUTCFullYear()}-${now.getUTCMonth()}-${now.getUTCDate()}-${now.getUTCHours()}-${now.getUTCMinutes()}-${now.getUTCSeconds()}`
   return (
     <div>
       <div className='card'>
@@ -75,10 +73,7 @@ const Applications = () => {
                                 style={{ marginLeft: 5 }}
                                 type='default'
                                 onClick={() =>
-                                  app.clone({
-                                    ...application,
-                                    name: `${application.name}-${timestamp}`
-                                  })}
+                                  app.clone(application)}
                               >
                                 Clone
                               </Button>
@@ -104,10 +99,7 @@ const Applications = () => {
                               <Popconfirm
                                 title={`Are you sure delete application ${application.name}?`}
                                 onConfirm={() =>
-                                  app.deleteApplication({
-                                    ...application,
-                                    name: `${application.name}-${timestamp}`
-                                  })}
+                                  app.deleteApplication(application)}
                                 okText='Yes'
                                 cancelText='No'
                               >
