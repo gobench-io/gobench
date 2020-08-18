@@ -2,7 +2,6 @@ package executor
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"net/rpc"
@@ -59,12 +58,15 @@ func (e *Executor) Serve() (err error) {
 	// establishes a connection
 	e.rc, err = rpc.DialHTTP("unix", e.agentSock)
 	if err != nil {
-		log.Println(err)
 		return
 	}
 
 	// register a rpc server at executor socket
-	err = rpc.Register(e)
+	er, err := newExecutorRPC(e)
+	if err != nil {
+		return
+	}
+	err = rpc.RegisterName("Executor", er)
 	if err != nil {
 		return
 	}
