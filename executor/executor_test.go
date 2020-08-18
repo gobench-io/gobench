@@ -22,9 +22,11 @@ func TestStart(t *testing.T) {
 	// setup nop metric logger for the driver
 	assert.Nil(t, e.driver.SetNopMetricLog())
 
+	er, _ := newExecutorRPC(e)
+
 	args := true
 	reply := new(bool)
 
-	err = e.Start(&args, reply)
+	err = er.Start(&args, reply)
 	assert.Nil(t, err)
 }
