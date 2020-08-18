@@ -138,6 +138,14 @@ func (m *Master) NewApplication(ctx context.Context, name, scenario string) (
 		Save(ctx)
 }
 
+// SetApplicationTags set application tags
+func (m *Master) SetApplicationTags(ctx context.Context, appID int, tags string) (*ent.Application, error) {
+	return m.db.Application.
+		UpdateOneID(appID).
+		SetTags(tags).
+		Save(ctx)
+}
+
 // DeleteApplication a pending/finished/canceled/error application
 func (m *Master) DeleteApplication(ctx context.Context, appID int) error {
 	app, err := m.db.Application.
