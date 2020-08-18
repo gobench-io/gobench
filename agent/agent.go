@@ -82,7 +82,7 @@ func (a *Agent) StartSocketServer() error {
 	return nil
 }
 
-func (a *Agent) StartWebServer() (err error) {
+func (a *Agent) StartWebServer() (l net.Listener, err error) {
 	rs := rpc.NewServer()
 
 	err = rs.RegisterName("Agent", a.ml)
@@ -93,14 +93,14 @@ func (a *Agent) StartWebServer() (err error) {
 	serverMux.Handle(rpc.DefaultRPCPath, a.rs)
 	serverMux.Handle(rpc.DefaultDebugPath, a.rs)
 
-	l, err := net.Listen("tcp", fmt.Sprintf(":%d", a.clusterPort))
+	l, err = net.Listen("tcp", fmt.Sprintf(":%d", a.clusterPort))
 	if err != nil {
 		return
 	}
 
 	go http.Serve(l, serverMux)
 
-	return nil
+	return
 }
 
 func (a *Agent) RunJob(ctx context.Context, program, driverPath string, appID int) (err error) {
