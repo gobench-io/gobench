@@ -72,7 +72,13 @@ const MainLayout = (props) => {
       window._history.push('/')
     })
   })
+  const clone = useCallback(({ name, scenario }) => {
+    window._history.push(`/application-create?name=${name}`)
+  })
   useEffect(() => {
+    if (!app.clone) {
+      setApp({ ...app, clone })
+    }
     if (!app.deleteApplication) {
       setApp({ ...app, deleteApplication })
     }
@@ -111,15 +117,15 @@ const MainLayout = (props) => {
               {collapse ? (
                 <RiseOutlined style={{ color: '#1890ff' }} />
               ) : (
-                  <Link to='/'>
-                    {' '}
-                    <img
-                      alt='not displayed'
-                      width='125'
-                      src='/resources/gobench-logo.png'
-                    />
-                  </Link>
-                )}
+                <Link to='/'>
+                  {' '}
+                  <img
+                    alt='not displayed'
+                    width='125'
+                    src='/resources/gobench-logo.png'
+                  />
+                </Link>
+              )}
             </h2>
             <MenuLeft
               className='benchmark-menu'

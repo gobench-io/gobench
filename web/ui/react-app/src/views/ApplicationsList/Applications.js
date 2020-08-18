@@ -75,7 +75,7 @@ const Applications = () => {
                                 style={{ marginLeft: 5 }}
                                 type='default'
                                 onClick={() =>
-                                  app.submitCreate({
+                                  app.clone({
                                     ...application,
                                     name: `${application.name}-${timestamp}`
                                   })}
