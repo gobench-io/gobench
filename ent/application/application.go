@@ -10,12 +10,17 @@ const (
 	// Label holds the string label denoting the application type in the database.
 	Label = "application"
 	// FieldID holds the string denoting the id field in the database.
-	FieldID        = "id"         // FieldName holds the string denoting the name vertex property in the database.
-	FieldName      = "name"       // FieldStatus holds the string denoting the status vertex property in the database.
-	FieldStatus    = "status"     // FieldCreatedAt holds the string denoting the created_at vertex property in the database.
-	FieldCreatedAt = "created_at" // FieldUpdatedAt holds the string denoting the updated_at vertex property in the database.
-	FieldUpdatedAt = "updated_at" // FieldScenario holds the string denoting the scenario vertex property in the database.
-	FieldScenario  = "scenario"
+	FieldID = "id"
+	// FieldName holds the string denoting the name field in the database.
+	FieldName = "name"
+	// FieldStatus holds the string denoting the status field in the database.
+	FieldStatus = "status"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
+	// FieldScenario holds the string denoting the scenario field in the database.
+	FieldScenario = "scenario"
 
 	// EdgeGroups holds the string denoting the groups edge name in mutations.
 	EdgeGroups = "groups"

@@ -79,6 +79,11 @@ func (gu *GaugeUpdate) SetMetric(m *Metric) *GaugeUpdate {
 	return gu.SetMetricID(m.ID)
 }
 
+// Mutation returns the GaugeMutation object of the builder.
+func (gu *GaugeUpdate) Mutation() *GaugeMutation {
+	return gu.mutation
+}
+
 // ClearMetric clears the metric edge to Metric.
 func (gu *GaugeUpdate) ClearMetric() *GaugeUpdate {
 	gu.mutation.ClearMetric()
@@ -294,6 +299,11 @@ func (guo *GaugeUpdateOne) SetMetric(m *Metric) *GaugeUpdateOne {
 	return guo.SetMetricID(m.ID)
 }
 
+// Mutation returns the GaugeMutation object of the builder.
+func (guo *GaugeUpdateOne) Mutation() *GaugeMutation {
+	return guo.mutation
+}
+
 // ClearMetric clears the metric edge to Metric.
 func (guo *GaugeUpdateOne) ClearMetric() *GaugeUpdateOne {
 	guo.mutation.ClearMetric()
@@ -365,7 +375,7 @@ func (guo *GaugeUpdateOne) sqlSave(ctx context.Context) (ga *Gauge, err error) {
 	}
 	id, ok := guo.mutation.ID()
 	if !ok {
-		return nil, fmt.Errorf("missing Gauge.ID for update")
+		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Gauge.ID for update")}
 	}
 	_spec.Node.ID.Value = id
 	if value, ok := guo.mutation.Time(); ok {

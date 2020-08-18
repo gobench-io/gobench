@@ -111,43 +111,15 @@ func (hc *HistogramCreate) SetMetric(m *Metric) *HistogramCreate {
 	return hc.SetMetricID(m.ID)
 }
 
+// Mutation returns the HistogramMutation object of the builder.
+func (hc *HistogramCreate) Mutation() *HistogramMutation {
+	return hc.mutation
+}
+
 // Save creates the Histogram in the database.
 func (hc *HistogramCreate) Save(ctx context.Context) (*Histogram, error) {
-	if _, ok := hc.mutation.Time(); !ok {
-		return nil, errors.New("ent: missing required field \"time\"")
-	}
-	if _, ok := hc.mutation.Count(); !ok {
-		return nil, errors.New("ent: missing required field \"count\"")
-	}
-	if _, ok := hc.mutation.Min(); !ok {
-		return nil, errors.New("ent: missing required field \"min\"")
-	}
-	if _, ok := hc.mutation.Max(); !ok {
-		return nil, errors.New("ent: missing required field \"max\"")
-	}
-	if _, ok := hc.mutation.Mean(); !ok {
-		return nil, errors.New("ent: missing required field \"mean\"")
-	}
-	if _, ok := hc.mutation.Stddev(); !ok {
-		return nil, errors.New("ent: missing required field \"stddev\"")
-	}
-	if _, ok := hc.mutation.Median(); !ok {
-		return nil, errors.New("ent: missing required field \"median\"")
-	}
-	if _, ok := hc.mutation.P75(); !ok {
-		return nil, errors.New("ent: missing required field \"p75\"")
-	}
-	if _, ok := hc.mutation.P95(); !ok {
-		return nil, errors.New("ent: missing required field \"p95\"")
-	}
-	if _, ok := hc.mutation.P99(); !ok {
-		return nil, errors.New("ent: missing required field \"p99\"")
-	}
-	if _, ok := hc.mutation.P999(); !ok {
-		return nil, errors.New("ent: missing required field \"p999\"")
-	}
-	if _, ok := hc.mutation.WID(); !ok {
-		return nil, errors.New("ent: missing required field \"wID\"")
+	if err := hc.preSave(); err != nil {
+		return nil, err
 	}
 	var (
 		err  error
@@ -185,7 +157,60 @@ func (hc *HistogramCreate) SaveX(ctx context.Context) *Histogram {
 	return v
 }
 
+func (hc *HistogramCreate) preSave() error {
+	if _, ok := hc.mutation.Time(); !ok {
+		return &ValidationError{Name: "time", err: errors.New("ent: missing required field \"time\"")}
+	}
+	if _, ok := hc.mutation.Count(); !ok {
+		return &ValidationError{Name: "count", err: errors.New("ent: missing required field \"count\"")}
+	}
+	if _, ok := hc.mutation.Min(); !ok {
+		return &ValidationError{Name: "min", err: errors.New("ent: missing required field \"min\"")}
+	}
+	if _, ok := hc.mutation.Max(); !ok {
+		return &ValidationError{Name: "max", err: errors.New("ent: missing required field \"max\"")}
+	}
+	if _, ok := hc.mutation.Mean(); !ok {
+		return &ValidationError{Name: "mean", err: errors.New("ent: missing required field \"mean\"")}
+	}
+	if _, ok := hc.mutation.Stddev(); !ok {
+		return &ValidationError{Name: "stddev", err: errors.New("ent: missing required field \"stddev\"")}
+	}
+	if _, ok := hc.mutation.Median(); !ok {
+		return &ValidationError{Name: "median", err: errors.New("ent: missing required field \"median\"")}
+	}
+	if _, ok := hc.mutation.P75(); !ok {
+		return &ValidationError{Name: "p75", err: errors.New("ent: missing required field \"p75\"")}
+	}
+	if _, ok := hc.mutation.P95(); !ok {
+		return &ValidationError{Name: "p95", err: errors.New("ent: missing required field \"p95\"")}
+	}
+	if _, ok := hc.mutation.P99(); !ok {
+		return &ValidationError{Name: "p99", err: errors.New("ent: missing required field \"p99\"")}
+	}
+	if _, ok := hc.mutation.P999(); !ok {
+		return &ValidationError{Name: "p999", err: errors.New("ent: missing required field \"p999\"")}
+	}
+	if _, ok := hc.mutation.WID(); !ok {
+		return &ValidationError{Name: "wID", err: errors.New("ent: missing required field \"wID\"")}
+	}
+	return nil
+}
+
 func (hc *HistogramCreate) sqlSave(ctx context.Context) (*Histogram, error) {
+	h, _spec := hc.createSpec()
+	if err := sqlgraph.CreateNode(ctx, hc.driver, _spec); err != nil {
+		if cerr, ok := isSQLConstraintError(err); ok {
+			err = cerr
+		}
+		return nil, err
+	}
+	id := _spec.ID.Value.(int64)
+	h.ID = int(id)
+	return h, nil
+}
+
+func (hc *HistogramCreate) createSpec() (*Histogram, *sqlgraph.CreateSpec) {
 	var (
 		h     = &Histogram{config: hc.config}
 		_spec = &sqlgraph.CreateSpec{
@@ -311,13 +336,71 @@ func (hc *HistogramCreate) sqlSave(ctx context.Context) (*Histogram, error) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if err := sqlgraph.CreateNode(ctx, hc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
-		}
-		return nil, err
+	return h, _spec
+}
+
+// HistogramCreateBulk is the builder for creating a bulk of Histogram entities.
+type HistogramCreateBulk struct {
+	config
+	builders []*HistogramCreate
+}
+
+// Save creates the Histogram entities in the database.
+func (hcb *HistogramCreateBulk) Save(ctx context.Context) ([]*Histogram, error) {
+	specs := make([]*sqlgraph.CreateSpec, len(hcb.builders))
+	nodes := make([]*Histogram, len(hcb.builders))
+	mutators := make([]Mutator, len(hcb.builders))
+	for i := range hcb.builders {
+		func(i int, root context.Context) {
+			builder := hcb.builders[i]
+			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
+				if err := builder.preSave(); err != nil {
+					return nil, err
+				}
+				mutation, ok := m.(*HistogramMutation)
+				if !ok {
+					return nil, fmt.Errorf("unexpected mutation type %T", m)
+				}
+				builder.mutation = mutation
+				nodes[i], specs[i] = builder.createSpec()
+				var err error
+				if i < len(mutators)-1 {
+					_, err = mutators[i+1].Mutate(root, hcb.builders[i+1].mutation)
+				} else {
+					// Invoke the actual operation on the latest mutation in the chain.
+					if err = sqlgraph.BatchCreate(ctx, hcb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
+						if cerr, ok := isSQLConstraintError(err); ok {
+							err = cerr
+						}
+					}
+				}
+				mutation.done = true
+				if err != nil {
+					return nil, err
+				}
+				id := specs[i].ID.Value.(int64)
+				nodes[i].ID = int(id)
+				return nodes[i], nil
+			})
+			for i := len(builder.hooks) - 1; i >= 0; i-- {
+				mut = builder.hooks[i](mut)
+			}
+			mutators[i] = mut
+		}(i, ctx)
 	}
-	id := _spec.ID.Value.(int64)
-	h.ID = int(id)
-	return h, nil
+	if len(mutators) > 0 {
+		if _, err := mutators[0].Mutate(ctx, hcb.builders[0].mutation); err != nil {
+			return nil, err
+		}
+	}
+	return nodes, nil
+}
+
+// SaveX calls Save and panics if Save returns an error.
+func (hcb *HistogramCreateBulk) SaveX(ctx context.Context) []*Histogram {
+	v, err := hcb.Save(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
 }

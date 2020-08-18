@@ -6,10 +6,13 @@ const (
 	// Label holds the string label denoting the counter type in the database.
 	Label = "counter"
 	// FieldID holds the string denoting the id field in the database.
-	FieldID    = "id"    // FieldTime holds the string denoting the time vertex property in the database.
-	FieldTime  = "time"  // FieldCount holds the string denoting the count vertex property in the database.
-	FieldCount = "count" // FieldWID holds the string denoting the wid vertex property in the database.
-	FieldWID   = "w_id"
+	FieldID = "id"
+	// FieldTime holds the string denoting the time field in the database.
+	FieldTime = "time"
+	// FieldCount holds the string denoting the count field in the database.
+	FieldCount = "count"
+	// FieldWID holds the string denoting the wid field in the database.
+	FieldWID = "w_id"
 
 	// EdgeMetric holds the string denoting the metric edge name in mutations.
 	EdgeMetric = "metric"

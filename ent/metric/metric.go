@@ -6,9 +6,11 @@ const (
 	// Label holds the string label denoting the metric type in the database.
 	Label = "metric"
 	// FieldID holds the string denoting the id field in the database.
-	FieldID    = "id"    // FieldTitle holds the string denoting the title vertex property in the database.
-	FieldTitle = "title" // FieldType holds the string denoting the type vertex property in the database.
-	FieldType  = "type"
+	FieldID = "id"
+	// FieldTitle holds the string denoting the title field in the database.
+	FieldTitle = "title"
+	// FieldType holds the string denoting the type field in the database.
+	FieldType = "type"
 
 	// EdgeGraph holds the string denoting the graph edge name in mutations.
 	EdgeGraph = "graph"
