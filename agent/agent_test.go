@@ -35,6 +35,7 @@ func TestStartAgent(t *testing.T) {
 		ClusterPort: 2345,
 	})
 	assert.Nil(t, a.StartSocketServer())
+	assert.Nil(t, a.StartWebServer())
 	// new agent
 	// start socket server
 	// start http server
