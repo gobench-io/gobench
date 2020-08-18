@@ -35,19 +35,6 @@ func (f CounterFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return f(ctx, mv)
 }
 
-// The EventLogFunc type is an adapter to allow the use of ordinary
-// function as EventLog mutator.
-type EventLogFunc func(context.Context, *ent.EventLogMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f EventLogFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.EventLogMutation)
-	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EventLogMutation", m)
-	}
-	return f(ctx, mv)
-}
-
 // The GaugeFunc type is an adapter to allow the use of ordinary
 // function as Gauge mutator.
 type GaugeFunc func(context.Context, *ent.GaugeMutation) (ent.Value, error)

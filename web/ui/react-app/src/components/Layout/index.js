@@ -5,7 +5,7 @@ import MenuLeft from './menu'
 import { RiseOutlined } from '@ant-design/icons'
 import { useInterval, INTERVAL } from '../../realtimeHelpers'
 import GoBenchAPI from '../../api/gobench'
-import { RootContext, SpinnerContext, ErrorContext, EventLogContext } from '../../context'
+import { RootContext, SpinnerContext, ErrorContext } from '../../context'
 import 'antd/dist/antd.css'
 import './style.css'
 
@@ -16,7 +16,6 @@ const MainLayout = (props) => {
   const em = useContext(ErrorContext)
   const [collapse, setCollapse] = useState(false)
   const [app, setApp] = useState({})
-  const [eventLog, setEventLog] = useState({})
   const [fetching, setIsFetching] = useState(true)
 
   const cancelRunApplication = useCallback((id) => {
@@ -73,17 +72,9 @@ const MainLayout = (props) => {
       window._history.push('/')
     })
   })
-  const getEventLogs = useCallback((id) => {
-    GoBenchAPI.getEventLogs(id).then((eventLogs) => {
-      setEventLog({ appId: id, data: eventLogs })
-    })
-  })
   useEffect(() => {
     if (!app.deleteApplication) {
       setApp({ ...app, deleteApplication })
-    }
-    if (!app.getEventLogs) {
-      setApp({ ...app, getEventLogs })
     }
     if (!app.cancelRunApplication) {
       setApp({ ...app, cancelRunApplication })
@@ -158,9 +149,7 @@ const MainLayout = (props) => {
                 className='site-layout-background'
                 style={{ padding: 24, minHeight: 360 }}
               >
-                <EventLogContext.Provider value={eventLog}>
-                  {props.children}
-                </EventLogContext.Provider>
+                {props.children}
               </div>
             </Content>
             <Footer style={{ textAlign: 'center' }}>

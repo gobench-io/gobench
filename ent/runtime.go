@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/gobench-io/gobench/ent/application"
-	"github.com/gobench-io/gobench/ent/eventlog"
 	"github.com/gobench-io/gobench/ent/schema"
 )
 
@@ -26,18 +25,4 @@ func init() {
 	application.DefaultUpdatedAt = applicationDescUpdatedAt.Default.(func() time.Time)
 	// application.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	application.UpdateDefaultUpdatedAt = applicationDescUpdatedAt.UpdateDefault.(func() time.Time)
-	eventlogFields := schema.EventLog{}.Fields()
-	_ = eventlogFields
-	// eventlogDescName is the schema descriptor for name field.
-	eventlogDescName := eventlogFields[0].Descriptor()
-	// eventlog.DefaultName holds the default value on creation for the name field.
-	eventlog.DefaultName = eventlogDescName.Default.(string)
-	// eventlogDescLevel is the schema descriptor for level field.
-	eventlogDescLevel := eventlogFields[2].Descriptor()
-	// eventlog.DefaultLevel holds the default value on creation for the level field.
-	eventlog.DefaultLevel = eventlogDescLevel.Default.(string)
-	// eventlogDescCreatedAt is the schema descriptor for created_at field.
-	eventlogDescCreatedAt := eventlogFields[4].Descriptor()
-	// eventlog.DefaultCreatedAt holds the default value on creation for the created_at field.
-	eventlog.DefaultCreatedAt = eventlogDescCreatedAt.Default.(func() time.Time)
 }

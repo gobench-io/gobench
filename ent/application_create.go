@@ -11,7 +11,6 @@ import (
 	"github.com/facebookincubator/ent/dialect/sql/sqlgraph"
 	"github.com/facebookincubator/ent/schema/field"
 	"github.com/gobench-io/gobench/ent/application"
-	"github.com/gobench-io/gobench/ent/eventlog"
 	"github.com/gobench-io/gobench/ent/group"
 )
 
@@ -81,21 +80,6 @@ func (ac *ApplicationCreate) AddGroups(g ...*Group) *ApplicationCreate {
 		ids[i] = g[i].ID
 	}
 	return ac.AddGroupIDs(ids...)
-}
-
-// AddEventLogIDs adds the eventLogs edge to EventLog by ids.
-func (ac *ApplicationCreate) AddEventLogIDs(ids ...int) *ApplicationCreate {
-	ac.mutation.AddEventLogIDs(ids...)
-	return ac
-}
-
-// AddEventLogs adds the eventLogs edges to EventLog.
-func (ac *ApplicationCreate) AddEventLogs(e ...*EventLog) *ApplicationCreate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return ac.AddEventLogIDs(ids...)
 }
 
 // Save creates the Application in the database.
@@ -215,25 +199,6 @@ func (ac *ApplicationCreate) sqlSave(ctx context.Context) (*Application, error) 
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: group.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := ac.mutation.EventLogsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   application.EventLogsTable,
-			Columns: []string{application.EventLogsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: eventlog.FieldID,
 				},
 			},
 		}

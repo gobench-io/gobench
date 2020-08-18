@@ -11,7 +11,6 @@ import (
 	"github.com/facebookincubator/ent/dialect/sql/sqlgraph"
 	"github.com/facebookincubator/ent/schema/field"
 	"github.com/gobench-io/gobench/ent/application"
-	"github.com/gobench-io/gobench/ent/eventlog"
 	"github.com/gobench-io/gobench/ent/group"
 	"github.com/gobench-io/gobench/ent/predicate"
 )
@@ -83,21 +82,6 @@ func (au *ApplicationUpdate) AddGroups(g ...*Group) *ApplicationUpdate {
 	return au.AddGroupIDs(ids...)
 }
 
-// AddEventLogIDs adds the eventLogs edge to EventLog by ids.
-func (au *ApplicationUpdate) AddEventLogIDs(ids ...int) *ApplicationUpdate {
-	au.mutation.AddEventLogIDs(ids...)
-	return au
-}
-
-// AddEventLogs adds the eventLogs edges to EventLog.
-func (au *ApplicationUpdate) AddEventLogs(e ...*EventLog) *ApplicationUpdate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return au.AddEventLogIDs(ids...)
-}
-
 // RemoveGroupIDs removes the groups edge to Group by ids.
 func (au *ApplicationUpdate) RemoveGroupIDs(ids ...int) *ApplicationUpdate {
 	au.mutation.RemoveGroupIDs(ids...)
@@ -111,21 +95,6 @@ func (au *ApplicationUpdate) RemoveGroups(g ...*Group) *ApplicationUpdate {
 		ids[i] = g[i].ID
 	}
 	return au.RemoveGroupIDs(ids...)
-}
-
-// RemoveEventLogIDs removes the eventLogs edge to EventLog by ids.
-func (au *ApplicationUpdate) RemoveEventLogIDs(ids ...int) *ApplicationUpdate {
-	au.mutation.RemoveEventLogIDs(ids...)
-	return au
-}
-
-// RemoveEventLogs removes eventLogs edges to EventLog.
-func (au *ApplicationUpdate) RemoveEventLogs(e ...*EventLog) *ApplicationUpdate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return au.RemoveEventLogIDs(ids...)
 }
 
 // Save executes the query and returns the number of rows/vertices matched by this operation.
@@ -275,44 +244,6 @@ func (au *ApplicationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if nodes := au.mutation.RemovedEventLogsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   application.EventLogsTable,
-			Columns: []string{application.EventLogsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: eventlog.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := au.mutation.EventLogsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   application.EventLogsTable,
-			Columns: []string{application.EventLogsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: eventlog.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if n, err = sqlgraph.UpdateNodes(ctx, au.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{application.Label}
@@ -384,21 +315,6 @@ func (auo *ApplicationUpdateOne) AddGroups(g ...*Group) *ApplicationUpdateOne {
 	return auo.AddGroupIDs(ids...)
 }
 
-// AddEventLogIDs adds the eventLogs edge to EventLog by ids.
-func (auo *ApplicationUpdateOne) AddEventLogIDs(ids ...int) *ApplicationUpdateOne {
-	auo.mutation.AddEventLogIDs(ids...)
-	return auo
-}
-
-// AddEventLogs adds the eventLogs edges to EventLog.
-func (auo *ApplicationUpdateOne) AddEventLogs(e ...*EventLog) *ApplicationUpdateOne {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return auo.AddEventLogIDs(ids...)
-}
-
 // RemoveGroupIDs removes the groups edge to Group by ids.
 func (auo *ApplicationUpdateOne) RemoveGroupIDs(ids ...int) *ApplicationUpdateOne {
 	auo.mutation.RemoveGroupIDs(ids...)
@@ -412,21 +328,6 @@ func (auo *ApplicationUpdateOne) RemoveGroups(g ...*Group) *ApplicationUpdateOne
 		ids[i] = g[i].ID
 	}
 	return auo.RemoveGroupIDs(ids...)
-}
-
-// RemoveEventLogIDs removes the eventLogs edge to EventLog by ids.
-func (auo *ApplicationUpdateOne) RemoveEventLogIDs(ids ...int) *ApplicationUpdateOne {
-	auo.mutation.RemoveEventLogIDs(ids...)
-	return auo
-}
-
-// RemoveEventLogs removes eventLogs edges to EventLog.
-func (auo *ApplicationUpdateOne) RemoveEventLogs(e ...*EventLog) *ApplicationUpdateOne {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return auo.RemoveEventLogIDs(ids...)
 }
 
 // Save executes the query and returns the updated entity.
@@ -566,44 +467,6 @@ func (auo *ApplicationUpdateOne) sqlSave(ctx context.Context) (a *Application, e
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: group.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if nodes := auo.mutation.RemovedEventLogsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   application.EventLogsTable,
-			Columns: []string{application.EventLogsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: eventlog.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := auo.mutation.EventLogsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   application.EventLogsTable,
-			Columns: []string{application.EventLogsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: eventlog.FieldID,
 				},
 			},
 		}

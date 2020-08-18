@@ -130,19 +130,12 @@ func (m *Master) WebPort() int {
 func (m *Master) NewApplication(ctx context.Context, name, scenario string) (
 	*ent.Application, error,
 ) {
-	app, err := m.db.Application.
+	return m.db.Application.
 		Create().
 		SetName(name).
 		SetScenario(scenario).
 		SetStatus(string(jobPending)).
 		Save(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	m.LogEvent(ctx, app.ID, fmt.Sprintf("application is %s", app.Status), "master:newApplication", "", "")
-
-	return app, err
 }
 
 // DeleteApplication a pending/finished/canceled/error application
@@ -207,19 +200,11 @@ func (m *Master) CancelApplication(ctx context.Context, appID int) (*ent.Applica
 		return app, ErrAppIsFinished
 	}
 
-	currentStatus := app.Status
 	// else, update the status on db
-	app, err = m.db.Application.
+	return m.db.Application.
 		UpdateOneID(appID).
 		SetStatus(string(jobCancel)).
 		Save(ctx)
-	if err != nil {
-		return app, err
-	}
-
-	m.LogEvent(ctx, app.ID, fmt.Sprintf("application status change from %s to %s", currentStatus, app.Status), "master:cancelApplication", "", "")
-
-	return app, err
 }
 
 // cleanupDB is the helper function to cleanup the DB for testing
@@ -232,13 +217,9 @@ func (m *Master) cleanupDB() error {
 // to is the function to set new state for an application
 // save new state to the db
 func (m *Master) jobTo(ctx context.Context, state jobState) (err error) {
-	currentStatus := m.job.app.Status
-
 	m.job.app, err = m.job.app.Update().
 		SetStatus(string(state)).
 		Save(ctx)
-
-	m.LogEvent(ctx, m.job.app.ID, fmt.Sprintf("application status change from %s to %s", currentStatus, m.job.app.Status), "master:jobTo", "", "")
 
 	return
 }
@@ -295,14 +276,11 @@ func (m *Master) run(ctx context.Context, j *job) (err error) {
 				"application id", m.job.app.ID,
 				"err", err,
 			)
-
-			m.LogEvent(ctx, m.job.app.ID, err.Error(), "master:run", "error", "")
 			je = jobError
 
 			if ctx.Err() != nil {
 				je = jobCancel
 				err = ErrAppIsCanceled
-				m.LogEvent(ctx, m.job.app.ID, err.Error(), "master:run", "error", "")
 			}
 		}
 
@@ -332,7 +310,6 @@ func (m *Master) run(ctx context.Context, j *job) (err error) {
 	)
 
 	if err = m.jobCompile(ctx); err != nil {
-		m.LogEvent(ctx, m.job.app.ID, err.Error(), "master:run:jobCompile", "error", "")
 		return
 	}
 	// todo: ditribute the plugin to other worker when run in cloud mode
@@ -349,7 +326,6 @@ func (m *Master) run(ctx context.Context, j *job) (err error) {
 	)
 
 	if err = m.runJob(ctx); err != nil {
-		m.LogEvent(ctx, m.job.app.ID, err.Error(), "master:run", "error", "")
 		return
 	}
 
@@ -436,25 +412,4 @@ func (m *Master) jobCompile(ctx context.Context) error {
 // runJob runs the already compiled plugin, uses agent workhouse
 func (m *Master) runJob(ctx context.Context) (err error) {
 	return m.la.RunJob(ctx, m.program, m.job.plugin, m.job.app.ID)
-}
-
-// LogEvent log event for application
-func (m *Master) LogEvent(ctx context.Context, appID int, message, source, level, name string) {
-
-	q := m.db.EventLog.
-		Create().
-		SetMessage(message).
-		SetSource(source)
-	if appID != 0 {
-		q.SetApplicationsID(appID)
-	} else {
-		q.SetApplicationsID(m.job.app.ID)
-	}
-	if name != "" {
-		q.SetName(name)
-	}
-	if level != "" {
-		q.SetLevel(level)
-	}
-	q.Save(ctx)
 }

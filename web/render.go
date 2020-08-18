@@ -247,26 +247,3 @@ func newGaugeListResponse(es []*ent.Gauge) []render.Renderer {
 	}
 	return list
 }
-
-// eventLog response
-type eventLogResponse struct {
-	*ent.EventLog
-	Edges *struct{} `json:"edges,omitempty"`
-}
-
-func (elr *eventLogResponse) Render(w http.ResponseWriter, r *http.Request) error {
-	return nil
-}
-func newEventLogResponse(e *ent.EventLog) *eventLogResponse {
-	return &eventLogResponse{
-		e,
-		nil,
-	}
-}
-func newEventLogListResponse(es []*ent.EventLog) []render.Renderer {
-	list := []render.Renderer{}
-	for _, e := range es {
-		list = append(list, newEventLogResponse(e))
-	}
-	return list
-}
