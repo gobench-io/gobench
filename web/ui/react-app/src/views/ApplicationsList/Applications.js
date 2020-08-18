@@ -1,7 +1,7 @@
 import React, { useContext } from 'react'
 import { get } from 'lodash'
 import TimeAgo from 'react-timeago'
-import { useHistory } from 'react-router-dom'
+import { useHistory, Link } from 'react-router-dom'
 import Status from '../../components/Status'
 import { RootContext, SpinnerContext } from '../../context'
 import { Button, Popconfirm } from 'antd'
@@ -49,7 +49,7 @@ const Applications = () => {
                     return (
                       <tr key={application.id}>
                         <td style={{ width: '34%%' }}>
-                          {application.name || '-'}
+                          <Link to={`/application/${application.id}`}>{application.name || '-'}</Link>
                         </td>
                         <td style={{ width: '15%' }}>
                           <Status status={application.status} />
