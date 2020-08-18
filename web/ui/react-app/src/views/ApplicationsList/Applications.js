@@ -19,7 +19,7 @@ const Applications = () => {
         <div className='applications-list-header'>
           <h2>Applications</h2>
           <button
-            onClick={() => history.push('/application/create')}
+            onClick={() => history.push('/application-create')}
             className='btn btn-primary'
           >
             Create application

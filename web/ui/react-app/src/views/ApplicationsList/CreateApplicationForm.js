@@ -14,7 +14,7 @@ const CreateApplicationForm = () => {
   const [name, onChangeName] = useState('')
   const [code, onChangeEditor] = useState('')
 
-  return <div className='container'>
+  return <div className='create-application-form'>
     <div className='card'>
       <div className='create-form-header'>
         <h2>Create new application</h2>
