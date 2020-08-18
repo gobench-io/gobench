@@ -78,7 +78,9 @@ func NewMaster(opts *Options, logger logger.Logger) (m *Master, err error) {
 		logger:     logger,
 		program:    opts.Program,
 	}
-	la, err := agent.NewAgent(m, logger)
+
+	agentSocket := fmt.Sprintf("/tmp/gobench-agentsocket-%d", os.Getpid())
+	la, err := agent.NewAgent(&agent.Options{Socket: agentSocket}, m, logger)
 	if err != nil {
 		return
 	}
@@ -97,8 +99,7 @@ func (m *Master) Start() (err error) {
 	go m.schedule()
 
 	// start the local agent socket server that communicate with local executor
-	agentSocket := fmt.Sprintf("/tmp/gobench-agentsocket-%d", os.Getpid())
-	err = m.la.StartSocketServer(agentSocket)
+	err = m.la.StartSocketServer()
 
 	return
 }

@@ -16,32 +16,32 @@ type metricLogger interface {
 }
 
 // nil metric logger
-type nilLog struct{}
+type nopLog struct{}
 
-func (l *nilLog) Counter(ctx context.Context, mID int, title string, time, c int64) error {
+func (n *nopLog) Counter(ctx context.Context, mID int, title string, time, c int64) error {
 	return nil
 }
 
-func (l *nilLog) Histogram(ctx context.Context, mID int, title string, time int64, h metrics.HistogramValues) error {
+func (n *nopLog) Histogram(ctx context.Context, mID int, title string, time int64, h metrics.HistogramValues) error {
 	return nil
 }
 
-func (l *nilLog) Gauge(ctx context.Context, mID int, title string, time int64, g int64) error {
+func (n *nopLog) Gauge(ctx context.Context, mID int, title string, time int64, g int64) error {
 	return nil
 }
 
-func (l *nilLog) FindCreateGroup(ctx context.Context, mg metrics.Group, appID int) (
+func (n *nopLog) FindCreateGroup(ctx context.Context, mg metrics.Group, appID int) (
 	*metrics.FCGroupRes, error,
 ) {
 
 	return new(metrics.FCGroupRes), nil
 }
-func (l *nilLog) FindCreateGraph(ctx context.Context, mgraph metrics.Graph, groupID int) (
+func (n *nopLog) FindCreateGraph(ctx context.Context, mgraph metrics.Graph, groupID int) (
 	*metrics.FCGraphRes, error,
 ) {
 	return new(metrics.FCGraphRes), nil
 }
-func (l *nilLog) FindCreateMetric(ctx context.Context, mmetric metrics.Metric, graphID int) (
+func (n *nopLog) FindCreateMetric(ctx context.Context, mmetric metrics.Metric, graphID int) (
 	*metrics.FCMetricRes, error,
 ) {
 	return new(metrics.FCMetricRes), nil
@@ -49,5 +49,5 @@ func (l *nilLog) FindCreateMetric(ctx context.Context, mmetric metrics.Metric, g
 
 // NewNopMetricLog returns a no-op metric logger
 func newNopMetricLog() metricLogger {
-	return &nilLog{}
+	return &nopLog{}
 }

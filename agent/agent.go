@@ -11,50 +11,72 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/gobench-io/gobench/logger"
-	"github.com/gobench-io/gobench/metrics"
 )
 
-type metricLoggerRPC interface {
-	FindCreateGroup(req *metrics.FCGroupReq, res *metrics.FCGroupRes) error
-	FindCreateGraph(req *metrics.FCGraphReq, res *metrics.FCGraphRes) error
-	FindCreateMetric(req *metrics.FCMetricReq, res *metrics.FCMetricRes) error
-	Counter(req *metrics.CounterReq, res *metrics.CounterRes) error
-	Histogram(req *metrics.HistogramReq, res *metrics.HistogramRes) error
-	Gauge(req *metrics.GaugeReq, res *metrics.GaugeRes) error
+type Options struct {
+	Route       string
+	ClusterPort int
+	Socket      string
 }
 
 type Agent struct {
-	// when this is the local agent, inherit from master
-	// when this is the remote agent, ... todo
-	metricLoggerRPC
+	mu sync.Mutex
+
+	route       string
+	clusterPort int
+
+	ml     metricLoggerRPC
 	logger logger.Logger
 	socket string
-	rs     *rpc.Server
+	rs     *rpc.Server // rpc server to be served via unix socket
 }
 
-func NewAgent(ml metricLoggerRPC, logger logger.Logger) (*Agent, error) {
+func NewLocalAgent(ml metricLoggerRPC, logger logger.Logger) (*Agent, error) {
 	a := &Agent{
-		metricLoggerRPC: ml,
-		logger:          logger,
-		rs:              rpc.NewServer(),
+		ml:     ml,
+		logger: logger,
+		rs:     rpc.NewServer(),
 	}
 	return a, nil
 }
 
-func (a *Agent) StartSocketServer(socket string) error {
-	a.socket = socket
+func NewAgent(opts *Options, ml metricLoggerRPC, logger logger.Logger) (*Agent, error) {
+	a := &Agent{
+		route:       opts.Route,
+		clusterPort: opts.ClusterPort,
+		socket:      opts.Socket,
+		logger:      logger,
+		ml:          ml,
+		rs:          rpc.NewServer(),
+	}
+	return a, nil
+}
 
-	a.rs.Register(a)
+func (a *Agent) SetMetricLogger(ml metricLoggerRPC) {
+	a.mu.Lock()
+	a.ml = ml
+	a.mu.Unlock()
+}
+
+func (a *Agent) StartSocketServer() error {
+	ar, err := newRPC(a.ml)
+	if err != nil {
+		return err
+	}
+	if err := a.rs.RegisterName("Agent", ar); err != nil {
+		return err
+	}
 
 	serverMux := http.NewServeMux()
 	serverMux.Handle(rpc.DefaultRPCPath, a.rs)
 	serverMux.Handle(rpc.DefaultDebugPath, a.rs)
 
-	os.Remove(socket)
-	l, err := net.Listen("unix", socket)
+	os.Remove(a.socket)
+	l, err := net.Listen("unix", a.socket)
 	if err != nil {
 		return err
 	}
@@ -64,12 +86,29 @@ func (a *Agent) StartSocketServer(socket string) error {
 	return nil
 }
 
-func (a *Agent) GetSocketName() string {
-	return a.socket
+func (a *Agent) StartWebServer() (l net.Listener, err error) {
+	rs := rpc.NewServer()
+
+	err = rs.RegisterName("Agent", a.ml)
+	if err != nil {
+		return
+	}
+	serverMux := http.NewServeMux()
+	serverMux.Handle(rpc.DefaultRPCPath, a.rs)
+	serverMux.Handle(rpc.DefaultDebugPath, a.rs)
+
+	l, err = net.Listen("tcp", fmt.Sprintf(":%d", a.clusterPort))
+	if err != nil {
+		return
+	}
+
+	go http.Serve(l, serverMux)
+
+	return
 }
 
 func (a *Agent) RunJob(ctx context.Context, program, driverPath string, appID int) (err error) {
-	agentSock := a.GetSocketName()
+	agentSock := a.socket
 	executorSock := fmt.Sprintf("/tmp/executorsock-%d", appID)
 
 	cmd := exec.CommandContext(ctx, program,
