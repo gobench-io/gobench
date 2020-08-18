@@ -72,7 +72,13 @@ const MainLayout = (props) => {
       window._history.push('/')
     })
   })
+  const clone = useCallback(({ name, scenario }) => {
+    window._history.push(`/application-create?name=${name}`)
+  })
   useEffect(() => {
+    if (!app.clone) {
+      setApp({ ...app, clone })
+    }
     if (!app.deleteApplication) {
       setApp({ ...app, deleteApplication })
     }

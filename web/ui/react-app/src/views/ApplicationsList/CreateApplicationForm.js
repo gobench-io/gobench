@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react'
+import React, { useState, useContext, useEffect } from 'react'
 import Editor from 'react-simple-code-editor'
 import { highlight, languages } from 'prismjs/components/prism-core'
 import 'prismjs/components/prism-clike'
@@ -8,11 +8,18 @@ import { useHistory } from 'react-router-dom'
 import '../../css/editor.css'
 import { RootContext } from '../../context'
 
-const CreateApplicationForm = () => {
+const CreateApplicationForm = (props) => {
   const history = useHistory()
   const app = useContext(RootContext)
   const [name, onChangeName] = useState('')
   const [code, onChangeEditor] = useState('')
+
+  useEffect(() => {
+    if (props.name) {
+      onChangeName(props.name)
+      onChangeEditor(props.code)
+    }
+  })
 
   return <div className='create-application-form'>
     <div className='card'>
@@ -45,6 +52,7 @@ const CreateApplicationForm = () => {
           className='form-input'
           placeholder='Enter application name'
           onChange={e => onChangeName(e.target.value)}
+          value={name}
         />
       </div>
       <div className='form-group'>
