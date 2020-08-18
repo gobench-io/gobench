@@ -458,24 +458,3 @@ func (m *Master) LogEvent(ctx context.Context, appID int, message, source, level
 	}
 	q.Save(ctx)
 }
-
-// LogEvent log event for application
-func (m *Master) LogEvent(ctx context.Context, appID int, message, source, level, name string) {
-
-	q := m.db.EventLog.
-		Create().
-		SetMessage(message).
-		SetSource(source)
-	if appID != 0 {
-		q.SetApplicationsID(appID)
-	} else {
-		q.SetApplicationsID(m.job.app.ID)
-	}
-	if name != "" {
-		q.SetName(name)
-	}
-	if level != "" {
-		q.SetLevel(level)
-	}
-	q.Save(ctx)
-}

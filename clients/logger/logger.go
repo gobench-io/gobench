@@ -2,6 +2,7 @@ package logger
 
 import (
 	"context"
+	"log"
 
 	"github.com/gobench-io/gobench/executor/driver"
 )
@@ -27,7 +28,6 @@ type Logger struct {
 
 // NewLogger initial logger
 func NewLogger(ctx context.Context, name, source, level string) *Logger {
-	fmt.Printf("-------------TEST DRIVER : %+v---------------------\n",driver.)
 	if name == "" {
 		name = DefaultName
 	}
@@ -48,5 +48,10 @@ func NewLogger(ctx context.Context, name, source, level string) *Logger {
 
 // Log log an event
 func (l *Logger) Log(message string) {
+	driver.Notify(Topic, 1)
+	log.Printf("")
+}
+
+func (l *Logger) Printf(format string, v ...interface{}) {
 	driver.Notify(Topic, 1)
 }
