@@ -63,7 +63,11 @@ func (a *Agent) SetMetricLogger(ml metricLoggerRPC) {
 }
 
 func (a *Agent) StartSocketServer() error {
-	if err := a.rs.RegisterName("Agent", a.ml); err != nil {
+	ar, err := newRPC(a.ml)
+	if err != nil {
+		return err
+	}
+	if err := a.rs.RegisterName("Agent", ar); err != nil {
 		return err
 	}
 
