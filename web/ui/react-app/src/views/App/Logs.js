@@ -1,16 +1,14 @@
-import React, { useContext } from 'react'
-import { get } from 'lodash'
-
-import { AppContext } from '../../context'
+import React from 'react'
 
 const Logs = () => {
-  const appData = useContext(AppContext)
-  return <div>
-    <textarea
-      disabled
-      className='application-scenario'
-      value='TODO'
-    />
-         </div>
+  return (
+    <div>
+      <textarea
+        disabled
+        className='application-scenario'
+        value='TODO'
+      />
+    </div>
+  )
 }
 export default Logs
