@@ -258,30 +258,6 @@ func (f CounterMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutatio
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.CounterMutation", m)
 }
 
-// The EventLogQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type EventLogQueryRuleFunc func(context.Context, *ent.EventLogQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f EventLogQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.EventLogQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.EventLogQuery", q)
-}
-
-// The EventLogMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type EventLogMutationRuleFunc func(context.Context, *ent.EventLogMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f EventLogMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.EventLogMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.EventLogMutation", m)
-}
-
 // The GaugeQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type GaugeQueryRuleFunc func(context.Context, *ent.GaugeQuery) error

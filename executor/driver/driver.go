@@ -365,9 +365,6 @@ func Notify(title string, value int64) error {
 	driver.mu.Lock()
 	defer driver.mu.Unlock()
 
-	if title == "app-event-log" {
-		fmt.Printf("---------------APP ID: %v------------------------------", driver.appID)
-	}
 	u, ok := driver.units[title]
 	if !ok {
 		driver.logger.Infow("metric not found", "title", title)

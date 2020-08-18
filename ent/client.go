@@ -11,7 +11,6 @@ import (
 
 	"github.com/gobench-io/gobench/ent/application"
 	"github.com/gobench-io/gobench/ent/counter"
-	"github.com/gobench-io/gobench/ent/eventlog"
 	"github.com/gobench-io/gobench/ent/gauge"
 	"github.com/gobench-io/gobench/ent/graph"
 	"github.com/gobench-io/gobench/ent/group"
@@ -32,8 +31,6 @@ type Client struct {
 	Application *ApplicationClient
 	// Counter is the client for interacting with the Counter builders.
 	Counter *CounterClient
-	// EventLog is the client for interacting with the EventLog builders.
-	EventLog *EventLogClient
 	// Gauge is the client for interacting with the Gauge builders.
 	Gauge *GaugeClient
 	// Graph is the client for interacting with the Graph builders.
@@ -59,7 +56,6 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Application = NewApplicationClient(c.config)
 	c.Counter = NewCounterClient(c.config)
-	c.EventLog = NewEventLogClient(c.config)
 	c.Gauge = NewGaugeClient(c.config)
 	c.Graph = NewGraphClient(c.config)
 	c.Group = NewGroupClient(c.config)
@@ -97,7 +93,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		config:      cfg,
 		Application: NewApplicationClient(cfg),
 		Counter:     NewCounterClient(cfg),
-		EventLog:    NewEventLogClient(cfg),
 		Gauge:       NewGaugeClient(cfg),
 		Graph:       NewGraphClient(cfg),
 		Group:       NewGroupClient(cfg),
@@ -120,7 +115,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		config:      cfg,
 		Application: NewApplicationClient(cfg),
 		Counter:     NewCounterClient(cfg),
-		EventLog:    NewEventLogClient(cfg),
 		Gauge:       NewGaugeClient(cfg),
 		Graph:       NewGraphClient(cfg),
 		Group:       NewGroupClient(cfg),
@@ -156,7 +150,6 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	c.Application.Use(hooks...)
 	c.Counter.Use(hooks...)
-	c.EventLog.Use(hooks...)
 	c.Gauge.Use(hooks...)
 	c.Graph.Use(hooks...)
 	c.Group.Use(hooks...)
@@ -251,22 +244,6 @@ func (c *ApplicationClient) QueryGroups(a *Application) *GroupQuery {
 			sqlgraph.From(application.Table, application.FieldID, id),
 			sqlgraph.To(group.Table, group.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, application.GroupsTable, application.GroupsColumn),
-		)
-		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryEventLogs queries the eventLogs edge of a Application.
-func (c *ApplicationClient) QueryEventLogs(a *Application) *EventLogQuery {
-	query := &EventLogQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := a.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(application.Table, application.FieldID, id),
-			sqlgraph.To(eventlog.Table, eventlog.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, application.EventLogsTable, application.EventLogsColumn),
 		)
 		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
 		return fromV, nil
@@ -376,105 +353,6 @@ func (c *CounterClient) QueryMetric(co *Counter) *MetricQuery {
 // Hooks returns the client hooks.
 func (c *CounterClient) Hooks() []Hook {
 	return c.hooks.Counter
-}
-
-// EventLogClient is a client for the EventLog schema.
-type EventLogClient struct {
-	config
-}
-
-// NewEventLogClient returns a client for the EventLog from the given config.
-func NewEventLogClient(c config) *EventLogClient {
-	return &EventLogClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `eventlog.Hooks(f(g(h())))`.
-func (c *EventLogClient) Use(hooks ...Hook) {
-	c.hooks.EventLog = append(c.hooks.EventLog, hooks...)
-}
-
-// Create returns a create builder for EventLog.
-func (c *EventLogClient) Create() *EventLogCreate {
-	mutation := newEventLogMutation(c.config, OpCreate)
-	return &EventLogCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Update returns an update builder for EventLog.
-func (c *EventLogClient) Update() *EventLogUpdate {
-	mutation := newEventLogMutation(c.config, OpUpdate)
-	return &EventLogUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *EventLogClient) UpdateOne(el *EventLog) *EventLogUpdateOne {
-	mutation := newEventLogMutation(c.config, OpUpdateOne, withEventLog(el))
-	return &EventLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *EventLogClient) UpdateOneID(id int) *EventLogUpdateOne {
-	mutation := newEventLogMutation(c.config, OpUpdateOne, withEventLogID(id))
-	return &EventLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for EventLog.
-func (c *EventLogClient) Delete() *EventLogDelete {
-	mutation := newEventLogMutation(c.config, OpDelete)
-	return &EventLogDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a delete builder for the given entity.
-func (c *EventLogClient) DeleteOne(el *EventLog) *EventLogDeleteOne {
-	return c.DeleteOneID(el.ID)
-}
-
-// DeleteOneID returns a delete builder for the given id.
-func (c *EventLogClient) DeleteOneID(id int) *EventLogDeleteOne {
-	builder := c.Delete().Where(eventlog.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &EventLogDeleteOne{builder}
-}
-
-// Create returns a query builder for EventLog.
-func (c *EventLogClient) Query() *EventLogQuery {
-	return &EventLogQuery{config: c.config}
-}
-
-// Get returns a EventLog entity by its id.
-func (c *EventLogClient) Get(ctx context.Context, id int) (*EventLog, error) {
-	return c.Query().Where(eventlog.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *EventLogClient) GetX(ctx context.Context, id int) *EventLog {
-	el, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return el
-}
-
-// QueryApplications queries the applications edge of a EventLog.
-func (c *EventLogClient) QueryApplications(el *EventLog) *ApplicationQuery {
-	query := &ApplicationQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := el.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(eventlog.Table, eventlog.FieldID, id),
-			sqlgraph.To(application.Table, application.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, eventlog.ApplicationsTable, eventlog.ApplicationsColumn),
-		)
-		fromV = sqlgraph.Neighbors(el.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *EventLogClient) Hooks() []Hook {
-	return c.hooks.EventLog
 }
 
 // GaugeClient is a client for the Gauge schema.
