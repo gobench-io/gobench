@@ -99,13 +99,15 @@ func (mc *MetricCreate) AddGauges(g ...*Gauge) *MetricCreate {
 	return mc.AddGaugeIDs(ids...)
 }
 
+// Mutation returns the MetricMutation object of the builder.
+func (mc *MetricCreate) Mutation() *MetricMutation {
+	return mc.mutation
+}
+
 // Save creates the Metric in the database.
 func (mc *MetricCreate) Save(ctx context.Context) (*Metric, error) {
-	if _, ok := mc.mutation.Title(); !ok {
-		return nil, errors.New("ent: missing required field \"title\"")
-	}
-	if _, ok := mc.mutation.GetType(); !ok {
-		return nil, errors.New("ent: missing required field \"type\"")
+	if err := mc.preSave(); err != nil {
+		return nil, err
 	}
 	var (
 		err  error
@@ -143,7 +145,30 @@ func (mc *MetricCreate) SaveX(ctx context.Context) *Metric {
 	return v
 }
 
+func (mc *MetricCreate) preSave() error {
+	if _, ok := mc.mutation.Title(); !ok {
+		return &ValidationError{Name: "title", err: errors.New("ent: missing required field \"title\"")}
+	}
+	if _, ok := mc.mutation.GetType(); !ok {
+		return &ValidationError{Name: "type", err: errors.New("ent: missing required field \"type\"")}
+	}
+	return nil
+}
+
 func (mc *MetricCreate) sqlSave(ctx context.Context) (*Metric, error) {
+	m, _spec := mc.createSpec()
+	if err := sqlgraph.CreateNode(ctx, mc.driver, _spec); err != nil {
+		if cerr, ok := isSQLConstraintError(err); ok {
+			err = cerr
+		}
+		return nil, err
+	}
+	id := _spec.ID.Value.(int64)
+	m.ID = int(id)
+	return m, nil
+}
+
+func (mc *MetricCreate) createSpec() (*Metric, *sqlgraph.CreateSpec) {
 	var (
 		m     = &Metric{config: mc.config}
 		_spec = &sqlgraph.CreateSpec{
@@ -246,13 +271,71 @@ func (mc *MetricCreate) sqlSave(ctx context.Context) (*Metric, error) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if err := sqlgraph.CreateNode(ctx, mc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
-		}
-		return nil, err
+	return m, _spec
+}
+
+// MetricCreateBulk is the builder for creating a bulk of Metric entities.
+type MetricCreateBulk struct {
+	config
+	builders []*MetricCreate
+}
+
+// Save creates the Metric entities in the database.
+func (mcb *MetricCreateBulk) Save(ctx context.Context) ([]*Metric, error) {
+	specs := make([]*sqlgraph.CreateSpec, len(mcb.builders))
+	nodes := make([]*Metric, len(mcb.builders))
+	mutators := make([]Mutator, len(mcb.builders))
+	for i := range mcb.builders {
+		func(i int, root context.Context) {
+			builder := mcb.builders[i]
+			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
+				if err := builder.preSave(); err != nil {
+					return nil, err
+				}
+				mutation, ok := m.(*MetricMutation)
+				if !ok {
+					return nil, fmt.Errorf("unexpected mutation type %T", m)
+				}
+				builder.mutation = mutation
+				nodes[i], specs[i] = builder.createSpec()
+				var err error
+				if i < len(mutators)-1 {
+					_, err = mutators[i+1].Mutate(root, mcb.builders[i+1].mutation)
+				} else {
+					// Invoke the actual operation on the latest mutation in the chain.
+					if err = sqlgraph.BatchCreate(ctx, mcb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
+						if cerr, ok := isSQLConstraintError(err); ok {
+							err = cerr
+						}
+					}
+				}
+				mutation.done = true
+				if err != nil {
+					return nil, err
+				}
+				id := specs[i].ID.Value.(int64)
+				nodes[i].ID = int(id)
+				return nodes[i], nil
+			})
+			for i := len(builder.hooks) - 1; i >= 0; i-- {
+				mut = builder.hooks[i](mut)
+			}
+			mutators[i] = mut
+		}(i, ctx)
 	}
-	id := _spec.ID.Value.(int64)
-	m.ID = int(id)
-	return m, nil
+	if len(mutators) > 0 {
+		if _, err := mutators[0].Mutate(ctx, mcb.builders[0].mutation); err != nil {
+			return nil, err
+		}
+	}
+	return nodes, nil
+}
+
+// SaveX calls Save and panics if Save returns an error.
+func (mcb *MetricCreateBulk) SaveX(ctx context.Context) []*Metric {
+	v, err := mcb.Save(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
 }

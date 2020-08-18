@@ -79,6 +79,11 @@ func (cu *CounterUpdate) SetMetric(m *Metric) *CounterUpdate {
 	return cu.SetMetricID(m.ID)
 }
 
+// Mutation returns the CounterMutation object of the builder.
+func (cu *CounterUpdate) Mutation() *CounterMutation {
+	return cu.mutation
+}
+
 // ClearMetric clears the metric edge to Metric.
 func (cu *CounterUpdate) ClearMetric() *CounterUpdate {
 	cu.mutation.ClearMetric()
@@ -294,6 +299,11 @@ func (cuo *CounterUpdateOne) SetMetric(m *Metric) *CounterUpdateOne {
 	return cuo.SetMetricID(m.ID)
 }
 
+// Mutation returns the CounterMutation object of the builder.
+func (cuo *CounterUpdateOne) Mutation() *CounterMutation {
+	return cuo.mutation
+}
+
 // ClearMetric clears the metric edge to Metric.
 func (cuo *CounterUpdateOne) ClearMetric() *CounterUpdateOne {
 	cuo.mutation.ClearMetric()
@@ -365,7 +375,7 @@ func (cuo *CounterUpdateOne) sqlSave(ctx context.Context) (c *Counter, err error
 	}
 	id, ok := cuo.mutation.ID()
 	if !ok {
-		return nil, fmt.Errorf("missing Counter.ID for update")
+		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Counter.ID for update")}
 	}
 	_spec.Node.ID.Value = id
 	if value, ok := cuo.mutation.Time(); ok {

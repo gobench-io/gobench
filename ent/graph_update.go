@@ -69,6 +69,11 @@ func (gu *GraphUpdate) AddMetrics(m ...*Metric) *GraphUpdate {
 	return gu.AddMetricIDs(ids...)
 }
 
+// Mutation returns the GraphMutation object of the builder.
+func (gu *GraphUpdate) Mutation() *GraphMutation {
+	return gu.mutation
+}
+
 // ClearGroup clears the group edge to Group.
 func (gu *GraphUpdate) ClearGroup() *GraphUpdate {
 	gu.mutation.ClearGroup()
@@ -298,6 +303,11 @@ func (guo *GraphUpdateOne) AddMetrics(m ...*Metric) *GraphUpdateOne {
 	return guo.AddMetricIDs(ids...)
 }
 
+// Mutation returns the GraphMutation object of the builder.
+func (guo *GraphUpdateOne) Mutation() *GraphMutation {
+	return guo.mutation
+}
+
 // ClearGroup clears the group edge to Group.
 func (guo *GraphUpdateOne) ClearGroup() *GraphUpdateOne {
 	guo.mutation.ClearGroup()
@@ -384,7 +394,7 @@ func (guo *GraphUpdateOne) sqlSave(ctx context.Context) (gr *Graph, err error) {
 	}
 	id, ok := guo.mutation.ID()
 	if !ok {
-		return nil, fmt.Errorf("missing Graph.ID for update")
+		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Graph.ID for update")}
 	}
 	_spec.Node.ID.Value = id
 	if value, ok := guo.mutation.Unit(); ok {

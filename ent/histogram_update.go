@@ -196,6 +196,11 @@ func (hu *HistogramUpdate) SetMetric(m *Metric) *HistogramUpdate {
 	return hu.SetMetricID(m.ID)
 }
 
+// Mutation returns the HistogramMutation object of the builder.
+func (hu *HistogramUpdate) Mutation() *HistogramMutation {
+	return hu.mutation
+}
+
 // ClearMetric clears the metric edge to Metric.
 func (hu *HistogramUpdate) ClearMetric() *HistogramUpdate {
 	hu.mutation.ClearMetric()
@@ -654,6 +659,11 @@ func (huo *HistogramUpdateOne) SetMetric(m *Metric) *HistogramUpdateOne {
 	return huo.SetMetricID(m.ID)
 }
 
+// Mutation returns the HistogramMutation object of the builder.
+func (huo *HistogramUpdateOne) Mutation() *HistogramMutation {
+	return huo.mutation
+}
+
 // ClearMetric clears the metric edge to Metric.
 func (huo *HistogramUpdateOne) ClearMetric() *HistogramUpdateOne {
 	huo.mutation.ClearMetric()
@@ -725,7 +735,7 @@ func (huo *HistogramUpdateOne) sqlSave(ctx context.Context) (h *Histogram, err e
 	}
 	id, ok := huo.mutation.ID()
 	if !ok {
-		return nil, fmt.Errorf("missing Histogram.ID for update")
+		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Histogram.ID for update")}
 	}
 	_spec.Node.ID.Value = id
 	if value, ok := huo.mutation.Time(); ok {

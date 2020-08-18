@@ -57,16 +57,15 @@ func (gc *GaugeCreate) SetMetric(m *Metric) *GaugeCreate {
 	return gc.SetMetricID(m.ID)
 }
 
+// Mutation returns the GaugeMutation object of the builder.
+func (gc *GaugeCreate) Mutation() *GaugeMutation {
+	return gc.mutation
+}
+
 // Save creates the Gauge in the database.
 func (gc *GaugeCreate) Save(ctx context.Context) (*Gauge, error) {
-	if _, ok := gc.mutation.Time(); !ok {
-		return nil, errors.New("ent: missing required field \"time\"")
-	}
-	if _, ok := gc.mutation.Value(); !ok {
-		return nil, errors.New("ent: missing required field \"value\"")
-	}
-	if _, ok := gc.mutation.WID(); !ok {
-		return nil, errors.New("ent: missing required field \"wID\"")
+	if err := gc.preSave(); err != nil {
+		return nil, err
 	}
 	var (
 		err  error
@@ -104,7 +103,33 @@ func (gc *GaugeCreate) SaveX(ctx context.Context) *Gauge {
 	return v
 }
 
+func (gc *GaugeCreate) preSave() error {
+	if _, ok := gc.mutation.Time(); !ok {
+		return &ValidationError{Name: "time", err: errors.New("ent: missing required field \"time\"")}
+	}
+	if _, ok := gc.mutation.Value(); !ok {
+		return &ValidationError{Name: "value", err: errors.New("ent: missing required field \"value\"")}
+	}
+	if _, ok := gc.mutation.WID(); !ok {
+		return &ValidationError{Name: "wID", err: errors.New("ent: missing required field \"wID\"")}
+	}
+	return nil
+}
+
 func (gc *GaugeCreate) sqlSave(ctx context.Context) (*Gauge, error) {
+	ga, _spec := gc.createSpec()
+	if err := sqlgraph.CreateNode(ctx, gc.driver, _spec); err != nil {
+		if cerr, ok := isSQLConstraintError(err); ok {
+			err = cerr
+		}
+		return nil, err
+	}
+	id := _spec.ID.Value.(int64)
+	ga.ID = int(id)
+	return ga, nil
+}
+
+func (gc *GaugeCreate) createSpec() (*Gauge, *sqlgraph.CreateSpec) {
 	var (
 		ga    = &Gauge{config: gc.config}
 		_spec = &sqlgraph.CreateSpec{
@@ -158,13 +183,71 @@ func (gc *GaugeCreate) sqlSave(ctx context.Context) (*Gauge, error) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if err := sqlgraph.CreateNode(ctx, gc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
-		}
-		return nil, err
+	return ga, _spec
+}
+
+// GaugeCreateBulk is the builder for creating a bulk of Gauge entities.
+type GaugeCreateBulk struct {
+	config
+	builders []*GaugeCreate
+}
+
+// Save creates the Gauge entities in the database.
+func (gcb *GaugeCreateBulk) Save(ctx context.Context) ([]*Gauge, error) {
+	specs := make([]*sqlgraph.CreateSpec, len(gcb.builders))
+	nodes := make([]*Gauge, len(gcb.builders))
+	mutators := make([]Mutator, len(gcb.builders))
+	for i := range gcb.builders {
+		func(i int, root context.Context) {
+			builder := gcb.builders[i]
+			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
+				if err := builder.preSave(); err != nil {
+					return nil, err
+				}
+				mutation, ok := m.(*GaugeMutation)
+				if !ok {
+					return nil, fmt.Errorf("unexpected mutation type %T", m)
+				}
+				builder.mutation = mutation
+				nodes[i], specs[i] = builder.createSpec()
+				var err error
+				if i < len(mutators)-1 {
+					_, err = mutators[i+1].Mutate(root, gcb.builders[i+1].mutation)
+				} else {
+					// Invoke the actual operation on the latest mutation in the chain.
+					if err = sqlgraph.BatchCreate(ctx, gcb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
+						if cerr, ok := isSQLConstraintError(err); ok {
+							err = cerr
+						}
+					}
+				}
+				mutation.done = true
+				if err != nil {
+					return nil, err
+				}
+				id := specs[i].ID.Value.(int64)
+				nodes[i].ID = int(id)
+				return nodes[i], nil
+			})
+			for i := len(builder.hooks) - 1; i >= 0; i-- {
+				mut = builder.hooks[i](mut)
+			}
+			mutators[i] = mut
+		}(i, ctx)
 	}
-	id := _spec.ID.Value.(int64)
-	ga.ID = int(id)
-	return ga, nil
+	if len(mutators) > 0 {
+		if _, err := mutators[0].Mutate(ctx, gcb.builders[0].mutation); err != nil {
+			return nil, err
+		}
+	}
+	return nodes, nil
+}
+
+// SaveX calls Save and panics if Save returns an error.
+func (gcb *GaugeCreateBulk) SaveX(ctx context.Context) []*Gauge {
+	v, err := gcb.Save(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
 }

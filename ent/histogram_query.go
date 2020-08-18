@@ -159,8 +159,8 @@ func (hq *HistogramQuery) OnlyID(ctx context.Context) (id int, err error) {
 	return
 }
 
-// OnlyXID is like OnlyID, but panics if an error occurs.
-func (hq *HistogramQuery) OnlyXID(ctx context.Context) int {
+// OnlyIDX is like OnlyID, but panics if an error occurs.
+func (hq *HistogramQuery) OnlyIDX(ctx context.Context) int {
 	id, err := hq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -521,6 +521,32 @@ func (hgb *HistogramGroupBy) StringsX(ctx context.Context) []string {
 	return v
 }
 
+// String returns a single string from group-by. It is only allowed when querying group-by with one field.
+func (hgb *HistogramGroupBy) String(ctx context.Context) (_ string, err error) {
+	var v []string
+	if v, err = hgb.Strings(ctx); err != nil {
+		return
+	}
+	switch len(v) {
+	case 1:
+		return v[0], nil
+	case 0:
+		err = &NotFoundError{histogram.Label}
+	default:
+		err = fmt.Errorf("ent: HistogramGroupBy.Strings returned %d results when one was expected", len(v))
+	}
+	return
+}
+
+// StringX is like String, but panics if an error occurs.
+func (hgb *HistogramGroupBy) StringX(ctx context.Context) string {
+	v, err := hgb.String(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
 // Ints returns list of ints from group-by. It is only allowed when querying group-by with one field.
 func (hgb *HistogramGroupBy) Ints(ctx context.Context) ([]int, error) {
 	if len(hgb.fields) > 1 {
@@ -536,6 +562,32 @@ func (hgb *HistogramGroupBy) Ints(ctx context.Context) ([]int, error) {
 // IntsX is like Ints, but panics if an error occurs.
 func (hgb *HistogramGroupBy) IntsX(ctx context.Context) []int {
 	v, err := hgb.Ints(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
+// Int returns a single int from group-by. It is only allowed when querying group-by with one field.
+func (hgb *HistogramGroupBy) Int(ctx context.Context) (_ int, err error) {
+	var v []int
+	if v, err = hgb.Ints(ctx); err != nil {
+		return
+	}
+	switch len(v) {
+	case 1:
+		return v[0], nil
+	case 0:
+		err = &NotFoundError{histogram.Label}
+	default:
+		err = fmt.Errorf("ent: HistogramGroupBy.Ints returned %d results when one was expected", len(v))
+	}
+	return
+}
+
+// IntX is like Int, but panics if an error occurs.
+func (hgb *HistogramGroupBy) IntX(ctx context.Context) int {
+	v, err := hgb.Int(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -563,6 +615,32 @@ func (hgb *HistogramGroupBy) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
+// Float64 returns a single float64 from group-by. It is only allowed when querying group-by with one field.
+func (hgb *HistogramGroupBy) Float64(ctx context.Context) (_ float64, err error) {
+	var v []float64
+	if v, err = hgb.Float64s(ctx); err != nil {
+		return
+	}
+	switch len(v) {
+	case 1:
+		return v[0], nil
+	case 0:
+		err = &NotFoundError{histogram.Label}
+	default:
+		err = fmt.Errorf("ent: HistogramGroupBy.Float64s returned %d results when one was expected", len(v))
+	}
+	return
+}
+
+// Float64X is like Float64, but panics if an error occurs.
+func (hgb *HistogramGroupBy) Float64X(ctx context.Context) float64 {
+	v, err := hgb.Float64(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
 // Bools returns list of bools from group-by. It is only allowed when querying group-by with one field.
 func (hgb *HistogramGroupBy) Bools(ctx context.Context) ([]bool, error) {
 	if len(hgb.fields) > 1 {
@@ -578,6 +656,32 @@ func (hgb *HistogramGroupBy) Bools(ctx context.Context) ([]bool, error) {
 // BoolsX is like Bools, but panics if an error occurs.
 func (hgb *HistogramGroupBy) BoolsX(ctx context.Context) []bool {
 	v, err := hgb.Bools(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
+// Bool returns a single bool from group-by. It is only allowed when querying group-by with one field.
+func (hgb *HistogramGroupBy) Bool(ctx context.Context) (_ bool, err error) {
+	var v []bool
+	if v, err = hgb.Bools(ctx); err != nil {
+		return
+	}
+	switch len(v) {
+	case 1:
+		return v[0], nil
+	case 0:
+		err = &NotFoundError{histogram.Label}
+	default:
+		err = fmt.Errorf("ent: HistogramGroupBy.Bools returned %d results when one was expected", len(v))
+	}
+	return
+}
+
+// BoolX is like Bool, but panics if an error occurs.
+func (hgb *HistogramGroupBy) BoolX(ctx context.Context) bool {
+	v, err := hgb.Bool(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -651,6 +755,32 @@ func (hs *HistogramSelect) StringsX(ctx context.Context) []string {
 	return v
 }
 
+// String returns a single string from selector. It is only allowed when selecting one field.
+func (hs *HistogramSelect) String(ctx context.Context) (_ string, err error) {
+	var v []string
+	if v, err = hs.Strings(ctx); err != nil {
+		return
+	}
+	switch len(v) {
+	case 1:
+		return v[0], nil
+	case 0:
+		err = &NotFoundError{histogram.Label}
+	default:
+		err = fmt.Errorf("ent: HistogramSelect.Strings returned %d results when one was expected", len(v))
+	}
+	return
+}
+
+// StringX is like String, but panics if an error occurs.
+func (hs *HistogramSelect) StringX(ctx context.Context) string {
+	v, err := hs.String(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
 // Ints returns list of ints from selector. It is only allowed when selecting one field.
 func (hs *HistogramSelect) Ints(ctx context.Context) ([]int, error) {
 	if len(hs.fields) > 1 {
@@ -666,6 +796,32 @@ func (hs *HistogramSelect) Ints(ctx context.Context) ([]int, error) {
 // IntsX is like Ints, but panics if an error occurs.
 func (hs *HistogramSelect) IntsX(ctx context.Context) []int {
 	v, err := hs.Ints(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
+// Int returns a single int from selector. It is only allowed when selecting one field.
+func (hs *HistogramSelect) Int(ctx context.Context) (_ int, err error) {
+	var v []int
+	if v, err = hs.Ints(ctx); err != nil {
+		return
+	}
+	switch len(v) {
+	case 1:
+		return v[0], nil
+	case 0:
+		err = &NotFoundError{histogram.Label}
+	default:
+		err = fmt.Errorf("ent: HistogramSelect.Ints returned %d results when one was expected", len(v))
+	}
+	return
+}
+
+// IntX is like Int, but panics if an error occurs.
+func (hs *HistogramSelect) IntX(ctx context.Context) int {
+	v, err := hs.Int(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -693,6 +849,32 @@ func (hs *HistogramSelect) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
+// Float64 returns a single float64 from selector. It is only allowed when selecting one field.
+func (hs *HistogramSelect) Float64(ctx context.Context) (_ float64, err error) {
+	var v []float64
+	if v, err = hs.Float64s(ctx); err != nil {
+		return
+	}
+	switch len(v) {
+	case 1:
+		return v[0], nil
+	case 0:
+		err = &NotFoundError{histogram.Label}
+	default:
+		err = fmt.Errorf("ent: HistogramSelect.Float64s returned %d results when one was expected", len(v))
+	}
+	return
+}
+
+// Float64X is like Float64, but panics if an error occurs.
+func (hs *HistogramSelect) Float64X(ctx context.Context) float64 {
+	v, err := hs.Float64(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
 // Bools returns list of bools from selector. It is only allowed when selecting one field.
 func (hs *HistogramSelect) Bools(ctx context.Context) ([]bool, error) {
 	if len(hs.fields) > 1 {
@@ -708,6 +890,32 @@ func (hs *HistogramSelect) Bools(ctx context.Context) ([]bool, error) {
 // BoolsX is like Bools, but panics if an error occurs.
 func (hs *HistogramSelect) BoolsX(ctx context.Context) []bool {
 	v, err := hs.Bools(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
+// Bool returns a single bool from selector. It is only allowed when selecting one field.
+func (hs *HistogramSelect) Bool(ctx context.Context) (_ bool, err error) {
+	var v []bool
+	if v, err = hs.Bools(ctx); err != nil {
+		return
+	}
+	switch len(v) {
+	case 1:
+		return v[0], nil
+	case 0:
+		err = &NotFoundError{histogram.Label}
+	default:
+		err = fmt.Errorf("ent: HistogramSelect.Bools returned %d results when one was expected", len(v))
+	}
+	return
+}
+
+// BoolX is like Bool, but panics if an error occurs.
+func (hs *HistogramSelect) BoolX(ctx context.Context) bool {
+	v, err := hs.Bool(ctx)
 	if err != nil {
 		panic(err)
 	}

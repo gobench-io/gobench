@@ -6,7 +6,8 @@ const (
 	// Label holds the string label denoting the group type in the database.
 	Label = "group"
 	// FieldID holds the string denoting the id field in the database.
-	FieldID   = "id" // FieldName holds the string denoting the name vertex property in the database.
+	FieldID = "id"
+	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 
 	// EdgeApplication holds the string denoting the application edge name in mutations.
