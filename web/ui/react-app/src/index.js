@@ -32,7 +32,7 @@ ReactDOM.render(
           <Notification>
             <Layout>
               <Suspense fallback={<div />}>
-                <Route exact path='/application/create' component={CreateApplicationForm} />
+                <Route exact path='/application-create' component={CreateApplicationForm} />
                 <Route exact path='/application/:appId' component={App} />
                 <Route exact path='/' component={Applications} />
               </Suspense>
