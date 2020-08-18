@@ -165,3 +165,35 @@ func (h *handler) deleteApplication(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+func (h *handler) setApplicationTags(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	app, ok := ctx.Value(webKey("application")).(*ent.Application)
+	if !ok {
+		http.Error(w, http.StatusText(422), 422)
+		return
+	}
+
+	data := &applicationRequest{}
+	if err := render.Bind(r, data); err != nil {
+		render.Render(w, r, ErrInvalidRequest(err))
+		return
+	}
+
+	if data.Tags == app.Tags {
+		if err := render.Render(w, r, newApplicationResponse(nil)); err != nil {
+			render.Render(w, r, ErrRender(err))
+			return
+		}
+	}
+
+	app, err := h.s.SetApplicationTags(ctx, app.ID, data.Tags)
+	if err != nil {
+		render.Render(w, r, ErrInternalServer(err))
+		return
+	}
+
+	if err := render.Render(w, r, newApplicationResponse(app)); err != nil {
+		render.Render(w, r, ErrRender(err))
+		return
+	}
+}
