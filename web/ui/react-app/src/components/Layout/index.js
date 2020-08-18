@@ -72,8 +72,8 @@ const MainLayout = (props) => {
       window._history.push('/')
     })
   })
-  const clone = useCallback(({ name, scenario }) => {
-    window._history.push(`/application-create?name=${name}`)
+  const clone = useCallback(({ name }) => {
+    window._history.push(`/application-create?n=${name}`)
   })
   useEffect(() => {
     if (!app.clone) {
