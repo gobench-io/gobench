@@ -24,9 +24,6 @@ type Options struct {
 }
 
 type Agent struct {
-	// when this is the local agent, inherit from master
-	// when this is the remote agent, ... todo
-
 	mu sync.Mutex
 
 	route       string
@@ -57,6 +54,12 @@ func NewAgent(opts *Options, ml metricLoggerRPC, logger logger.Logger) (*Agent, 
 		rs:          rpc.NewServer(),
 	}
 	return a, nil
+}
+
+func (a *Agent) SetMetricLogger(ml metricLoggerRPC) {
+	a.mu.Lock()
+	a.ml = ml
+	a.mu.Unlock()
 }
 
 func (a *Agent) StartSocketServer() error {
