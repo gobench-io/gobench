@@ -11,11 +11,11 @@ const Tags = (props) => {
   const [tags, setTags] = useState([])
 
   useEffect(() => {
-    if (app.tags) {
-      const _tags = app.tags.split(',')
+    if (app.tags !== tags) {
+      const _tags = (app.tags || '').split(',').filter(x => x)
       setTags(_tags)
     }
-  }, [app])
+  }, [app.id])
 
   const removeTag = removedTag => {
     const _tags = tags.filter(x => x !== removedTag)
@@ -47,7 +47,7 @@ const Tags = (props) => {
             key={tag}
             closable
             onClose={() => removeTag(tag)}
-            color={colorFull()}
+            color={colorFull(index)}
           >
             <span>
               {isLongTag ? `${tag.slice(0, 20)}...` : tag}
