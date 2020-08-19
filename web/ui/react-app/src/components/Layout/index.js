@@ -122,7 +122,7 @@ const MainLayout = (props) => {
                   <img
                     alt='not displayed'
                     width='125'
-                    src='/resources/gobench-logo.png'
+                    src='/resources/gobench-logo-full.png'
                   />
                 </Link>
               )}
