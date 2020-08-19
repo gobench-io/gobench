@@ -31,8 +31,8 @@ export const iconStatus = (status) => {
       return Icon.WarningOutlined
   }
 }
-export const colorFull = () => {
-  const allColor = [
+export const colorFull = (index) => {
+  const colors = [
     '#ff4d4f',
     '#cf1322',
     '#a8071a',
@@ -45,9 +45,6 @@ export const colorFull = () => {
     '#ffc53d',
     '#faad14',
     '#d48806',
-    // '#fff566', vang choa mat wa
-    '#ffec3d',
-    '#fadb14',
     '#d4b106',
     '#d3f261',
     '#bae637',
@@ -69,8 +66,15 @@ export const colorFull = () => {
     '#eb2f96',
     '#595959'
   ]
+  if (!index) {
+    return colors[0]
+  }
 
-  return allColor[Math.floor(Math.random() * allColor.length)]
+  if (index >= colors.length) {
+    index = index % colors.length
+  }
+
+  return colors[index]
 }
 const Status = ({ status = '', shortcut = false }) => {
   return <span
