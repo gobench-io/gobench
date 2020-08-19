@@ -67,6 +67,20 @@ func (ac *ApplicationCreate) SetScenario(s string) *ApplicationCreate {
 	return ac
 }
 
+// SetTags sets the tags field.
+func (ac *ApplicationCreate) SetTags(s string) *ApplicationCreate {
+	ac.mutation.SetTags(s)
+	return ac
+}
+
+// SetNillableTags sets the tags field if the given value is not nil.
+func (ac *ApplicationCreate) SetNillableTags(s *string) *ApplicationCreate {
+	if s != nil {
+		ac.SetTags(*s)
+	}
+	return ac
+}
+
 // AddGroupIDs adds the groups edge to Group by ids.
 func (ac *ApplicationCreate) AddGroupIDs(ids ...int) *ApplicationCreate {
 	ac.mutation.AddGroupIDs(ids...)
@@ -146,6 +160,10 @@ func (ac *ApplicationCreate) preSave() error {
 	if _, ok := ac.mutation.Scenario(); !ok {
 		return &ValidationError{Name: "scenario", err: errors.New("ent: missing required field \"scenario\"")}
 	}
+	if _, ok := ac.mutation.Tags(); !ok {
+		v := application.DefaultTags
+		ac.mutation.SetTags(v)
+	}
 	return nil
 }
 
@@ -212,6 +230,14 @@ func (ac *ApplicationCreate) createSpec() (*Application, *sqlgraph.CreateSpec) {
 			Column: application.FieldScenario,
 		})
 		a.Scenario = value
+	}
+	if value, ok := ac.mutation.Tags(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: application.FieldTags,
+		})
+		a.Tags = value
 	}
 	if nodes := ac.mutation.GroupsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

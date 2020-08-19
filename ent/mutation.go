@@ -49,6 +49,7 @@ type ApplicationMutation struct {
 	created_at    *time.Time
 	updated_at    *time.Time
 	scenario      *string
+	tags          *string
 	clearedFields map[string]struct{}
 	groups        map[int]struct{}
 	removedgroups map[int]struct{}
@@ -320,6 +321,43 @@ func (m *ApplicationMutation) ResetScenario() {
 	m.scenario = nil
 }
 
+// SetTags sets the tags field.
+func (m *ApplicationMutation) SetTags(s string) {
+	m.tags = &s
+}
+
+// Tags returns the tags value in the mutation.
+func (m *ApplicationMutation) Tags() (r string, exists bool) {
+	v := m.tags
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTags returns the old tags value of the Application.
+// If the Application object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *ApplicationMutation) OldTags(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldTags is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldTags requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTags: %w", err)
+	}
+	return oldValue.Tags, nil
+}
+
+// ResetTags reset all changes of the "tags" field.
+func (m *ApplicationMutation) ResetTags() {
+	m.tags = nil
+}
+
 // AddGroupIDs adds the groups edge to Group by ids.
 func (m *ApplicationMutation) AddGroupIDs(ids ...int) {
 	if m.groups == nil {
@@ -376,7 +414,7 @@ func (m *ApplicationMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *ApplicationMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.name != nil {
 		fields = append(fields, application.FieldName)
 	}
@@ -391,6 +429,9 @@ func (m *ApplicationMutation) Fields() []string {
 	}
 	if m.scenario != nil {
 		fields = append(fields, application.FieldScenario)
+	}
+	if m.tags != nil {
+		fields = append(fields, application.FieldTags)
 	}
 	return fields
 }
@@ -410,6 +451,8 @@ func (m *ApplicationMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdatedAt()
 	case application.FieldScenario:
 		return m.Scenario()
+	case application.FieldTags:
+		return m.Tags()
 	}
 	return nil, false
 }
@@ -429,6 +472,8 @@ func (m *ApplicationMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldUpdatedAt(ctx)
 	case application.FieldScenario:
 		return m.OldScenario(ctx)
+	case application.FieldTags:
+		return m.OldTags(ctx)
 	}
 	return nil, fmt.Errorf("unknown Application field %s", name)
 }
@@ -472,6 +517,13 @@ func (m *ApplicationMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetScenario(v)
+		return nil
+	case application.FieldTags:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTags(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Application field %s", name)
@@ -537,6 +589,9 @@ func (m *ApplicationMutation) ResetField(name string) error {
 		return nil
 	case application.FieldScenario:
 		m.ResetScenario()
+		return nil
+	case application.FieldTags:
+		m.ResetTags()
 		return nil
 	}
 	return fmt.Errorf("unknown Application field %s", name)
