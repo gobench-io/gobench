@@ -49,7 +49,7 @@ const CreateApplicationForm = () => {
           </Button>
           <Button
             type='default'
-            onClick={() => history.goBack()}
+            onClick={() => history.push('/')}
           >
             Cancel
           </Button>
