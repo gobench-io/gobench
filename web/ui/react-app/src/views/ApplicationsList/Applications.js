@@ -68,16 +68,14 @@ const Applications = () => {
                                 Detail
                               </Button>
                             )}
-                            {['finished', 'cancel'].includes(status) && (
-                              <Button
-                                style={{ marginLeft: 5 }}
-                                type='default'
-                                onClick={() =>
-                                  app.clone(application)}
-                              >
+                            <Button
+                              style={{ marginLeft: 5 }}
+                              type='default'
+                              onClick={() =>
+                                app.clone(application)}
+                            >
                                 Clone
-                              </Button>
-                            )}
+                            </Button>
                             {['running', 'pending'].includes(status) && (
                               <Popconfirm
                                 title={`Are you sure cancel application ${application.name}?`}
