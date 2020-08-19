@@ -7,7 +7,7 @@ import { useHistory, useLocation } from 'react-router-dom'
 
 import '../../css/editor.css'
 import { RootContext } from '../../context'
-import { Space } from 'antd'
+import { Button } from 'antd'
 
 const CreateApplicationForm = () => {
   const history = useHistory()
@@ -38,22 +38,21 @@ const CreateApplicationForm = () => {
       <div className='create-form-header'>
         <h2>Create new application</h2>
         <div className='form-submit'>
-          <button
-            className='btn btn-primary'
-            type='button'
+          <Button
+            type='primary'
+            style={{ marginRight: 5 }}
             onClick={() => {
               app.submitCreate({ name, scenario: code })
             }}
           >
             {n ? 'Clone Application' : 'Create Application'}
-          </button>
-          <button
-            className='btn btn-cancel'
-            type='button'
+          </Button>
+          <Button
+            type='default'
             onClick={() => history.goBack()}
           >
             Cancel
-          </button>
+          </Button>
         </div>
       </div>
       <div className='form-group'>

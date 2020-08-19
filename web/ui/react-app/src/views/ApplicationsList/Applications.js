@@ -16,12 +16,12 @@ const Applications = () => {
       <div className='card'>
         <div className='applications-list-header'>
           <h2>Applications</h2>
-          <button
+          <Button
+            type='primary'
             onClick={() => history.push('/application-create')}
-            className='btn btn-primary'
           >
-            Create application
-          </button>
+            Create Application
+          </Button>
         </div>
         <div className='applications-body'>
           {isFetching ? (
