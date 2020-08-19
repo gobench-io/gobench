@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gobench-io/gobench/dis"
 	"github.com/gobench-io/gobench/logger"
 	"github.com/gobench-io/gobench/metrics"
 	"github.com/gobench-io/gobench/scenario"
@@ -187,12 +188,15 @@ func (d *Driver) runScen(ctx context.Context, done chan<- error) {
 	wg.Add(totalVu)
 
 	for i := range vus {
-		for j := 0; j < vus[i].Nu; j++ {
-			go func(i, j int) {
-				vus[i].Fu(ctx, j)
-				wg.Done()
-			}(i, j)
-		}
+		go func(i int) {
+			for j := 0; j < vus[i].Nu; j++ {
+				go func(i, j int) {
+					vus[i].Fu(ctx, j)
+					wg.Done()
+				}(i, j)
+				dis.SleepRatePoisson(vus[i].Rate)
+			}
+		}(i)
 	}
 
 	wg.Wait()
