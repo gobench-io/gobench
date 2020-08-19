@@ -68,7 +68,7 @@ const Applications = () => {
                                 Detail
                               </Button>
                             )}
-                            {['finished'].includes(status) && (
+                            {['finished', 'cancel'].includes(status) && (
                               <Button
                                 style={{ marginLeft: 5 }}
                                 type='default'
