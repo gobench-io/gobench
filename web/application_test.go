@@ -90,6 +90,36 @@ func TestCreateApplications(t *testing.T) {
 		assert.Equal(t, app.Status, "pending")
 	})
 
+	t.Run("successful request with go module", func(t *testing.T) {
+		r, w := newAPITest(t)
+		name := "name"
+		scenario := "this is the scenario"
+		gomod := "this is the go.mod"
+		gosum := "this is the go.sum"
+
+		reqBody, _ := json.Marshal(map[string]string{
+			"Name":     name,
+			"Scenario": base64.StdEncoding.EncodeToString([]byte(scenario)),
+			"Gomod":    base64.StdEncoding.EncodeToString([]byte(gomod)),
+			"Gosum":    base64.StdEncoding.EncodeToString([]byte(gosum)),
+		})
+		req, _ := http.NewRequest("POST", "/api/applications", bytes.NewBuffer(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, 201, w.Code)
+
+		var app ent.Application
+		json.Unmarshal(w.Body.Bytes(), &app)
+		assert.Equal(t, app.Name, name)
+		assert.Equal(t, app.Scenario, scenario)
+		assert.Equal(t, app.Gomod, gomod)
+		assert.Equal(t, app.Gosum, gosum)
+		assert.Equal(t, app.Status, "pending")
+
+	})
+
 	t.Run("invalid request - without Name", func(t *testing.T) {
 		r, w := newAPITest(t)
 		reqBody, _ := json.Marshal(map[string]string{
