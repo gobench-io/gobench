@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -381,18 +382,20 @@ func (m *Master) nextApplication(ctx context.Context) (*ent.Application, error) 
 
 func saveToFile(content []byte, dir, file string) (name string, err error) {
 	// save the scenario to a tmp file
-	tmpF, err := ioutil.TempFile(dir, file)
+	name = filepath.Join(dir, file)
+	f, err := os.OpenFile(name, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0600)
+	// tmpF, err := ioutil.TempFile(dir, file)
 	if err != nil {
 		return
 	}
 
-	name = tmpF.Name()
+	// name = tmpF.Name()
 
-	if _, err = tmpF.Write(content); err != nil {
+	if _, err = f.Write(content); err != nil {
 		return
 	}
 
-	err = tmpF.Close()
+	err = f.Close()
 
 	return
 }
@@ -411,8 +414,11 @@ func (m *Master) jobCompile(ctx context.Context) error {
 		return fmt.Errorf("create temp dir: %v", err)
 	}
 
+	m.logger.Infow("folder for compiling",
+		"dir", dir)
+
 	// save the scenario to a tmp file
-	tmpScenName, err := saveToFile([]byte(scen), dir, "gobench-scenario-*.go")
+	tmpScenName, err := saveToFile([]byte(scen), dir, "scenario.go")
 	if err != nil {
 		return err
 	}
