@@ -73,9 +73,25 @@ func (au *ApplicationUpdate) SetGomod(s string) *ApplicationUpdate {
 	return au
 }
 
+// SetNillableGomod sets the gomod field if the given value is not nil.
+func (au *ApplicationUpdate) SetNillableGomod(s *string) *ApplicationUpdate {
+	if s != nil {
+		au.SetGomod(*s)
+	}
+	return au
+}
+
 // SetGosum sets the gosum field.
 func (au *ApplicationUpdate) SetGosum(s string) *ApplicationUpdate {
 	au.mutation.SetGosum(s)
+	return au
+}
+
+// SetNillableGosum sets the gosum field if the given value is not nil.
+func (au *ApplicationUpdate) SetNillableGosum(s *string) *ApplicationUpdate {
+	if s != nil {
+		au.SetGosum(*s)
+	}
 	return au
 }
 
@@ -358,9 +374,25 @@ func (auo *ApplicationUpdateOne) SetGomod(s string) *ApplicationUpdateOne {
 	return auo
 }
 
+// SetNillableGomod sets the gomod field if the given value is not nil.
+func (auo *ApplicationUpdateOne) SetNillableGomod(s *string) *ApplicationUpdateOne {
+	if s != nil {
+		auo.SetGomod(*s)
+	}
+	return auo
+}
+
 // SetGosum sets the gosum field.
 func (auo *ApplicationUpdateOne) SetGosum(s string) *ApplicationUpdateOne {
 	auo.mutation.SetGosum(s)
+	return auo
+}
+
+// SetNillableGosum sets the gosum field if the given value is not nil.
+func (auo *ApplicationUpdateOne) SetNillableGosum(s *string) *ApplicationUpdateOne {
+	if s != nil {
+		auo.SetGosum(*s)
+	}
 	return auo
 }
 

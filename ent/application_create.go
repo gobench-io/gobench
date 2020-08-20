@@ -73,9 +73,25 @@ func (ac *ApplicationCreate) SetGomod(s string) *ApplicationCreate {
 	return ac
 }
 
+// SetNillableGomod sets the gomod field if the given value is not nil.
+func (ac *ApplicationCreate) SetNillableGomod(s *string) *ApplicationCreate {
+	if s != nil {
+		ac.SetGomod(*s)
+	}
+	return ac
+}
+
 // SetGosum sets the gosum field.
 func (ac *ApplicationCreate) SetGosum(s string) *ApplicationCreate {
 	ac.mutation.SetGosum(s)
+	return ac
+}
+
+// SetNillableGosum sets the gosum field if the given value is not nil.
+func (ac *ApplicationCreate) SetNillableGosum(s *string) *ApplicationCreate {
+	if s != nil {
+		ac.SetGosum(*s)
+	}
 	return ac
 }
 
@@ -173,10 +189,12 @@ func (ac *ApplicationCreate) preSave() error {
 		return &ValidationError{Name: "scenario", err: errors.New("ent: missing required field \"scenario\"")}
 	}
 	if _, ok := ac.mutation.Gomod(); !ok {
-		return &ValidationError{Name: "gomod", err: errors.New("ent: missing required field \"gomod\"")}
+		v := application.DefaultGomod
+		ac.mutation.SetGomod(v)
 	}
 	if _, ok := ac.mutation.Gosum(); !ok {
-		return &ValidationError{Name: "gosum", err: errors.New("ent: missing required field \"gosum\"")}
+		v := application.DefaultGosum
+		ac.mutation.SetGosum(v)
 	}
 	if _, ok := ac.mutation.Tags(); !ok {
 		v := application.DefaultTags

@@ -128,13 +128,15 @@ func (m *Master) WebPort() int {
 
 // NewApplication create a new application with a name and a scenario
 // return the application id and error
-func (m *Master) NewApplication(ctx context.Context, name, scenario string) (
+func (m *Master) NewApplication(ctx context.Context, name, scenario, gomod, gosum string) (
 	*ent.Application, error,
 ) {
 	return m.db.Application.
 		Create().
 		SetName(name).
 		SetScenario(scenario).
+		SetGomod(gomod).
+		SetGosum(gosum).
 		SetStatus(string(jobPending)).
 		Save(ctx)
 }

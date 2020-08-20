@@ -62,6 +62,10 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultGomod holds the default value on creation for the gomod field.
+	DefaultGomod string
+	// DefaultGosum holds the default value on creation for the gosum field.
+	DefaultGosum string
 	// DefaultTags holds the default value on creation for the tags field.
 	DefaultTags string
 )
