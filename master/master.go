@@ -384,22 +384,28 @@ func (m *Master) jobCompile(ctx context.Context) error {
 
 	scen := m.job.app.Scenario
 
-	// save the scenario to a tmp file
-	tmpScenF, err := ioutil.TempFile("", "gobench-scenario-*.go")
+	dir, err := ioutil.TempDir("", "scenario-*")
 	if err != nil {
-		return fmt.Errorf("failed creating temp scenario file: %v", err)
+		return fmt.Errorf("create temp dir: %v", err)
 	}
+
+	// save the scenario to a tmp file
+	tmpScenF, err := ioutil.TempFile(dir, "gobench-scenario-*.go")
+	if err != nil {
+		return fmt.Errorf("create file: %v", err)
+	}
+
 	tmpScenName := tmpScenF.Name()
 
 	defer os.Remove(tmpScenName) // cleanup
 
 	_, err = tmpScenF.Write([]byte(scen))
 	if err != nil {
-		return fmt.Errorf("failed write to scenario file: %v", err)
+		return fmt.Errorf("write scenario file: %v", err)
 	}
 
 	if err = tmpScenF.Close(); err != nil {
-		return fmt.Errorf("failed close the scenario file: %v", err)
+		return fmt.Errorf("close scenario file: %v", err)
 	}
 
 	path = fmt.Sprintf("%s.out", tmpScenName)
@@ -413,7 +419,7 @@ func (m *Master) jobCompile(ctx context.Context) error {
 		m.logger.Errorw("failed compiling the scenario",
 			"err", err,
 			"output", string(out))
-		return fmt.Errorf("compiling scenario: %v", err)
+		return fmt.Errorf("compile scenario: %v", err)
 	}
 
 	m.job.plugin = path
