@@ -408,9 +408,12 @@ func (m *Master) jobCompile(ctx context.Context) error {
 	cmd := exec.Command("go", "build", "-buildmode=plugin", "-o",
 		path, tmpScenName)
 
-	// if out, err := cmd.CombinedOutput(); err != nil {
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed compiling the scenario: %v", err)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		// if err := cmd.Run(); err != nil {
+		m.logger.Errorw("failed compiling the scenario",
+			"err", err,
+			"output", string(out))
+		return fmt.Errorf("compiling scenario: %v", err)
 	}
 
 	m.job.plugin = path
