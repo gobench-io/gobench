@@ -403,6 +403,8 @@ func (m *Master) jobCompile(ctx context.Context) error {
 	var path string
 
 	scen := m.job.app.Scenario
+	gomod := m.job.app.Gomod
+	gosum := m.job.app.Gosum
 
 	dir, err := ioutil.TempDir("", "scenario-*")
 	if err != nil {
@@ -415,6 +417,17 @@ func (m *Master) jobCompile(ctx context.Context) error {
 		return err
 	}
 	defer os.Remove(tmpScenName) // cleanup
+
+	if gomod != "" {
+		if _, err = saveToFile([]byte(gomod), dir, "go.mod"); err != nil {
+			return err
+		}
+	}
+	if gosum != "" {
+		if _, err = saveToFile([]byte(gosum), dir, "go.sum"); err != nil {
+			return err
+		}
+	}
 
 	path = fmt.Sprintf("%s.out", tmpScenName)
 
