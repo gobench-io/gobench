@@ -73,6 +73,12 @@ func (ac *ApplicationCreate) SetGomod(s string) *ApplicationCreate {
 	return ac
 }
 
+// SetGosum sets the gosum field.
+func (ac *ApplicationCreate) SetGosum(s string) *ApplicationCreate {
+	ac.mutation.SetGosum(s)
+	return ac
+}
+
 // SetTags sets the tags field.
 func (ac *ApplicationCreate) SetTags(s string) *ApplicationCreate {
 	ac.mutation.SetTags(s)
@@ -169,6 +175,9 @@ func (ac *ApplicationCreate) preSave() error {
 	if _, ok := ac.mutation.Gomod(); !ok {
 		return &ValidationError{Name: "gomod", err: errors.New("ent: missing required field \"gomod\"")}
 	}
+	if _, ok := ac.mutation.Gosum(); !ok {
+		return &ValidationError{Name: "gosum", err: errors.New("ent: missing required field \"gosum\"")}
+	}
 	if _, ok := ac.mutation.Tags(); !ok {
 		v := application.DefaultTags
 		ac.mutation.SetTags(v)
@@ -247,6 +256,14 @@ func (ac *ApplicationCreate) createSpec() (*Application, *sqlgraph.CreateSpec) {
 			Column: application.FieldGomod,
 		})
 		a.Gomod = value
+	}
+	if value, ok := ac.mutation.Gosum(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: application.FieldGosum,
+		})
+		a.Gosum = value
 	}
 	if value, ok := ac.mutation.Tags(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

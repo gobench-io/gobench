@@ -25,6 +25,7 @@ func (Application) Fields() []ent.Field {
 			UpdateDefault(time.Now),
 		field.Text("scenario"),
 		field.Text("gomod"),
+		field.Text("gosum"),
 		field.String("tags").
 			Default(""),
 	}

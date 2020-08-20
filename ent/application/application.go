@@ -23,6 +23,8 @@ const (
 	FieldScenario = "scenario"
 	// FieldGomod holds the string denoting the gomod field in the database.
 	FieldGomod = "gomod"
+	// FieldGosum holds the string denoting the gosum field in the database.
+	FieldGosum = "gosum"
 	// FieldTags holds the string denoting the tags field in the database.
 	FieldTags = "tags"
 
@@ -49,6 +51,7 @@ var Columns = []string{
 	FieldUpdatedAt,
 	FieldScenario,
 	FieldGomod,
+	FieldGosum,
 	FieldTags,
 }
 

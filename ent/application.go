@@ -28,6 +28,8 @@ type Application struct {
 	Scenario string `json:"scenario,omitempty"`
 	// Gomod holds the value of the "gomod" field.
 	Gomod string `json:"gomod,omitempty"`
+	// Gosum holds the value of the "gosum" field.
+	Gosum string `json:"gosum,omitempty"`
 	// Tags holds the value of the "tags" field.
 	Tags string `json:"tags,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -63,6 +65,7 @@ func (*Application) scanValues() []interface{} {
 		&sql.NullTime{},   // updated_at
 		&sql.NullString{}, // scenario
 		&sql.NullString{}, // gomod
+		&sql.NullString{}, // gosum
 		&sql.NullString{}, // tags
 	}
 }
@@ -110,7 +113,12 @@ func (a *Application) assignValues(values ...interface{}) error {
 		a.Gomod = value.String
 	}
 	if value, ok := values[6].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field tags", values[6])
+		return fmt.Errorf("unexpected type %T for field gosum", values[6])
+	} else if value.Valid {
+		a.Gosum = value.String
+	}
+	if value, ok := values[7].(*sql.NullString); !ok {
+		return fmt.Errorf("unexpected type %T for field tags", values[7])
 	} else if value.Valid {
 		a.Tags = value.String
 	}
@@ -157,6 +165,8 @@ func (a *Application) String() string {
 	builder.WriteString(a.Scenario)
 	builder.WriteString(", gomod=")
 	builder.WriteString(a.Gomod)
+	builder.WriteString(", gosum=")
+	builder.WriteString(a.Gosum)
 	builder.WriteString(", tags=")
 	builder.WriteString(a.Tags)
 	builder.WriteByte(')')
