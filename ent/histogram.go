@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/facebookincubator/ent/dialect/sql"
+	"github.com/facebook/ent/dialect/sql"
 	"github.com/gobench-io/gobench/ent/histogram"
 	"github.com/gobench-io/gobench/ent/metric"
 )
