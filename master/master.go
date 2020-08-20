@@ -379,6 +379,24 @@ func (m *Master) nextApplication(ctx context.Context) (*ent.Application, error) 
 	return app, err
 }
 
+func saveToFile(content []byte, dir, file string) (name string, err error) {
+	// save the scenario to a tmp file
+	tmpF, err := ioutil.TempFile(dir, file)
+	if err != nil {
+		return
+	}
+
+	name = tmpF.Name()
+
+	if _, err = tmpF.Write(content); err != nil {
+		return
+	}
+
+	err = tmpF.Close()
+
+	return
+}
+
 // jobCompile using go to compile a scenario in plugin build mode
 // the result is path to so file
 func (m *Master) jobCompile(ctx context.Context) error {
@@ -392,23 +410,11 @@ func (m *Master) jobCompile(ctx context.Context) error {
 	}
 
 	// save the scenario to a tmp file
-	tmpScenF, err := ioutil.TempFile(dir, "gobench-scenario-*.go")
+	tmpScenName, err := saveToFile([]byte(scen), dir, "gobench-scenario-*.go")
 	if err != nil {
-		return fmt.Errorf("create file: %v", err)
+		return err
 	}
-
-	tmpScenName := tmpScenF.Name()
-
 	defer os.Remove(tmpScenName) // cleanup
-
-	_, err = tmpScenF.Write([]byte(scen))
-	if err != nil {
-		return fmt.Errorf("write scenario file: %v", err)
-	}
-
-	if err = tmpScenF.Close(); err != nil {
-		return fmt.Errorf("close scenario file: %v", err)
-	}
 
 	path = fmt.Sprintf("%s.out", tmpScenName)
 
