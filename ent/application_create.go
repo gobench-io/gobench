@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/facebookincubator/ent/dialect/sql/sqlgraph"
-	"github.com/facebookincubator/ent/schema/field"
+	"github.com/facebook/ent/dialect/sql/sqlgraph"
+	"github.com/facebook/ent/schema/field"
 	"github.com/gobench-io/gobench/ent/application"
 	"github.com/gobench-io/gobench/ent/group"
 )

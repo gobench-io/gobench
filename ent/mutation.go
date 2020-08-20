@@ -16,7 +16,7 @@ import (
 	"github.com/gobench-io/gobench/ent/histogram"
 	"github.com/gobench-io/gobench/ent/metric"
 
-	"github.com/facebookincubator/ent"
+	"github.com/facebook/ent"
 )
 
 const (

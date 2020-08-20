@@ -17,9 +17,9 @@ import (
 	"github.com/gobench-io/gobench/ent/histogram"
 	"github.com/gobench-io/gobench/ent/metric"
 
-	"github.com/facebookincubator/ent/dialect"
-	"github.com/facebookincubator/ent/dialect/sql"
-	"github.com/facebookincubator/ent/dialect/sql/sqlgraph"
+	"github.com/facebook/ent/dialect"
+	"github.com/facebook/ent/dialect/sql"
+	"github.com/facebook/ent/dialect/sql/sqlgraph"
 )
 
 // Client is the client that holds all ent builders.
