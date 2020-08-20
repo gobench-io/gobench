@@ -91,7 +91,7 @@ func Export() scenario.Vus {
 `
 
 		err := m.jobCompile(ctx)
-		assert.EqualError(t, err, "compiling scenario: exit status 2")
+		assert.EqualError(t, err, "compiling scenario: exit status 1")
 		assert.NoFileExists(t, m.job.plugin)
 	})
 
