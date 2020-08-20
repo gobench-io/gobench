@@ -49,6 +49,7 @@ type ApplicationMutation struct {
 	created_at    *time.Time
 	updated_at    *time.Time
 	scenario      *string
+	gomod         *string
 	tags          *string
 	clearedFields map[string]struct{}
 	groups        map[int]struct{}
@@ -321,6 +322,43 @@ func (m *ApplicationMutation) ResetScenario() {
 	m.scenario = nil
 }
 
+// SetGomod sets the gomod field.
+func (m *ApplicationMutation) SetGomod(s string) {
+	m.gomod = &s
+}
+
+// Gomod returns the gomod value in the mutation.
+func (m *ApplicationMutation) Gomod() (r string, exists bool) {
+	v := m.gomod
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGomod returns the old gomod value of the Application.
+// If the Application object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *ApplicationMutation) OldGomod(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldGomod is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldGomod requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGomod: %w", err)
+	}
+	return oldValue.Gomod, nil
+}
+
+// ResetGomod reset all changes of the "gomod" field.
+func (m *ApplicationMutation) ResetGomod() {
+	m.gomod = nil
+}
+
 // SetTags sets the tags field.
 func (m *ApplicationMutation) SetTags(s string) {
 	m.tags = &s
@@ -414,7 +452,7 @@ func (m *ApplicationMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *ApplicationMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.name != nil {
 		fields = append(fields, application.FieldName)
 	}
@@ -429,6 +467,9 @@ func (m *ApplicationMutation) Fields() []string {
 	}
 	if m.scenario != nil {
 		fields = append(fields, application.FieldScenario)
+	}
+	if m.gomod != nil {
+		fields = append(fields, application.FieldGomod)
 	}
 	if m.tags != nil {
 		fields = append(fields, application.FieldTags)
@@ -451,6 +492,8 @@ func (m *ApplicationMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdatedAt()
 	case application.FieldScenario:
 		return m.Scenario()
+	case application.FieldGomod:
+		return m.Gomod()
 	case application.FieldTags:
 		return m.Tags()
 	}
@@ -472,6 +515,8 @@ func (m *ApplicationMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldUpdatedAt(ctx)
 	case application.FieldScenario:
 		return m.OldScenario(ctx)
+	case application.FieldGomod:
+		return m.OldGomod(ctx)
 	case application.FieldTags:
 		return m.OldTags(ctx)
 	}
@@ -517,6 +562,13 @@ func (m *ApplicationMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetScenario(v)
+		return nil
+	case application.FieldGomod:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGomod(v)
 		return nil
 	case application.FieldTags:
 		v, ok := value.(string)
@@ -589,6 +641,9 @@ func (m *ApplicationMutation) ResetField(name string) error {
 		return nil
 	case application.FieldScenario:
 		m.ResetScenario()
+		return nil
+	case application.FieldGomod:
+		m.ResetGomod()
 		return nil
 	case application.FieldTags:
 		m.ResetTags()

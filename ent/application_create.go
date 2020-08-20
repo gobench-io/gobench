@@ -67,6 +67,12 @@ func (ac *ApplicationCreate) SetScenario(s string) *ApplicationCreate {
 	return ac
 }
 
+// SetGomod sets the gomod field.
+func (ac *ApplicationCreate) SetGomod(s string) *ApplicationCreate {
+	ac.mutation.SetGomod(s)
+	return ac
+}
+
 // SetTags sets the tags field.
 func (ac *ApplicationCreate) SetTags(s string) *ApplicationCreate {
 	ac.mutation.SetTags(s)
@@ -160,6 +166,9 @@ func (ac *ApplicationCreate) preSave() error {
 	if _, ok := ac.mutation.Scenario(); !ok {
 		return &ValidationError{Name: "scenario", err: errors.New("ent: missing required field \"scenario\"")}
 	}
+	if _, ok := ac.mutation.Gomod(); !ok {
+		return &ValidationError{Name: "gomod", err: errors.New("ent: missing required field \"gomod\"")}
+	}
 	if _, ok := ac.mutation.Tags(); !ok {
 		v := application.DefaultTags
 		ac.mutation.SetTags(v)
@@ -230,6 +239,14 @@ func (ac *ApplicationCreate) createSpec() (*Application, *sqlgraph.CreateSpec) {
 			Column: application.FieldScenario,
 		})
 		a.Scenario = value
+	}
+	if value, ok := ac.mutation.Gomod(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: application.FieldGomod,
+		})
+		a.Gomod = value
 	}
 	if value, ok := ac.mutation.Tags(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

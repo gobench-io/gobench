@@ -21,6 +21,8 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldScenario holds the string denoting the scenario field in the database.
 	FieldScenario = "scenario"
+	// FieldGomod holds the string denoting the gomod field in the database.
+	FieldGomod = "gomod"
 	// FieldTags holds the string denoting the tags field in the database.
 	FieldTags = "tags"
 
@@ -46,6 +48,7 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldScenario,
+	FieldGomod,
 	FieldTags,
 }
 

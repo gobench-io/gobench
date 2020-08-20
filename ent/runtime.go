@@ -26,7 +26,7 @@ func init() {
 	// application.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	application.UpdateDefaultUpdatedAt = applicationDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// applicationDescTags is the schema descriptor for tags field.
-	applicationDescTags := applicationFields[5].Descriptor()
+	applicationDescTags := applicationFields[6].Descriptor()
 	// application.DefaultTags holds the default value on creation for the tags field.
 	application.DefaultTags = applicationDescTags.Default.(string)
 }

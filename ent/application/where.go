@@ -128,6 +128,13 @@ func Scenario(v string) predicate.Application {
 	})
 }
 
+// Gomod applies equality check predicate on the "gomod" field. It's identical to GomodEQ.
+func Gomod(v string) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldGomod), v))
+	})
+}
+
 // Tags applies equality check predicate on the "tags" field. It's identical to TagsEQ.
 func Tags(v string) predicate.Application {
 	return predicate.Application(func(s *sql.Selector) {
@@ -617,6 +624,117 @@ func ScenarioEqualFold(v string) predicate.Application {
 func ScenarioContainsFold(v string) predicate.Application {
 	return predicate.Application(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldScenario), v))
+	})
+}
+
+// GomodEQ applies the EQ predicate on the "gomod" field.
+func GomodEQ(v string) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldGomod), v))
+	})
+}
+
+// GomodNEQ applies the NEQ predicate on the "gomod" field.
+func GomodNEQ(v string) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldGomod), v))
+	})
+}
+
+// GomodIn applies the In predicate on the "gomod" field.
+func GomodIn(vs ...string) predicate.Application {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Application(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldGomod), v...))
+	})
+}
+
+// GomodNotIn applies the NotIn predicate on the "gomod" field.
+func GomodNotIn(vs ...string) predicate.Application {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Application(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldGomod), v...))
+	})
+}
+
+// GomodGT applies the GT predicate on the "gomod" field.
+func GomodGT(v string) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldGomod), v))
+	})
+}
+
+// GomodGTE applies the GTE predicate on the "gomod" field.
+func GomodGTE(v string) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldGomod), v))
+	})
+}
+
+// GomodLT applies the LT predicate on the "gomod" field.
+func GomodLT(v string) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldGomod), v))
+	})
+}
+
+// GomodLTE applies the LTE predicate on the "gomod" field.
+func GomodLTE(v string) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldGomod), v))
+	})
+}
+
+// GomodContains applies the Contains predicate on the "gomod" field.
+func GomodContains(v string) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldGomod), v))
+	})
+}
+
+// GomodHasPrefix applies the HasPrefix predicate on the "gomod" field.
+func GomodHasPrefix(v string) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldGomod), v))
+	})
+}
+
+// GomodHasSuffix applies the HasSuffix predicate on the "gomod" field.
+func GomodHasSuffix(v string) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldGomod), v))
+	})
+}
+
+// GomodEqualFold applies the EqualFold predicate on the "gomod" field.
+func GomodEqualFold(v string) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldGomod), v))
+	})
+}
+
+// GomodContainsFold applies the ContainsFold predicate on the "gomod" field.
+func GomodContainsFold(v string) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldGomod), v))
 	})
 }
 
