@@ -78,16 +78,6 @@ func TestCompile(t *testing.T) {
 
 		m := seedMaster(t)
 		m.job.app.Scenario = `
-package main
-
-import (
-	"context"
-	"log"
-	"time"
-
-	"github.com/gobench-io/gobench/scenario"
-)
-
 // Export is a required function for a scenario
 func Export() scenario.Vus {
 	return scenario.Vus{
@@ -98,10 +88,10 @@ func Export() scenario.Vus {
 		},
 	}
 }
-// missing f1 function`
+`
 
 		err := m.jobCompile(ctx)
-		assert.EqualError(t, err, "failed compiling the scenario: exit status 2")
+		assert.EqualError(t, err, "compiling scenario: exit status 1")
 		assert.NoFileExists(t, m.job.plugin)
 	})
 
