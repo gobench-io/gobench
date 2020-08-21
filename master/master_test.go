@@ -43,7 +43,7 @@ func TestNextApplication(t *testing.T) {
 		m := seedMaster(t)
 		assert.Nil(t, m.cleanupDB())
 
-		_, err := m.NewApplication(ctx, "name", "scenario")
+		_, err := m.NewApplication(ctx, "name", "scenario", "", "")
 		assert.Nil(t, err)
 
 		// the next application is not nil
@@ -58,9 +58,9 @@ func TestNextApplication(t *testing.T) {
 		ctx := context.Background()
 		m := seedMaster(t)
 
-		_, err := m.NewApplication(ctx, "name", "scenario")
+		_, err := m.NewApplication(ctx, "name", "scenario", "", "")
 		assert.Nil(t, err)
-		_, err = m.NewApplication(ctx, "name 2", "scenario 2")
+		_, err = m.NewApplication(ctx, "name 2", "scenario 2", "", "")
 		assert.Nil(t, err)
 
 		// applications is fifo, the next application is name
@@ -162,7 +162,7 @@ func f1(ctx context.Context, vui int) {
 	time.Sleep(1 * time.Second)
 	log.Println("tic")
 }`
-	app, err := m.NewApplication(ctx, "test run", scenario)
+	app, err := m.NewApplication(ctx, "test run", scenario, "", "")
 	assert.Nil(t, err)
 
 	m.job = &job{
@@ -202,7 +202,7 @@ func f1(ctx context.Context, vui int) {
 	for {}
 }`
 
-	app, _ := m.NewApplication(ctx, "cancel test", scenario)
+	app, _ := m.NewApplication(ctx, "cancel test", scenario, "", "")
 	j := &job{
 		app:    app,
 		cancel: cancel,
@@ -251,7 +251,7 @@ func f(ctx context.Context, vui int) {
 }
 `
 
-	app, _ := m.NewApplication(ctx, "http metric log setup test", scenario)
+	app, _ := m.NewApplication(ctx, "http metric log setup test", scenario, "", "")
 	j := &job{
 		app: app,
 	}

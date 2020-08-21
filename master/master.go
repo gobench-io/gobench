@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -96,7 +97,9 @@ func (m *Master) Start() (err error) {
 
 	m.handleSignals()
 
-	go m.schedule()
+	if m.isScheduled {
+		go m.schedule()
+	}
 
 	// start the local agent socket server that communicate with local executor
 	err = m.la.StartSocketServer()
@@ -128,13 +131,15 @@ func (m *Master) WebPort() int {
 
 // NewApplication create a new application with a name and a scenario
 // return the application id and error
-func (m *Master) NewApplication(ctx context.Context, name, scenario string) (
+func (m *Master) NewApplication(ctx context.Context, name, scenario, gomod, gosum string) (
 	*ent.Application, error,
 ) {
 	return m.db.Application.
 		Create().
 		SetName(name).
 		SetScenario(scenario).
+		SetGomod(gomod).
+		SetGosum(gosum).
 		SetStatus(string(jobPending)).
 		Save(ctx)
 }
@@ -377,45 +382,76 @@ func (m *Master) nextApplication(ctx context.Context) (*ent.Application, error) 
 	return app, err
 }
 
+func saveToFile(content []byte, dir, file string) (name string, err error) {
+	// save the scenario to a tmp file
+	name = filepath.Join(dir, file)
+	f, err := os.OpenFile(name, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0600)
+	if err != nil {
+		return
+	}
+
+	if _, err = f.Write(content); err != nil {
+		return
+	}
+
+	err = f.Close()
+
+	return
+}
+
 // jobCompile using go to compile a scenario in plugin build mode
 // the result is path to so file
 func (m *Master) jobCompile(ctx context.Context) error {
 	var path string
 
 	scen := m.job.app.Scenario
+	gomod := m.job.app.Gomod
+	gosum := m.job.app.Gosum
 
 	dir, err := ioutil.TempDir("", "scenario-*")
 	if err != nil {
 		return fmt.Errorf("create temp dir: %v", err)
 	}
 
+	m.logger.Infow("folder for compiling",
+		"dir", dir)
+
 	// save the scenario to a tmp file
-	tmpScenF, err := ioutil.TempFile(dir, "gobench-scenario-*.go")
+	tmpScenName, err := saveToFile([]byte(scen), dir, "scenario.go")
 	if err != nil {
-		return fmt.Errorf("create file: %v", err)
+		return err
 	}
-
-	tmpScenName := tmpScenF.Name()
-
 	defer os.Remove(tmpScenName) // cleanup
 
-	_, err = tmpScenF.Write([]byte(scen))
-	if err != nil {
-		return fmt.Errorf("write scenario file: %v", err)
+	var tmpGomodName string
+	if gomod != "" {
+		tmpGomodName, err = saveToFile([]byte(gomod), dir, "go.mod")
+		if err != nil {
+			return err
+		}
 	}
-
-	if err = tmpScenF.Close(); err != nil {
-		return fmt.Errorf("close scenario file: %v", err)
+	if gosum != "" {
+		if _, err = saveToFile([]byte(gosum), dir, "go.sum"); err != nil {
+			return err
+		}
 	}
 
 	path = fmt.Sprintf("%s.out", tmpScenName)
 
 	// compile the scenario to a tmp file
-	cmd := exec.Command("go", "build", "-buildmode=plugin", "-o",
-		path, tmpScenName)
+	exe := "go"
+	args := []string{
+		"build",
+		"-buildmode=plugin",
+	}
+	if gomod != "" {
+		args = append(args, "-modfile="+tmpGomodName)
+	}
+	args = append(args, "-o", path, tmpScenName)
+
+	cmd := exec.Command(exe, args...)
 
 	if out, err := cmd.CombinedOutput(); err != nil {
-		// if err := cmd.Run(); err != nil {
 		m.logger.Errorw("failed compiling the scenario",
 			"err", err,
 			"output", string(out))

@@ -19,7 +19,7 @@ func TestFindCreateGroup(t *testing.T) {
 
 	m := seedMaster(t)
 
-	m.job.app, err = m.NewApplication(ctx, "name", "scenario")
+	m.job.app, err = m.NewApplication(ctx, "name", "scenario", "", "")
 	assert.Nil(t, err)
 
 	prefix := time.Now().String()
@@ -56,7 +56,7 @@ func TestFindCreateGraph(t *testing.T) {
 
 	m := seedMaster(t)
 
-	m.job.app, err = m.NewApplication(ctx, "name", "scenario")
+	m.job.app, err = m.NewApplication(ctx, "name", "scenario", "", "")
 	assert.Nil(t, err)
 
 	prefix := time.Now().String()
@@ -100,7 +100,7 @@ func TestFindCreateMetric(t *testing.T) {
 
 	m := seedMaster(t)
 
-	m.job.app, err = m.NewApplication(ctx, "name", "scenario")
+	m.job.app, err = m.NewApplication(ctx, "name", "scenario", "", "")
 	assert.Nil(t, err)
 
 	prefix := time.Now().String()

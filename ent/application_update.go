@@ -67,6 +67,34 @@ func (au *ApplicationUpdate) SetScenario(s string) *ApplicationUpdate {
 	return au
 }
 
+// SetGomod sets the gomod field.
+func (au *ApplicationUpdate) SetGomod(s string) *ApplicationUpdate {
+	au.mutation.SetGomod(s)
+	return au
+}
+
+// SetNillableGomod sets the gomod field if the given value is not nil.
+func (au *ApplicationUpdate) SetNillableGomod(s *string) *ApplicationUpdate {
+	if s != nil {
+		au.SetGomod(*s)
+	}
+	return au
+}
+
+// SetGosum sets the gosum field.
+func (au *ApplicationUpdate) SetGosum(s string) *ApplicationUpdate {
+	au.mutation.SetGosum(s)
+	return au
+}
+
+// SetNillableGosum sets the gosum field if the given value is not nil.
+func (au *ApplicationUpdate) SetNillableGosum(s *string) *ApplicationUpdate {
+	if s != nil {
+		au.SetGosum(*s)
+	}
+	return au
+}
+
 // SetTags sets the tags field.
 func (au *ApplicationUpdate) SetTags(s string) *ApplicationUpdate {
 	au.mutation.SetTags(s)
@@ -225,6 +253,20 @@ func (au *ApplicationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: application.FieldScenario,
 		})
 	}
+	if value, ok := au.mutation.Gomod(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: application.FieldGomod,
+		})
+	}
+	if value, ok := au.mutation.Gosum(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: application.FieldGosum,
+		})
+	}
 	if value, ok := au.mutation.Tags(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -323,6 +365,34 @@ func (auo *ApplicationUpdateOne) SetUpdatedAt(t time.Time) *ApplicationUpdateOne
 // SetScenario sets the scenario field.
 func (auo *ApplicationUpdateOne) SetScenario(s string) *ApplicationUpdateOne {
 	auo.mutation.SetScenario(s)
+	return auo
+}
+
+// SetGomod sets the gomod field.
+func (auo *ApplicationUpdateOne) SetGomod(s string) *ApplicationUpdateOne {
+	auo.mutation.SetGomod(s)
+	return auo
+}
+
+// SetNillableGomod sets the gomod field if the given value is not nil.
+func (auo *ApplicationUpdateOne) SetNillableGomod(s *string) *ApplicationUpdateOne {
+	if s != nil {
+		auo.SetGomod(*s)
+	}
+	return auo
+}
+
+// SetGosum sets the gosum field.
+func (auo *ApplicationUpdateOne) SetGosum(s string) *ApplicationUpdateOne {
+	auo.mutation.SetGosum(s)
+	return auo
+}
+
+// SetNillableGosum sets the gosum field if the given value is not nil.
+func (auo *ApplicationUpdateOne) SetNillableGosum(s *string) *ApplicationUpdateOne {
+	if s != nil {
+		auo.SetGosum(*s)
+	}
 	return auo
 }
 
@@ -480,6 +550,20 @@ func (auo *ApplicationUpdateOne) sqlSave(ctx context.Context) (a *Application, e
 			Type:   field.TypeString,
 			Value:  value,
 			Column: application.FieldScenario,
+		})
+	}
+	if value, ok := auo.mutation.Gomod(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: application.FieldGomod,
+		})
+	}
+	if value, ok := auo.mutation.Gosum(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: application.FieldGosum,
 		})
 	}
 	if value, ok := auo.mutation.Tags(); ok {

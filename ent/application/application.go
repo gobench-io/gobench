@@ -21,6 +21,10 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldScenario holds the string denoting the scenario field in the database.
 	FieldScenario = "scenario"
+	// FieldGomod holds the string denoting the gomod field in the database.
+	FieldGomod = "gomod"
+	// FieldGosum holds the string denoting the gosum field in the database.
+	FieldGosum = "gosum"
 	// FieldTags holds the string denoting the tags field in the database.
 	FieldTags = "tags"
 
@@ -46,6 +50,8 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldScenario,
+	FieldGomod,
+	FieldGosum,
 	FieldTags,
 }
 
@@ -56,6 +62,10 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultGomod holds the default value on creation for the gomod field.
+	DefaultGomod string
+	// DefaultGosum holds the default value on creation for the gosum field.
+	DefaultGosum string
 	// DefaultTags holds the default value on creation for the tags field.
 	DefaultTags string
 )

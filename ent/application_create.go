@@ -67,6 +67,34 @@ func (ac *ApplicationCreate) SetScenario(s string) *ApplicationCreate {
 	return ac
 }
 
+// SetGomod sets the gomod field.
+func (ac *ApplicationCreate) SetGomod(s string) *ApplicationCreate {
+	ac.mutation.SetGomod(s)
+	return ac
+}
+
+// SetNillableGomod sets the gomod field if the given value is not nil.
+func (ac *ApplicationCreate) SetNillableGomod(s *string) *ApplicationCreate {
+	if s != nil {
+		ac.SetGomod(*s)
+	}
+	return ac
+}
+
+// SetGosum sets the gosum field.
+func (ac *ApplicationCreate) SetGosum(s string) *ApplicationCreate {
+	ac.mutation.SetGosum(s)
+	return ac
+}
+
+// SetNillableGosum sets the gosum field if the given value is not nil.
+func (ac *ApplicationCreate) SetNillableGosum(s *string) *ApplicationCreate {
+	if s != nil {
+		ac.SetGosum(*s)
+	}
+	return ac
+}
+
 // SetTags sets the tags field.
 func (ac *ApplicationCreate) SetTags(s string) *ApplicationCreate {
 	ac.mutation.SetTags(s)
@@ -160,6 +188,14 @@ func (ac *ApplicationCreate) preSave() error {
 	if _, ok := ac.mutation.Scenario(); !ok {
 		return &ValidationError{Name: "scenario", err: errors.New("ent: missing required field \"scenario\"")}
 	}
+	if _, ok := ac.mutation.Gomod(); !ok {
+		v := application.DefaultGomod
+		ac.mutation.SetGomod(v)
+	}
+	if _, ok := ac.mutation.Gosum(); !ok {
+		v := application.DefaultGosum
+		ac.mutation.SetGosum(v)
+	}
 	if _, ok := ac.mutation.Tags(); !ok {
 		v := application.DefaultTags
 		ac.mutation.SetTags(v)
@@ -230,6 +266,22 @@ func (ac *ApplicationCreate) createSpec() (*Application, *sqlgraph.CreateSpec) {
 			Column: application.FieldScenario,
 		})
 		a.Scenario = value
+	}
+	if value, ok := ac.mutation.Gomod(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: application.FieldGomod,
+		})
+		a.Gomod = value
+	}
+	if value, ok := ac.mutation.Gosum(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: application.FieldGosum,
+		})
+		a.Gosum = value
 	}
 	if value, ok := ac.mutation.Tags(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

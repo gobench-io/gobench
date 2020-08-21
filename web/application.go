@@ -53,6 +53,22 @@ func (h *handler) listApplications(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func decode(e1, e2, e3 string) (string, string, string, error) {
+	d1, err := base64.StdEncoding.DecodeString(e1)
+	if err != nil {
+		return "", "", "", err
+	}
+	d2, err := base64.StdEncoding.DecodeString(e2)
+	if err != nil {
+		return "", "", "", err
+	}
+	d3, err := base64.StdEncoding.DecodeString(e3)
+	if err != nil {
+		return "", "", "", err
+	}
+	return string(d1), string(d2), string(d3), nil
+}
+
 func (h *handler) createApplication(w http.ResponseWriter, r *http.Request) {
 	data := &applicationRequest{}
 
@@ -70,14 +86,13 @@ func (h *handler) createApplication(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	decScenario, err := base64.StdEncoding.DecodeString(data.Scenario)
+	scenario, gomod, gosum, err := decode(data.Scenario, data.Gomod, data.Gosum)
 	if err != nil {
-		render.Render(w, r, ErrInvalidRequest(errors.New("Invalid Scenario")))
+		render.Render(w, r, ErrInvalidRequest(errors.New("Invalid Data")))
 		return
 	}
-	scenario := string(decScenario)
 
-	app, err := h.s.NewApplication(r.Context(), data.Name, scenario)
+	app, err := h.s.NewApplication(r.Context(), data.Name, scenario, gomod, gosum)
 
 	if err != nil {
 		render.Render(w, r, ErrInternalServer(err))
