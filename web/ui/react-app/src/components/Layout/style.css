@@ -48,9 +48,6 @@
   margin-top: -15px;
   margin-bottom: 20px;
 }
-.ant-menu-inline-collapsed .application-status {
+.ant-menu-inline-collapsed .menu-label-title {
   display: none;
-}
-.ant-menu-inline .anticon-area-chart {
-    display: none;
 }
