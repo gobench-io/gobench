@@ -424,25 +424,28 @@ func (m *Master) jobCompile(ctx context.Context) error {
 	}
 	defer os.Remove(tmpScenName) // cleanup
 
-	if gomod != "" {
-		if _, err = saveToFile([]byte(gomod), dir, "go.mod"); err != nil {
-			return err
-		}
+	tmpGomodName, err := saveToFile([]byte(gomod), dir, "go.mod")
+	if err != nil {
+		return err
 	}
-	if gosum != "" {
-		if _, err = saveToFile([]byte(gosum), dir, "go.sum"); err != nil {
-			return err
-		}
+	if _, err = saveToFile([]byte(gosum), dir, "go.sum"); err != nil {
+		return err
 	}
 
 	path = fmt.Sprintf("%s.out", tmpScenName)
 
 	// compile the scenario to a tmp file
-	cmd := exec.Command("go", "build", "-buildmode=plugin", "-o",
-		path, tmpScenName)
+	exe := "go"
+	args := []string{
+		"build",
+		"-modfile=" + tmpGomodName,
+		"-buildmode=plugin",
+		"-o", path,
+		tmpScenName,
+	}
+	cmd := exec.Command(exe, args...)
 
 	if out, err := cmd.CombinedOutput(); err != nil {
-		// if err := cmd.Run(); err != nil {
 		m.logger.Errorw("failed compiling the scenario",
 			"err", err,
 			"output", string(out))
