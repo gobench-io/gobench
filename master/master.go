@@ -97,7 +97,9 @@ func (m *Master) Start() (err error) {
 
 	m.handleSignals()
 
-	go m.schedule()
+	if m.isScheduled {
+		go m.schedule()
+	}
 
 	// start the local agent socket server that communicate with local executor
 	err = m.la.StartSocketServer()
