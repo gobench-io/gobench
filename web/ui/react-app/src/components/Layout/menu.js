@@ -37,8 +37,7 @@ const menuItem = (items) => {
         key={`sub-${index}`}
       >
         <Link className='menu-label' to={item.link}>
-          <AreaChartOutlined style={{ color: item.color }} />
-          <span className="menu-label-title">{item.label}</span>
+          <span className='menu-label-title'>{item.label}</span>
           <div style={{ marginLeft: 'auto' }}>
             <Status status={item.status} shortcut />
           </div>
