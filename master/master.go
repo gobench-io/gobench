@@ -80,6 +80,8 @@ func NewMaster(opts *Options, logger logger.Logger) (m *Master, err error) {
 		program:    opts.Program,
 	}
 
+	m.isScheduled = true // by default
+
 	agentSocket := fmt.Sprintf("/tmp/gobench-agentsocket-%d", os.Getpid())
 	la, err := agent.NewAgent(&agent.Options{Socket: agentSocket}, m, logger)
 	if err != nil {
@@ -429,11 +431,14 @@ func (m *Master) jobCompile(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
+		defer os.Remove(tmpGomodName) // cleanup
 	}
+	var tmpGosumName
 	if gosum != "" {
-		if _, err = saveToFile([]byte(gosum), dir, "go.sum"); err != nil {
+		if tmpGosumName, err = saveToFile([]byte(gosum), dir, "go.sum"); err != nil {
 			return err
 		}
+		defer os.Remove(tmpGosumName)
 	}
 
 	path = fmt.Sprintf("%s.out", tmpScenName)
