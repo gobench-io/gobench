@@ -148,9 +148,6 @@ const MainLayout = (props) => {
               </Link>
             </Header>
             <Content style={{ margin: '1 16px' }}>
-              <Breadcrumb style={{ margin: '15px 25px' }}>
-                <Breadcrumb.Item>Applications</Breadcrumb.Item>
-              </Breadcrumb>
               <div
                 className='site-layout-background'
                 style={{ padding: 24, minHeight: 360 }}
