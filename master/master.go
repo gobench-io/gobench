@@ -384,12 +384,9 @@ func saveToFile(content []byte, dir, file string) (name string, err error) {
 	// save the scenario to a tmp file
 	name = filepath.Join(dir, file)
 	f, err := os.OpenFile(name, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0600)
-	// tmpF, err := ioutil.TempFile(dir, file)
 	if err != nil {
 		return
 	}
-
-	// name = tmpF.Name()
 
 	if _, err = f.Write(content); err != nil {
 		return
