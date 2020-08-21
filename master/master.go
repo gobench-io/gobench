@@ -421,12 +421,17 @@ func (m *Master) jobCompile(ctx context.Context) error {
 	}
 	defer os.Remove(tmpScenName) // cleanup
 
-	tmpGomodName, err := saveToFile([]byte(gomod), dir, "go.mod")
-	if err != nil {
-		return err
+	var tmpGomodName string
+	if gomod != "" {
+		tmpGomodName, err = saveToFile([]byte(gomod), dir, "go.mod")
+		if err != nil {
+			return err
+		}
 	}
-	if _, err = saveToFile([]byte(gosum), dir, "go.sum"); err != nil {
-		return err
+	if gosum != "" {
+		if _, err = saveToFile([]byte(gosum), dir, "go.sum"); err != nil {
+			return err
+		}
 	}
 
 	path = fmt.Sprintf("%s.out", tmpScenName)
@@ -435,11 +440,13 @@ func (m *Master) jobCompile(ctx context.Context) error {
 	exe := "go"
 	args := []string{
 		"build",
-		"-modfile=" + tmpGomodName,
 		"-buildmode=plugin",
-		"-o", path,
-		tmpScenName,
 	}
+	if gomod != "" {
+		args = append(args, "-modfile="+tmpGomodName)
+	}
+	args = append(args, "-o", path, tmpScenName)
+
 	cmd := exec.Command(exe, args...)
 
 	if out, err := cmd.CombinedOutput(); err != nil {
