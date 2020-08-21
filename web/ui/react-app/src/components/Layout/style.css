@@ -51,3 +51,6 @@
 .ant-menu-inline-collapsed .application-status {
   display: none;
 }
+.ant-menu-inline .anticon-area-chart {
+    display: none;
+}
