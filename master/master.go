@@ -433,7 +433,7 @@ func (m *Master) jobCompile(ctx context.Context) error {
 		}
 		defer os.Remove(tmpGomodName) // cleanup
 	}
-	var tmpGosumName
+	var tmpGosumName string
 	if gosum != "" {
 		if tmpGosumName, err = saveToFile([]byte(gosum), dir, "go.sum"); err != nil {
 			return err
