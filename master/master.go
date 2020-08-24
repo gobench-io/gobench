@@ -103,6 +103,17 @@ func (m *Master) Start() (err error) {
 		go m.schedule()
 	}
 
+	// create a go.sum if not existed to avoid "go: cannot find main module, but
+	// -modfile was set" error
+	cmd := exec.Command("touch", "go.mod")
+	stdoutStderr, err := cmd.CombinedOutput()
+	if err != nil {
+		m.logger.Errorw("touch go.mod",
+			"stdoutStderr", stdoutStderr,
+			"err", err)
+		return err
+	}
+
 	// start the local agent socket server that communicate with local executor
 	err = m.la.StartSocketServer()
 
