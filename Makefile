@@ -27,8 +27,6 @@ test: install
 	go build -buildmode=plugin -o scenario/test/valid.so scenario/test/scripts/valid/valid.go
 	go build -buildmode=plugin -o scenario/test/invalid.so scenario/test/scripts/invalid/invalid.go
 
-	go build -buildmode=plugin -o executor/driver/script/valid-forever/valid-forever.so executor/driver/script/valid-forever/valid-forever.go
-	go build -buildmode=plugin -o executor/driver/script/valid-dnt/valid-dnt.so executor/driver/script/valid-dnt/valid-dnt.go
 	go test ./...
 
 examples:
