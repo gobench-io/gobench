@@ -15,6 +15,7 @@ import (
 	"github.com/gobench-io/gobench/agent"
 	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/ent/application"
+	"github.com/gobench-io/gobench/executor"
 	"github.com/gobench-io/gobench/logger"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -384,10 +385,14 @@ func (m *Master) nextApplication(ctx context.Context) (*ent.Application, error) 
 	return app, err
 }
 
-func saveToFile(content []byte, dir, file string) (name string, err error) {
-	// save the scenario to a tmp file
-	name = filepath.Join(dir, file)
+func fileToSave(dir, file string) (*os.File, string, error) {
+	name := filepath.Join(dir, file)
 	f, err := os.OpenFile(name, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0600)
+	return f, name, err
+}
+
+func saveToFile(content []byte, dir, file string) (name string, err error) {
+	f, name, err := fileToSave(dir, file)
 	if err != nil {
 		return
 	}
@@ -404,7 +409,7 @@ func saveToFile(content []byte, dir, file string) (name string, err error) {
 // jobCompile using go to compile a scenario in plugin build mode
 // the result is path to so file
 func (m *Master) jobCompile(ctx context.Context) error {
-	var path string
+	var binaryPath string
 
 	scen := m.job.app.Scenario
 	gomod := m.job.app.Gomod
@@ -415,55 +420,65 @@ func (m *Master) jobCompile(ctx context.Context) error {
 		return fmt.Errorf("create temp dir: %v", err)
 	}
 
-	m.logger.Infow("folder for compiling",
-		"dir", dir)
+	m.logger.Infow("folder for compiling", "dir", dir)
 
-	// save the scenario to a tmp file
+	// todo: instead of remove files, just remove folder after finish the job
+
+	// generate main.go in dir
+	f, tmpMainName, err := fileToSave(dir, "main.go")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(tmpMainName)
+
+	err = executor.Generate(f, "agentsocket", "executorsocket", m.job.app.ID)
+	if err != nil {
+		return err
+	}
+
+	// save scenario.go under dir
 	tmpScenName, err := saveToFile([]byte(scen), dir, "scenario.go")
 	if err != nil {
 		return err
 	}
 	defer os.Remove(tmpScenName) // cleanup
 
-	var tmpGomodName string
+	// create default go.mod
 	if gomod != "" {
-		tmpGomodName, err = saveToFile([]byte(gomod), dir, "go.mod")
-		if err != nil {
-			return err
-		}
-		defer os.Remove(tmpGomodName) // cleanup
-	}
-	var tmpGosumName string
-	if gosum != "" {
-		if tmpGosumName, err = saveToFile([]byte(gosum), dir, "go.sum"); err != nil {
-			return err
-		}
-		defer os.Remove(tmpGosumName)
+		gomod = "module gobench.io/scenario"
 	}
 
-	path = fmt.Sprintf("%s.out", tmpScenName)
-
-	// compile the scenario to a tmp file
-	exe := "go"
-	args := []string{
-		"build",
-		"-buildmode=plugin",
+	// save go.mod under dir
+	tmpGomodName, err := saveToFile([]byte(gomod), dir, "go.mod")
+	if err != nil {
+		return err
 	}
-	if gomod != "" {
-		args = append(args, "-modfile="+tmpGomodName)
+	defer os.Remove(tmpGomodName) // cleanup
+
+	// save go.sum under dir
+	tmpGosumName, err := saveToFile([]byte(gosum), dir, "go.sum")
+	if err != nil {
+		return err
 	}
-	args = append(args, "-o", path, tmpScenName)
+	defer os.Remove(tmpGosumName)
 
-	cmd := exec.Command(exe, args...)
+	binaryPath = fmt.Sprintf("%s.out", tmpScenName)
 
-	if out, err := cmd.CombinedOutput(); err != nil {
+	out, err := exec.
+		Command(
+			"sh", "-c",
+			fmt.Sprintf("cd %s; go build -o %s", dir, binaryPath),
+		).
+		CombinedOutput()
+
+	if err != nil {
 		m.logger.Errorw("failed compiling the scenario",
 			"err", err,
 			"output", string(out))
 		return fmt.Errorf("compile scenario: %v", err)
 	}
 
-	m.job.plugin = path
+	m.job.plugin = binaryPath
 
 	return nil
 }
