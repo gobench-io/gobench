@@ -444,7 +444,7 @@ func (m *Master) jobCompile(ctx context.Context) error {
 	defer os.Remove(tmpScenName) // cleanup
 
 	// create default go.mod
-	if gomod != "" {
+	if gomod == "" {
 		gomod = "module gobench.io/scenario"
 	}
 
