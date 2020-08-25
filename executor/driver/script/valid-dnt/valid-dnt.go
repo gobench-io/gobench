@@ -9,8 +9,7 @@ import (
 	"github.com/gobench-io/gobench/scenario"
 )
 
-// Export is a required function for a scenario
-func Export() scenario.Vus {
+func export() scenario.Vus {
 	return scenario.Vus{
 		scenario.Vu{
 			Nu:   20,

@@ -9,6 +9,7 @@ import (
 
 	"github.com/gobench-io/gobench/executor/driver"
 	"github.com/gobench-io/gobench/logger"
+	"github.com/gobench-io/gobench/scenario"
 )
 
 // Options is for creating new executor object
@@ -17,6 +18,7 @@ type Options struct {
 	ExecutorSock string
 	DriverPath   string // the plugin user wrote
 	AppID        int
+	Vus          scenario.Vus
 }
 
 // Executor struct
@@ -47,7 +49,7 @@ func NewExecutor(opts *Options, logger logger.Logger) (e *Executor, err error) {
 		appID:        opts.AppID,
 	}
 
-	e.driver, err = driver.NewDriver(e, logger, opts.DriverPath, opts.AppID)
+	e.driver, err = driver.NewDriver(e, logger, opts.Vus, opts.AppID)
 
 	return
 }

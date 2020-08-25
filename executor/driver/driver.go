@@ -44,13 +44,11 @@ type unit struct {
 // contains host information, the scenario (plugin)
 // and gometrics unit
 type Driver struct {
-	mu         sync.Mutex
-	appID      int
-	status     status
-	driverPath string
-	vus        *scenario.Vus
-
-	units map[string]unit // title - gometrics
+	mu     sync.Mutex
+	appID  int
+	status status
+	vus    scenario.Vus
+	units  map[string]unit // title - gometrics
 
 	logger logger.Logger
 	ml     metricLogger
@@ -66,7 +64,7 @@ func init() {
 }
 
 // NewDriver returns the singleton driver
-func NewDriver(ml metricLogger, logger logger.Logger, driverPath string, appID int) (*Driver, error) {
+func NewDriver(ml metricLogger, logger logger.Logger, vus scenario.Vus, appID int) (*Driver, error) {
 	driver.mu.Lock()
 
 	driver.ml = ml
@@ -76,33 +74,16 @@ func NewDriver(ml metricLogger, logger logger.Logger, driverPath string, appID i
 	// reset metrics
 	driver.unregisterGometrics()
 
+	driver.vus = vus
 	driver.mu.Unlock()
 
-	err := driver.load(driverPath)
-
-	return &driver, err
+	return &driver, nil
 }
 
 func (d *Driver) unregisterGometrics() {
 	gometrics.Each(func(name string, i interface{}) {
 		gometrics.Unregister(name)
 	})
-}
-
-// load downloads the go plugin, extracts the virtual user scenario
-func (d *Driver) load(so string) (err error) {
-	vus, err := scenario.LoadPlugin(so)
-	if err != nil {
-		return
-	}
-
-	d.mu.Lock()
-	defer d.mu.Unlock()
-
-	d.driverPath = so
-	d.vus = &vus
-
-	return
 }
 
 func (d *Driver) reset() {
@@ -179,7 +160,7 @@ func (d *Driver) Running() bool {
 func (d *Driver) runScen(ctx context.Context, done chan<- error) {
 	var totalVu int
 
-	vus := *d.vus
+	vus := d.vus
 	for i := range vus {
 		totalVu += vus[i].Nu
 	}

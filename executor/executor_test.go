@@ -65,6 +65,6 @@ func TestCompile(t *testing.T) {
 	out, err := exec.Command("cp", "./driver/script/valid-dnt/valid-dnt.go", dir).CombinedOutput()
 	assert.Nil(t, err, string(out))
 
-	out, err = exec.Command("go", "build", name).CombinedOutput()
+	out, err = exec.Command("go", "build", dir).CombinedOutput()
 	assert.Nil(t, err, string(out))
 }
