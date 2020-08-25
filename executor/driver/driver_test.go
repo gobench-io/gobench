@@ -6,34 +6,46 @@ import (
 	"time"
 
 	"github.com/gobench-io/gobench/logger"
+	"github.com/gobench-io/gobench/scenario"
 	"github.com/stretchr/testify/assert"
 )
 
-func loadValidPlugin(d *Driver) error {
-	so := "./script/valid-dnt.so"
-	return d.load(so)
-}
-
 func TestNew(t *testing.T) {
-	so := "./script/valid-dnt/valid-dnt.so"
+	// valid, do nothing
+	vus := scenario.Vus{
+		scenario.Vu{
 
-	n1, err := NewDriver(newNopMetricLog(), logger.NewNopLogger(), so, 1)
+			Nu:   20,
+			Rate: 100,
+			Fu:   func(ctx context.Context, vui int) {},
+		},
+	}
+
+	n1, err := NewDriver(newNopMetricLog(), logger.NewNopLogger(), vus, 1)
 	assert.Nil(t, err)
-	n2, err := NewDriver(newNopMetricLog(), logger.NewNopLogger(), so, 2)
+	n2, err := NewDriver(newNopMetricLog(), logger.NewNopLogger(), vus, 2)
 	assert.Nil(t, err)
 
 	assert.Equal(t, n1, n2)
 
 	assert.Equal(t, n1.status, Idle)
 	assert.Equal(t, n1.units, make(map[string]unit))
-	assert.Len(t, *n1.vus, 1)
+	assert.Len(t, n1.vus, 1)
 
 	assert.False(t, n1.Running())
 }
 
 func TestRunPlugin(t *testing.T) {
-	so := "./script/valid-dnt/valid-dnt.so"
-	n, _ := NewDriver(newNopMetricLog(), logger.NewNopLogger(), so, 1)
+	// valid, do nothing
+	vus := scenario.Vus{
+		scenario.Vu{
+
+			Nu:   20,
+			Rate: 100,
+			Fu:   func(ctx context.Context, vui int) {},
+		},
+	}
+	n, _ := NewDriver(newNopMetricLog(), logger.NewNopLogger(), vus, 1)
 
 	assert.False(t, n.Running())
 
@@ -45,8 +57,16 @@ func TestRunPlugin(t *testing.T) {
 }
 
 func TestCancelPlugin(t *testing.T) {
-	so := "./script/valid-forever/valid-forever.so"
-	n, _ := NewDriver(newNopMetricLog(), logger.NewNopLogger(), so, 1)
+	// valid, forever
+	vus := scenario.Vus{
+		scenario.Vu{
+
+			Nu:   20,
+			Rate: 100,
+			Fu:   func(ctx context.Context, vui int) {},
+		},
+	}
+	n, _ := NewDriver(newNopMetricLog(), logger.NewNopLogger(), vus, 1)
 
 	ctx, cancel := context.WithCancel(context.Background())
 
