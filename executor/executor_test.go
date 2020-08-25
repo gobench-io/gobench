@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
@@ -35,7 +36,7 @@ func TestStart(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestGenerate(t *testing.T) {
+func generate(t *testing.T) (string, string) {
 	dir, err := ioutil.TempDir("", "scenario-*")
 	assert.Nil(t, err)
 	name := filepath.Join(dir, "main.go")
@@ -45,10 +46,25 @@ func TestGenerate(t *testing.T) {
 	err = Generate(f, "agentsocket", "executorsocket", 123)
 	assert.Nil(t, err)
 	log.Println("dir", dir)
-	os.Remove(name)
+
+	return dir, name
+}
+
+func TestGenerate(t *testing.T) {
+	_, name := generate(t)
+	log.Println(name)
+	// os.Remove(name)
 }
 
 // a generated file should be compiled with a valid scenario
 func TestCompile(t *testing.T) {
+	dir, name := generate(t)
 
+	log.Println("dir", dir)
+
+	out, err := exec.Command("cp", "./driver/script/valid-dnt/valid-dnt.go", dir).CombinedOutput()
+	assert.Nil(t, err, string(out))
+
+	out, err = exec.Command("go", "build", name).CombinedOutput()
+	assert.Nil(t, err, string(out))
 }

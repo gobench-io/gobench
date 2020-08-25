@@ -11,13 +11,8 @@ var tmpl = template.Must(template.
 package main
 
 import (
-	"context"
-	"log"
-	"time"
-
 	"github.com/gobench-io/gobench/executor"
 	"github.com/gobench-io/gobench/logger"
-	"github.com/gobench-io/gobench/scenario"
 )
 
 func main() {
