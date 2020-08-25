@@ -16,7 +16,6 @@ import (
 type Options struct {
 	AgentSock    string
 	ExecutorSock string
-	DriverPath   string // the plugin user wrote
 	AppID        int
 	Vus          scenario.Vus
 }

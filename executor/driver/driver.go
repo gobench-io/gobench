@@ -66,6 +66,7 @@ func init() {
 // NewDriver returns the singleton driver
 func NewDriver(ml metricLogger, logger logger.Logger, vus scenario.Vus, appID int) (*Driver, error) {
 	driver.mu.Lock()
+	defer driver.mu.Unlock()
 
 	driver.ml = ml
 	driver.logger = logger
@@ -75,7 +76,6 @@ func NewDriver(ml metricLogger, logger logger.Logger, vus scenario.Vus, appID in
 	driver.unregisterGometrics()
 
 	driver.vus = vus
-	driver.mu.Unlock()
 
 	return &driver, nil
 }
