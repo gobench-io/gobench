@@ -326,7 +326,7 @@ func (m *Master) run(ctx context.Context, j *job) (err error) {
 		"status", m.job.app.Status,
 	)
 
-	if err = m.jobCompile(ctx); err != nil {
+	if err = m.jobCompile(ctx, false); err != nil {
 		return
 	}
 	// todo: ditribute the plugin to other worker when run in cloud mode
@@ -407,8 +407,9 @@ func saveToFile(content []byte, dir, file string) (name string, err error) {
 }
 
 // jobCompile using go to compile a scenario in plugin build mode
-// the result is path to so file
-func (m *Master) jobCompile(ctx context.Context) error {
+// the result is path to so file.
+// useLocal to set local gobench module, used for testing only
+func (m *Master) jobCompile(ctx context.Context, useLocal bool) error {
 	var binaryPath string
 
 	scen := m.job.app.Scenario
@@ -446,6 +447,15 @@ func (m *Master) jobCompile(ctx context.Context) error {
 	// create default go.mod
 	if gomod == "" {
 		gomod = "module gobench.io/scenario"
+		// replace github.com/gobench-io/gobench => /home/nqd/workspaces/nqd/gobench
+		if useLocal {
+			out, err := exec.Command("echo", `$(dirname "$(pwd)")`).CombinedOutput()
+			if err != nil {
+				return err
+			}
+			gomod = gomod + "\n" +
+				fmt.Sprintf("replace github.com/gobench-io/gobench => %s", string(out))
+		}
 	}
 
 	// save go.mod under dir

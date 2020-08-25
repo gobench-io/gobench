@@ -78,8 +78,8 @@ func TestCompile(t *testing.T) {
 
 		m := seedMaster(t)
 		m.job.app.Scenario = `
-// Export is a required function for a scenario
-func Export() scenario.Vus {
+// export is a required function for a scenario
+func export() scenario.Vus {
 	return scenario.Vus{
 		scenario.Vu{
 			Nu:   20,
@@ -90,7 +90,7 @@ func Export() scenario.Vus {
 }
 `
 
-		err := m.jobCompile(ctx)
+		err := m.jobCompile(ctx, true)
 		assert.EqualError(t, err, "compile scenario: exit status 1")
 		assert.NoFileExists(t, m.job.plugin)
 	})
@@ -109,8 +109,8 @@ import (
 	"github.com/gobench-io/gobench/scenario"
 )
 
-// Export is a required function for a scenario
-func Export() scenario.Vus {
+// export is a required function for a scenario
+func export() scenario.Vus {
 	return scenario.Vus{
 		scenario.Vu{
 			Nu:   20,
@@ -127,7 +127,7 @@ func f1(ctx context.Context, vui int) {
 		time.Sleep(1 * time.Second)
 	}
 }`
-		err := m.jobCompile(ctx)
+		err := m.jobCompile(ctx, true)
 		assert.Nil(t, err)
 		assert.FileExists(t, m.job.plugin)
 	})
@@ -147,8 +147,8 @@ import (
 	"github.com/gobench-io/gobench/scenario"
 )
 
-// Export is a required function for a scenario
-func Export() scenario.Vus {
+// export is a required function for a scenario
+func export() scenario.Vus {
 	return scenario.Vus{
 		scenario.Vu{
 			Nu:   1,
@@ -169,7 +169,7 @@ func f1(ctx context.Context, vui int) {
 		app: app,
 	}
 
-	assert.Nil(t, m.jobCompile(ctx))
+	assert.Nil(t, m.jobCompile(ctx, true))
 
 	// should run for mor than 1 seconds
 	assert.Nil(t, m.runJob(ctx))
@@ -188,7 +188,7 @@ import (
 	"github.com/gobench-io/gobench/scenario"
 )
 
-func Export() scenario.Vus {
+func export() scenario.Vus {
 	return scenario.Vus{
 		scenario.Vu{
 			Nu:   1,
@@ -233,7 +233,7 @@ import (
 	"github.com/gobench-io/gobench/scenario"
 )
 
-func Export() scenario.Vus {
+func export() scenario.Vus {
 	return scenario.Vus{
 		{
 			Nu:   1,
