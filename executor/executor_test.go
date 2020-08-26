@@ -24,7 +24,6 @@ func generate(t *testing.T) (string, string) {
 
 	err = Generate(f, "agentsocket", "executorsocket", 123)
 	assert.Nil(t, err)
-	log.Println("dir", dir)
 
 	return dir, name
 }
@@ -60,15 +59,27 @@ func f1(ctx context.Context, vui int) {
 
 	dir, _ := generate(t)
 
+	defer os.RemoveAll(dir)
+
 	log.Println("dir", dir)
 
-	out, err := exec.Command("echo", scenario, " > ", dir+"/main.go").CombinedOutput()
-	assert.Nil(t, err, string(out))
+	// create scenario.go
+	scenarioPath := filepath.Join(dir, "scenario.go")
+	scenarioFile, err := os.OpenFile(scenarioPath, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0600)
+	_, err = scenarioFile.Write([]byte(scenario))
 
-	out, err = exec.Command("sh", "-c", fmt.Sprintf("cd %s; go mod init gobench.io/scenario", dir)).CombinedOutput()
-	assert.Nil(t, err, string(out))
+	// create go.mod
+	testDir, err := os.Getwd()
+	mainDir, err := exec.Command("dirname", testDir).CombinedOutput()
+	gomod := fmt.Sprintf(`
+		module gobench.io/scenario
+		replace github.com/gobench-io/gobench => %s
+		`, string(mainDir))
+	gomodPath := filepath.Join(dir, "go.mod")
+	gomodFile, err := os.OpenFile(gomodPath, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0600)
+	_, err = gomodFile.Write([]byte(gomod))
 
-	out, err = exec.Command("sh", "-c", fmt.Sprintf("cd %s; go build -o main.out", dir)).CombinedOutput()
+	out, err := exec.Command("sh", "-c", fmt.Sprintf("cd %s; go build -o main.out", dir)).CombinedOutput()
 	assert.Nil(t, err, string(out))
 }
 
