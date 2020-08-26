@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -61,23 +60,21 @@ func f1(ctx context.Context, vui int) {
 
 	defer os.RemoveAll(dir)
 
-	log.Println("dir", dir)
-
 	// create scenario.go
 	scenarioPath := filepath.Join(dir, "scenario.go")
-	scenarioFile, err := os.OpenFile(scenarioPath, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0600)
-	_, err = scenarioFile.Write([]byte(scenario))
+	scenarioFile, _ := os.OpenFile(scenarioPath, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0600)
+	_, _ = scenarioFile.Write([]byte(scenario))
 
 	// create go.mod
-	testDir, err := os.Getwd()
-	mainDir, err := exec.Command("dirname", testDir).CombinedOutput()
+	testDir, _ := os.Getwd()
+	mainDir, _ := exec.Command("dirname", testDir).CombinedOutput()
 	gomod := fmt.Sprintf(`
 		module gobench.io/scenario
 		replace github.com/gobench-io/gobench => %s
 		`, string(mainDir))
 	gomodPath := filepath.Join(dir, "go.mod")
-	gomodFile, err := os.OpenFile(gomodPath, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0600)
-	_, err = gomodFile.Write([]byte(gomod))
+	gomodFile, _ := os.OpenFile(gomodPath, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0600)
+	_, _ = gomodFile.Write([]byte(gomod))
 
 	out, err := exec.Command("sh", "-c", fmt.Sprintf("cd %s; go build -o main.out", dir)).CombinedOutput()
 	assert.Nil(t, err, string(out))
