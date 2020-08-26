@@ -2,6 +2,9 @@ package master
 
 import (
 	"context"
+	"fmt"
+	"os"
+	"os/exec"
 	"testing"
 	"time"
 
@@ -27,6 +30,15 @@ func seedMaster(t *testing.T) *Master {
 	assert.Nil(t, m.Start())
 
 	return m
+}
+
+func localGobenchMod(t *testing.T) string {
+	testDir, _ := os.Getwd()
+	mainDir, _ := exec.Command("dirname", testDir).CombinedOutput()
+	return fmt.Sprintf(`
+		module gobench.io/scenario
+		replace github.com/gobench-io/gobench => %s
+		`, string(mainDir))
 }
 
 func TestNextApplication(t *testing.T) {
@@ -179,6 +191,13 @@ func TestCancel(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	m := seedMaster(t)
 
+	testDir, _ := os.Getwd()
+	mainDir, _ := exec.Command("dirname", testDir).CombinedOutput()
+	gomod := fmt.Sprintf(`
+		module gobench.io/scenario
+		replace github.com/gobench-io/gobench => %s
+		`, string(mainDir))
+
 	scenario := `
 package main
 
@@ -202,15 +221,23 @@ func f1(ctx context.Context, vui int) {
 	for {}
 }`
 
-	app, _ := m.NewApplication(ctx, "cancel test", scenario, "", "")
+	app, _ := m.NewApplication(ctx, "cancel test", scenario, gomod, "")
 	j := &job{
 		app:    app,
 		cancel: cancel,
 	}
 
 	go func() {
-		time.Sleep(1 * time.Second)
-		assert.Equal(t, string(jobRunning), m.job.app.Status, "should run after 1 second")
+		count := 0
+		for {
+			time.Sleep(1 * time.Second)
+			count++
+			if string(jobRunning) != m.job.app.Status && count <= 5 {
+				continue
+			}
+			break
+		}
+		assert.Equal(t, string(jobRunning), m.job.app.Status, "should run after 5 second")
 
 		assert.Nil(t, m.cancel(ctx, app.ID))
 	}()

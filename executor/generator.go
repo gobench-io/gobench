@@ -62,15 +62,13 @@ func main() {
 `))
 
 // Generate creates an executor go file that is used to compiled to a binary
-func Generate(wr io.Writer, agentSock, executorSock string, appID int) (err error) {
+func Generate(wr io.Writer, appID int) (err error) {
 	type Args struct {
-		AgentSock    string
-		ExecutorSock string
-		AppID        int
+		AppID int
 	}
 
 	err = tmpl.Execute(wr, Args{
-		agentSock, executorSock, appID,
+		appID,
 	})
 
 	return

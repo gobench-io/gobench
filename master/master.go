@@ -432,7 +432,7 @@ func (m *Master) jobCompile(ctx context.Context, useLocal bool) error {
 	}
 	defer os.Remove(tmpMainName)
 
-	err = executor.Generate(f, "agentsocket", "executorsocket", m.job.app.ID)
+	err = executor.Generate(f, m.job.app.ID)
 	if err != nil {
 		return err
 	}

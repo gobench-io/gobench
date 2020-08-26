@@ -21,7 +21,7 @@ func generate(t *testing.T) (string, string) {
 	f, err := os.OpenFile(name, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0600)
 	assert.Nil(t, err)
 
-	err = Generate(f, "agentsocket", "executorsocket", 123)
+	err = Generate(f, 123)
 	assert.Nil(t, err)
 
 	return dir, name
