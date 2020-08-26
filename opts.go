@@ -11,9 +11,8 @@ type mode string
 
 // Modes of a server
 const (
-	Executor mode = "executor"
-	Master   mode = "master"
-	Agent    mode = "agent"
+	Master mode = "master"
+	Agent  mode = "agent"
 )
 
 // Err messages
@@ -24,12 +23,6 @@ var (
 type Options struct {
 	Mode    mode
 	Program string
-
-	// executor mode
-	AgentSock    string
-	ExecutorSock string
-	DriverPath   string // the plugin user wrote
-	AppID        int
 
 	// master, agent mode
 	ClusterPort int
@@ -57,12 +50,6 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 
 		modeS string
 
-		// executor mode
-		agentSock    string
-		executorSock string
-		driverPath   string
-		appID        int
-
 		// master mode
 		port   int
 		dbPath string
@@ -77,12 +64,6 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 	fs.BoolVar(&showHelp, "help", false, "Show this message")
 
 	fs.StringVar(&modeS, "mode", "master", "Operation mode of the program, either master, agent, or executor")
-
-	// executor
-	fs.StringVar(&agentSock, "agent-sock", "", "Socket of the agent")
-	fs.StringVar(&executorSock, "executor-sock", "", "Socket for this executor")
-	fs.StringVar(&driverPath, "driver-path", "", "Location of the driver plugin")
-	fs.IntVar(&appID, "app-id", -1, "Application ID")
 
 	// master
 	fs.IntVar(&port, "p", DEFAULT_PORT, "Port of the master server.")
@@ -115,19 +96,6 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 		Program: program,
 	}
 
-	if opts.Mode == Executor {
-		if agentSock == "" || executorSock == "" || driverPath == "" || appID < 0 {
-			err := ErrInvalidFlags
-			return nil, err
-		}
-
-		opts.AgentSock = agentSock
-		opts.ExecutorSock = executorSock
-		opts.DriverPath = driverPath
-		opts.AppID = appID
-
-		return opts, nil
-	}
 	if opts.Mode == Master {
 		if dbPath == "" {
 			home, err := os.UserHomeDir()
