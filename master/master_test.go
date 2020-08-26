@@ -2,6 +2,9 @@ package master
 
 import (
 	"context"
+	"fmt"
+	"os"
+	"os/exec"
 	"testing"
 	"time"
 
@@ -27,6 +30,15 @@ func seedMaster(t *testing.T) *Master {
 	assert.Nil(t, m.Start())
 
 	return m
+}
+
+func localGobenchMod(t *testing.T) string {
+	testDir, _ := os.Getwd()
+	mainDir, _ := exec.Command("dirname", testDir).CombinedOutput()
+	return fmt.Sprintf(`
+		module gobench.io/scenario
+		replace github.com/gobench-io/gobench => %s
+		`, string(mainDir))
 }
 
 func TestNextApplication(t *testing.T) {
@@ -78,8 +90,8 @@ func TestCompile(t *testing.T) {
 
 		m := seedMaster(t)
 		m.job.app.Scenario = `
-// Export is a required function for a scenario
-func Export() scenario.Vus {
+// export is a required function for a scenario
+func export() scenario.Vus {
 	return scenario.Vus{
 		scenario.Vu{
 			Nu:   20,
@@ -98,6 +110,8 @@ func Export() scenario.Vus {
 	t.Run("valid scenario", func(t *testing.T) {
 		ctx := context.Background()
 		m := seedMaster(t)
+
+		m.job.app.Gomod = localGobenchMod(t)
 		m.job.app.Scenario = `
 package main
 
@@ -109,8 +123,8 @@ import (
 	"github.com/gobench-io/gobench/scenario"
 )
 
-// Export is a required function for a scenario
-func Export() scenario.Vus {
+// export is a required function for a scenario
+func export() scenario.Vus {
 	return scenario.Vus{
 		scenario.Vu{
 			Nu:   20,
@@ -136,6 +150,7 @@ func f1(ctx context.Context, vui int) {
 func TestRun(t *testing.T) {
 	ctx := context.Background()
 	m := seedMaster(t)
+	gomod := localGobenchMod(t)
 	scenario := `
 package main
 
@@ -147,8 +162,8 @@ import (
 	"github.com/gobench-io/gobench/scenario"
 )
 
-// Export is a required function for a scenario
-func Export() scenario.Vus {
+// export is a required function for a scenario
+func export() scenario.Vus {
 	return scenario.Vus{
 		scenario.Vu{
 			Nu:   1,
@@ -162,7 +177,7 @@ func f1(ctx context.Context, vui int) {
 	time.Sleep(1 * time.Second)
 	log.Println("tic")
 }`
-	app, err := m.NewApplication(ctx, "test run", scenario, "", "")
+	app, err := m.NewApplication(ctx, "test run", scenario, gomod, "")
 	assert.Nil(t, err)
 
 	m.job = &job{
@@ -179,6 +194,7 @@ func TestCancel(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	m := seedMaster(t)
 
+	gomod := localGobenchMod(t)
 	scenario := `
 package main
 
@@ -188,7 +204,7 @@ import (
 	"github.com/gobench-io/gobench/scenario"
 )
 
-func Export() scenario.Vus {
+func export() scenario.Vus {
 	return scenario.Vus{
 		scenario.Vu{
 			Nu:   1,
@@ -202,15 +218,23 @@ func f1(ctx context.Context, vui int) {
 	for {}
 }`
 
-	app, _ := m.NewApplication(ctx, "cancel test", scenario, "", "")
+	app, _ := m.NewApplication(ctx, "cancel test", scenario, gomod, "")
 	j := &job{
 		app:    app,
 		cancel: cancel,
 	}
 
 	go func() {
-		time.Sleep(1 * time.Second)
-		assert.Equal(t, string(jobRunning), m.job.app.Status, "should run after 1 second")
+		count := 0
+		for {
+			time.Sleep(1 * time.Second)
+			count++
+			if string(jobRunning) != m.job.app.Status && count <= 5 {
+				continue
+			}
+			break
+		}
+		assert.Equal(t, string(jobRunning), m.job.app.Status, "should run after 5 second")
 
 		assert.Nil(t, m.cancel(ctx, app.ID))
 	}()
@@ -223,6 +247,7 @@ func TestMetricLogSetup(t *testing.T) {
 	ctx := context.Background()
 	m := seedMaster(t)
 
+	gomod := localGobenchMod(t)
 	scenario := `
 package main
 
@@ -233,7 +258,7 @@ import (
 	"github.com/gobench-io/gobench/scenario"
 )
 
-func Export() scenario.Vus {
+func export() scenario.Vus {
 	return scenario.Vus{
 		{
 			Nu:   1,
@@ -251,7 +276,7 @@ func f(ctx context.Context, vui int) {
 }
 `
 
-	app, _ := m.NewApplication(ctx, "http metric log setup test", scenario, "", "")
+	app, _ := m.NewApplication(ctx, "http metric log setup test", scenario, gomod, "")
 	j := &job{
 		app: app,
 	}

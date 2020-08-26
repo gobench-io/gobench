@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/gobench-io/gobench/executor"
 	"github.com/gobench-io/gobench/logger"
 	"github.com/gobench-io/gobench/master"
 	"github.com/gobench-io/gobench/web"
@@ -17,7 +16,7 @@ import (
 var usageStr = `
 Usage: gobench [options]
 
-    --mode <mode>       Server mode. Must be one of the master, agent, executor mode.
+    --mode <mode>       Server mode. Must be one of the master, agent mode.
                         Default is master
     --cluster-port <port>   Cluster port to solicit and connect (default: 6890)
                             Master and agent are required to have this option
@@ -32,13 +31,6 @@ Master Options:
 Agent Options:
     --route <host:port> The master address to solicit routes.
                         Every worker must have this option sothat worker can connect to a master
-
-Executor Options:
-    --agent-sock <file>     Unix socket address the local agent is listening to
-    --executor-soc <file>   Unix socket address this executor will listen to
-    --driver-path <file>    Location of the driver that this executor will execute
-    --app-id <id>           ID of the application that this executor will run
-
 `
 
 func usage() {
@@ -89,21 +81,6 @@ func main() {
 			printAndDie(fmt.Sprintf("%s: %s", exe, err))
 		}
 		web.Serve(m, logger)
-
-		return
-	}
-
-	if opts.Mode == Executor {
-		e, err := executor.NewExecutor(&executor.Options{
-			AgentSock:    opts.AgentSock,
-			ExecutorSock: opts.ExecutorSock,
-			DriverPath:   opts.DriverPath,
-			AppID:        opts.AppID,
-		}, logger)
-		if err != nil {
-			printAndDie(fmt.Sprintf("%s: %s", exe, err))
-		}
-		e.Serve()
 
 		return
 	}
