@@ -36,11 +36,33 @@ func TestGenerate(t *testing.T) {
 
 // a generated file should be compiled with a valid scenario
 func TestCompile(t *testing.T) {
+	scenario := `
+package main
+
+import (
+	"context"
+
+	"github.com/gobench-io/gobench/scenario"
+)
+
+func export() scenario.Vus {
+	return scenario.Vus{
+		scenario.Vu{
+			Nu:   1,
+			Rate: 100,
+			Fu:   f1,
+		},
+	}
+}
+
+func f1(ctx context.Context, vui int) {
+}`
+
 	dir, _ := generate(t)
 
 	log.Println("dir", dir)
 
-	out, err := exec.Command("cp", "./driver/script/valid-dnt/valid-dnt.go", dir).CombinedOutput()
+	out, err := exec.Command("echo", scenario, " > ", dir+"/main.go").CombinedOutput()
 	assert.Nil(t, err, string(out))
 
 	out, err = exec.Command("sh", "-c", fmt.Sprintf("cd %s; go mod init gobench.io/scenario", dir)).CombinedOutput()

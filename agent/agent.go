@@ -10,7 +10,6 @@ import (
 	"net/rpc"
 	"os"
 	"os/exec"
-	"strconv"
 	"sync"
 	"time"
 
@@ -107,16 +106,14 @@ func (a *Agent) StartWebServer() (l net.Listener, err error) {
 	return
 }
 
-func (a *Agent) RunJob(ctx context.Context, program, driverPath string, appID int) (err error) {
+// RunJob runs the executor in a shell
+func (a *Agent) RunJob(ctx context.Context, executorPath string, appID int) (err error) {
 	agentSock := a.socket
 	executorSock := fmt.Sprintf("/tmp/executorsock-%d", appID)
 
-	cmd := exec.CommandContext(ctx, program,
-		"--mode", "executor",
+	cmd := exec.CommandContext(ctx, executorPath,
 		"--agent-sock", agentSock,
-		"--executor-sock", executorSock,
-		"--driver-path", driverPath,
-		"--app-id", strconv.Itoa(appID))
+		"--executor-sock", executorSock)
 
 	// get the stderr log
 	stderr, err := cmd.StderrPipe()

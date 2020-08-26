@@ -499,5 +499,5 @@ func (m *Master) jobCompile(ctx context.Context, useLocal bool) error {
 
 // runJob runs the already compiled plugin, uses agent workhouse
 func (m *Master) runJob(ctx context.Context) (err error) {
-	return m.la.RunJob(ctx, m.program, m.job.plugin, m.job.app.ID)
+	return m.la.RunJob(ctx, m.job.plugin, m.job.app.ID)
 }
