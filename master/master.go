@@ -447,9 +447,13 @@ func (m *Master) jobCompile(ctx context.Context, useLocal bool) error {
 	// create default go.mod
 	if gomod == "" {
 		gomod = "module gobench.io/scenario"
-		// replace github.com/gobench-io/gobench => /home/nqd/workspaces/nqd/gobench
+		// replace github.com/gobench-io/gobench => gobench dir
 		if useLocal {
-			out, err := exec.Command("echo", `$(dirname "$(pwd)")`).CombinedOutput()
+			mydir, err := os.Getwd()
+			if err != nil {
+				return err
+			}
+			out, err := exec.Command("dirname", mydir).CombinedOutput()
 			if err != nil {
 				return err
 			}
