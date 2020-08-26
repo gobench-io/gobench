@@ -102,7 +102,7 @@ func export() scenario.Vus {
 }
 `
 
-		err := m.jobCompile(ctx, true)
+		err := m.jobCompile(ctx)
 		assert.EqualError(t, err, "compile scenario: exit status 1")
 		assert.NoFileExists(t, m.job.plugin)
 	})
@@ -110,6 +110,8 @@ func export() scenario.Vus {
 	t.Run("valid scenario", func(t *testing.T) {
 		ctx := context.Background()
 		m := seedMaster(t)
+
+		m.job.app.Gomod = localGobenchMod(t)
 		m.job.app.Scenario = `
 package main
 
@@ -139,7 +141,7 @@ func f1(ctx context.Context, vui int) {
 		time.Sleep(1 * time.Second)
 	}
 }`
-		err := m.jobCompile(ctx, true)
+		err := m.jobCompile(ctx)
 		assert.Nil(t, err)
 		assert.FileExists(t, m.job.plugin)
 	})
@@ -148,6 +150,7 @@ func f1(ctx context.Context, vui int) {
 func TestRun(t *testing.T) {
 	ctx := context.Background()
 	m := seedMaster(t)
+	gomod := localGobenchMod(t)
 	scenario := `
 package main
 
@@ -174,14 +177,14 @@ func f1(ctx context.Context, vui int) {
 	time.Sleep(1 * time.Second)
 	log.Println("tic")
 }`
-	app, err := m.NewApplication(ctx, "test run", scenario, "", "")
+	app, err := m.NewApplication(ctx, "test run", scenario, gomod, "")
 	assert.Nil(t, err)
 
 	m.job = &job{
 		app: app,
 	}
 
-	assert.Nil(t, m.jobCompile(ctx, true))
+	assert.Nil(t, m.jobCompile(ctx))
 
 	// should run for mor than 1 seconds
 	assert.Nil(t, m.runJob(ctx))
