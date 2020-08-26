@@ -191,13 +191,7 @@ func TestCancel(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	m := seedMaster(t)
 
-	testDir, _ := os.Getwd()
-	mainDir, _ := exec.Command("dirname", testDir).CombinedOutput()
-	gomod := fmt.Sprintf(`
-		module gobench.io/scenario
-		replace github.com/gobench-io/gobench => %s
-		`, string(mainDir))
-
+	gomod := localGobenchMod(t)
 	scenario := `
 package main
 
@@ -250,6 +244,7 @@ func TestMetricLogSetup(t *testing.T) {
 	ctx := context.Background()
 	m := seedMaster(t)
 
+	gomod := localGobenchMod(t)
 	scenario := `
 package main
 
@@ -278,7 +273,7 @@ func f(ctx context.Context, vui int) {
 }
 `
 
-	app, _ := m.NewApplication(ctx, "http metric log setup test", scenario, "", "")
+	app, _ := m.NewApplication(ctx, "http metric log setup test", scenario, gomod, "")
 	j := &job{
 		app: app,
 	}
