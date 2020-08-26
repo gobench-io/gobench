@@ -20,20 +20,11 @@ lint:
 build:
 	go build -o gobench ./
 
-install:
-	go install
-
-test: install
-	go build -buildmode=plugin -o scenario/test/valid.so scenario/test/scripts/valid/valid.go
-	go build -buildmode=plugin -o scenario/test/invalid.so scenario/test/scripts/invalid/invalid.go
-
+test:
 	go test ./...
 
 examples:
 	$(foreach var, $(EXAMPLES), go build -buildmode=plugin -o ./.bin/${var}.so $(var);)
-
-tools:
-	go build -o ./.bin/github.com/gobench-io/gobench/tools/gobench-viewer github.com/gobench-io/gobench/tools/gobench-viewer
 
 # generate ent models
 ent:
