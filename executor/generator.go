@@ -11,16 +11,37 @@ var tmpl = template.Must(template.
 package main
 
 import (
+	"flag"
+	"os"
+
 	"github.com/gobench-io/gobench/executor"
 	"github.com/gobench-io/gobench/logger"
 )
 
+func configureOptions(fs *flag.FlagSet, args []string) (
+	agentSock, executorSock string, err error,
+) {
+	fs.StringVar(&agentSock, "agent-sock", "", "Socket of the agent")
+	fs.StringVar(&executorSock, "executor-sock", "", "Socket for this executor")
+	err = fs.Parse(args)
+	return
+}
+
 func main() {
+	exe := "executor"
 	logger := logger.NewStdLogger()
 
+	fs := flag.NewFlagSet(exe, flag.ExitOnError)
+
+	agentSock, executorSock, err := configureOptions(fs, os.Args[1:])
+	if err != nil {
+		logger.Fatalw("Fail getting args", "err", err)
+
+	}
+
 	e, err := executor.NewExecutor(&executor.Options{
-		AgentSock:    "{{ .AgentSock }}",
-		ExecutorSock: "{{ .ExecutorSock }}",
+		AgentSock:    agentSock,
+		ExecutorSock: executorSock,
 		AppID:        {{ .AppID }},
 		Vus:          export(),
 	}, logger)
@@ -29,7 +50,14 @@ func main() {
 		panic(err)
 	}
 
-	e.Serve()
+	logger.Infow("serving",
+		"agent sock", agentSock,
+		"executor sock", executorSock,
+	)
+
+	if err = e.Serve(); err != nil {
+		logger.Fatalf("Fail serving", "err", err)
+	}
 }
 `))
 
