@@ -21,7 +21,7 @@ build:
 	go build -o gobench ./
 
 test:
-	go test ./...
+	./scripts/cov.sh
 
 examples:
 	$(foreach var, $(EXAMPLES), go build -buildmode=plugin -o ./.bin/${var}.so $(var);)
