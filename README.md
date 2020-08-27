@@ -5,8 +5,9 @@ A distributed benchmark tool with Golang
 [![Build Status](https://github.com/gobench-io/gobench/workflows/build/badge.svg)](https://github.com/gobench-io/gobench/actions)
 ![](https://img.shields.io/badge/license-MIT-blue.svg)
 ![](https://img.shields.io/badge/status-unstable-red.svg)
+![Coverage Status][coveralls-image]][coveralls-url]
 
-> Note: gobench is under heavy development. Do not use.
+> Note: Gobench is under heavy development. Do not use.
 
 ## Why gobench
 
