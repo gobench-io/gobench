@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react'
-import { Layout, Breadcrumb } from 'antd'
+import { Layout } from 'antd'
 import { Link, useHistory } from 'react-router-dom'
 import MenuLeft from './menu'
 import { RiseOutlined } from '@ant-design/icons'
@@ -9,7 +9,7 @@ import { RootContext, SpinnerContext, ErrorContext } from '../../context'
 import 'antd/dist/antd.css'
 import './style.css'
 
-const { Header, Content, Footer, Sider } = Layout
+const { Header, Content, Sider } = Layout
 
 const MainLayout = (props) => {
   window._history = useHistory()
@@ -26,7 +26,7 @@ const MainLayout = (props) => {
     })
   })
 
-  const submitCreate = useCallback(({ name, scenario }) => {
+  const submitCreate = useCallback(({ name, scenario, gomod, gosum }) => {
     if (!name || name.trim() === '') {
       em.setError({
         type: 'error',
@@ -46,7 +46,9 @@ const MainLayout = (props) => {
     }
     GoBenchAPI.createApplication({
       name,
-      scenario: btoa(unescape(encodeURIComponent(scenario)))
+      scenario: btoa(unescape(encodeURIComponent(scenario))),
+      gomod: btoa(unescape(encodeURIComponent(gomod))),
+      gosum: btoa(unescape(encodeURIComponent(gosum)))
     }).then((result) => {
       GoBenchAPI.getApplications().then((apps) => {
         setApp({ ...app, apps })
