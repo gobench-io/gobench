@@ -16,6 +16,8 @@ const CreateApplicationForm = () => {
   const [name, onChangeName] = useState('')
   const [code, onChangeEditor] = useState('')
   const [cloned, setClone] = useState('')
+  const [gomod, setGomod] = useState('')
+  const [gosum, setGosum] = useState('')
 
   const now = new Date()
   const timestamp = `${now.getUTCFullYear()}-${now.getUTCMonth()}-${now.getUTCDate()}-${now.getUTCHours()}-${now.getUTCMinutes()}-${now.getUTCSeconds()}`
@@ -28,6 +30,8 @@ const CreateApplicationForm = () => {
       if (_app) {
         onChangeName(`${n}-${timestamp}`)
         onChangeEditor(_app.scenario)
+        setGomod(_app.gomod)
+        setGosum(_app.gosum)
         setClone(true)
       }
     }
@@ -42,7 +46,7 @@ const CreateApplicationForm = () => {
             type='primary'
             style={{ marginRight: 5 }}
             onClick={() => {
-              app.submitCreate({ name, scenario: code })
+              app.submitCreate({ name, scenario: code, gomod, gosum })
             }}
           >
             {n ? 'Clone Application' : 'Create Application'}
@@ -72,6 +76,44 @@ const CreateApplicationForm = () => {
           <Editor
             value={code}
             onValueChange={c => onChangeEditor(c)}
+            highlight={code => highlight(code, languages.go, 'go')}
+            padding={16}
+            tabSize={4}
+            insertSpaces
+            className='editor'
+            autoFocus
+            style={{
+              fontFamily: '"Arial", "Open Sans", monospace',
+              fontSize: 14
+            }}
+          />
+        </div>
+      </div>
+      <div className='form-group'>
+        <label className='form-label' htmlFor='gomod'>gomod (optional):</label>
+        <div className='editor-container'>
+          <Editor
+            value={gomod}
+            onValueChange={c => setGomod(c)}
+            highlight={code => highlight(code, languages.go, 'go')}
+            padding={16}
+            tabSize={4}
+            insertSpaces
+            className='editor'
+            autoFocus
+            style={{
+              fontFamily: '"Arial", "Open Sans", monospace',
+              fontSize: 14
+            }}
+          />
+        </div>
+      </div>
+      <div className='form-group'>
+        <label className='form-label' htmlFor='gosum'>gosum (optional):</label>
+        <div className='editor-container'>
+          <Editor
+            value={gosum}
+            onValueChange={c => setGosum(c)}
             highlight={code => highlight(code, languages.go, 'go')}
             padding={16}
             tabSize={4}
