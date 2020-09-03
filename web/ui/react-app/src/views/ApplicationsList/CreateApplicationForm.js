@@ -30,8 +30,8 @@ const CreateApplicationForm = () => {
       if (_app) {
         onChangeName(`${n}-${timestamp}`)
         onChangeEditor(_app.scenario)
-        setGomod(_app.gomod)
-        setGosum(_app.gosum)
+        setGomod(_app.gomod || '')
+        setGosum(_app.gosum || '')
         setClone(true)
       }
     }
