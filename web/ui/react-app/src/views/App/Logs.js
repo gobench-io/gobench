@@ -6,7 +6,7 @@ const Logs = () => {
       <textarea
         disabled
         className='application-scenario'
-        value='TODO'
+        value='Comming soon'
       />
     </div>
   )

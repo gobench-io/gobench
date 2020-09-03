@@ -35,7 +35,6 @@ statik:
 	statik -src=./web/ui/react-app/build -dest=./web -f
 build-web-ui:
 	cd web/ui/react-app && yarn build
-update-statik: build-web-ui
-	statik
+update-statik: build-web-ui statik
 run:
 	go run .
