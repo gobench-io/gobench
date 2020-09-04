@@ -158,9 +158,6 @@ func (a *Agent) RunJob(ctx context.Context, executorPath string, appID int) (err
 
 	a.logger.Infow("local executor to run driver")
 
-	req := true
-	res := new(bool)
-
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
