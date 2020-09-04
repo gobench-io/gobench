@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "pb";
+
+service Executor {
+    rpc Start (StartRequest) returns (StartResult) {}
+    rpc Terminate (TermRequest) returns (TermResult) {}
+}
+
+
+message StartRequest {
+    int32 appID  = 1;
+}
+
+message StartResult {
+    int32 appID  = 1;
+    bool success = 2;
+}
+
+message TermRequest {
+    int32 appID  = 1;
+    int32 Term =2;
+}
+
+message TermResult {
+    int32 appID  = 1;
+    bool success = 2;
+}
