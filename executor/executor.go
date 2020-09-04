@@ -3,13 +3,14 @@ package executor
 import (
 	"fmt"
 	"net"
-	"net/http"
 	"net/rpc"
 	"os"
 
 	"github.com/gobench-io/gobench/executor/driver"
 	"github.com/gobench-io/gobench/logger"
+	"github.com/gobench-io/gobench/pb"
 	"github.com/gobench-io/gobench/scenario"
+	"google.golang.org/grpc"
 )
 
 // Options is for creating new executor object
@@ -56,30 +57,25 @@ func NewExecutor(opts *Options, logger logger.Logger) (e *Executor, err error) {
 // Serve starts a rpc server at the executor socket
 // and connects to the agent via agent socket
 func (e *Executor) Serve() (err error) {
-	// establishes a connection
+	// establishes a connection to agent rpc server
 	e.rc, err = rpc.DialHTTP("unix", e.agentSock)
 	if err != nil {
 		return
 	}
 
-	// register a rpc server at executor socket
-	er, err := newExecutorRPC(e)
-	if err != nil {
-		return
-	}
-	err = rpc.RegisterName("Executor", er)
-	if err != nil {
-		return
-	}
-	rpc.HandleHTTP()
-
-	// bind rpc to executor sock
-	os.Remove(e.executorSock)
+	// executor register a rpc server at executor socket
 	l, err := net.Listen("unix", e.executorSock)
 	if err != nil {
 		return
 	}
-	err = http.Serve(l, nil)
+
+	s := grpc.NewServer()
+	pb.RegisterExecutorServer(s, e)
+
+	err = s.Serve(l)
+	if err != nil {
+		return
+	}
 
 	return
 }

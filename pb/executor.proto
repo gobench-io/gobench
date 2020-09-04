@@ -11,20 +11,20 @@ service Executor {
 
 
 message StartRequest {
-    int32 appID  = 1;
+    int64 appID  = 1;
 }
 
 message StartResult {
-    int32 appID  = 1;
+    int64 appID  = 1;
     bool success = 2;
 }
 
 message TermRequest {
-    int32 appID  = 1;
-    int32 term =2;
+    int64 appID = 1;
+    int64 code = 2;
 }
 
 message TermResult {
-    int32 appID  = 1;
+    int64 appID  = 1;
     bool success = 2;
 }

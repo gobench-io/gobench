@@ -12,6 +12,7 @@ pb:
 lint-pkgs:
 	GO111MODULE=off go get -u honnef.co/go/tools/cmd/staticcheck
 	GO111MODULE=off go get -u github.com/client9/misspell/cmd/misspell
+	GO111MODULE=off go get -u github.com/rakyll/statik
 
 lint:
 	$(exit $(go fmt ./... | wc -l))
@@ -36,8 +37,11 @@ ent:
 # generate statik file for web ui
 statik:
 	statik -src=./web/ui/react-app/build -dest=./web -f
+
 build-web-ui:
 	cd web/ui/react-app && yarn build
+
 update-statik: build-web-ui statik
+
 run:
 	go run .
