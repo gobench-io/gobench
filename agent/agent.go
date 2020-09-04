@@ -14,6 +14,8 @@ import (
 	"time"
 
 	"github.com/gobench-io/gobench/logger"
+	"github.com/gobench-io/gobench/pb"
+	"google.golang.org/grpc"
 )
 
 type Options struct {
@@ -22,6 +24,8 @@ type Options struct {
 	Socket      string
 }
 
+// Agent struct
+// todo: agent needs appID
 type Agent struct {
 	mu sync.Mutex
 
@@ -156,16 +160,20 @@ func (a *Agent) RunJob(ctx context.Context, executorPath string, appID int) (err
 
 	req := true
 	res := new(bool)
-	if err = client.Call("Executor.Start", &req, &res); err != nil {
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	// todo: handle the response
+	if _, err = client.Start(ctx, &pb.StartRequest{}); err != nil {
 		err = fmt.Errorf("rpc start: %v", err)
 		return
 	}
 
 	a.logger.Infow("local executor is shutting down")
-	terReq := 0
-	terRes := new(bool)
+
 	// ignore error, since when the executor is terminated, this rpc will fail
-	_ = client.Call("Executor.Terminate", &terReq, &terRes)
+	_, _ = client.Terminate(ctx, &pb.TermRequest{})
 
 	if err = cmd.Wait(); err != nil {
 		a.logger.Errorw("executor wait", "err", err)
@@ -176,10 +184,11 @@ func (a *Agent) RunJob(ctx context.Context, executorPath string, appID int) (err
 }
 
 func waitForReady(ctx context.Context, executorSock string, expiredIn time.Duration) (
-	*rpc.Client, error,
+	pb.ExecutorClient, error,
 ) {
 	timeout := time.After(expiredIn)
 	sleep := 10 * time.Millisecond
+	socket := "passthrough:///unix://" + executorSock
 	for {
 		time.Sleep(sleep)
 
@@ -189,10 +198,11 @@ func waitForReady(ctx context.Context, executorSock string, expiredIn time.Durat
 		case <-timeout:
 			return nil, errors.New("timeout")
 		default:
-			client, err := rpc.DialHTTP("unix", executorSock)
+			conn, err := grpc.Dial(socket, grpc.WithInsecure(), grpc.WithBlock())
 			if err != nil {
 				continue
 			}
+			client := pb.NewExecutorClient(conn)
 			return client, nil
 		}
 	}

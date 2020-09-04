@@ -9,7 +9,6 @@ service Executor {
     rpc Terminate (TermRequest) returns (TermResult) {}
 }
 
-
 message StartRequest {
     int64 appID  = 1;
 }
