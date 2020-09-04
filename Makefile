@@ -3,7 +3,10 @@ GO ?= go
 PACKAGES := $(shell go list ./...)
 EXAMPLES := $(shell go list ./... | grep "examples")
 
-.PHONY: lint build examples tools ent statik
+.PHONY: lint build examples tools ent statik pb
+
+pb:
+	protoc -I pb pb/executor.proto --go_out=plugins=grpc:./pb
 
 # run lint
 lint-pkgs:

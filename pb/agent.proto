@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package pb;
 
-option go_package = ".;pb";
+option go_package = "pb";
 
 service Executor {
     rpc Start (StartRequest) returns (StartResult) {}
@@ -21,7 +21,7 @@ message StartResult {
 
 message TermRequest {
     int32 appID  = 1;
-    int32 term =2;
+    int32 Term =2;
 }
 
 message TermResult {
