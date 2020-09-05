@@ -4,44 +4,36 @@ import (
 	"context"
 
 	"github.com/gobench-io/gobench/pb"
+	"google.golang.org/grpc"
 )
-
-type metricLogger interface {
-	Counter(context.Context, int, string, int64, int64) error
-	Histogram(context.Context, int, string, int64, *pb.HistogramValues) error
-	Gauge(context.Context, int, string, int64, int64) error
-	FindCreateGroup(context.Context, *pb.FCGroupReq) (*pb.FCGroupRes, error)
-	FindCreateGraph(context.Context, *pb.FCGraphReq) (*pb.FCGraphRes, error)
-	FindCreateMetric(context.Context, *pb.FCMetricReq) (*pb.FCMetricRes, error)
-}
 
 // nil metric logger
 type nopLog struct{}
 
-func (n *nopLog) Counter(ctx context.Context, mID int, title string, time, c int64) error {
-	return nil
+func (n *nopLog) Counter(ctx context.Context, req *pb.CounterReq, opts ...grpc.CallOption) (*pb.CounterRes, error) {
+	return nil, nil
 }
 
-func (n *nopLog) Histogram(ctx context.Context, mID int, title string, time int64, h *pb.HistogramValues) error {
-	return nil
+func (n *nopLog) Histogram(ctx context.Context, req *pb.HistogramReq, opts ...grpc.CallOption) (*pb.HistogramRes, error) {
+	return nil, nil
 }
 
-func (n *nopLog) Gauge(ctx context.Context, mID int, title string, time int64, g int64) error {
-	return nil
+func (n *nopLog) Gauge(ctx context.Context, req *pb.GaugeReq, opts ...grpc.CallOption) (*pb.GaugeRes, error) {
+	return nil, nil
 }
 
-func (n *nopLog) FindCreateGroup(context.Context, *pb.FCGroupReq) (*pb.FCGroupRes, error) {
+func (n *nopLog) FindCreateGroup(ctx context.Context, req *pb.FCGroupReq, opts ...grpc.CallOption)(*pb.FCGroupRes, error) {
 	return new(pb.FCGroupRes), nil
 }
 
-func (n *nopLog) FindCreateGraph(context.Context, *pb.FCGraphReq) (*pb.FCGraphRes, error) {
+func (n *nopLog) FindCreateGraph(context.Context, *pb.FCGraphReq) (*, opts ...grpc.CallOptionpb.FCGraphRes, error) {
 	return new(pb.FCGraphRes), nil
 }
-func (n *nopLog) FindCreateMetric(context.Context, *pb.FCMetricReq) (*pb.FCMetricRes, error) {
+func (n *nopLog) FindCreateMetric(context.Context, *pb.FCMetricReq) (*, opts ...grpc.CallOptionpb.FCMetricRes, error) {
 	return new(pb.FCMetricRes), nil
 }
 
 // NewNopMetricLog returns a no-op metric logger
-func newNopMetricLog() metricLogger {
+func newNopMetricLog() *nopLog {
 	return &nopLog{}
 }

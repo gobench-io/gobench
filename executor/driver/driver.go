@@ -47,12 +47,13 @@ type unit struct {
 type Driver struct {
 	mu     sync.Mutex
 	appID  int
+	eID    string
 	status status
 	vus    scenario.Vus
 	units  map[string]unit // title - gometrics
 
 	logger logger.Logger
-	ml     metricLogger
+	ml     pb.AgentClient
 }
 
 // the singleton driver variable
@@ -65,7 +66,7 @@ func init() {
 }
 
 // NewDriver returns the singleton driver
-func NewDriver(ml metricLogger, logger logger.Logger, vus scenario.Vus, appID int) (*Driver, error) {
+func NewDriver(ml pb.AgentClient, logger logger.Logger, vus scenario.Vus, appID int, eID string) (*Driver, error) {
 	driver.mu.Lock()
 	defer driver.mu.Unlock()
 
@@ -73,6 +74,7 @@ func NewDriver(ml metricLogger, logger logger.Logger, vus scenario.Vus, appID in
 	driver.logger = logger
 	driver.units = make(map[string]unit)
 	driver.appID = appID
+	driver.eID = eID
 	// reset metrics
 	driver.unregisterGometrics()
 
@@ -212,9 +214,19 @@ func (d *Driver) logScaledOnCue(ctx context.Context, ch chan interface{}) error 
 			d.mu.Unlock()
 
 			for _, u := range units {
+				base := &pb.BasedReqMetric{
+					AppID: int64(d.appID),
+					EID:   d.eID,
+					MID:   int64(u.metricID),
+					Time:  now,
+				}
+
 				switch u.Type {
 				case metrics.Counter:
-					err = d.ml.Counter(ctx, u.metricID, u.Title, now, u.c.Count())
+					_, err = d.ml.Counter(ctx, &pb.CounterReq{
+						Base:  base,
+						Count: u.c.Count(),
+					})
 				case metrics.Histogram:
 					h := u.h.Snapshot()
 					ps := h.Percentiles([]float64{0.5, 0.75, 0.95, 0.99, 0.999})
@@ -230,9 +242,15 @@ func (d *Driver) logScaledOnCue(ctx context.Context, ch chan interface{}) error 
 						P99:    ps[3],
 						P999:   ps[4],
 					}
-					err = d.ml.Histogram(ctx, u.metricID, u.Title, now, hv)
+					_, err = d.ml.Histogram(ctx, &pb.HistogramReq{
+						Base:      base,
+						Histogram: hv,
+					})
 				case metrics.Gauge:
-					err = d.ml.Gauge(ctx, u.metricID, u.Title, now, u.g.Value())
+					_, err = d.ml.Gauge(ctx, &pb.GaugeReq{
+						Base:  base,
+						Gauge: u.g.Value(),
+					})
 				}
 
 				if err != nil {

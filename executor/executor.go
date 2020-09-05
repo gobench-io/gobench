@@ -48,14 +48,6 @@ func NewExecutor(opts *Options, logger logger.Logger) (e *Executor, err error) {
 		appID:        opts.AppID,
 	}
 
-	e.driver, err = driver.NewDriver(e, logger, opts.Vus, opts.AppID)
-
-	return
-}
-
-// Serve starts a rpc server at the executor socket
-// and connects to the agent via agent socket
-func (e *Executor) Serve() (err error) {
 	// establishes a connection to agent rpc server
 	socket := "passthrough:///unix://" + e.agentSock
 	conn, err := grpc.Dial(socket, grpc.WithInsecure(), grpc.WithBlock())
@@ -63,6 +55,15 @@ func (e *Executor) Serve() (err error) {
 		return
 	}
 	e.rc = pb.NewAgentClient(conn)
+
+	e.driver, err = driver.NewDriver(e.rc, logger, opts.Vus, opts.AppID, id)
+
+	return
+}
+
+// Serve starts a rpc server at the executor socket
+// and connects to the agent via agent socket
+func (e *Executor) Serve() (err error) {
 
 	// executor register a rpc server at executor socket
 	l, err := net.Listen("unix", e.executorSock)
