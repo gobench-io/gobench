@@ -7,6 +7,7 @@ EXAMPLES := $(shell go list ./... | grep "examples")
 
 pb:
 	protoc -I pb pb/executor.proto --go_out=plugins=grpc:./pb
+	protoc -I pb pb/agent.proto --go_out=plugins=grpc:./pb
 
 # run lint
 lint-pkgs:

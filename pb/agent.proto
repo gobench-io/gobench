@@ -2,29 +2,40 @@ syntax = "proto3";
 
 package pb;
 
-option go_package = "pb";
+option go_package = ".;pb";
 
-service Executor {
-    rpc Start (StartRequest) returns (StartResult) {}
-    rpc Terminate (TermRequest) returns (TermResult) {}
+service Agent {
+    rpc FindCreateGroup(FCGroupReq) returns (FCGroupRes) {}
+    rpc FindCreateGraph(FCGraphReq) returns (FCGraphRes) {}
+    rpc FindCreateMetric(FCMetricReq) returns (FCMetricRes) {}
 }
 
-
-message StartRequest {
-    int32 appID  = 1;
+message FCGroupReq {
+    int64 appID = 1;
+    string name = 2;
 }
 
-message StartResult {
-    int32 appID  = 1;
-    bool success = 2;
+message FCGroupRes {
+    int64 id = 1;
 }
 
-message TermRequest {
-    int32 appID  = 1;
-    int32 Term =2;
+message FCGraphReq {
+    int64 appID = 1;
+	string title = 2;
+	string unit = 3;
+	int64 groupID = 4;
 }
 
-message TermResult {
-    int32 appID  = 1;
-    bool success = 2;
+message FCGraphRes {
+	int64 id = 1;
+}
+
+message FCMetricReq {
+    int64 appID = 1;
+	string title = 2;
+	string type = 3;
+	int64 graphID = 4;
+}
+message FCMetricRes {
+	int64 id = 1;
 }
