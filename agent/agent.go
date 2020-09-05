@@ -6,9 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
-	"net/http"
 	"net/rpc"
-	"os"
 	"os/exec"
 	"sync"
 	"time"
@@ -32,13 +30,13 @@ type Agent struct {
 	route       string
 	clusterPort int
 
-	ml     metricLoggerRPC
+	ml     pb.AgentServer
 	logger logger.Logger
 	socket string
 	rs     *rpc.Server // rpc server to be served via unix socket
 }
 
-func NewLocalAgent(ml metricLoggerRPC, logger logger.Logger) (*Agent, error) {
+func NewLocalAgent(ml pb.AgentServer, logger logger.Logger) (*Agent, error) {
 	a := &Agent{
 		ml:     ml,
 		logger: logger,
@@ -47,7 +45,7 @@ func NewLocalAgent(ml metricLoggerRPC, logger logger.Logger) (*Agent, error) {
 	return a, nil
 }
 
-func NewAgent(opts *Options, ml metricLoggerRPC, logger logger.Logger) (*Agent, error) {
+func NewAgent(opts *Options, ml pb.AgentServer, logger logger.Logger) (*Agent, error) {
 	a := &Agent{
 		route:       opts.Route,
 		clusterPort: opts.ClusterPort,
@@ -59,55 +57,25 @@ func NewAgent(opts *Options, ml metricLoggerRPC, logger logger.Logger) (*Agent, 
 	return a, nil
 }
 
-func (a *Agent) SetMetricLogger(ml metricLoggerRPC) {
+func (a *Agent) SetMetricLogger(ml pb.AgentServer) {
 	a.mu.Lock()
 	a.ml = ml
 	a.mu.Unlock()
 }
 
+// StartSocketServer setup an rpc server over agent unix socket
+// the function runs the server in a separate routine
 func (a *Agent) StartSocketServer() error {
-	ar, err := newRPC(a.ml)
-	if err != nil {
-		return err
-	}
-	if err := a.rs.RegisterName("Agent", ar); err != nil {
-		return err
-	}
-
-	serverMux := http.NewServeMux()
-	serverMux.Handle(rpc.DefaultRPCPath, a.rs)
-	serverMux.Handle(rpc.DefaultDebugPath, a.rs)
-
-	os.Remove(a.socket)
 	l, err := net.Listen("unix", a.socket)
 	if err != nil {
 		return err
 	}
+	s := grpc.NewServer()
+	pb.RegisterAgentServer(s, a.ml)
 
-	go http.Serve(l, serverMux)
+	go s.Serve(l)
 
 	return nil
-}
-
-func (a *Agent) StartWebServer() (l net.Listener, err error) {
-	rs := rpc.NewServer()
-
-	err = rs.RegisterName("Agent", a.ml)
-	if err != nil {
-		return
-	}
-	serverMux := http.NewServeMux()
-	serverMux.Handle(rpc.DefaultRPCPath, a.rs)
-	serverMux.Handle(rpc.DefaultDebugPath, a.rs)
-
-	l, err = net.Listen("tcp", fmt.Sprintf(":%d", a.clusterPort))
-	if err != nil {
-		return
-	}
-
-	go http.Serve(l, serverMux)
-
-	return
 }
 
 // RunJob runs the executor in a shell

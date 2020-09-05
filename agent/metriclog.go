@@ -1,38 +1,33 @@
 package agent
 
-import "github.com/gobench-io/gobench/metrics"
+import (
+	"context"
 
-type metricLoggerRPC interface {
-	FindCreateGroup(req *metrics.FCGroupReq, res *metrics.FCGroupRes) error
-	FindCreateGraph(req *metrics.FCGraphReq, res *metrics.FCGraphRes) error
-	FindCreateMetric(req *metrics.FCMetricReq, res *metrics.FCMetricRes) error
-	Counter(req *metrics.CounterReq, res *metrics.CounterRes) error
-	Histogram(req *metrics.HistogramReq, res *metrics.HistogramRes) error
-	Gauge(req *metrics.GaugeReq, res *metrics.GaugeRes) error
-}
+	"github.com/gobench-io/gobench/pb"
+)
 
 // nop metric logger
 type nopLog struct{}
 
-func (n *nopLog) FindCreateGroup(req *metrics.FCGroupReq, res *metrics.FCGroupRes) error {
-	return nil
+func (n *nopLog) FindCreateGroup(context.Context, *pb.FCGroupReq) (*pb.FCGroupRes, error) {
+	return nil, nil
 }
-func (n *nopLog) FindCreateGraph(req *metrics.FCGraphReq, res *metrics.FCGraphRes) error {
-	return nil
+func (n *nopLog) FindCreateGraph(context.Context, *pb.FCGraphReq) (*pb.FCGraphRes, error) {
+	return nil, nil
 }
-func (n *nopLog) FindCreateMetric(req *metrics.FCMetricReq, res *metrics.FCMetricRes) error {
-	return nil
+func (n *nopLog) FindCreateMetric(context.Context, *pb.FCMetricReq) (*pb.FCMetricRes, error) {
+	return nil, nil
 }
-func (n *nopLog) Counter(req *metrics.CounterReq, res *metrics.CounterRes) error {
-	return nil
+func (n *nopLog) Histogram(context.Context, *pb.HistogramReq) (*pb.HistogramRes, error) {
+	return nil, nil
 }
-func (n *nopLog) Histogram(req *metrics.HistogramReq, res *metrics.HistogramRes) error {
-	return nil
+func (n *nopLog) Counter(context.Context, *pb.CounterReq) (*pb.CounterRes, error) {
+	return nil, nil
 }
-func (n *nopLog) Gauge(req *metrics.GaugeReq, res *metrics.GaugeRes) error {
-	return nil
+func (n *nopLog) Gauge(context.Context, *pb.GaugeReq) (*pb.GaugeRes, error) {
+	return nil, nil
 }
 
-func newNopMetricLog() metricLoggerRPC {
+func newNopMetricLog() *nopLog {
 	return &nopLog{}
 }
