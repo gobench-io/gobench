@@ -151,6 +151,7 @@ func (m *Master) FindCreateGraph(ctx context.Context, req *pb.FCGraphReq) (res *
 
 func (m *Master) FindCreateMetric(ctx context.Context, req *pb.FCMetricReq) (res *pb.FCMetricRes, err error) {
 	var emetric *ent.Metric
+	res = new(pb.FCMetricRes)
 
 	defer func() {
 		if err == nil {

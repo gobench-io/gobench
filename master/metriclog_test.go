@@ -8,6 +8,8 @@ import (
 	entApplication "github.com/gobench-io/gobench/ent/application"
 	entGraph "github.com/gobench-io/gobench/ent/graph"
 	entGroup "github.com/gobench-io/gobench/ent/group"
+	entMetric "github.com/gobench-io/gobench/ent/metric"
+	"github.com/gobench-io/gobench/metrics"
 	"github.com/gobench-io/gobench/pb"
 	"github.com/stretchr/testify/assert"
 )
@@ -43,7 +45,7 @@ func TestFindCreateGroup(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Len(t, groups, 1)
 	g := groups[0]
-	assert.Equal(t, g.ID, groupRes.Id)
+	assert.EqualValues(t, g.ID, groupRes.Id)
 
 	// call the same RPC, the result should be like before
 	groupRes2, err := m.FindCreateGroup(
@@ -92,7 +94,7 @@ func TestFindCreateGraph(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Len(t, graphs, 1)
 	g := graphs[0]
-	assert.Equal(t, g.ID, graphRes.Id)
+	assert.EqualValues(t, g.ID, graphRes.Id)
 
 	// call the same RPC, the result should be like before
 	graphRes2, err := m.FindCreateGraph(ctx, graphReq)
@@ -100,56 +102,58 @@ func TestFindCreateGraph(t *testing.T) {
 	assert.Equal(t, graphRes, graphRes2)
 }
 
-// func TestFindCreateMetric(t *testing.T) {
-// 	var err error
-// 	ctx := context.TODO()
+func TestFindCreateMetric(t *testing.T) {
+	var err error
+	ctx := context.TODO()
 
-// 	m := seedMaster(t)
+	m := seedMaster(t)
 
-// 	m.job.app, err = m.NewApplication(ctx, "name", "scenario", "", "")
-// 	assert.Nil(t, err)
+	m.job.app, err = m.NewApplication(ctx, "name", "scenario", "", "")
+	assert.Nil(t, err)
 
-// 	prefix := time.Now().String()
-// 	groupName := "HTTP (" + prefix + ")"
+	prefix := time.Now().String()
+	groupName := "HTTP (" + prefix + ")"
 
-// 	// create new group
-// 	groupRes := new(metrics.FCGroupRes)
-// 	assert.Nil(t, m.FindCreateGroup(
-// 		&metrics.FCGroupReq{Name: groupName, AppID: m.job.app.ID},
-// 		groupRes))
+	// create new group
+	groupRes, err := m.FindCreateGroup(ctx, &pb.FCGroupReq{
+		AppID: int64(m.job.app.ID),
+		Name:  groupName,
+	})
+	assert.Nil(t, err)
 
-// 	// create new graph
-// 	graphReq := &metrics.FCGraphReq{
-// 		Title:   "HTTP Response",
-// 		Unit:    "N",
-// 		GroupID: groupRes.ID,
-// 	}
-// 	graphRes := new(metrics.FCGraphRes)
-// 	assert.Nil(t, m.FindCreateGraph(graphReq, graphRes))
+	// create new graph
+	graphReq := &pb.FCGraphReq{
+		AppID:   int64(m.job.app.ID),
+		Title:   "HTTP Response",
+		Unit:    "N",
+		GroupID: int64(groupRes.Id),
+	}
+	graphRes, err := m.FindCreateGraph(ctx, graphReq)
+	assert.Nil(t, err)
 
-// 	// create new metric
-// 	metricReq := &metrics.FCMetricReq{
-// 		Title:   ".http_ok",
-// 		Type:    metrics.Counter,
-// 		GraphID: graphRes.ID,
-// 	}
-// 	metricRes := new(metrics.FCMetricRes)
-// 	assert.Nil(t, m.FindCreateMetric(metricReq, metricRes))
+	// create new metric
+	metricReq := &pb.FCMetricReq{
+		AppID:   int64(m.job.app.ID),
+		Title:   ".http_ok",
+		Type:    string(metrics.Counter),
+		GraphID: int64(graphRes.Id),
+	}
+	metricRes, err := m.FindCreateMetric(ctx, metricReq)
+	assert.Nil(t, err)
 
-// 	// call the same RPC, the result should be like before
-// 	metricRes2 := new(metrics.FCGraphRes)
-// 	assert.Nil(t, m.FindCreateGraph(graphReq, metricRes2))
-// 	assert.Equal(t, graphRes, metricRes2)
+	// call the same RPC, the result should be like before
+	metricRes2, err := m.FindCreateMetric(ctx, metricReq)
+	assert.Equal(t, metricRes, metricRes2)
 
-// 	// read from db, check with groupRes
-// 	metrics, err := m.db.Metric.Query().Where(
-// 		entMetric.TitleEQ(metricReq.Title),
-// 		entMetric.HasGraphWith(
-// 			entGraph.IDEQ(graphRes.ID),
-// 		),
-// 	).All(ctx)
-// 	assert.Nil(t, err)
-// 	assert.Len(t, metrics, 1)
-// 	m0 := metrics[0]
-// 	assert.Equal(t, m0.ID, metricRes.ID)
-// }
+	// read from db, check with groupRes
+	metrics, err := m.db.Metric.Query().Where(
+		entMetric.TitleEQ(metricReq.Title),
+		entMetric.HasGraphWith(
+			entGraph.IDEQ(int(graphRes.Id)),
+		),
+	).All(ctx)
+	assert.Nil(t, err)
+	assert.Len(t, metrics, 1)
+	m0 := metrics[0]
+	assert.EqualValues(t, m0.ID, metricRes.Id)
+}
