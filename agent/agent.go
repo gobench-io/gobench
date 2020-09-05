@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/rpc"
+	"os"
 	"os/exec"
 	"sync"
 	"time"
@@ -66,6 +67,9 @@ func (a *Agent) SetMetricLogger(ml pb.AgentServer) {
 // StartSocketServer setup an rpc server over agent unix socket
 // the function runs the server in a separate routine
 func (a *Agent) StartSocketServer() error {
+	// remove if any
+	os.Remove(a.socket)
+
 	l, err := net.Listen("unix", a.socket)
 	if err != nil {
 		return err
