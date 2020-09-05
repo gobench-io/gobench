@@ -5,37 +5,86 @@ package pb;
 option go_package = ".;pb";
 
 service Agent {
-    rpc FindCreateGroup(FCGroupReq) returns (FCGroupRes) {}
-    rpc FindCreateGraph(FCGraphReq) returns (FCGraphRes) {}
-    rpc FindCreateMetric(FCMetricReq) returns (FCMetricRes) {}
+  rpc FindCreateGroup(FCGroupReq) returns (FCGroupRes);
+  rpc FindCreateGraph(FCGraphReq) returns (FCGraphRes);
+  rpc FindCreateMetric(FCMetricReq) returns (FCMetricRes);
+  rpc Histogram(HistogramReq) returns (HistogramRes);
+  rpc Counter(CounterReq) returns (CounterRes);
+  rpc Gauge(GaugeReq) returns (GaugeRes);
 }
 
+// find or create group
 message FCGroupReq {
-    int64 appID = 1;
-    string name = 2;
+  int64 appID = 1;
+  string name = 2;
 }
 
 message FCGroupRes {
-    int64 id = 1;
+  int64 id = 1;
 }
 
+// find or create graph
 message FCGraphReq {
-    int64 appID = 1;
-	string title = 2;
-	string unit = 3;
-	int64 groupID = 4;
+  int64 appID = 1;
+  string title = 2;
+  string unit = 3;
+  int64 groupID = 4;
 }
 
 message FCGraphRes {
-	int64 id = 1;
+  int64 id = 1;
 }
 
+// find or create metric
 message FCMetricReq {
-    int64 appID = 1;
-	string title = 2;
-	string type = 3;
-	int64 graphID = 4;
+  int64 appID = 1;
+  string title = 2;
+  string type = 3;
+  int64 graphID = 4;
 }
+
 message FCMetricRes {
-	int64 id = 1;
+  int64 id = 1;
 }
+
+// histogram, counter, gauge
+message BasedReqMetric {
+  int64 appID = 1; // app ID
+  string eID = 2; // executor ID
+  int64 mID = 3; // metric ID
+  int64 time = 4;
+}
+
+message HistogramValues {
+  int64 count = 1;
+  int64 min = 2;
+  int64 max = 3;
+  double mean = 4;
+  double stddev = 5;
+  double median = 6;
+  double p75 = 7;
+  double p95 = 8;
+  double p99 = 9;
+  double p999 = 10;
+}
+
+message HistogramReq {
+  BasedReqMetric base = 1;
+  HistogramValues histogram = 2;
+}
+
+message HistogramRes {}
+
+message CounterReq {
+  BasedReqMetric base = 1;
+  int64 count = 2;
+}
+
+message CounterRes {}
+
+message GaugeReq {
+  BasedReqMetric base = 1;
+  int64 gauge = 2;
+}
+
+message GaugeRes {}
