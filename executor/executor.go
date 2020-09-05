@@ -3,7 +3,6 @@ package executor
 import (
 	"fmt"
 	"net"
-	"net/rpc"
 	"os"
 
 	"github.com/gobench-io/gobench/executor/driver"
@@ -30,7 +29,7 @@ type Executor struct {
 	appID        int
 
 	driver *driver.Driver
-	rc     *rpc.Client
+	rc     pb.AgentClient
 }
 
 // NewExecutor creates a new executor
@@ -58,10 +57,12 @@ func NewExecutor(opts *Options, logger logger.Logger) (e *Executor, err error) {
 // and connects to the agent via agent socket
 func (e *Executor) Serve() (err error) {
 	// establishes a connection to agent rpc server
-	e.rc, err = rpc.DialHTTP("unix", e.agentSock)
+	socket := "passthrough:///unix://" + e.agentSock
+	conn, err := grpc.Dial(socket, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		return
 	}
+	e.rc = pb.NewAgentClient(conn)
 
 	// executor register a rpc server at executor socket
 	l, err := net.Listen("unix", e.executorSock)

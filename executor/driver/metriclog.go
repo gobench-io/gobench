@@ -4,15 +4,16 @@ import (
 	"context"
 
 	"github.com/gobench-io/gobench/metrics"
+	"github.com/gobench-io/gobench/pb"
 )
 
 type metricLogger interface {
 	Counter(context.Context, int, string, int64, int64) error
-	Histogram(context.Context, int, string, int64, metrics.HistogramValues) error
+	Histogram(context.Context, int, string, int64, *pb.HistogramValues) error
 	Gauge(context.Context, int, string, int64, int64) error
-	FindCreateGroup(context.Context, metrics.Group, int) (*metrics.FCGroupRes, error)
-	FindCreateGraph(context.Context, metrics.Graph, int) (*metrics.FCGraphRes, error)
-	FindCreateMetric(context.Context, metrics.Metric, int) (*metrics.FCMetricRes, error)
+	FindCreateGroup(context.Context, *pb.FCGroupReq) (*pb.FCGroupRes, error)
+	FindCreateGraph(context.Context, *pb.FCGraphReq) (*pb.FCGraphRes, error)
+	FindCreateMetric(context.Context, *pb.FCMetricReq) (*pb.FCMetricRes, error)
 }
 
 // nil metric logger
@@ -22,7 +23,7 @@ func (n *nopLog) Counter(ctx context.Context, mID int, title string, time, c int
 	return nil
 }
 
-func (n *nopLog) Histogram(ctx context.Context, mID int, title string, time int64, h metrics.HistogramValues) error {
+func (n *nopLog) Histogram(ctx context.Context, mID int, title string, time int64, h *pb.HistogramValues) error {
 	return nil
 }
 

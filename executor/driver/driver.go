@@ -10,6 +10,7 @@ import (
 	"github.com/gobench-io/gobench/dis"
 	"github.com/gobench-io/gobench/logger"
 	"github.com/gobench-io/gobench/metrics"
+	"github.com/gobench-io/gobench/pb"
 	"github.com/gobench-io/gobench/scenario"
 	gometrics "github.com/rcrowley/go-metrics"
 )
@@ -217,7 +218,7 @@ func (d *Driver) logScaledOnCue(ctx context.Context, ch chan interface{}) error 
 				case metrics.Histogram:
 					h := u.h.Snapshot()
 					ps := h.Percentiles([]float64{0.5, 0.75, 0.95, 0.99, 0.999})
-					hv := metrics.HistogramValues{
+					hv := &pb.HistogramValues{
 						Count:  h.Count(),
 						Min:    h.Min(),
 						Max:    h.Max(),
@@ -260,7 +261,10 @@ func Setup(groups []metrics.Group) error {
 
 	for _, group := range groups {
 		// create a new group if not existed
-		egroup, err := driver.ml.FindCreateGroup(ctx, group, driver.appID)
+		egroup, err := driver.ml.FindCreateGroup(ctx, &pb.FCGroupReq{
+			AppID: int64(driver.appID),
+			Name:  group.Name,
+		})
 		if err != nil {
 			return fmt.Errorf("failed create group: %v", err)
 		}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gobench-io/gobench/metrics"
+	"github.com/gobench-io/gobench/pb"
 )
 
 // metricLog interface implementer for the Executor
@@ -12,84 +13,70 @@ import (
 func (e *Executor) Counter(ctx context.Context, mID int, title string, time, c int64) (
 	err error,
 ) {
-	res := new(metrics.CounterRes)
-
-	req := &metrics.CounterReq{
-		Count: c,
-		BasedReqMetric: metrics.BasedReqMetric{
+	_, err = e.rc.Counter(ctx, &pb.CounterReq{
+		Base: &pb.BasedReqMetric{
+			AppID: int64(e.appID),
 			EID:   e.id,
-			AppID: e.appID,
-			MID:   mID,
+			MID:   int64(mID),
 			Time:  time,
 		},
-	}
-
-	if err = e.rc.Call("Agent.Counter", req, res); err != nil {
-		err = fmt.Errorf("rpc Counter: %v", err)
+		Count: c,
+	})
+	if err != nil {
+		err = fmt.Errorf("rpc counter: %v", err)
 		return
 	}
 
-	return nil
+	return
 }
 
-func (e *Executor) Histogram(ctx context.Context, mID int, title string, time int64, h metrics.HistogramValues) (
+func (e *Executor) Histogram(ctx context.Context, mID int, title string, time int64, h *pb.HistogramValues) (
 	err error,
 ) {
-	res := new(metrics.HistogramRes)
-
-	req := &metrics.HistogramReq{
-		HistogramValues: h,
-		BasedReqMetric: metrics.BasedReqMetric{
+	_, err = e.rc.Histogram(ctx, &pb.HistogramReq{
+		Base: &pb.BasedReqMetric{
+			AppID: int64(e.appID),
 			EID:   e.id,
-			AppID: e.appID,
-			MID:   mID,
+			MID:   int64(mID),
 			Time:  time,
 		},
-	}
+		Histogram: h,
+	})
 
-	if err = e.rc.Call("Agent.Histogram", req, res); err != nil {
-		err = fmt.Errorf("rpc Histogram: %v", err)
+	if err != nil {
+		err = fmt.Errorf("rpc histogram: %v", err)
 		return
 	}
 
-	return nil
+	return
 }
 
 func (e *Executor) Gauge(ctx context.Context, mID int, title string, time int64, g int64) (
 	err error,
 ) {
-	res := new(metrics.GaugeRes)
-
-	req := &metrics.GaugeReq{
-		Gauge: g,
-		BasedReqMetric: metrics.BasedReqMetric{
+	_, err = e.rc.Gauge(ctx, &pb.GaugeReq{
+		Base: &pb.BasedReqMetric{
+			AppID: int64(e.appID),
 			EID:   e.id,
-			AppID: e.appID,
-			MID:   mID,
+			MID:   int64(mID),
 			Time:  time,
 		},
-	}
-
-	if err = e.rc.Call("Agent.Gauge", req, res); err != nil {
-		err = fmt.Errorf("rpc Gauge: %v", err)
+		Gauge: g,
+	})
+	if err != nil {
+		err = fmt.Errorf("rpc gauge: %v", err)
 		return
 	}
 
-	return nil
+	return
 }
 
-func (e *Executor) FindCreateGroup(ctx context.Context, mg metrics.Group, appID int) (
-	res *metrics.FCGroupRes, err error,
+func (e *Executor) FindCreateGroup(ctx context.Context, req *pb.FCGroupReq) (
+	res *pb.FCGroupRes, err error,
 ) {
-	res = new(metrics.FCGroupRes)
-
-	req := &metrics.FCGroupReq{
-		Name:  mg.Name,
-		AppID: appID,
-	}
-
-	if err = e.rc.Call("Agent.FindCreateGroup", req, res); err != nil {
-		err = fmt.Errorf("rpc FindCreateGroup: %v", err)
+	_, err = e.rc.FindCreateGroup(ctx, req)
+	if err != nil {
+		err = fmt.Errorf("rpc findCreateGroup: %v", err)
 		return
 	}
 
