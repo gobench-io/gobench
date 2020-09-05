@@ -3,7 +3,6 @@ package driver
 import (
 	"context"
 
-	"github.com/gobench-io/gobench/metrics"
 	"github.com/gobench-io/gobench/pb"
 )
 
@@ -31,21 +30,15 @@ func (n *nopLog) Gauge(ctx context.Context, mID int, title string, time int64, g
 	return nil
 }
 
-func (n *nopLog) FindCreateGroup(ctx context.Context, mg metrics.Group, appID int) (
-	*metrics.FCGroupRes, error,
-) {
+func (n *nopLog) FindCreateGroup(context.Context, *pb.FCGroupReq) (*pb.FCGroupRes, error) {
+	return new(pb.FCGroupRes), nil
+}
 
-	return new(metrics.FCGroupRes), nil
+func (n *nopLog) FindCreateGraph(context.Context, *pb.FCGraphReq) (*pb.FCGraphRes, error) {
+	return new(pb.FCGraphRes), nil
 }
-func (n *nopLog) FindCreateGraph(ctx context.Context, mgraph metrics.Graph, groupID int) (
-	*metrics.FCGraphRes, error,
-) {
-	return new(metrics.FCGraphRes), nil
-}
-func (n *nopLog) FindCreateMetric(ctx context.Context, mmetric metrics.Metric, graphID int) (
-	*metrics.FCMetricRes, error,
-) {
-	return new(metrics.FCMetricRes), nil
+func (n *nopLog) FindCreateMetric(context.Context, *pb.FCMetricReq) (*pb.FCMetricRes, error) {
+	return new(pb.FCMetricRes), nil
 }
 
 // NewNopMetricLog returns a no-op metric logger

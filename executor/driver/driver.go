@@ -271,14 +271,24 @@ func Setup(groups []metrics.Group) error {
 
 		for _, graph := range group.Graphs {
 			// create new graph if not existed
-			egraph, err := driver.ml.FindCreateGraph(ctx, graph, egroup.ID)
+			egraph, err := driver.ml.FindCreateGraph(ctx, &pb.FCGraphReq{
+				AppID:   int64(driver.appID),
+				Title:   graph.Title,
+				Unit:    graph.Unit,
+				GroupID: egroup.Id,
+			})
 			if err != nil {
 				return fmt.Errorf("failed create graph: %v", err)
 			}
 
 			for _, m := range graph.Metrics {
 				// create new metric if not existed
-				emetric, err := driver.ml.FindCreateMetric(ctx, m, egraph.ID)
+				emetric, err := driver.ml.FindCreateMetric(ctx, &pb.FCMetricReq{
+					AppID:   int64(driver.appID),
+					Title:   m.Title,
+					Type:    string(m.Type),
+					GraphID: egraph.Id,
+				})
 				if err != nil {
 					return fmt.Errorf("failed create metric: %v", err)
 				}
@@ -296,7 +306,7 @@ func Setup(groups []metrics.Group) error {
 					units[m.Title] = unit{
 						Title:    m.Title,
 						Type:     m.Type,
-						metricID: emetric.ID,
+						metricID: int(emetric.Id),
 						c:        c,
 					}
 				}
@@ -313,7 +323,7 @@ func Setup(groups []metrics.Group) error {
 					units[m.Title] = unit{
 						Title:    m.Title,
 						Type:     m.Type,
-						metricID: emetric.ID,
+						metricID: int(emetric.Id),
 						h:        h,
 					}
 				}
@@ -329,7 +339,7 @@ func Setup(groups []metrics.Group) error {
 					units[m.Title] = unit{
 						Title:    m.Title,
 						Type:     m.Type,
-						metricID: emetric.ID,
+						metricID: int(emetric.Id),
 						g:        g,
 					}
 				}
