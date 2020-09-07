@@ -89,13 +89,9 @@ func getExecutor() *Executor {
 // NewExecutor creates a new executor
 // also load the plugin from driver path
 func NewExecutor(opts *Options, logger logger.Logger) (e *Executor, err error) {
-	// id is the combination of hostname and pid
-	hostname, _ := os.Hostname()
-	pid := os.Getpid()
-	id := fmt.Sprintf("%s-%d", hostname, pid)
-
 	e = getExecutor()
 
+	e.units = make(map[string]unit)
 	e.logger = logger
 	e.agentSock = opts.AgentSock
 	e.executorSock = opts.ExecutorSock
@@ -205,7 +201,7 @@ func (e *Executor) logScaled(ctx context.Context, freq time.Duration) {
 		}
 	}(ch)
 
-	if err := d.logScaledOnCue(ctx, ch); err != nil {
+	if err := e.logScaledOnCue(ctx, ch); err != nil {
 		e.logger.Fatalw("failed logScaledOnCue", "err", err)
 	}
 }
