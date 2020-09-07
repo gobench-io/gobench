@@ -23,8 +23,9 @@ import (
 type status string
 
 const (
-	Idle    status = "idle"
-	Running status = "running"
+	Idle     status = "idle"
+	Running  status = "running"
+	Finished status = "finished"
 )
 
 // Error
@@ -159,6 +160,7 @@ func (e *Executor) run(ctx context.Context) (err error) {
 	}
 
 	// todo: update status
+	e.status = Finished
 
 	return
 }

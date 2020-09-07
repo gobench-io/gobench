@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/gobench-io/gobench/logger"
 	"github.com/gobench-io/gobench/pb"
@@ -131,4 +132,51 @@ func TestStart(t *testing.T) {
 	})
 
 	assert.Nil(t, err)
+}
+
+func TestCancel(t *testing.T) {
+	opts := &Options{
+		AgentSock:    "/tmp/a1",
+		ExecutorSock: "/tmp/e1",
+		AppID:        1,
+		Vus: scenario.Vus{
+			scenario.Vu{
+				Nu:   20,
+				Rate: 100,
+				Fu: func(ctx context.Context, vui int) {
+					for {
+						time.Sleep(time.Second)
+					}
+				},
+			},
+		},
+	}
+	logger := logger.NewNopLogger()
+
+	e, err := NewExecutor(opts, logger)
+	assert.Nil(t, err)
+
+	e.rc = newNopMetricLog()
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	done := make(chan struct{}, 1)
+
+	go func() {
+		_, err = e.Start(ctx, &pb.StartRequest{
+			AppID: int64(opts.AppID),
+		})
+		assert.EqualError(t, err, ErrAppCancel.Error())
+		assert.Equal(t, Finished, e.status)
+
+		done <- struct{}{}
+	}()
+
+	cancel()
+
+	select {
+	case <-done:
+	case <-time.After(2 * time.Second):
+		t.Fatalf("Should have finish the running after cancel")
+	}
 }
