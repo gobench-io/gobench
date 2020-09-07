@@ -11,7 +11,7 @@ import (
 func (m *Executor) Start(ctx context.Context, req *pb.StartRequest) (*pb.StartResult, error) {
 	m.logger.Infow("executor rpc starting")
 
-	err := m.driver.Run(ctx)
+	err := m.run(ctx)
 
 	m.logger.Infow("executor rpc finished")
 

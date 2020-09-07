@@ -33,6 +33,29 @@ func TestGenerate(t *testing.T) {
 	os.RemoveAll(dir)
 }
 
+func TestNew(t *testing.T) {
+	vus := scenario.Vus{
+		scenario.Vu{
+
+			Nu:   20,
+			Rate: 100,
+			Fu:   func(ctx context.Context, vui int) {},
+		},
+	}
+
+	e1, err := NewExecutor(&Options{Vus: vus}, logger.NewNopLogger())
+	assert.Nil(t, err)
+	e2, err := NewExecutor(&Options{Vus: vus}, logger.NewNopLogger())
+	assert.Nil(t, err)
+
+	// singleton object
+	assert.Equal(t, e1, e2)
+
+	assert.Equal(t, e1.status, Idle)
+	assert.Equal(t, e1.units, make(map[string]unit))
+	assert.Len(t, e1.vus, 1)
+}
+
 // a generated file should be compiled with a valid scenario
 func TestCompile(t *testing.T) {
 	scenario := `
@@ -100,7 +123,7 @@ func TestStart(t *testing.T) {
 	assert.Nil(t, err)
 
 	// setup nop metric logger for the driver
-	assert.Nil(t, e.driver.SetNopMetricLog())
+	// assert.Nil(t, e.driver.SetNopMetricLog())
 
 	ctx := context.TODO()
 
