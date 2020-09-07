@@ -122,8 +122,7 @@ func TestStart(t *testing.T) {
 	e, err := NewExecutor(opts, logger)
 	assert.Nil(t, err)
 
-	// setup nop metric logger for the driver
-	// assert.Nil(t, e.driver.SetNopMetricLog())
+	e.rc = newNopMetricLog()
 
 	ctx := context.TODO()
 
