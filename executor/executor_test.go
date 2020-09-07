@@ -10,9 +10,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gobench-io/gobench/executor/scenario"
 	"github.com/gobench-io/gobench/logger"
 	"github.com/gobench-io/gobench/pb"
-	"github.com/gobench-io/gobench/scenario"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -65,7 +65,7 @@ package main
 import (
 	"context"
 
-	"github.com/gobench-io/gobench/scenario"
+	"github.com/gobench-io/gobench/executor/scenario"
 )
 
 func export() scenario.Vus {

@@ -120,7 +120,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/gobench-io/gobench/scenario"
+	"github.com/gobench-io/gobench/executor/scenario"
 )
 
 // export is a required function for a scenario
@@ -159,7 +159,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/gobench-io/gobench/scenario"
+	"github.com/gobench-io/gobench/executor/scenario"
 )
 
 // export is a required function for a scenario
@@ -201,7 +201,7 @@ package main
 import (
 	"context"
 
-	"github.com/gobench-io/gobench/scenario"
+	"github.com/gobench-io/gobench/executor/scenario"
 )
 
 func export() scenario.Vus {
@@ -255,7 +255,7 @@ import (
 	"context"
 
 	httpClient "github.com/gobench-io/gobench/clients/http"
-	"github.com/gobench-io/gobench/scenario"
+	"github.com/gobench-io/gobench/executor/scenario"
 )
 
 func export() scenario.Vus {
