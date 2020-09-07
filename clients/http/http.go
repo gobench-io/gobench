@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gobench-io/gobench/executor/driver"
+	"github.com/gobench-io/gobench/executor"
 	"github.com/gobench-io/gobench/metrics"
 )
 
@@ -69,7 +69,7 @@ func NewHttpClient(ctx context.Context, prefix string) (HttpClient, error) {
 		client: client,
 	}
 
-	if err := driver.Setup(groups); err != nil {
+	if err := executor.Setup(groups); err != nil {
 		return httpClient, err
 	}
 
@@ -86,17 +86,17 @@ func (h *HttpClient) do(method, url string, body []byte, headers map[string]stri
 
 	defer func() {
 		diff := time.Since(begin)
-		driver.Notify(latency, diff.Microseconds())
+		executor.Notify(latency, diff.Microseconds())
 		if err != nil {
-			driver.Notify(otherFail, 1)
+			executor.Notify(otherFail, 1)
 			return
 		}
 		if res.StatusCode >= 300 || res.StatusCode < 200 {
-			driver.Notify(fail, 1)
+			executor.Notify(fail, 1)
 			err = fmt.Errorf("request failed with status code %d", res.StatusCode)
 			return
 		}
-		driver.Notify(success, 1)
+		executor.Notify(success, 1)
 	}()
 
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(body))

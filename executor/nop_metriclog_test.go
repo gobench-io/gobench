@@ -7,7 +7,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-// nil metric logger
+// nop metric logger, used for testing
 type nopLog struct{}
 
 func (n *nopLog) Counter(ctx context.Context, req *pb.CounterReq, opts ...grpc.CallOption) (*pb.CounterRes, error) {

@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/gobench-io/gobench/executor/driver"
+	"github.com/gobench-io/gobench/executor"
 	"github.com/gobench-io/gobench/metrics"
 	"github.com/nats-io/nats.go"
 )
@@ -161,13 +161,13 @@ func disconnectErrHandler(nc *nats.Conn, err error) {
 	if err != nil {
 		log.Printf("Disconnected due to: %v\n", err)
 	}
-	driver.Notify(conTotal, -1)
+	executor.Notify(conTotal, -1)
 }
 
 func reconnectHandler(nc *nats.Conn) {
 	log.Printf("Reconnected [%s]\n", nc.ConnectedUrl())
-	driver.Notify(conTotal, 1)
-	driver.Notify(conReconnect, 1)
+	executor.Notify(conTotal, 1)
+	executor.Notify(conReconnect, 1)
 }
 func closeHandler(nc *nats.Conn) {
 	log.Printf("Exiting: %v\n", nc.LastError())
@@ -178,7 +178,7 @@ type NatsClient struct {
 }
 
 func NewNatClient(ctx context.Context, url string) (natsClient NatsClient, err error) {
-	if err := driver.Setup(groups()); err != nil {
+	if err := executor.Setup(groups()); err != nil {
 		return natsClient, err
 	}
 
@@ -191,14 +191,14 @@ func NewNatClient(ctx context.Context, url string) (natsClient NatsClient, err e
 	begin := time.Now()
 	if natsClient.conn, err = nats.Connect(url, opts...); err != nil {
 		log.Printf("Connect error: %v\n", err)
-		driver.Notify(conError, 1)
+		executor.Notify(conError, 1)
 		return natsClient, err
 	}
 
 	diff := time.Since(begin)
 
-	driver.Notify(conTotal, 1)
-	driver.Notify(conLatency, diff.Microseconds())
+	executor.Notify(conTotal, 1)
+	executor.Notify(conLatency, diff.Microseconds())
 
 	return natsClient, nil
 }
@@ -210,8 +210,8 @@ func (c *NatsClient) Publish(ctx context.Context, topic string, data []byte) err
 	}
 	diff := time.Since(begin)
 
-	driver.Notify(pubTotal, 1)
-	driver.Notify(pubLatency, diff.Microseconds())
+	executor.Notify(pubTotal, 1)
+	executor.Notify(pubLatency, diff.Microseconds())
 
 	return nil
 }
@@ -222,14 +222,14 @@ func (c *NatsClient) Subscribe(ctx context.Context, topic string) error {
 
 	// begin to sub, ignore sub
 	if _, err := c.conn.ChanSubscribe(topic, ch); err != nil {
-		driver.Notify(subError, 1)
+		executor.Notify(subError, 1)
 		return err
 	}
 	diff := time.Since(begin)
 
 	// notify sub total and latency
-	driver.Notify(subTotal, 1)
-	driver.Notify(subLatency, diff.Microseconds())
+	executor.Notify(subTotal, 1)
+	executor.Notify(subLatency, diff.Microseconds())
 
 	go func(ch chan *nats.Msg) {
 		<-ch

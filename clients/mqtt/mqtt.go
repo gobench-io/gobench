@@ -7,7 +7,7 @@ import (
 
 	paho "github.com/eclipse/paho.mqtt.golang"
 	"github.com/gobench-io/gobench/dis"
-	"github.com/gobench-io/gobench/executor/driver"
+	"github.com/gobench-io/gobench/executor"
 	"github.com/gobench-io/gobench/metrics"
 )
 
@@ -266,7 +266,7 @@ func NewMqttClient(ctx context.Context, opts *ClientOptions) (MqttClient, error)
 	mqttClient := MqttClient{}
 
 	gs := groups()
-	if err := driver.Setup(gs); err != nil {
+	if err := executor.Setup(gs); err != nil {
 		return mqttClient, err
 	}
 
@@ -281,7 +281,7 @@ func NewMqttClient(ctx context.Context, opts *ClientOptions) (MqttClient, error)
 	// Both at initial connection time and upon automatic reconnect.
 	OnConnect := opts.OnConnect
 	opts.SetOnConnectHandler(func(c paho.Client) {
-		driver.Notify(conTotal, 1)
+		executor.Notify(conTotal, 1)
 		if OnConnect != nil {
 			OnConnect(c)
 		}
@@ -290,7 +290,7 @@ func NewMqttClient(ctx context.Context, opts *ClientOptions) (MqttClient, error)
 	// be executed in the case where the client unexpectedly loses connection with the MQTT broker.
 	OnConnectionLost := opts.OnConnectionLost
 	opts.SetConnectionLostHandler(func(c paho.Client, e error) {
-		driver.Notify(conTotal, -1)
+		executor.Notify(conTotal, -1)
 		if OnConnectionLost != nil {
 			OnConnectionLost(c, e)
 		}
@@ -299,7 +299,7 @@ func NewMqttClient(ctx context.Context, opts *ClientOptions) (MqttClient, error)
 	// be executed prior to the client attempting a reconnect to the MQTT broker.
 	OnReconnecting := opts.OnReconnecting
 	opts.SetReconnectingHandler(func(c paho.Client, o *paho.ClientOptions) {
-		driver.Notify(conReconnect, 1)
+		executor.Notify(conReconnect, 1)
 		if OnReconnecting != nil {
 			OnReconnecting(c, o)
 		}
@@ -330,10 +330,10 @@ func (c *MqttClient) Connect(ctx context.Context) error {
 	if err := token.Error(); err != nil {
 		log.Printf("mqtt connect fail: %s\n", err.Error())
 
-		driver.Notify(conError, 1)
+		executor.Notify(conError, 1)
 		return err
 	}
-	driver.Notify(conLatency, time.Since(begin).Microseconds())
+	executor.Notify(conLatency, time.Since(begin).Microseconds())
 
 	return nil
 }
@@ -351,17 +351,17 @@ func (c *MqttClient) Publish(ctx context.Context, topic string, qos byte, data [
 
 	switch qos {
 	case 0:
-		driver.Notify(pubQos0Total, 1)
-		driver.Notify(pubQos0Latency, time.Since(begin).Microseconds())
+		executor.Notify(pubQos0Total, 1)
+		executor.Notify(pubQos0Latency, time.Since(begin).Microseconds())
 	case 1:
-		driver.Notify(pubQos1Total, 1)
-		driver.Notify(pubQos1Latency, time.Since(begin).Microseconds())
+		executor.Notify(pubQos1Total, 1)
+		executor.Notify(pubQos1Latency, time.Since(begin).Microseconds())
 	case 2:
-		driver.Notify(pubQos2Total, 1)
-		driver.Notify(pubQos2Latency, time.Since(begin).Microseconds())
+		executor.Notify(pubQos2Total, 1)
+		executor.Notify(pubQos2Latency, time.Since(begin).Microseconds())
 	}
 
-	driver.Notify(msgPublishedTotal, 1)
+	executor.Notify(msgPublishedTotal, 1)
 
 	return nil
 }
@@ -385,7 +385,7 @@ func (c *MqttClient) Subscribe(
 ) error {
 	begin := time.Now()
 	token := c.client.Subscribe(topic, qos, func(c paho.Client, m paho.Message) {
-		driver.Notify(msgConsumedTotal, 1)
+		executor.Notify(msgConsumedTotal, 1)
 		if callback != nil {
 			callback(c, m)
 		}
@@ -395,12 +395,12 @@ func (c *MqttClient) Subscribe(
 
 	if err := token.Error(); err != nil {
 		log.Printf("mqtt subscribe fail: %s\n", err.Error())
-		driver.Notify(subError, 1)
+		executor.Notify(subError, 1)
 		return err
 	}
 
-	driver.Notify(subLatency, time.Since(begin).Microseconds())
-	driver.Notify(subTotal, 1)
+	executor.Notify(subLatency, time.Since(begin).Microseconds())
+	executor.Notify(subTotal, 1)
 
 	return nil
 }
@@ -431,11 +431,11 @@ func (c *MqttClient) Unsubscribe(ctx context.Context, topics ...string) error {
 
 	if err := token.Error(); err != nil {
 		log.Printf("mqtt unsubscribe fail: %s\n", err.Error())
-		driver.Notify(unsubError, 1)
+		executor.Notify(unsubError, 1)
 		return err
 	}
 
-	driver.Notify(unsubLatency, time.Since(begin).Microseconds())
+	executor.Notify(unsubLatency, time.Since(begin).Microseconds())
 
 	return nil
 }
@@ -443,6 +443,6 @@ func (c *MqttClient) Unsubscribe(ctx context.Context, topics ...string) error {
 // Disconnect will end the connection with the server
 func (c *MqttClient) Disconnect(ctx context.Context) error {
 	c.client.Disconnect(500)
-	driver.Notify(conTotal, -1)
+	executor.Notify(conTotal, -1)
 	return nil
 }
