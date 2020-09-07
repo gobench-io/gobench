@@ -22,14 +22,14 @@ func (n *nopLog) Gauge(ctx context.Context, req *pb.GaugeReq, opts ...grpc.CallO
 	return nil, nil
 }
 
-func (n *nopLog) FindCreateGroup(ctx context.Context, req *pb.FCGroupReq, opts ...grpc.CallOption)(*pb.FCGroupRes, error) {
+func (n *nopLog) FindCreateGroup(ctx context.Context, req *pb.FCGroupReq, opts ...grpc.CallOption) (*pb.FCGroupRes, error) {
 	return new(pb.FCGroupRes), nil
 }
 
-func (n *nopLog) FindCreateGraph(context.Context, *pb.FCGraphReq) (*, opts ...grpc.CallOptionpb.FCGraphRes, error) {
+func (n *nopLog) FindCreateGraph(ctx context.Context, req *pb.FCGraphReq, opts ...grpc.CallOption) (*pb.FCGraphRes, error) {
 	return new(pb.FCGraphRes), nil
 }
-func (n *nopLog) FindCreateMetric(context.Context, *pb.FCMetricReq) (*, opts ...grpc.CallOptionpb.FCMetricRes, error) {
+func (n *nopLog) FindCreateMetric(ctx context.Context, req *pb.FCMetricReq, opts ...grpc.CallOption) (*pb.FCMetricRes, error) {
 	return new(pb.FCMetricRes), nil
 }
 
