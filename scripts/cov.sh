@@ -8,7 +8,6 @@ rm -rf ./cov
 mkdir cov
 go test -v -failfast -covermode=atomic -coverprofile=./cov/agent.out ./agent
 go test -v -failfast -covermode=atomic -coverprofile=./cov/executor.out ./executor
-go test -v -failfast -covermode=atomic -coverprofile=./cov/driver.out ./driver
 go test -v -failfast -covermode=atomic -coverprofile=./cov/logger.out ./logger
 go test -v -failfast -covermode=atomic -coverprofile=./cov/master.out ./master
 go test -v -failfast -covermode=atomic -coverprofile=./cov/metrics.out ./metrics
