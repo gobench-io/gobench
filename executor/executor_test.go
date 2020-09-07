@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/gobench-io/gobench/logger"
+	"github.com/gobench-io/gobench/pb"
 	"github.com/gobench-io/gobench/scenario"
 	"github.com/stretchr/testify/assert"
 )
@@ -101,11 +102,11 @@ func TestStart(t *testing.T) {
 	// setup nop metric logger for the driver
 	assert.Nil(t, e.driver.SetNopMetricLog())
 
-	er, _ := newExecutorRPC(e)
+	ctx := context.TODO()
 
-	args := true
-	reply := new(bool)
+	_, err = e.Start(ctx, &pb.StartRequest{
+		AppID: int64(opts.AppID),
+	})
 
-	err = er.Start(&args, reply)
 	assert.Nil(t, err)
 }

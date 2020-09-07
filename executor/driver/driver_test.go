@@ -21,9 +21,9 @@ func TestNew(t *testing.T) {
 		},
 	}
 
-	n1, err := NewDriver(newNopMetricLog(), logger.NewNopLogger(), vus, 1)
+	n1, err := NewDriver(newNopMetricLog(), logger.NewNopLogger(), vus, 1, "1")
 	assert.Nil(t, err)
-	n2, err := NewDriver(newNopMetricLog(), logger.NewNopLogger(), vus, 2)
+	n2, err := NewDriver(newNopMetricLog(), logger.NewNopLogger(), vus, 2, "1")
 	assert.Nil(t, err)
 
 	assert.Equal(t, n1, n2)
@@ -45,7 +45,7 @@ func TestRunPlugin(t *testing.T) {
 			Fu:   func(ctx context.Context, vui int) {},
 		},
 	}
-	n, _ := NewDriver(newNopMetricLog(), logger.NewNopLogger(), vus, 1)
+	n, _ := NewDriver(newNopMetricLog(), logger.NewNopLogger(), vus, 1, "1")
 
 	assert.False(t, n.Running())
 
@@ -66,7 +66,7 @@ func TestCancelPlugin(t *testing.T) {
 			Fu:   func(ctx context.Context, vui int) {},
 		},
 	}
-	n, _ := NewDriver(newNopMetricLog(), logger.NewNopLogger(), vus, 1)
+	n, _ := NewDriver(newNopMetricLog(), logger.NewNopLogger(), vus, 1, "1")
 
 	ctx, cancel := context.WithCancel(context.Background())
 
