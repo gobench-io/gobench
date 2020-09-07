@@ -10,12 +10,13 @@ import (
 	"time"
 
 	"github.com/gobench-io/gobench/dis"
-	"github.com/gobench-io/gobench/executor/driver"
 	"github.com/gobench-io/gobench/logger"
 	"github.com/gobench-io/gobench/metrics"
 	"github.com/gobench-io/gobench/pb"
 	"github.com/gobench-io/gobench/scenario"
 	"google.golang.org/grpc"
+
+	gometrics "github.com/rcrowley/go-metrics"
 )
 
 // executor status. The executor is in either idle, or running state
@@ -34,6 +35,15 @@ var (
 	ErrAppCancel = errors.New("application is cancel")
 	ErrAppPanic  = errors.New("application is panic")
 )
+
+type unit struct {
+	Title    string             // metric title
+	Type     metrics.MetricType // to know the current unit type
+	metricID int                // metric table foreign key
+	c        gometrics.Counter
+	h        gometrics.Histogram
+	g        gometrics.Gauge
+}
 
 // Options is for creating new executor object
 type Options struct {
@@ -56,8 +66,24 @@ type Executor struct {
 	vus    scenario.Vus
 	units  map[string]unit //title - gometrics
 
-	driver *driver.Driver
-	rc     pb.AgentClient
+	rc pb.AgentClient
+}
+
+// the singleton instance of executor
+var executorInstance Executor
+
+func init() {
+	hostname, _ := os.Hostname()
+	pid := os.Getpid()
+	id := fmt.Sprintf("%s-%d", hostname, pid)
+
+	executorInstance = Executor{
+		id: id,
+	}
+}
+
+func getExecutor() *Executor {
+	return &executorInstance
 }
 
 // NewExecutor creates a new executor
@@ -68,14 +94,13 @@ func NewExecutor(opts *Options, logger logger.Logger) (e *Executor, err error) {
 	pid := os.Getpid()
 	id := fmt.Sprintf("%s-%d", hostname, pid)
 
-	e = &Executor{
-		id:           id,
-		logger:       logger,
-		agentSock:    opts.AgentSock,
-		executorSock: opts.ExecutorSock,
-		appID:        opts.AppID,
-		vus:          opts.Vus,
-	}
+	e = getExecutor()
+
+	e.logger = logger
+	e.agentSock = opts.AgentSock
+	e.executorSock = opts.ExecutorSock
+	e.appID = opts.AppID
+	e.vus = opts.Vus
 
 	e.status = Idle
 
@@ -86,8 +111,6 @@ func NewExecutor(opts *Options, logger logger.Logger) (e *Executor, err error) {
 		return
 	}
 	e.rc = pb.NewAgentClient(conn)
-
-	e.driver, err = driver.NewDriver(e.rc, logger, opts.Vus, opts.AppID, id)
 
 	return
 }
@@ -231,7 +254,7 @@ func (e *Executor) logScaledOnCue(ctx context.Context, ch chan interface{}) erro
 						Histogram: hv,
 					})
 				case metrics.Gauge:
-					_, err = d.ml.Gauge(ctx, &pb.GaugeReq{
+					_, err = e.rc.Gauge(ctx, &pb.GaugeReq{
 						Base:  base,
 						Gauge: u.g.Value(),
 					})
