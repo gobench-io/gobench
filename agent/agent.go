@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
-	"net/rpc"
 	"os"
 	"os/exec"
 	"sync"
@@ -34,14 +33,12 @@ type Agent struct {
 	ml     pb.AgentServer
 	logger logger.Logger
 	socket string
-	rs     *rpc.Server // rpc server to be served via unix socket
 }
 
 func NewLocalAgent(ml pb.AgentServer, logger logger.Logger) (*Agent, error) {
 	a := &Agent{
 		ml:     ml,
 		logger: logger,
-		rs:     rpc.NewServer(),
 	}
 	return a, nil
 }
@@ -53,7 +50,6 @@ func NewAgent(opts *Options, ml pb.AgentServer, logger logger.Logger) (*Agent, e
 		socket:      opts.Socket,
 		logger:      logger,
 		ml:          ml,
-		rs:          rpc.NewServer(),
 	}
 	return a, nil
 }
