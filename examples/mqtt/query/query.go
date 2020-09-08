@@ -30,7 +30,7 @@ const (
 	serverNum = 1000
 )
 
-func Export() scenario.Vus {
+func export() scenario.Vus {
 	return scenario.Vus{
 		{
 			Nu:   1,

@@ -11,7 +11,7 @@ import (
 	"github.com/gobench-io/gobench/executor/scenario"
 )
 
-func Export() scenario.Vus {
+func export() scenario.Vus {
 	return scenario.Vus{
 		{
 			Nu:   12,

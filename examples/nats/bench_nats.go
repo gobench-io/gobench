@@ -11,7 +11,7 @@ import (
 	"github.com/gobench-io/gobench/executor/scenario"
 )
 
-func Export() scenario.Vus {
+func export() scenario.Vus {
 	// nats benchmark example
 	return scenario.Vus{
 		{

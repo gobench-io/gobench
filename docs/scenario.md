@@ -3,7 +3,7 @@
 Example:
 
 ```{go}
-func Export() {
+func export() {
     return Scenario{
         vus: []gobench.Vu{
             {
