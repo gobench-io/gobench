@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/gobench-io/gobench/metrics"
+	"github.com/gobench-io/gobench/executor/metrics"
 	"github.com/mackerelio/go-osstat/cpu"
 	"github.com/mackerelio/go-osstat/loadavg"
 	"github.com/mackerelio/go-osstat/memory"

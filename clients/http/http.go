@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/gobench-io/gobench/executor"
-	"github.com/gobench-io/gobench/metrics"
+	"github.com/gobench-io/gobench/executor/metrics"
 )
 
 type HttpClient struct {

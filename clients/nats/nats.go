@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/gobench-io/gobench/executor"
-	"github.com/gobench-io/gobench/metrics"
+	"github.com/gobench-io/gobench/executor/metrics"
 	"github.com/nats-io/nats.go"
 )
 

@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/gobench-io/gobench/dis"
+	"github.com/gobench-io/gobench/executor/metrics"
 	"github.com/gobench-io/gobench/executor/scenario"
 	"github.com/gobench-io/gobench/logger"
-	"github.com/gobench-io/gobench/metrics"
 	"github.com/gobench-io/gobench/pb"
 	"google.golang.org/grpc"
 

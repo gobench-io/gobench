@@ -9,7 +9,7 @@ import (
 	entGraph "github.com/gobench-io/gobench/ent/graph"
 	entGroup "github.com/gobench-io/gobench/ent/group"
 	entMetric "github.com/gobench-io/gobench/ent/metric"
-	"github.com/gobench-io/gobench/metrics"
+	"github.com/gobench-io/gobench/executor/metrics"
 	"github.com/gobench-io/gobench/pb"
 	"github.com/stretchr/testify/assert"
 )

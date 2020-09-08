@@ -10,8 +10,6 @@ go test -v -failfast -covermode=atomic -coverprofile=./cov/agent.out ./agent
 go test -v -failfast -covermode=atomic -coverprofile=./cov/executor.out ./executor
 go test -v -failfast -covermode=atomic -coverprofile=./cov/logger.out ./logger
 go test -v -failfast -covermode=atomic -coverprofile=./cov/master.out ./master
-go test -v -failfast -covermode=atomic -coverprofile=./cov/metrics.out ./metrics
-go test -v -failfast -covermode=atomic -coverprofile=./cov/scenario.out ./scenario
 go test -v -failfast -covermode=atomic -coverprofile=./cov/smtp.out ./services/smtp
 go test -v -failfast -covermode=atomic -coverprofile=./cov/web.out ./web
 

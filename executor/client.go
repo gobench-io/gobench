@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/gobench-io/gobench/metrics"
+	"github.com/gobench-io/gobench/executor/metrics"
 	"github.com/gobench-io/gobench/pb"
 
 	gometrics "github.com/rcrowley/go-metrics"
