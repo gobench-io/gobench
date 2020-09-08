@@ -1,10 +1,10 @@
-package driver
+package executor
 
 import (
 	"context"
 	"time"
 
-	"github.com/gobench-io/gobench/metrics"
+	"github.com/gobench-io/gobench/executor/metrics"
 	"github.com/mackerelio/go-osstat/cpu"
 	"github.com/mackerelio/go-osstat/loadavg"
 	"github.com/mackerelio/go-osstat/memory"
@@ -19,7 +19,7 @@ const ramUsing string = "RAM"
 // status
 
 // systemloadSetup setup the metrics for systemload
-func (d *Driver) systemloadSetup() (err error) {
+func (e *Executor) systemloadSetup() (err error) {
 	group := metrics.Group{
 		Name: "System Load",
 		Graphs: []metrics.Graph{
@@ -98,7 +98,7 @@ type rtxBytes struct {
 }
 
 // systemloadRun start collect the metrics
-func (d *Driver) systemloadRun(ctx context.Context) (err error) {
+func (e *Executor) systemloadRun(ctx context.Context) (err error) {
 	ch := make(chan interface{})
 	freq := 1 * time.Second
 
@@ -117,7 +117,7 @@ func (d *Driver) systemloadRun(ctx context.Context) (err error) {
 	for {
 		select {
 		case <-ctx.Done():
-			d.logger.Infow("systemloadRun canceled")
+			e.logger.Infow("systemloadRun canceled")
 			return nil
 
 		case <-ch:

@@ -8,10 +8,10 @@ import (
 
 	"github.com/gobench-io/gobench/clients/nats"
 	"github.com/gobench-io/gobench/dis"
-	"github.com/gobench-io/gobench/scenario"
+	"github.com/gobench-io/gobench/executor/scenario"
 )
 
-func Export() scenario.Vus {
+func export() scenario.Vus {
 	// nats benchmark example
 	return scenario.Vus{
 		{

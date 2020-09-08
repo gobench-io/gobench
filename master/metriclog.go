@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/gobench-io/gobench/ent"
-	"github.com/gobench-io/gobench/metrics"
+	"github.com/gobench-io/gobench/pb"
 
 	entApp "github.com/gobench-io/gobench/ent/application"
 	entGraph "github.com/gobench-io/gobench/ent/graph"
@@ -12,82 +12,75 @@ import (
 	entMetric "github.com/gobench-io/gobench/ent/metric"
 )
 
-func (m *Master) Counter(req *metrics.CounterReq, res *metrics.CounterRes) (
-	err error,
-) {
+func (m *Master) Counter(ctx context.Context, req *pb.CounterReq) (*pb.CounterRes, error) {
 	// todo: check appID condition
-	ctx := context.TODO()
-
-	_, err = m.db.Counter.Create().
-		SetWID(req.EID).
-		SetMetricID(req.MID).
-		SetTime(req.Time).
+	_, err := m.db.Counter.Create().
+		SetWID(req.Base.EID).
+		SetMetricID(int(req.Base.MID)).
+		SetTime(req.Base.Time).
 		SetCount(req.Count).
 		Save(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	res.AppID = m.job.app.ID
-	res.Success = true
+	res := new(pb.CounterRes)
 
-	return
+	return res, nil
 }
 
-func (m *Master) Histogram(req *metrics.HistogramReq, res *metrics.HistogramRes) (
-	err error,
-) {
+func (m *Master) Histogram(ctx context.Context, req *pb.HistogramReq) (*pb.HistogramRes, error) {
 	// todo: check appID condition
-	ctx := context.TODO()
-
-	_, err = m.db.Histogram.Create().
-		SetWID(req.EID).
-		SetMetricID(req.MID).
-		SetTime(req.Time).
-		SetCount(req.Count).
-		SetMin(req.Min).
-		SetMax(req.Max).
-		SetMean(req.Mean).
-		SetStddev(req.Stddev).
-		SetMedian(req.Median).
-		SetP75(req.P75).
-		SetP95(req.P95).
-		SetP99(req.P99).
-		SetP999(req.P999).
+	_, err := m.db.Histogram.Create().
+		SetWID(req.Base.EID).
+		SetMetricID(int(req.Base.MID)).
+		SetTime(req.Base.Time).
+		SetCount(req.Histogram.Count).
+		SetMin(req.Histogram.Min).
+		SetMax(req.Histogram.Max).
+		SetMean(req.Histogram.Mean).
+		SetStddev(req.Histogram.Stddev).
+		SetMedian(req.Histogram.Median).
+		SetP75(req.Histogram.P75).
+		SetP95(req.Histogram.P95).
+		SetP99(req.Histogram.P99).
+		SetP999(req.Histogram.P999).
 		Save(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	res.AppID = m.job.app.ID
-	res.Success = true
+	res := new(pb.HistogramRes)
 
-	return
+	return res, nil
 }
 
-func (m *Master) Gauge(req *metrics.GaugeReq, res *metrics.GaugeRes) (
-	err error,
-) {
+func (m *Master) Gauge(ctx context.Context, req *pb.GaugeReq) (*pb.GaugeRes, error) {
 	// todo: check appID condition
-	ctx := context.TODO()
-
-	_, err = m.db.Gauge.Create().
-		SetWID(req.EID).
-		SetMetricID(req.MID).
-		SetTime(req.Time).
+	_, err := m.db.Gauge.Create().
+		SetWID(req.Base.EID).
+		SetMetricID(int(req.Base.MID)).
+		SetTime(req.Base.Time).
 		SetValue(req.Gauge).
 		Save(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	res.AppID = m.job.app.ID
-	res.Success = true
+	res := new(pb.GaugeRes)
 
-	return
+	return res, nil
 }
 
 // FindCreateGroup find or create new group
 // return the existing/new group ent, is created, and error
-func (m *Master) FindCreateGroup(req *metrics.FCGroupReq, res *metrics.FCGroupRes) (err error) {
-	ctx := context.TODO()
-
+func (m *Master) FindCreateGroup(ctx context.Context, req *pb.FCGroupReq) (res *pb.FCGroupRes, err error) {
 	var eg *ent.Group
+	res = new(pb.FCGroupRes)
 
 	defer func() {
 		if err == nil {
-			res.ID = eg.ID
+			res.Id = int64(eg.ID)
 		}
 	}()
 
@@ -96,7 +89,7 @@ func (m *Master) FindCreateGroup(req *metrics.FCGroupReq, res *metrics.FCGroupRe
 		Where(
 			entGroup.NameEQ(req.Name),
 			entGroup.HasApplicationWith(
-				entApp.IDEQ(req.AppID),
+				entApp.IDEQ(int(req.AppID)),
 			),
 		).
 		First(ctx)
@@ -104,7 +97,7 @@ func (m *Master) FindCreateGroup(req *metrics.FCGroupReq, res *metrics.FCGroupRe
 	// if there is one found
 	if err != nil {
 		if !ent.IsNotFound(err) {
-			return
+			return nil, err
 		}
 
 		eg, err = m.db.Group.
@@ -119,14 +112,13 @@ func (m *Master) FindCreateGroup(req *metrics.FCGroupReq, res *metrics.FCGroupRe
 	return
 }
 
-func (m *Master) FindCreateGraph(req *metrics.FCGraphReq, res *metrics.FCGraphRes) (err error) {
-	ctx := context.TODO()
-
+func (m *Master) FindCreateGraph(ctx context.Context, req *pb.FCGraphReq) (res *pb.FCGraphRes, err error) {
 	var egraph *ent.Graph
+	res = new(pb.FCGraphRes)
 
 	defer func() {
 		if err == nil {
-			res.ID = egraph.ID
+			res.Id = int64(egraph.ID)
 		}
 	}()
 
@@ -135,7 +127,7 @@ func (m *Master) FindCreateGraph(req *metrics.FCGraphReq, res *metrics.FCGraphRe
 			entGraph.TitleEQ(req.Title),
 			entGraph.UnitEQ(req.Unit),
 			entGraph.HasGroupWith(
-				entGroup.IDEQ(req.GroupID),
+				entGroup.IDEQ(int(req.GroupID)),
 			),
 		).
 		First(ctx)
@@ -149,7 +141,7 @@ func (m *Master) FindCreateGraph(req *metrics.FCGraphReq, res *metrics.FCGraphRe
 		egraph, err = m.db.Graph.Create().
 			SetTitle(req.Title).
 			SetUnit(req.Unit).
-			SetGroupID(req.GroupID).
+			SetGroupID(int(req.GroupID)).
 			Save(ctx)
 		return
 	}
@@ -157,14 +149,13 @@ func (m *Master) FindCreateGraph(req *metrics.FCGraphReq, res *metrics.FCGraphRe
 	return
 }
 
-func (m *Master) FindCreateMetric(req *metrics.FCMetricReq, res *metrics.FCMetricRes) (err error) {
-	ctx := context.TODO()
-
+func (m *Master) FindCreateMetric(ctx context.Context, req *pb.FCMetricReq) (res *pb.FCMetricRes, err error) {
 	var emetric *ent.Metric
+	res = new(pb.FCMetricRes)
 
 	defer func() {
 		if err == nil {
-			res.ID = emetric.ID
+			res.Id = int64(emetric.ID)
 		}
 	}()
 
@@ -173,7 +164,7 @@ func (m *Master) FindCreateMetric(req *metrics.FCMetricReq, res *metrics.FCMetri
 			entMetric.TitleEQ(req.Title),
 			entMetric.TypeEQ(string(req.Type)),
 			entMetric.HasGraphWith(
-				entGraph.IDEQ(req.GraphID),
+				entGraph.IDEQ(int(req.GraphID)),
 			),
 		).
 		First(ctx)
@@ -188,7 +179,7 @@ func (m *Master) FindCreateMetric(req *metrics.FCMetricReq, res *metrics.FCMetri
 			Create().
 			SetTitle(req.Title).
 			SetType(string(req.Type)).
-			SetGraphID(req.GraphID).
+			SetGraphID(int(req.GraphID)).
 			Save(ctx)
 
 		return

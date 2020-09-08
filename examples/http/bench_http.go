@@ -8,10 +8,10 @@ import (
 	"time"
 
 	httpClient "github.com/gobench-io/gobench/clients/http"
-	"github.com/gobench-io/gobench/scenario"
+	"github.com/gobench-io/gobench/executor/scenario"
 )
 
-func Export() scenario.Vus {
+func export() scenario.Vus {
 	return scenario.Vus{
 		{
 			Nu:   12,

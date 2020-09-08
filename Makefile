@@ -3,12 +3,17 @@ GO ?= go
 PACKAGES := $(shell go list ./...)
 EXAMPLES := $(shell go list ./... | grep "examples")
 
-.PHONY: lint build examples tools ent statik
+.PHONY: lint build examples tools ent statik pb
+
+pb:
+	protoc -I pb pb/executor.proto --go_out=plugins=grpc:./pb
+	protoc -I pb pb/agent.proto --go_out=plugins=grpc:./pb
 
 # run lint
 lint-pkgs:
 	GO111MODULE=off go get -u honnef.co/go/tools/cmd/staticcheck
 	GO111MODULE=off go get -u github.com/client9/misspell/cmd/misspell
+	GO111MODULE=off go get -u github.com/rakyll/statik
 
 lint:
 	$(exit $(go fmt ./... | wc -l))
@@ -33,8 +38,11 @@ ent:
 # generate statik file for web ui
 statik:
 	statik -src=./web/ui/react-app/build -dest=./web -f
+
 build-web-ui:
 	cd web/ui/react-app && yarn build
+
 update-statik: build-web-ui statik
+
 run:
 	go run .

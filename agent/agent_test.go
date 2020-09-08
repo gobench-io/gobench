@@ -35,7 +35,5 @@ func TestStartAgent(t *testing.T) {
 		ClusterPort: 2345,
 	})
 	assert.Nil(t, a.StartSocketServer())
-	l, err := a.StartWebServer()
-	assert.Nil(t, err)
-	l.Close()
+	// insert the grpc over tcp here
 }

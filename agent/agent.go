@@ -6,14 +6,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
-	"net/http"
-	"net/rpc"
 	"os"
 	"os/exec"
 	"sync"
 	"time"
 
 	"github.com/gobench-io/gobench/logger"
+	"github.com/gobench-io/gobench/pb"
+	"google.golang.org/grpc"
 )
 
 type Options struct {
@@ -22,88 +22,60 @@ type Options struct {
 	Socket      string
 }
 
+// Agent struct
+// todo: agent needs appID
 type Agent struct {
 	mu sync.Mutex
 
 	route       string
 	clusterPort int
 
-	ml     metricLoggerRPC
+	ml     pb.AgentServer
 	logger logger.Logger
 	socket string
-	rs     *rpc.Server // rpc server to be served via unix socket
 }
 
-func NewLocalAgent(ml metricLoggerRPC, logger logger.Logger) (*Agent, error) {
+func NewLocalAgent(ml pb.AgentServer, logger logger.Logger) (*Agent, error) {
 	a := &Agent{
 		ml:     ml,
 		logger: logger,
-		rs:     rpc.NewServer(),
 	}
 	return a, nil
 }
 
-func NewAgent(opts *Options, ml metricLoggerRPC, logger logger.Logger) (*Agent, error) {
+func NewAgent(opts *Options, ml pb.AgentServer, logger logger.Logger) (*Agent, error) {
 	a := &Agent{
 		route:       opts.Route,
 		clusterPort: opts.ClusterPort,
 		socket:      opts.Socket,
 		logger:      logger,
 		ml:          ml,
-		rs:          rpc.NewServer(),
 	}
 	return a, nil
 }
 
-func (a *Agent) SetMetricLogger(ml metricLoggerRPC) {
+func (a *Agent) SetMetricLogger(ml pb.AgentServer) {
 	a.mu.Lock()
 	a.ml = ml
 	a.mu.Unlock()
 }
 
+// StartSocketServer setup an rpc server over agent unix socket
+// the function runs the server in a separate routine
 func (a *Agent) StartSocketServer() error {
-	ar, err := newRPC(a.ml)
-	if err != nil {
-		return err
-	}
-	if err := a.rs.RegisterName("Agent", ar); err != nil {
-		return err
-	}
-
-	serverMux := http.NewServeMux()
-	serverMux.Handle(rpc.DefaultRPCPath, a.rs)
-	serverMux.Handle(rpc.DefaultDebugPath, a.rs)
-
+	// remove if any
 	os.Remove(a.socket)
+
 	l, err := net.Listen("unix", a.socket)
 	if err != nil {
 		return err
 	}
+	s := grpc.NewServer()
+	pb.RegisterAgentServer(s, a.ml)
 
-	go http.Serve(l, serverMux)
+	go s.Serve(l)
 
 	return nil
-}
-
-func (a *Agent) StartWebServer() (l net.Listener, err error) {
-	rs := rpc.NewServer()
-
-	err = rs.RegisterName("Agent", a.ml)
-	if err != nil {
-		return
-	}
-	serverMux := http.NewServeMux()
-	serverMux.Handle(rpc.DefaultRPCPath, a.rs)
-	serverMux.Handle(rpc.DefaultDebugPath, a.rs)
-
-	l, err = net.Listen("tcp", fmt.Sprintf(":%d", a.clusterPort))
-	if err != nil {
-		return
-	}
-
-	go http.Serve(l, serverMux)
-
-	return
 }
 
 // RunJob runs the executor in a shell
@@ -154,18 +126,16 @@ func (a *Agent) RunJob(ctx context.Context, executorPath string, appID int) (err
 
 	a.logger.Infow("local executor to run driver")
 
-	req := true
-	res := new(bool)
-	if err = client.Call("Executor.Start", &req, &res); err != nil {
+	// todo: handle the response
+	if _, err = client.Start(ctx, &pb.StartRequest{}); err != nil {
 		err = fmt.Errorf("rpc start: %v", err)
 		return
 	}
 
 	a.logger.Infow("local executor is shutting down")
-	terReq := 0
-	terRes := new(bool)
+
 	// ignore error, since when the executor is terminated, this rpc will fail
-	_ = client.Call("Executor.Terminate", &terReq, &terRes)
+	_, _ = client.Terminate(ctx, &pb.TermRequest{})
 
 	if err = cmd.Wait(); err != nil {
 		a.logger.Errorw("executor wait", "err", err)
@@ -176,10 +146,11 @@ func (a *Agent) RunJob(ctx context.Context, executorPath string, appID int) (err
 }
 
 func waitForReady(ctx context.Context, executorSock string, expiredIn time.Duration) (
-	*rpc.Client, error,
+	pb.ExecutorClient, error,
 ) {
 	timeout := time.After(expiredIn)
 	sleep := 10 * time.Millisecond
+	socket := "passthrough:///unix://" + executorSock
 	for {
 		time.Sleep(sleep)
 
@@ -189,10 +160,11 @@ func waitForReady(ctx context.Context, executorSock string, expiredIn time.Durat
 		case <-timeout:
 			return nil, errors.New("timeout")
 		default:
-			client, err := rpc.DialHTTP("unix", executorSock)
+			conn, err := grpc.Dial(socket, grpc.WithInsecure(), grpc.WithBlock())
 			if err != nil {
 				continue
 			}
+			client := pb.NewExecutorClient(conn)
 			return client, nil
 		}
 	}

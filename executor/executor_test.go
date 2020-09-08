@@ -8,9 +8,11 @@ import (
 	"os/exec"
 	"path/filepath"
 	"testing"
+	"time"
 
+	"github.com/gobench-io/gobench/executor/scenario"
 	"github.com/gobench-io/gobench/logger"
-	"github.com/gobench-io/gobench/scenario"
+	"github.com/gobench-io/gobench/pb"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -32,6 +34,29 @@ func TestGenerate(t *testing.T) {
 	os.RemoveAll(dir)
 }
 
+func TestNew(t *testing.T) {
+	vus := scenario.Vus{
+		scenario.Vu{
+
+			Nu:   20,
+			Rate: 100,
+			Fu:   func(ctx context.Context, vui int) {},
+		},
+	}
+
+	e1, err := NewExecutor(&Options{Vus: vus}, logger.NewNopLogger())
+	assert.Nil(t, err)
+	e2, err := NewExecutor(&Options{Vus: vus}, logger.NewNopLogger())
+	assert.Nil(t, err)
+
+	// singleton object
+	assert.Equal(t, e1, e2)
+
+	assert.Equal(t, e1.status, Idle)
+	assert.Equal(t, e1.units, make(map[string]unit))
+	assert.Len(t, e1.vus, 1)
+}
+
 // a generated file should be compiled with a valid scenario
 func TestCompile(t *testing.T) {
 	scenario := `
@@ -40,7 +65,7 @@ package main
 import (
 	"context"
 
-	"github.com/gobench-io/gobench/scenario"
+	"github.com/gobench-io/gobench/executor/scenario"
 )
 
 func export() scenario.Vus {
@@ -98,14 +123,60 @@ func TestStart(t *testing.T) {
 	e, err := NewExecutor(opts, logger)
 	assert.Nil(t, err)
 
-	// setup nop metric logger for the driver
-	assert.Nil(t, e.driver.SetNopMetricLog())
+	e.rc = newNopMetricLog()
 
-	er, _ := newExecutorRPC(e)
+	ctx := context.TODO()
 
-	args := true
-	reply := new(bool)
+	_, err = e.Start(ctx, &pb.StartRequest{
+		AppID: int64(opts.AppID),
+	})
 
-	err = er.Start(&args, reply)
 	assert.Nil(t, err)
+}
+
+func TestCancel(t *testing.T) {
+	opts := &Options{
+		AgentSock:    "/tmp/a1",
+		ExecutorSock: "/tmp/e1",
+		AppID:        1,
+		Vus: scenario.Vus{
+			scenario.Vu{
+				Nu:   20,
+				Rate: 100,
+				Fu: func(ctx context.Context, vui int) {
+					for {
+						time.Sleep(time.Second)
+					}
+				},
+			},
+		},
+	}
+	logger := logger.NewNopLogger()
+
+	e, err := NewExecutor(opts, logger)
+	assert.Nil(t, err)
+
+	e.rc = newNopMetricLog()
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	done := make(chan struct{}, 1)
+
+	go func() {
+		_, err = e.Start(ctx, &pb.StartRequest{
+			AppID: int64(opts.AppID),
+		})
+		assert.EqualError(t, err, ErrAppCancel.Error())
+		assert.Equal(t, Finished, e.status)
+
+		done <- struct{}{}
+	}()
+
+	cancel()
+
+	select {
+	case <-done:
+	case <-time.After(2 * time.Second):
+		t.Fatalf("Should have finish the running after cancel")
+	}
 }

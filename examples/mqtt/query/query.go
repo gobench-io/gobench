@@ -22,7 +22,7 @@ import (
 
 	"github.com/gobench-io/gobench/clients/mqtt"
 	"github.com/gobench-io/gobench/dis"
-	"github.com/gobench-io/gobench/scenario"
+	"github.com/gobench-io/gobench/executor/scenario"
 )
 
 const (
@@ -30,7 +30,7 @@ const (
 	serverNum = 1000
 )
 
-func Export() scenario.Vus {
+func export() scenario.Vus {
 	return scenario.Vus{
 		{
 			Nu:   1,
