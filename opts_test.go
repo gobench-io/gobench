@@ -91,6 +91,8 @@ func TestOptions(t *testing.T) {
 		opts = mustNotFail([]string{"me", "-db", "./foo.sqlite3"})
 		assert.Equal(t, opts.DbPath, "./foo.sqlite3")
 
+		opts = mustNotFail([]string{"me", "--admin-password", "apassword"})
+		assert.Equal(t, opts.AdminPassword, "apassword")
 	})
 
 	t.Run("agent options", func(t *testing.T) {

@@ -25,8 +25,9 @@ Usage: gobench [options]
 
 Master Options:
     -a, --addr <host>   Bind to host address (default: 0.0.0.0)
-	-p, --port <port>   Use port for web client (default: 8080).
-	-db <file>          Location for the server database (default: ${HOME}/gobench.sqlite3)
+    -p, --port <port>   Use port for web client (default: 8080).
+    -db <file>          Location for the server database (default: ${HOME}/gobench.sqlite3)
+    --admin-password    Password required to login web dashboard
 
 Agent Options:
     --route <host:port> The master address to solicit routes.
@@ -80,7 +81,7 @@ func main() {
 		if err != nil {
 			printAndDie(fmt.Sprintf("%s: %s", exe, err))
 		}
-		web.Serve(m, logger)
+		web.Serve(m, opts.AdminPassword, logger)
 
 		return
 	}

@@ -9,11 +9,14 @@ pb:
 	protoc -I pb pb/executor.proto --go_out=plugins=grpc:./pb
 	protoc -I pb pb/agent.proto --go_out=plugins=grpc:./pb
 
-# run lint
+# run supported packages
 lint-pkgs:
 	GO111MODULE=off go get -u honnef.co/go/tools/cmd/staticcheck
 	GO111MODULE=off go get -u github.com/client9/misspell/cmd/misspell
+
+build-pkgs:
 	GO111MODULE=off go get -u github.com/rakyll/statik
+	GO111MODULE=off go get -u github.com/facebook/ent/cmd/entc
 
 lint:
 	$(exit $(go fmt ./... | wc -l))

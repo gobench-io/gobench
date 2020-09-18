@@ -18,9 +18,10 @@ import (
 type webKey string
 
 type handler struct {
-	logger logger.Logger
-	s      *master.Master
-	r      *chi.Mux
+	logger        logger.Logger
+	s             *master.Master
+	adminPassword string
+	r             *chi.Mux
 }
 
 func (h *handler) db() *ent.Client {
@@ -28,10 +29,11 @@ func (h *handler) db() *ent.Client {
 }
 
 // New return new router interface
-func newHandler(s *master.Master, logger logger.Logger) *handler {
+func newHandler(s *master.Master, adminPassword string, logger logger.Logger) *handler {
 	h := &handler{
-		s:      s,
-		logger: logger,
+		s:             s,
+		adminPassword: adminPassword,
+		logger:        logger,
 	}
 
 	// basic cors for more ideas, see:
@@ -122,8 +124,8 @@ func newHandler(s *master.Master, logger logger.Logger) *handler {
 }
 
 // Serve start a web server with given gobench server
-func Serve(s *master.Master, logger logger.Logger) {
-	h := newHandler(s, logger)
+func Serve(s *master.Master, adminPassword string, logger logger.Logger) {
+	h := newHandler(s, adminPassword, logger)
 
 	portS := fmt.Sprintf(":%d", s.WebPort())
 
