@@ -24,7 +24,7 @@ jobs:
 
     - name: Get dependencies
       run: |
-        make lint-pkgs
+        make install-pkgs
         
     - name: Build
       run: |
