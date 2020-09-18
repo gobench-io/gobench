@@ -25,7 +25,8 @@ type Options struct {
 	Program string
 
 	// master, agent mode
-	ClusterPort int
+	ClusterPort   int
+	AdminPassword string
 
 	// master mode
 	Port   int
@@ -51,8 +52,9 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 		modeS string
 
 		// master mode
-		port   int
-		dbPath string
+		port          int
+		dbPath        string
+		adminPassword string
 
 		// agent mode
 		route       string
@@ -69,6 +71,7 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 	fs.IntVar(&port, "p", DEFAULT_PORT, "Port of the master server.")
 	fs.IntVar(&port, "port", DEFAULT_PORT, "Port of the master server.")
 	fs.StringVar(&dbPath, "db", "", "Name of the database.")
+	fs.StringVar(&adminPassword, "admin-password", "", "Admin password to login to web dashboard")
 
 	// agent
 	fs.IntVar(&clusterPort, "clusterPort", DEFAULT_CLUSTER_PORT, "Cluster port to solicit and connect.")
@@ -107,6 +110,7 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 		opts.Port = port
 		opts.ClusterPort = clusterPort
 		opts.DbPath = dbPath
+		opts.AdminPassword = adminPassword
 		return opts, nil
 	}
 

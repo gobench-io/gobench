@@ -23,10 +23,11 @@ func newAPITest(t *testing.T) (*chi.Mux, *httptest.ResponseRecorder) {
 		Port:   8080,
 		DbPath: "./gobench.sqlite3",
 	}, logger)
+	adminPassword := "adminpwd"
 
 	err := m.Start()
 	assert.Nil(t, err)
-	h := newHandler(m, logger)
+	h := newHandler(m, adminPassword, logger)
 	r := h.r
 
 	w := httptest.NewRecorder()
