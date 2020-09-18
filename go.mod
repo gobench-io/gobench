@@ -7,6 +7,7 @@ require (
 	github.com/facebook/ent v0.4.0
 	github.com/go-chi/chi v4.1.0+incompatible
 	github.com/go-chi/cors v1.0.1
+	github.com/go-chi/jwtauth v4.0.4+incompatible
 	github.com/go-chi/render v1.0.1
 	github.com/golang/protobuf v1.4.1
 	github.com/jordan-wright/email v0.0.0-20200322182553-8eef2508c362

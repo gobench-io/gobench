@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
+	"github.com/go-chi/jwtauth"
 	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/logger"
 	"github.com/gobench-io/gobench/master"
@@ -26,6 +27,13 @@ type handler struct {
 
 func (h *handler) db() *ent.Client {
 	return h.s.DB()
+}
+
+func setAuth(r chi.Router, tokenAuth *jwtauth.JWTAuth) {
+	if tokenAuth != nil {
+		r.Use(jwtauth.Verifier(tokenAuth))
+		r.Use(jwtauth.Authenticator)
+	}
 }
 
 // New return new router interface
@@ -47,6 +55,11 @@ func newHandler(s *master.Master, adminPassword string, logger logger.Logger) *h
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	})
 
+	var tokenAuth *jwtauth.JWTAuth
+	if adminPassword != "" {
+		tokenAuth = jwtauth.New("HS256", []byte(adminPassword), nil)
+	}
+
 	// initialize the router
 	r := chi.NewRouter()
 	r.Use(cors.Handler)
@@ -60,6 +73,8 @@ func newHandler(s *master.Master, adminPassword string, logger logger.Logger) *h
 	// rest for groups
 	r.Route("/api/", func(r chi.Router) {
 		r.Route("/groups", func(r chi.Router) {
+			setAuth(r, tokenAuth)
+
 			r.Get("/", h.listGroups) // GET /groups
 
 			r.Route("/{groupID}", func(r chi.Router) {
@@ -71,6 +86,8 @@ func newHandler(s *master.Master, adminPassword string, logger logger.Logger) *h
 
 		// rest for graphs
 		r.Route("/graphs", func(r chi.Router) {
+			setAuth(r, tokenAuth)
+
 			r.Get("/", h.listGraphs) // GET /graphs
 
 			r.Route("/{graphID}", func(r chi.Router) {
@@ -82,6 +99,8 @@ func newHandler(s *master.Master, adminPassword string, logger logger.Logger) *h
 
 		// rest for metrics
 		r.Route("/metrics", func(r chi.Router) {
+			setAuth(r, tokenAuth)
+
 			r.Get("/", h.listMetrics) // GET /metrics
 
 			r.Route("/{metricID}", func(r chi.Router) {
@@ -96,6 +115,8 @@ func newHandler(s *master.Master, adminPassword string, logger logger.Logger) *h
 
 		// get the application
 		r.Route("/applications", func(r chi.Router) {
+			setAuth(r, tokenAuth)
+
 			r.Get("/", h.listApplications)   // GET /applications
 			r.Post("/", h.createApplication) // POST /applications
 

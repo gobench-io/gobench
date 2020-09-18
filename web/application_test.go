@@ -59,8 +59,6 @@ func newApp(t *testing.T) *ent.Application {
 }
 
 func TestAuth401(t *testing.T) {
-	t.Skip()
-
 	r, w := newAPITest(t, "adminPassword")
 
 	req, _ := http.NewRequest("GET", "/api/applications", nil)
@@ -70,8 +68,6 @@ func TestAuth401(t *testing.T) {
 }
 
 func TestAuth200(t *testing.T) {
-	t.Skip()
-
 	adminPassword := "adminPassword"
 
 	r, w := newAPITest(t, adminPassword)
