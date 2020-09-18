@@ -72,6 +72,8 @@ func newHandler(s *master.Master, adminPassword string, logger logger.Logger) *h
 
 	// rest for groups
 	r.Route("/api/", func(r chi.Router) {
+		r.Post("/users/login", h.userLogin(tokenAuth))
+
 		r.Route("/groups", func(r chi.Router) {
 			setAuth(r, tokenAuth)
 

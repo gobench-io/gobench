@@ -3,6 +3,7 @@ module github.com/gobench-io/gobench
 go 1.14
 
 require (
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/eclipse/paho.mqtt.golang v1.2.1-0.20190829142118-2e9e43b5d02b
 	github.com/facebook/ent v0.4.0
 	github.com/go-chi/chi v4.1.0+incompatible

@@ -247,3 +247,12 @@ func newGaugeListResponse(es []*ent.Gauge) []render.Renderer {
 	}
 	return list
 }
+
+// access token response
+type accesstokenResponse struct {
+	ID string `json:"id"`
+}
+
+func (act *accesstokenResponse) Render(w http.ResponseWriter, r *http.Request) error {
+	return nil
+}

@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -62,6 +61,7 @@ func TestAuth401(t *testing.T) {
 	r, w := newAPITest(t, "adminPassword")
 
 	req, _ := http.NewRequest("GET", "/api/applications", nil)
+	req.Header.Add("Authorization", "BEARER sometoken")
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, 401, w.Code)
@@ -83,16 +83,12 @@ func TestAuth200(t *testing.T) {
 
 	assert.Equal(t, 200, w.Code)
 
-	// app := struct {
-	// 	"AccessToken" string
-	// }{}
-	// json.Unmarshal(w.Body.Bytes(), &app)
-	log.Println(string(w.Body.Bytes()))
+	act := new(accesstokenResponse)
+	json.Unmarshal(w.Body.Bytes(), act)
 
 	req, _ := http.NewRequest("GET", "/api/applications", nil)
-	req.Header.Add("Authorization", "some token")
+	req.Header.Add("Authorization", "BEARER "+act.ID)
 	r.ServeHTTP(w, req)
-
 	assert.Equal(t, 200, w.Code)
 }
 
