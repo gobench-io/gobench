@@ -25,16 +25,6 @@ import (
 // cancel, error states
 type jobState string
 
-// App states
-const (
-	jobPending      jobState = "pending"
-	jobProvisioning jobState = "provisioning"
-	jobRunning      jobState = "running"
-	jobFinished     jobState = "finished"
-	jobCancel       jobState = "cancel"
-	jobError        jobState = "error"
-)
-
 type Master struct {
 	mu          sync.Mutex
 	addr        string // host name
@@ -106,6 +96,25 @@ func (m *Master) Start() (err error) {
 
 	// start the local agent socket server that communicate with local executor
 	err = m.la.StartSocketServer()
+
+	return
+}
+
+// CleanupRunningApps update last running app status from running -> error
+// It should be called when the master is booted
+func (m *Master) CleanupRunningApps() (err error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	ctx := context.TODO()
+
+	_, err = m.db.Application.
+		Update().
+		Where(
+			application.Status(string(statusRunning)),
+		).
+		SetStatus(string(statusCancel)).
+		Save(ctx)
 
 	return
 }

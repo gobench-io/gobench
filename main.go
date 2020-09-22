@@ -77,10 +77,15 @@ func main() {
 			printAndDie(fmt.Sprintf("%s: %s", exe, err))
 		}
 
-		err = m.Start()
-		if err != nil {
+		if err = m.Start(); err != nil {
 			printAndDie(fmt.Sprintf("%s: %s", exe, err))
 		}
+
+		// cleanup the previous running session
+		if err = m.CleanupRunningApps(); err != nil {
+			printAndDie(fmt.Sprintf("%s: %s", exe, err))
+		}
+
 		web.Serve(m, opts.AdminPassword, logger)
 
 		return
