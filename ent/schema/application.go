@@ -20,6 +20,8 @@ func (Application) Fields() []ent.Field {
 		field.String("status"),
 		field.Time("created_at").
 			Default(time.Now),
+		field.Time("started_at").
+			Optional(),
 		field.Time("updated_at").
 			Default(time.Now).
 			UpdateDefault(time.Now),

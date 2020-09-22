@@ -17,6 +17,8 @@ const (
 	FieldStatus = "status"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
+	// FieldStartedAt holds the string denoting the started_at field in the database.
+	FieldStartedAt = "started_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
 	// FieldScenario holds the string denoting the scenario field in the database.
@@ -48,6 +50,7 @@ var Columns = []string{
 	FieldName,
 	FieldStatus,
 	FieldCreatedAt,
+	FieldStartedAt,
 	FieldUpdatedAt,
 	FieldScenario,
 	FieldGomod,

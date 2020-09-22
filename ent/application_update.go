@@ -55,6 +55,26 @@ func (au *ApplicationUpdate) SetNillableCreatedAt(t *time.Time) *ApplicationUpda
 	return au
 }
 
+// SetStartedAt sets the started_at field.
+func (au *ApplicationUpdate) SetStartedAt(t time.Time) *ApplicationUpdate {
+	au.mutation.SetStartedAt(t)
+	return au
+}
+
+// SetNillableStartedAt sets the started_at field if the given value is not nil.
+func (au *ApplicationUpdate) SetNillableStartedAt(t *time.Time) *ApplicationUpdate {
+	if t != nil {
+		au.SetStartedAt(*t)
+	}
+	return au
+}
+
+// ClearStartedAt clears the value of started_at.
+func (au *ApplicationUpdate) ClearStartedAt() *ApplicationUpdate {
+	au.mutation.ClearStartedAt()
+	return au
+}
+
 // SetUpdatedAt sets the updated_at field.
 func (au *ApplicationUpdate) SetUpdatedAt(t time.Time) *ApplicationUpdate {
 	au.mutation.SetUpdatedAt(t)
@@ -239,6 +259,19 @@ func (au *ApplicationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: application.FieldCreatedAt,
 		})
 	}
+	if value, ok := au.mutation.StartedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: application.FieldStartedAt,
+		})
+	}
+	if au.mutation.StartedAtCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Column: application.FieldStartedAt,
+		})
+	}
 	if value, ok := au.mutation.UpdatedAt(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
@@ -353,6 +386,26 @@ func (auo *ApplicationUpdateOne) SetNillableCreatedAt(t *time.Time) *Application
 	if t != nil {
 		auo.SetCreatedAt(*t)
 	}
+	return auo
+}
+
+// SetStartedAt sets the started_at field.
+func (auo *ApplicationUpdateOne) SetStartedAt(t time.Time) *ApplicationUpdateOne {
+	auo.mutation.SetStartedAt(t)
+	return auo
+}
+
+// SetNillableStartedAt sets the started_at field if the given value is not nil.
+func (auo *ApplicationUpdateOne) SetNillableStartedAt(t *time.Time) *ApplicationUpdateOne {
+	if t != nil {
+		auo.SetStartedAt(*t)
+	}
+	return auo
+}
+
+// ClearStartedAt clears the value of started_at.
+func (auo *ApplicationUpdateOne) ClearStartedAt() *ApplicationUpdateOne {
+	auo.mutation.ClearStartedAt()
 	return auo
 }
 
@@ -536,6 +589,19 @@ func (auo *ApplicationUpdateOne) sqlSave(ctx context.Context) (a *Application, e
 			Type:   field.TypeTime,
 			Value:  value,
 			Column: application.FieldCreatedAt,
+		})
+	}
+	if value, ok := auo.mutation.StartedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: application.FieldStartedAt,
+		})
+	}
+	if auo.mutation.StartedAtCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Column: application.FieldStartedAt,
 		})
 	}
 	if value, ok := auo.mutation.UpdatedAt(); ok {

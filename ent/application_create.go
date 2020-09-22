@@ -47,6 +47,20 @@ func (ac *ApplicationCreate) SetNillableCreatedAt(t *time.Time) *ApplicationCrea
 	return ac
 }
 
+// SetStartedAt sets the started_at field.
+func (ac *ApplicationCreate) SetStartedAt(t time.Time) *ApplicationCreate {
+	ac.mutation.SetStartedAt(t)
+	return ac
+}
+
+// SetNillableStartedAt sets the started_at field if the given value is not nil.
+func (ac *ApplicationCreate) SetNillableStartedAt(t *time.Time) *ApplicationCreate {
+	if t != nil {
+		ac.SetStartedAt(*t)
+	}
+	return ac
+}
+
 // SetUpdatedAt sets the updated_at field.
 func (ac *ApplicationCreate) SetUpdatedAt(t time.Time) *ApplicationCreate {
 	ac.mutation.SetUpdatedAt(t)
@@ -250,6 +264,14 @@ func (ac *ApplicationCreate) createSpec() (*Application, *sqlgraph.CreateSpec) {
 			Column: application.FieldCreatedAt,
 		})
 		a.CreatedAt = value
+	}
+	if value, ok := ac.mutation.StartedAt(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: application.FieldStartedAt,
+		})
+		a.StartedAt = value
 	}
 	if value, ok := ac.mutation.UpdatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

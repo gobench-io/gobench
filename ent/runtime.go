@@ -20,21 +20,21 @@ func init() {
 	// application.DefaultCreatedAt holds the default value on creation for the created_at field.
 	application.DefaultCreatedAt = applicationDescCreatedAt.Default.(func() time.Time)
 	// applicationDescUpdatedAt is the schema descriptor for updated_at field.
-	applicationDescUpdatedAt := applicationFields[3].Descriptor()
+	applicationDescUpdatedAt := applicationFields[4].Descriptor()
 	// application.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	application.DefaultUpdatedAt = applicationDescUpdatedAt.Default.(func() time.Time)
 	// application.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	application.UpdateDefaultUpdatedAt = applicationDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// applicationDescGomod is the schema descriptor for gomod field.
-	applicationDescGomod := applicationFields[5].Descriptor()
+	applicationDescGomod := applicationFields[6].Descriptor()
 	// application.DefaultGomod holds the default value on creation for the gomod field.
 	application.DefaultGomod = applicationDescGomod.Default.(string)
 	// applicationDescGosum is the schema descriptor for gosum field.
-	applicationDescGosum := applicationFields[6].Descriptor()
+	applicationDescGosum := applicationFields[7].Descriptor()
 	// application.DefaultGosum holds the default value on creation for the gosum field.
 	application.DefaultGosum = applicationDescGosum.Default.(string)
 	// applicationDescTags is the schema descriptor for tags field.
-	applicationDescTags := applicationFields[7].Descriptor()
+	applicationDescTags := applicationFields[8].Descriptor()
 	// application.DefaultTags holds the default value on creation for the tags field.
 	application.DefaultTags = applicationDescTags.Default.(string)
 }
