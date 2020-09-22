@@ -11,6 +11,16 @@ const (
 	statusCancel  status = "cancel"
 )
 
+// App states
+const (
+	jobPending      jobState = "pending"
+	jobProvisioning jobState = "provisioning"
+	jobRunning      jobState = "running"
+	jobFinished     jobState = "finished"
+	jobCancel       jobState = "cancel"
+	jobError        jobState = "error"
+)
+
 // Error
 var (
 	ErrAppNotRunning = errors.New("application is not running")
