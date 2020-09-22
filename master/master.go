@@ -342,7 +342,7 @@ func (m *Master) run(ctx context.Context, j *job) (err error) {
 		"status", m.job.app.Status,
 	)
 
-	if _, err = m.job.app.Update().SetUpdatedAt(time.Now()).Save(ctx); err != nil {
+	if _, err = m.job.app.Update().SetStartedAt(time.Now()).Save(ctx); err != nil {
 		return
 	}
 
