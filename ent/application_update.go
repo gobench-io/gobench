@@ -55,6 +55,12 @@ func (au *ApplicationUpdate) SetNillableCreatedAt(t *time.Time) *ApplicationUpda
 	return au
 }
 
+// SetStartedAt sets the started_at field.
+func (au *ApplicationUpdate) SetStartedAt(t time.Time) *ApplicationUpdate {
+	au.mutation.SetStartedAt(t)
+	return au
+}
+
 // SetUpdatedAt sets the updated_at field.
 func (au *ApplicationUpdate) SetUpdatedAt(t time.Time) *ApplicationUpdate {
 	au.mutation.SetUpdatedAt(t)
@@ -239,6 +245,13 @@ func (au *ApplicationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: application.FieldCreatedAt,
 		})
 	}
+	if value, ok := au.mutation.StartedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: application.FieldStartedAt,
+		})
+	}
 	if value, ok := au.mutation.UpdatedAt(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
@@ -353,6 +366,12 @@ func (auo *ApplicationUpdateOne) SetNillableCreatedAt(t *time.Time) *Application
 	if t != nil {
 		auo.SetCreatedAt(*t)
 	}
+	return auo
+}
+
+// SetStartedAt sets the started_at field.
+func (auo *ApplicationUpdateOne) SetStartedAt(t time.Time) *ApplicationUpdateOne {
+	auo.mutation.SetStartedAt(t)
 	return auo
 }
 
@@ -536,6 +555,13 @@ func (auo *ApplicationUpdateOne) sqlSave(ctx context.Context) (a *Application, e
 			Type:   field.TypeTime,
 			Value:  value,
 			Column: application.FieldCreatedAt,
+		})
+	}
+	if value, ok := auo.mutation.StartedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: application.FieldStartedAt,
 		})
 	}
 	if value, ok := auo.mutation.UpdatedAt(); ok {

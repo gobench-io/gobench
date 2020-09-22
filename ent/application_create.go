@@ -47,6 +47,12 @@ func (ac *ApplicationCreate) SetNillableCreatedAt(t *time.Time) *ApplicationCrea
 	return ac
 }
 
+// SetStartedAt sets the started_at field.
+func (ac *ApplicationCreate) SetStartedAt(t time.Time) *ApplicationCreate {
+	ac.mutation.SetStartedAt(t)
+	return ac
+}
+
 // SetUpdatedAt sets the updated_at field.
 func (ac *ApplicationCreate) SetUpdatedAt(t time.Time) *ApplicationCreate {
 	ac.mutation.SetUpdatedAt(t)
@@ -181,6 +187,9 @@ func (ac *ApplicationCreate) preSave() error {
 		v := application.DefaultCreatedAt()
 		ac.mutation.SetCreatedAt(v)
 	}
+	if _, ok := ac.mutation.StartedAt(); !ok {
+		return &ValidationError{Name: "started_at", err: errors.New("ent: missing required field \"started_at\"")}
+	}
 	if _, ok := ac.mutation.UpdatedAt(); !ok {
 		v := application.DefaultUpdatedAt()
 		ac.mutation.SetUpdatedAt(v)
@@ -250,6 +259,14 @@ func (ac *ApplicationCreate) createSpec() (*Application, *sqlgraph.CreateSpec) {
 			Column: application.FieldCreatedAt,
 		})
 		a.CreatedAt = value
+	}
+	if value, ok := ac.mutation.StartedAt(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: application.FieldStartedAt,
+		})
+		a.StartedAt = value
 	}
 	if value, ok := ac.mutation.UpdatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

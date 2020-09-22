@@ -22,6 +22,8 @@ type Application struct {
 	Status string `json:"status,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
+	// StartedAt holds the value of the "started_at" field.
+	StartedAt time.Time `json:"started_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Scenario holds the value of the "scenario" field.
@@ -62,6 +64,7 @@ func (*Application) scanValues() []interface{} {
 		&sql.NullString{}, // name
 		&sql.NullString{}, // status
 		&sql.NullTime{},   // created_at
+		&sql.NullTime{},   // started_at
 		&sql.NullTime{},   // updated_at
 		&sql.NullString{}, // scenario
 		&sql.NullString{}, // gomod
@@ -98,27 +101,32 @@ func (a *Application) assignValues(values ...interface{}) error {
 		a.CreatedAt = value.Time
 	}
 	if value, ok := values[3].(*sql.NullTime); !ok {
-		return fmt.Errorf("unexpected type %T for field updated_at", values[3])
+		return fmt.Errorf("unexpected type %T for field started_at", values[3])
+	} else if value.Valid {
+		a.StartedAt = value.Time
+	}
+	if value, ok := values[4].(*sql.NullTime); !ok {
+		return fmt.Errorf("unexpected type %T for field updated_at", values[4])
 	} else if value.Valid {
 		a.UpdatedAt = value.Time
 	}
-	if value, ok := values[4].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field scenario", values[4])
+	if value, ok := values[5].(*sql.NullString); !ok {
+		return fmt.Errorf("unexpected type %T for field scenario", values[5])
 	} else if value.Valid {
 		a.Scenario = value.String
 	}
-	if value, ok := values[5].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field gomod", values[5])
+	if value, ok := values[6].(*sql.NullString); !ok {
+		return fmt.Errorf("unexpected type %T for field gomod", values[6])
 	} else if value.Valid {
 		a.Gomod = value.String
 	}
-	if value, ok := values[6].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field gosum", values[6])
+	if value, ok := values[7].(*sql.NullString); !ok {
+		return fmt.Errorf("unexpected type %T for field gosum", values[7])
 	} else if value.Valid {
 		a.Gosum = value.String
 	}
-	if value, ok := values[7].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field tags", values[7])
+	if value, ok := values[8].(*sql.NullString); !ok {
+		return fmt.Errorf("unexpected type %T for field tags", values[8])
 	} else if value.Valid {
 		a.Tags = value.String
 	}
@@ -159,6 +167,8 @@ func (a *Application) String() string {
 	builder.WriteString(a.Status)
 	builder.WriteString(", created_at=")
 	builder.WriteString(a.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", started_at=")
+	builder.WriteString(a.StartedAt.Format(time.ANSIC))
 	builder.WriteString(", updated_at=")
 	builder.WriteString(a.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", scenario=")

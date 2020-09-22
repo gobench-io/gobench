@@ -14,6 +14,7 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "status", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
+		{Name: "started_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "scenario", Type: field.TypeString, Size: 2147483647},
 		{Name: "gomod", Type: field.TypeString, Size: 2147483647, Default: ""},

@@ -114,6 +114,13 @@ func CreatedAt(v time.Time) predicate.Application {
 	})
 }
 
+// StartedAt applies equality check predicate on the "started_at" field. It's identical to StartedAtEQ.
+func StartedAt(v time.Time) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldStartedAt), v))
+	})
+}
+
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.Application {
 	return predicate.Application(func(s *sql.Selector) {
@@ -444,6 +451,82 @@ func CreatedAtLT(v time.Time) predicate.Application {
 func CreatedAtLTE(v time.Time) predicate.Application {
 	return predicate.Application(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldCreatedAt), v))
+	})
+}
+
+// StartedAtEQ applies the EQ predicate on the "started_at" field.
+func StartedAtEQ(v time.Time) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldStartedAt), v))
+	})
+}
+
+// StartedAtNEQ applies the NEQ predicate on the "started_at" field.
+func StartedAtNEQ(v time.Time) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldStartedAt), v))
+	})
+}
+
+// StartedAtIn applies the In predicate on the "started_at" field.
+func StartedAtIn(vs ...time.Time) predicate.Application {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Application(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldStartedAt), v...))
+	})
+}
+
+// StartedAtNotIn applies the NotIn predicate on the "started_at" field.
+func StartedAtNotIn(vs ...time.Time) predicate.Application {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Application(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldStartedAt), v...))
+	})
+}
+
+// StartedAtGT applies the GT predicate on the "started_at" field.
+func StartedAtGT(v time.Time) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldStartedAt), v))
+	})
+}
+
+// StartedAtGTE applies the GTE predicate on the "started_at" field.
+func StartedAtGTE(v time.Time) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldStartedAt), v))
+	})
+}
+
+// StartedAtLT applies the LT predicate on the "started_at" field.
+func StartedAtLT(v time.Time) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldStartedAt), v))
+	})
+}
+
+// StartedAtLTE applies the LTE predicate on the "started_at" field.
+func StartedAtLTE(v time.Time) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldStartedAt), v))
 	})
 }
 
