@@ -530,6 +530,20 @@ func StartedAtLTE(v time.Time) predicate.Application {
 	})
 }
 
+// StartedAtIsNil applies the IsNil predicate on the "started_at" field.
+func StartedAtIsNil() predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldStartedAt)))
+	})
+}
+
+// StartedAtNotNil applies the NotNil predicate on the "started_at" field.
+func StartedAtNotNil() predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldStartedAt)))
+	})
+}
+
 // UpdatedAtEQ applies the EQ predicate on the "updated_at" field.
 func UpdatedAtEQ(v time.Time) predicate.Application {
 	return predicate.Application(func(s *sql.Selector) {

@@ -282,9 +282,22 @@ func (m *ApplicationMutation) OldStartedAt(ctx context.Context) (v time.Time, er
 	return oldValue.StartedAt, nil
 }
 
+// ClearStartedAt clears the value of started_at.
+func (m *ApplicationMutation) ClearStartedAt() {
+	m.started_at = nil
+	m.clearedFields[application.FieldStartedAt] = struct{}{}
+}
+
+// StartedAtCleared returns if the field started_at was cleared in this mutation.
+func (m *ApplicationMutation) StartedAtCleared() bool {
+	_, ok := m.clearedFields[application.FieldStartedAt]
+	return ok
+}
+
 // ResetStartedAt reset all changes of the "started_at" field.
 func (m *ApplicationMutation) ResetStartedAt() {
 	m.started_at = nil
+	delete(m.clearedFields, application.FieldStartedAt)
 }
 
 // SetUpdatedAt sets the updated_at field.
@@ -710,7 +723,11 @@ func (m *ApplicationMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared
 // during this mutation.
 func (m *ApplicationMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(application.FieldStartedAt) {
+		fields = append(fields, application.FieldStartedAt)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicates if this field was
@@ -723,6 +740,11 @@ func (m *ApplicationMutation) FieldCleared(name string) bool {
 // ClearField clears the value for the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *ApplicationMutation) ClearField(name string) error {
+	switch name {
+	case application.FieldStartedAt:
+		m.ClearStartedAt()
+		return nil
+	}
 	return fmt.Errorf("unknown Application nullable field %s", name)
 }
 

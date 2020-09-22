@@ -53,6 +53,14 @@ func (ac *ApplicationCreate) SetStartedAt(t time.Time) *ApplicationCreate {
 	return ac
 }
 
+// SetNillableStartedAt sets the started_at field if the given value is not nil.
+func (ac *ApplicationCreate) SetNillableStartedAt(t *time.Time) *ApplicationCreate {
+	if t != nil {
+		ac.SetStartedAt(*t)
+	}
+	return ac
+}
+
 // SetUpdatedAt sets the updated_at field.
 func (ac *ApplicationCreate) SetUpdatedAt(t time.Time) *ApplicationCreate {
 	ac.mutation.SetUpdatedAt(t)
@@ -186,9 +194,6 @@ func (ac *ApplicationCreate) preSave() error {
 	if _, ok := ac.mutation.CreatedAt(); !ok {
 		v := application.DefaultCreatedAt()
 		ac.mutation.SetCreatedAt(v)
-	}
-	if _, ok := ac.mutation.StartedAt(); !ok {
-		return &ValidationError{Name: "started_at", err: errors.New("ent: missing required field \"started_at\"")}
 	}
 	if _, ok := ac.mutation.UpdatedAt(); !ok {
 		v := application.DefaultUpdatedAt()
