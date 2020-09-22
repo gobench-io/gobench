@@ -131,6 +131,9 @@ func (m *Master) finish(status status) error {
 	m.status = status
 	m.mu.Unlock()
 
+	// flush the log
+	_ = m.logger.Sync()
+
 	// todo: if there is a running scenario, shutdown
 	// todo: send email if needed
 	return m.db.Close()
