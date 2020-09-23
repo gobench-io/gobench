@@ -101,6 +101,7 @@ func export() scenario.Vus {
 	}
 }
 `
+		m.job.logger = logger.NewNopLogger()
 
 		err := m.jobCompile(ctx)
 		assert.EqualError(t, err, "compile scenario: exit status 1")
@@ -141,6 +142,8 @@ func f1(ctx context.Context, vui int) {
 		time.Sleep(1 * time.Second)
 	}
 }`
+		m.job.logger = logger.NewNopLogger()
+
 		err := m.jobCompile(ctx)
 		assert.Nil(t, err)
 		assert.FileExists(t, m.job.plugin)
@@ -183,6 +186,7 @@ func f1(ctx context.Context, vui int) {
 	m.job = &job{
 		app: app,
 	}
+	m.job.logger = logger.NewNopLogger()
 
 	assert.Nil(t, m.jobCompile(ctx))
 
@@ -223,6 +227,8 @@ func f1(ctx context.Context, vui int) {
 		app:    app,
 		cancel: cancel,
 	}
+	_, err := j.setLogger()
+	assert.Nil(t, err)
 
 	go func() {
 		count := 0
@@ -239,7 +245,7 @@ func f1(ctx context.Context, vui int) {
 		assert.Nil(t, m.cancel(ctx, app.ID))
 	}()
 
-	err := m.run(ctx, j)
+	err = m.run(ctx, j)
 	assert.EqualError(t, err, ErrAppIsCanceled.Error())
 }
 
@@ -280,8 +286,10 @@ func f(ctx context.Context, vui int) {
 	j := &job{
 		app: app,
 	}
+	_, err := j.setLogger()
+	assert.Nil(t, err)
 
-	err := m.run(ctx, j)
+	err = m.run(ctx, j)
 	assert.Nil(t, err)
 }
 

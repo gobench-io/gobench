@@ -291,6 +291,11 @@ func (m *Master) schedule() {
 			app:    app,
 			cancel: cancel,
 		}
+
+		if _, err := job.setLogger(); err != nil {
+			m.logger.Errorw("failed set job logger", "err", err)
+		}
+
 		if err = m.run(ctx, job); err != nil {
 			m.logger.Errorw("failed run the job", "err", err)
 		}
@@ -300,13 +305,7 @@ func (m *Master) schedule() {
 func (m *Master) run(ctx context.Context, j *job) (err error) {
 	m.logger.Infow("handle new application", "application id", j.app.ID)
 
-	l, err := j.genLogger()
-	if err == nil {
-		return
-	}
-
 	m.job = j
-	m.job.logger = l
 
 	defer func() {
 		je := jobFinished
@@ -534,7 +533,9 @@ func (j *job) logFile() (string, string, error) {
 	return f, folder, nil
 }
 
-func (j *job) genLogger() (logger.Logger, error) {
+// setLogger setup logger for the job. The log is a file under
+// $HOME/.gobench/applications/$appID/log
+func (j *job) setLogger() (logger.Logger, error) {
 	// create new log from the application id
 	lfile, lfolder, err := j.logFile()
 	if err != nil {
@@ -545,5 +546,11 @@ func (j *job) genLogger() (logger.Logger, error) {
 	}
 	l, err := logger.NewApplicationLogger(lfile)
 
-	return l, err
+	if err != nil {
+		return l, err
+	}
+
+	j.logger = l
+
+	return l, nil
 }
