@@ -58,22 +58,26 @@ func newApp(t *testing.T) *ent.Application {
 }
 
 func TestLogin(t *testing.T) {
+	adminUsername := "admin"
 	adminPassword := "adminPassword"
-
-	r, w := newAPITest(t, adminPassword)
 
 	tt := []struct {
 		input []string
 		want  int
 	}{
-		{[]string{"admin", "not a password"}, 401},
+		{[]string{adminUsername, "not a password"}, 401},
+		{[]string{"not an admin", adminPassword}, 401},
+		{[]string{adminUsername, adminPassword}, 200},
 	}
 
 	for _, tc := range tt {
+		r, w := newAPITest(t, adminPassword)
+
 		reqBody, _ := json.Marshal(map[string]string{
-			"usename":  tc.input[0],
+			"username": tc.input[0],
 			"password": tc.input[1],
 		})
+
 		loginReq, _ := http.NewRequest("POST", "/api/users/login", bytes.NewBuffer(reqBody))
 		loginReq.Header.Set("Content-Type", "application/json")
 

@@ -36,6 +36,15 @@ func ErrInternalServer(err error) render.Renderer {
 	}
 }
 
+func ErrUnauthenticated(err error) render.Renderer {
+	return &ErrResponse{
+		Error: Err{
+			Code:    401,
+			Message: err.Error(),
+			Status:  "Unauthenticated",
+		},
+	}
+}
 func ErrAppIsFinished(err error) render.Renderer {
 	return &ErrResponse{
 		Error: Err{
@@ -246,6 +255,15 @@ func newGaugeListResponse(es []*ent.Gauge) []render.Renderer {
 		list = append(list, newGaugeResponse(e))
 	}
 	return list
+}
+
+type accesstokenRequest struct {
+	Username string
+	Password string
+}
+
+func (act *accesstokenRequest) Bind(r *http.Request) (err error) {
+	return nil
 }
 
 // access token response
