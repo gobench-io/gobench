@@ -291,7 +291,9 @@ func (m *Master) schedule() {
 			app:    app,
 			cancel: cancel,
 		}
-		m.run(ctx, job)
+		if err = m.run(ctx, job); err != nil {
+			m.logger.Errorw("failed run the job", "err", err)
+		}
 	}
 }
 
@@ -299,7 +301,14 @@ func (m *Master) run(ctx context.Context, j *job) (err error) {
 	m.logger.Infow("handle new application", "application id", j.app.ID)
 
 	// create new job from the application
-	l, err := logger.NewApplicationLogger("/tmp/log1")
+	lfile, lfolder, err := j.logFile()
+	if err != nil {
+		return err
+	}
+	if err = os.MkdirAll(lfolder, os.ModePerm); err != nil {
+		return err
+	}
+	l, err := logger.NewApplicationLogger(lfile)
 	if err != nil {
 		return err
 	}
@@ -521,13 +530,14 @@ func (m *Master) runJob(ctx context.Context) (err error) {
 
 // logFile return the log file for a certain log
 // filepath = $HOME/.gobench/applications/appID/log
-func (j *job) logFile() (string, error) {
+func (j *job) logFile() (string, string, error) {
 	u, err := user.Current()
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	home := u.HomeDir
 
-	f := filepath.Join(home, ".gobench", "applications", strconv.Itoa(j.app.ID), "log")
-	return f, nil
+	folder := filepath.Join(home, ".gobench", "applications", strconv.Itoa(j.app.ID))
+	f := filepath.Join(folder, "log")
+	return f, folder, nil
 }

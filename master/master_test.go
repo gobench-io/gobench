@@ -293,8 +293,9 @@ func TestLogFile(t *testing.T) {
 		app: app,
 	}
 
-	f, err := j.logFile()
+	f, folder, err := j.logFile()
 
 	assert.Nil(t, err)
+	assert.Contains(t, folder, fmt.Sprintf(".gobench/applications/%d", app.ID))
 	assert.Contains(t, f, fmt.Sprintf(".gobench/applications/%d/log", app.ID))
 }
