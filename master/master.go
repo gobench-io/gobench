@@ -316,11 +316,11 @@ func (m *Master) run(ctx context.Context, j *job) (err error) {
 
 		// create new context
 		ctx := context.TODO()
-		_ = j.toStatus(ctx, je)
+		_ = j.setStatus(ctx, je)
 	}()
 
 	// change job to provisioning
-	if err = j.toStatus(ctx, jobProvisioning); err != nil {
+	if err = j.setStatus(ctx, jobProvisioning); err != nil {
 		return
 	}
 
@@ -331,7 +331,7 @@ func (m *Master) run(ctx context.Context, j *job) (err error) {
 	// in this phase, the server run in local mode
 
 	// change job to running state
-	if err = j.toStatus(ctx, jobRunning); err != nil {
+	if err = j.setStatus(ctx, jobRunning); err != nil {
 		return
 	}
 
@@ -527,7 +527,7 @@ func (j *job) setLogger() (logger.Logger, error) {
 	return l, nil
 }
 
-func (j *job) toStatus(ctx context.Context, state jobState) (err error) {
+func (j *job) setStatus(ctx context.Context, state jobState) (err error) {
 	j.app, err = j.app.Update().
 		SetStatus(string(state)).
 		Save(ctx)
