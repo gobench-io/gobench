@@ -1,6 +1,8 @@
 package logger
 
-import "go.uber.org/zap"
+import (
+	"go.uber.org/zap"
+)
 
 // Logger interface of the gobench server
 type Logger interface {
@@ -33,4 +35,18 @@ func NewNopLogger() *Log {
 	return &Log{
 		SugaredLogger: *nopLogger,
 	}
+}
+
+// NewApplicationLogger setup log when running an application
+func NewApplicationLogger(f string) (*Log, error) {
+	cfg := zap.NewProductionConfig()
+	cfg.OutputPaths = append(cfg.OutputPaths, f)
+	log, err := cfg.Build()
+	if err != nil {
+		return nil, err
+	}
+
+	return &Log{
+		SugaredLogger: *log.Sugar(),
+	}, nil
 }

@@ -60,6 +60,12 @@ func (a *Agent) SetMetricLogger(ml pb.AgentServer) {
 	a.mu.Unlock()
 }
 
+func (a *Agent) SetLogger(l logger.Logger) {
+	a.mu.Lock()
+	a.logger = l
+	a.mu.Unlock()
+}
+
 // StartSocketServer setup an rpc server over agent unix socket
 // the function runs the server in a separate routine
 func (a *Agent) StartSocketServer() error {

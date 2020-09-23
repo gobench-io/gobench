@@ -47,6 +47,7 @@ type Master struct {
 type job struct {
 	app    *ent.Application
 	plugin string // plugin path
+	logger logger.Logger
 	cancel context.CancelFunc
 }
 
@@ -293,8 +294,16 @@ func (m *Master) schedule() {
 }
 
 func (m *Master) run(ctx context.Context, j *job) (err error) {
+	m.logger.Infow("handle new application", "application id", j.app.ID)
+
 	// create new job from the application
+	l, err := logger.NewApplicationLogger("/tmp/log1")
+	if err != nil {
+		return err
+	}
+
 	m.job = j
+	m.job.logger = l
 
 	defer func() {
 		je := jobFinished
@@ -323,7 +332,7 @@ func (m *Master) run(ctx context.Context, j *job) (err error) {
 		)
 	}()
 
-	m.logger.Infow("job new status",
+	m.job.logger.Infow("job new status",
 		"application id", m.job.app.ID,
 		"status", m.job.app.Status,
 	)
@@ -333,7 +342,7 @@ func (m *Master) run(ctx context.Context, j *job) (err error) {
 		return
 	}
 
-	m.logger.Infow("job new status",
+	m.job.logger.Infow("job new status",
 		"application id", m.job.app.ID,
 		"status", m.job.app.Status,
 	)
@@ -349,12 +358,15 @@ func (m *Master) run(ctx context.Context, j *job) (err error) {
 		return
 	}
 
-	m.logger.Infow("job new status",
+	m.job.logger.Infow("job new status",
 		"application id", m.job.app.ID,
 		"status", m.job.app.Status,
 	)
 
-	if _, err = m.job.app.Update().SetStartedAt(time.Now()).Save(ctx); err != nil {
+	if _, err = m.job.app.
+		Update().
+		SetStartedAt(time.Now()).
+		Save(ctx); err != nil {
 		return
 	}
 
@@ -436,7 +448,7 @@ func (m *Master) jobCompile(ctx context.Context) error {
 		return fmt.Errorf("create temp dir: %v", err)
 	}
 
-	m.logger.Infow("folder for compiling", "dir", dir)
+	m.job.logger.Infow("folder for compiling", "dir", dir)
 
 	// todo: instead of remove files, just remove folder after finish the job
 
@@ -488,7 +500,7 @@ func (m *Master) jobCompile(ctx context.Context) error {
 		CombinedOutput()
 
 	if err != nil {
-		m.logger.Errorw("failed compiling the scenario",
+		m.job.logger.Errorw("failed compiling the scenario",
 			"err", err,
 			"output", string(out))
 		return fmt.Errorf("compile scenario: %v", err)
@@ -501,5 +513,6 @@ func (m *Master) jobCompile(ctx context.Context) error {
 
 // runJob runs the already compiled plugin, uses agent workhouse
 func (m *Master) runJob(ctx context.Context) (err error) {
+	m.la.SetLogger(m.job.logger)
 	return m.la.RunJob(ctx, m.job.plugin, m.job.app.ID)
 }
