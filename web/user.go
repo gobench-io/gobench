@@ -1,6 +1,7 @@
 package web
 
 import (
+	"errors"
 	"net/http"
 	"time"
 
@@ -26,6 +27,16 @@ func createToken(tokenAuth *jwtauth.JWTAuth) (token string, err error) {
 
 func (h *handler) userLogin(tokenAuth *jwtauth.JWTAuth) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		d := new(accesstokenRequest)
+		if err := render.Bind(r, d); err != nil {
+			render.Render(w, r, ErrInvalidRequest(err))
+			return
+		}
+		if d.Username != h.adminUsername || d.Password != h.adminPassword {
+			render.Render(w, r, ErrUnauthenticated(errors.New("invalid credentials")))
+			return
+		}
+
 		tokenString, err := createToken(tokenAuth)
 
 		if err != nil {

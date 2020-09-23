@@ -16,11 +16,14 @@ import (
 	"github.com/rakyll/statik/fs"
 )
 
+const adminUsername = "admin"
+
 type webKey string
 
 type handler struct {
 	logger        logger.Logger
 	s             *master.Master
+	adminUsername string
 	adminPassword string
 	r             *chi.Mux
 }
@@ -40,6 +43,7 @@ func setAuth(r chi.Router, tokenAuth *jwtauth.JWTAuth) {
 func newHandler(s *master.Master, adminPassword string, logger logger.Logger) *handler {
 	h := &handler{
 		s:             s,
+		adminUsername: adminUsername,
 		adminPassword: adminPassword,
 		logger:        logger,
 	}
