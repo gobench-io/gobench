@@ -6,7 +6,9 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"os/user"
 	"path/filepath"
+	"strconv"
 	"sync"
 	"time"
 
@@ -47,6 +49,7 @@ type Master struct {
 type job struct {
 	app    *ent.Application
 	plugin string // plugin path
+	logger logger.Logger
 	cancel context.CancelFunc
 }
 
@@ -130,6 +133,9 @@ func (m *Master) finish(status status) error {
 	m.mu.Lock()
 	m.status = status
 	m.mu.Unlock()
+
+	// flush the log
+	_ = m.logger.Sync()
 
 	// todo: if there is a running scenario, shutdown
 	// todo: send email if needed
@@ -240,16 +246,6 @@ func (m *Master) cleanupDB() error {
 	return err
 }
 
-// to is the function to set new state for an application
-// save new state to the db
-func (m *Master) jobTo(ctx context.Context, state jobState) (err error) {
-	m.job.app, err = m.job.app.Update().
-		SetStatus(string(state)).
-		Save(ctx)
-
-	return
-}
-
 // setupDb setup the db in the master
 func (m *Master) setupDb() error {
 	filename := m.dbFilename
@@ -285,12 +281,20 @@ func (m *Master) schedule() {
 			app:    app,
 			cancel: cancel,
 		}
-		m.run(ctx, job)
+
+		if _, err := job.setLogger(); err != nil {
+			m.logger.Errorw("failed set job logger", "err", err)
+		}
+
+		if err = m.run(ctx, job); err != nil {
+			m.logger.Errorw("failed run the job", "err", err)
+		}
 	}
 }
 
 func (m *Master) run(ctx context.Context, j *job) (err error) {
-	// create new job from the application
+	m.logger.Infow("handle new application", "application id", j.app.ID)
+
 	m.job = j
 
 	defer func() {
@@ -298,7 +302,7 @@ func (m *Master) run(ctx context.Context, j *job) (err error) {
 
 		// normalize je
 		if err != nil {
-			m.logger.Infow("failed run job",
+			j.logger.Infow("failed run job",
 				"application id", m.job.app.ID,
 				"err", err,
 			)
@@ -312,28 +316,13 @@ func (m *Master) run(ctx context.Context, j *job) (err error) {
 
 		// create new context
 		ctx := context.TODO()
-		_ = m.jobTo(ctx, je)
-
-		m.logger.Infow("job new status",
-			"application id", m.job.app.ID,
-			"status", m.job.app.Status,
-		)
+		_ = j.setStatus(ctx, je)
 	}()
 
-	m.logger.Infow("job new status",
-		"application id", m.job.app.ID,
-		"status", m.job.app.Status,
-	)
-
 	// change job to provisioning
-	if err = m.jobTo(ctx, jobProvisioning); err != nil {
+	if err = j.setStatus(ctx, jobProvisioning); err != nil {
 		return
 	}
-
-	m.logger.Infow("job new status",
-		"application id", m.job.app.ID,
-		"status", m.job.app.Status,
-	)
 
 	if err = m.jobCompile(ctx); err != nil {
 		return
@@ -342,16 +331,14 @@ func (m *Master) run(ctx context.Context, j *job) (err error) {
 	// in this phase, the server run in local mode
 
 	// change job to running state
-	if err = m.jobTo(ctx, jobRunning); err != nil {
+	if err = j.setStatus(ctx, jobRunning); err != nil {
 		return
 	}
 
-	m.logger.Infow("job new status",
-		"application id", m.job.app.ID,
-		"status", m.job.app.Status,
-	)
-
-	if _, err = m.job.app.Update().SetStartedAt(time.Now()).Save(ctx); err != nil {
+	if _, err = m.job.app.
+		Update().
+		SetStartedAt(time.Now()).
+		Save(ctx); err != nil {
 		return
 	}
 
@@ -433,7 +420,7 @@ func (m *Master) jobCompile(ctx context.Context) error {
 		return fmt.Errorf("create temp dir: %v", err)
 	}
 
-	m.logger.Infow("folder for compiling", "dir", dir)
+	m.job.logger.Infow("folder for compiling", "dir", dir)
 
 	// todo: instead of remove files, just remove folder after finish the job
 
@@ -485,7 +472,7 @@ func (m *Master) jobCompile(ctx context.Context) error {
 		CombinedOutput()
 
 	if err != nil {
-		m.logger.Errorw("failed compiling the scenario",
+		m.job.logger.Errorw("failed compiling the scenario",
 			"err", err,
 			"output", string(out))
 		return fmt.Errorf("compile scenario: %v", err)
@@ -498,5 +485,61 @@ func (m *Master) jobCompile(ctx context.Context) error {
 
 // runJob runs the already compiled plugin, uses agent workhouse
 func (m *Master) runJob(ctx context.Context) (err error) {
+	defer m.la.SetLogger(m.logger)
+
+	m.la.SetLogger(m.job.logger)
 	return m.la.RunJob(ctx, m.job.plugin, m.job.app.ID)
+}
+
+// logFile return the log file for a certain log
+// filepath = $HOME/.gobench/applications/appID/log
+func (j *job) logFile() (string, string, error) {
+	u, err := user.Current()
+	if err != nil {
+		return "", "", err
+	}
+	home := u.HomeDir
+
+	folder := filepath.Join(home, ".gobench", "applications", strconv.Itoa(j.app.ID))
+	f := filepath.Join(folder, "log")
+	return f, folder, nil
+}
+
+// setLogger setup logger for the job. The log is a file under
+// $HOME/.gobench/applications/$appID/log
+func (j *job) setLogger() (logger.Logger, error) {
+	// create new log from the application id
+	lfile, lfolder, err := j.logFile()
+	if err != nil {
+		return nil, err
+	}
+	if err = os.MkdirAll(lfolder, os.ModePerm); err != nil {
+		return nil, err
+	}
+	l, err := logger.NewApplicationLogger(lfile)
+
+	if err != nil {
+		return l, err
+	}
+
+	j.logger = l
+
+	return l, nil
+}
+
+func (j *job) setStatus(ctx context.Context, state jobState) (err error) {
+	j.app, err = j.app.Update().
+		SetStatus(string(state)).
+		Save(ctx)
+
+	if err != nil {
+		return
+	}
+
+	j.logger.Infow("job new status",
+		"application id", j.app.ID,
+		"status", j.app.Status,
+	)
+
+	return
 }
