@@ -246,16 +246,6 @@ func (m *Master) cleanupDB() error {
 	return err
 }
 
-// to is the function to set new state for an application
-// save new state to the db
-func (m *Master) jobTo(ctx context.Context, state jobState) (err error) {
-	m.job.app, err = m.job.app.Update().
-		SetStatus(string(state)).
-		Save(ctx)
-
-	return
-}
-
 // setupDb setup the db in the master
 func (m *Master) setupDb() error {
 	filename := m.dbFilename
@@ -312,7 +302,7 @@ func (m *Master) run(ctx context.Context, j *job) (err error) {
 
 		// normalize je
 		if err != nil {
-			m.logger.Infow("failed run job",
+			j.logger.Infow("failed run job",
 				"application id", m.job.app.ID,
 				"err", err,
 			)
@@ -326,28 +316,13 @@ func (m *Master) run(ctx context.Context, j *job) (err error) {
 
 		// create new context
 		ctx := context.TODO()
-		_ = m.jobTo(ctx, je)
-
-		m.logger.Infow("job new status",
-			"application id", m.job.app.ID,
-			"status", m.job.app.Status,
-		)
+		_ = j.toStatus(ctx, je)
 	}()
 
-	m.job.logger.Infow("job new status",
-		"application id", m.job.app.ID,
-		"status", m.job.app.Status,
-	)
-
 	// change job to provisioning
-	if err = m.jobTo(ctx, jobProvisioning); err != nil {
+	if err = j.toStatus(ctx, jobProvisioning); err != nil {
 		return
 	}
-
-	m.job.logger.Infow("job new status",
-		"application id", m.job.app.ID,
-		"status", m.job.app.Status,
-	)
 
 	if err = m.jobCompile(ctx); err != nil {
 		return
@@ -356,14 +331,9 @@ func (m *Master) run(ctx context.Context, j *job) (err error) {
 	// in this phase, the server run in local mode
 
 	// change job to running state
-	if err = m.jobTo(ctx, jobRunning); err != nil {
+	if err = j.toStatus(ctx, jobRunning); err != nil {
 		return
 	}
-
-	m.job.logger.Infow("job new status",
-		"application id", m.job.app.ID,
-		"status", m.job.app.Status,
-	)
 
 	if _, err = m.job.app.
 		Update().
@@ -515,6 +485,8 @@ func (m *Master) jobCompile(ctx context.Context) error {
 
 // runJob runs the already compiled plugin, uses agent workhouse
 func (m *Master) runJob(ctx context.Context) (err error) {
+	defer m.la.SetLogger(m.logger)
+
 	m.la.SetLogger(m.job.logger)
 	return m.la.RunJob(ctx, m.job.plugin, m.job.app.ID)
 }
@@ -553,4 +525,21 @@ func (j *job) setLogger() (logger.Logger, error) {
 	j.logger = l
 
 	return l, nil
+}
+
+func (j *job) toStatus(ctx context.Context, state jobState) (err error) {
+	j.app, err = j.app.Update().
+		SetStatus(string(state)).
+		Save(ctx)
+
+	if err != nil {
+		return
+	}
+
+	j.logger.Infow("job new status",
+		"application id", j.app.ID,
+		"status", j.app.Status,
+	)
+
+	return
 }
