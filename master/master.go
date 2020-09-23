@@ -300,17 +300,9 @@ func (m *Master) schedule() {
 func (m *Master) run(ctx context.Context, j *job) (err error) {
 	m.logger.Infow("handle new application", "application id", j.app.ID)
 
-	// create new job from the application
-	lfile, lfolder, err := j.logFile()
-	if err != nil {
-		return err
-	}
-	if err = os.MkdirAll(lfolder, os.ModePerm); err != nil {
-		return err
-	}
-	l, err := logger.NewApplicationLogger(lfile)
-	if err != nil {
-		return err
+	l, err := j.genLogger()
+	if err == nil {
+		return
 	}
 
 	m.job = j
@@ -540,4 +532,18 @@ func (j *job) logFile() (string, string, error) {
 	folder := filepath.Join(home, ".gobench", "applications", strconv.Itoa(j.app.ID))
 	f := filepath.Join(folder, "log")
 	return f, folder, nil
+}
+
+func (j *job) genLogger() (logger.Logger, error) {
+	// create new log from the application id
+	lfile, lfolder, err := j.logFile()
+	if err != nil {
+		return nil, err
+	}
+	if err = os.MkdirAll(lfolder, os.ModePerm); err != nil {
+		return nil, err
+	}
+	l, err := logger.NewApplicationLogger(lfile)
+
+	return l, err
 }
