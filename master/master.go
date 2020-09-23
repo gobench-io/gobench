@@ -6,7 +6,9 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"os/user"
 	"path/filepath"
+	"strconv"
 	"sync"
 	"time"
 
@@ -515,4 +517,17 @@ func (m *Master) jobCompile(ctx context.Context) error {
 func (m *Master) runJob(ctx context.Context) (err error) {
 	m.la.SetLogger(m.job.logger)
 	return m.la.RunJob(ctx, m.job.plugin, m.job.app.ID)
+}
+
+// logFile return the log file for a certain log
+// filepath = $HOME/.gobench/applications/appID/log
+func (j *job) logFile() (string, error) {
+	u, err := user.Current()
+	if err != nil {
+		return "", err
+	}
+	home := u.HomeDir
+
+	f := filepath.Join(home, ".gobench", "applications", strconv.Itoa(j.app.ID), "log")
+	return f, nil
 }

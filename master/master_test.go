@@ -284,3 +284,17 @@ func f(ctx context.Context, vui int) {
 	err := m.run(ctx, j)
 	assert.Nil(t, err)
 }
+
+func TestLogFile(t *testing.T) {
+	ctx := context.Background()
+	m := seedMaster(t)
+	app, _ := m.NewApplication(ctx, "name", "scenario", "", "")
+	j := &job{
+		app: app,
+	}
+
+	f, err := j.logFile()
+
+	assert.Nil(t, err)
+	assert.Contains(t, f, fmt.Sprintf(".gobench/applications/%d/log", app.ID))
+}
