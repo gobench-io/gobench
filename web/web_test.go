@@ -102,7 +102,7 @@ func TestAuth200(t *testing.T) {
 	r, w := newAPITest(t, adminPassword)
 
 	reqBody, _ := json.Marshal(map[string]string{
-		"usename":  "admin",
+		"username": "admin",
 		"password": adminPassword,
 	})
 	loginReq, _ := http.NewRequest("POST", "/api/users/login", bytes.NewBuffer(reqBody))
