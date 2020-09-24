@@ -1,0 +1,70 @@
+@import 'components/mixins.scss';
+
+/////////////////////////////////////////////////////////////////////////////////////////
+/* PAGINATION */
+
+.pagination {
+  .page-link {
+    border-color: $border;
+    color: $text;
+    outline: none;
+    margin-bottom: rem(10);
+    &:hover,
+    &:focus {
+      background: $gray-1;
+    }
+  }
+  .page-item {
+    &.disabled {
+      .page-link {
+        background: $gray-1;
+      }
+    }
+    &.active {
+      .page-link {
+        background: $primary;
+        border-color: $primary;
+      }
+    }
+  }
+}
+
+.pager {
+  li > a {
+    border-color: $gray-5;
+    color: $text;
+    outline: none;
+    border-radius: 3px;
+    &:hover,
+    &:focus {
+      background: $default;
+      color: $white;
+      border-color: $default;
+    }
+  }
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  .pagination {
+    .page-link {
+      border-color: $dark-gray-4;
+      background: $dark-gray-4;
+      &:hover,
+      &:focus {
+        background: $primary;
+        border-color: $primary;
+        color: $white;
+      }
+    }
+
+    .page-item {
+      &.disabled {
+        .page-link {
+          opacity: 0.5;
+          background: $dark-gray-4;
+        }
+      }
+    }
+  }
+}

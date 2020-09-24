@@ -1,0 +1,103 @@
+@import 'components/mixins.scss';
+
+.item {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  margin-bottom: rem(20);
+
+  .control {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+
+  .controlIndicator {
+    flex-shrink: 0;
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.separator {
+  height: rem(32);
+  width: 4px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  background-color: $gray-2;
+}
+
+.control {
+  display: block;
+  position: relative;
+  margin-bottom: rem(10);
+  cursor: pointer;
+
+  input {
+    position: absolute;
+    z-index: -1;
+    opacity: 0;
+  }
+
+  &Indicator {
+    margin-right: rem(8);
+    vertical-align: super;
+    position: relative;
+    display: inline-block;
+    height: 18px;
+    width: 18px;
+    background: $gray-2;
+    border-radius: 3px;
+
+    &:after {
+      position: absolute;
+      display: none;
+      content: '';
+    }
+  }
+
+  &:hover input ~ .controlIndicator,
+  input:focus ~ .controlIndicator {
+    background: $gray-3;
+  }
+
+  input:checked ~ .controlIndicator {
+    background: $primary;
+  }
+
+  &:hover input:not([disabled]):checked ~ .controlIndicator,
+  .control input:checked:focus ~ .controlIndicator {
+    background: $primary;
+    opacity: 0.8;
+  }
+
+  input:disabled ~ .controlIndicator {
+    pointer-events: none;
+    opacity: 0.6;
+    background: $gray-2;
+  }
+
+  input:checked ~ .controlIndicator:after {
+    display: block;
+  }
+
+  &.checkbox {
+    .controlIndicator:after {
+      top: 3px;
+      left: 6px;
+      width: 6px;
+      height: 10px;
+      transform: rotate(45deg);
+      border: solid #fff;
+      border-width: 0 2px 2px 0;
+    }
+
+    input:disabled ~ .controlIndicator:after {
+      border-color: #7b7b7b;
+    }
+  }
+}

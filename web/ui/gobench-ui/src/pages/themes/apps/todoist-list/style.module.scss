@@ -1,0 +1,48 @@
+@import 'components/mixins.scss';
+
+.categories {
+  min-height: rem(300);
+  height: 100%;
+
+  @media (max-width: $sm-max-width) {
+    max-height: rem(240);
+    min-height: rem(240);
+    margin-bottom: rem(15);
+  }
+}
+
+.category {
+  padding-top: rem(5);
+  padding-bottom: rem(8);
+  padding-left: rem(10);
+  cursor: pointer;
+  border-radius: 5px;
+
+  &:hover {
+    background-color: lighten($gray-1, 2);
+  }
+
+  &.title {
+    &:hover {
+      background-color: transparent;
+    }
+  }
+}
+
+.current {
+  background-color: $gray-1;
+
+  &:hover {
+    background-color: $gray-1;
+  }
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  .category {
+    &:hover,
+    &.current {
+      background-color: $dark-gray-4;
+    }
+  }
+}

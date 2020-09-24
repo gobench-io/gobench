@@ -1,0 +1,222 @@
+{
+  "rangeSlider": {
+    "first": 34,
+    "second": [
+      18,
+      67
+    ]
+  },
+  "calendarData": {
+    "date_8": [
+      {
+        "type": "warning",
+        "content": "This is warning event."
+      },
+      {
+        "type": "success",
+        "content": "This is usual event."
+      }
+    ],
+    "date_10": [
+      {
+        "type": "warning",
+        "content": "This is warning event."
+      },
+      {
+        "type": "success",
+        "content": "This is usual event."
+      },
+      {
+        "type": "error",
+        "content": "This is error event."
+      }
+    ],
+    "date_18": [
+      {
+        "type": "warning",
+        "content": "This is warning event"
+      },
+      {
+        "type": "success",
+        "content": "This is very long usual event...."
+      },
+      {
+        "type": "error",
+        "content": "This is error event 1."
+      },
+      {
+        "type": "error",
+        "content": "This is error event 2."
+      },
+      {
+        "type": "error",
+        "content": "This is error event 3."
+      },
+      {
+        "type": "error",
+        "content": "This is error event 4."
+      }
+    ]
+  },
+  "weekChartistData": {
+    "labels": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri"
+    ],
+    "series": [
+      [
+        5,
+        2,
+        4,
+        2,
+        5
+      ],
+      [
+        3,
+        1,
+        5,
+        4,
+        2
+      ],
+      [
+        0,
+        4,
+        3,
+        5,
+        1
+      ]
+    ]
+  },
+  "monthCartistData": {
+    "labels": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
+    ],
+    "series": [
+      [
+        5,
+        4,
+        3,
+        7,
+        5,
+        10,
+        3,
+        4,
+        8,
+        10,
+        6,
+        8
+      ],
+      [
+        3,
+        2,
+        9,
+        5,
+        4,
+        6,
+        4,
+        6,
+        7,
+        8,
+        7,
+        4
+      ]
+    ]
+  },
+  "taskTableData": [
+    {
+      "key": 1,
+      "name": "Mark Stevenson",
+      "username": "@mdo"
+    },
+    {
+      "key": 2,
+      "name": "Jacob Hoffman",
+      "username": "@fat"
+    },
+    {
+      "key": 3,
+      "name": "Larry Page",
+      "username": "@twitter"
+    },
+    {
+      "key": 4,
+      "name": "Mark Stevenson",
+      "username": "@mdo"
+    }
+  ],
+  "tableData": [
+    {
+      "key": "1",
+      "name": "Damon",
+      "position": "5516 Adolfo Green",
+      "office": "Littelhaven",
+      "age": 18,
+      "date": "2014/06/13",
+      "salary": 553.536
+    },
+    {
+      "key": "2",
+      "name": "Miracle",
+      "position": "176 Hirthe Squares",
+      "office": "Ryleetown",
+      "age": 35,
+      "date": "2013/09/27",
+      "salary": 784.802
+    },
+    {
+      "key": "3",
+      "name": "Torrey",
+      "position": "1995 Richie Neck",
+      "office": "West Sedrickstad",
+      "age": 15,
+      "date": "2014/09/12",
+      "salary": 344.302
+    }
+  ],
+  "progressGroup": {
+    "first": {
+      "name": "Work Progress:",
+      "description": "Ipsum is simply dummy",
+      "progress": 66,
+      "status": "active"
+    },
+    "second": {
+      "name": "Airplanes:",
+      "description": "Typesetting industry",
+      "progress": 23,
+      "status": "success"
+    },
+    "third": {
+      "name": "Robots:",
+      "description": "Typesetting industry",
+      "progress": 46,
+      "status": "exception"
+    },
+    "fourth": {
+      "name": "Automotive:",
+      "description": "Typesetting industry",
+      "progress": 78,
+      "status": "active"
+    },
+    "fives": {
+      "name": "Total Time:",
+      "description": "Printing and typesetting",
+      "progress": 98,
+      "status": "active"
+    }
+  }
+}

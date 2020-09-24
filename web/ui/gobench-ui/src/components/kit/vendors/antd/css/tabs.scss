@@ -1,0 +1,111 @@
+// Import mixins
+@import 'components/mixins.scss';
+
+.ant-tabs-nav .ant-tabs-tab {
+  padding-left: 0;
+  padding-right: 0;
+  margin-right: rem(20) !important;
+
+  &:last-child,
+  &:last-of-type {
+    margin-right: 0 !important;
+  }
+}
+
+.kit-tabs,
+.kit-tabs-bold,
+.kit-tabs-pills {
+  overflow: visible !important;
+
+  .ant-tabs-top-bar {
+    margin-bottom: 0;
+    border-bottom: none;
+    height: 100%;
+  }
+  .ant-tabs-nav-container,
+  .ant-tabs-nav-wrap,
+  .ant-tabs-nav-scroll {
+    height: 100%;
+    overflow: visible !important;
+  }
+
+  .ant-tabs-nav {
+    height: 100%;
+
+    &:before {
+      bottom: -1px !important;
+    }
+
+    & > div {
+      height: 100%;
+    }
+
+    .ant-tabs-ink-bar {
+      height: 1px;
+      bottom: -1px !important;
+
+      &[style*='width: 0px;'] {
+        width: 100% !important;
+      }
+    }
+  }
+
+  .ant-tabs-tab-active {
+    .nav-link {
+      background-color: $primary;
+      color: $white;
+      border-radius: 0.25rem;
+    }
+  }
+}
+
+.kit-tabs-bold {
+  .ant-tabs-nav {
+    .ant-tabs-ink-bar {
+      height: 7px !important;
+      bottom: -4px !important;
+      border-radius: 7px !important;
+    }
+  }
+}
+
+.kit-tabs-pills {
+  .ant-tabs-ink-bar {
+    display: none !important;
+  }
+
+  .ant-tabs-nav {
+    .ant-tabs-tab {
+      padding-left: 0;
+      padding-right: 0;
+    }
+  }
+}
+
+.kit-tabs-bordered {
+  .ant-tabs-nav-list {
+    padding-left: rem(24);
+    padding-right: rem(24);
+  }
+
+  &.kit-tabs-bold {
+    .ant-tabs-top-bar {
+      border-bottom: 1px solid $border;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// DARK THEME STYLES
+[data-kit-theme='dark'] {
+  .ant-tabs {
+    .ant-tabs-card-bar {
+      .ant-tabs-tab {
+        background: transparent;
+        &-active {
+          background: $dark-gray-4;
+        }
+      }
+    }
+  }
+}

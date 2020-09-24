@@ -1,0 +1,26 @@
+@import 'components/mixins.scss';
+
+.btnWithAddon {
+  overflow: hidden;
+  position: relative;
+  padding-left: rem(50) !important;
+  border: none;
+
+  .btnAddon {
+    position: absolute;
+    z-index: 1;
+    top: -1px;
+    left: -1px;
+    bottom: -1px;
+    background-color: rgba($white, 0.2);
+    width: rem(40);
+  }
+
+  .btnAddonIcon {
+    font-size: rem(16);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}

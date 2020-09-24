@@ -1,0 +1,44 @@
+@import 'components/mixins.scss';
+
+/////////////////////////////////////////////////////////////////////////////////////////
+/*  REACT DRAFT WYSIWYG */
+
+.public-DraftStyleDefault-block {
+  margin: 0;
+}
+
+.DraftEditor-root {
+  height: auto;
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  .rdw-editor-toolbar {
+    background: $dark-gray-4;
+    border-color: $dark-gray-4;
+  }
+
+  .rdw-option-wrapper,
+  .rdw-dropdown-wrapper {
+    border-color: $dark-gray-5;
+    background: $dark-gray-5;
+    &:hover,
+    &:active {
+      box-shadow: 1px 1px 0 $dark-gray-3;
+    }
+    img {
+      filter: invert(100%);
+    }
+  }
+
+  .rdw-dropdown-optionwrapper {
+    background: $dark-gray-4;
+    border-color: $dark-gray-4;
+    box-shadow: none;
+  }
+
+  .rdw-dropdownoption-active,
+  .rdw-dropdownoption-highlighted {
+    background: $primary;
+  }
+}

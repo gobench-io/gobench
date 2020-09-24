@@ -1,0 +1,147 @@
+@import 'components/mixins.scss';
+
+/////////////////////////////////////////////////////////////////////////////////////////
+/* NAVS */
+
+.nav {
+  .nav-link {
+    &.disabled {
+      opacity: 0.4;
+    }
+  }
+}
+
+.nav-pills {
+  .nav-link.active,
+  .show > .nav-link {
+    background: $primary;
+  }
+}
+
+.nav-tabs {
+  .nav-link {
+    &.active {
+      background: transparent;
+    }
+  }
+
+  &-noborder {
+    border-bottom: 0;
+  }
+
+  &-stretched {
+    align-items: stretch;
+    .nav-item {
+      display: flex;
+    }
+    .nav-link {
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  &-line {
+    .nav-item {
+      &:last-child {
+        .nav-link {
+          margin-right: 0;
+        }
+      }
+      &.show .nav-link {
+        border-color: transparent;
+      }
+    }
+
+    .nav-link {
+      padding-left: 0;
+      padding-right: 0;
+      margin-right: rem(20);
+      &:hover,
+      &:focus,
+      &:active {
+        border-color: transparent;
+      }
+      &.active {
+        border-color: transparent;
+        position: relative;
+        color: $blue;
+        &:after {
+          position: absolute;
+          bottom: -1px;
+          left: 0;
+          content: '';
+          display: block;
+          height: 1px;
+          width: 100%;
+          background: $primary;
+        }
+      }
+    }
+    &-bold {
+      .nav-link {
+        &.active {
+          &:after {
+            height: 7px;
+            bottom: -4px;
+            border-radius: 7px;
+          }
+        }
+      }
+    }
+  }
+
+  &-line-bottom {
+    border-bottom: 4px solid $border;
+
+    .nav-item {
+      margin-right: rem(30);
+      margin-bottom: -4px;
+    }
+
+    .nav-link {
+      padding-left: 0;
+      padding-right: 0;
+      padding-bottom: rem(10);
+      position: relative;
+      color: $dark;
+
+      &::before {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background-color: $gray-2;
+      }
+
+      &.active {
+        color: $blue;
+
+        &::before {
+          background-color: $blue;
+        }
+      }
+    }
+  }
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  .nav-tabs {
+    border-color: $dark-gray-4;
+    &:not(.nav-tabs-line) {
+      .nav-link {
+        &.active,
+        &:hover,
+        &:active,
+        &:focus {
+          color: $primary;
+          background: transparent;
+          border-color: $dark-gray-4;
+          border-bottom-color: $dark-gray-6;
+        }
+      }
+    }
+  }
+}

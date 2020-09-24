@@ -1,0 +1,63 @@
+@import 'components/mixins.scss';
+
+.dropdown {
+  padding-right: 15px;
+  position: relative;
+  cursor: pointer;
+  @include transition-slow;
+
+  &::after {
+    opacity: 0.5;
+    color: $gray-5;
+    position: absolute;
+    top: 45%;
+    right: 0;
+    display: inline-block;
+    width: 0;
+    height: 0;
+    margin-left: 0.255em;
+    vertical-align: 0.255em;
+    content: '';
+    border-top: 0.3em solid;
+    border-right: 0.3em solid transparent;
+    border-bottom: 0;
+    border-left: 0.3em solid transparent;
+    @include transition-slow;
+  }
+
+  &:hover {
+    color: $blue;
+
+    &::after {
+      color: $gray-6;
+    }
+
+    .icon {
+      color: $primary;
+    }
+  }
+}
+
+.icon {
+  margin-right: rem(8);
+  position: relative;
+  bottom: -2px;
+  font-size: rem(17);
+  color: $gray-5;
+  @include transition-slow;
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  .dropdown {
+    color: $dark-gray-2;
+
+    &:hover {
+      color: $primary;
+    }
+  }
+
+  .icon {
+    color: $dark-gray-2;
+  }
+}

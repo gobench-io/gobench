@@ -1,0 +1,55 @@
+@import 'components/mixins.scss';
+
+.new {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background-color: $danger;
+  text-align: center;
+  color: $white;
+  top: -50px;
+  right: -50px;
+  line-height: 163px;
+  transform: rotate(45deg);
+  text-transform: uppercase;
+}
+
+.favourite {
+  position: absolute;
+  top: rem(20);
+  left: rem(25);
+  color: $gray-3;
+
+  &:focus {
+    color: $gray-3;
+
+    &:hover {
+      color: $gray-3;
+    }
+  }
+}
+
+.thumb {
+  display: flex;
+  align-items: center;
+  border-radius: 5px;
+  overflow: hidden;
+
+  img {
+    margin: auto;
+    max-height: 100%;
+    width: auto;
+  }
+}
+
+.image {
+  display: flex;
+  align-items: center;
+  background: $white;
+
+  img {
+    margin: auto;
+    max-height: 100%;
+    width: auto;
+  }
+}

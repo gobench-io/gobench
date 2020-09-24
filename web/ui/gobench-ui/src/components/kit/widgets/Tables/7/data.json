@@ -1,0 +1,27 @@
+[
+  {
+    "key": "1",
+    "actionName": "New Users",
+    "location": "New York",
+    "value": "+3,125",
+    "description": "Lorem Ipsum is simply dummy text of the printing...",
+    "users": ["resources/images/avatars/1.jpg", "resources/images/avatars/2.jpg", "resources/images/avatars/3.jpg", "resources/images/avatars/4.jpg", "resources/images/avatars/5.jpg"]
+  },
+  {
+    "key": "2",
+    "actionName": "New Reports",
+    "location": "Palo Alto",
+    "value": "+643",
+    "description": "Lorem Ipsum is simply dummy text of the printing...",
+    "users": ["resources/images/avatars/2.jpg", "resources/images/avatars/4.jpg", "resources/images/avatars/3.jpg"]
+
+  },
+  {
+    "key": "3",
+    "actionName": "Quote Submits",
+    "location": "Las Vegas",
+    "value": "+982",
+    "description": "Lorem Ipsum is simply dummy text of the printing...",
+    "users": ["resources/images/avatars/5.jpg", "resources/images/avatars/3.jpg", "resources/images/avatars/1.jpg", "resources/images/avatars/4.jpg"]
+  }
+]

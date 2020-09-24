@@ -1,0 +1,20 @@
+[
+  {
+    "key": "1",
+    "actionName": "New Users",
+    "progress": {"value": 60, "color": "bg-success"},
+    "value": "+3,125"
+  },
+  {
+    "key": "2",
+    "actionName": "New Reports",
+    "progress": {"value": 15, "color": "bg-orange"},
+    "value": "+643"
+  },
+  {
+    "key": "3",
+    "actionName": "Quote Submits",
+    "progress": {"value": 25, "color": "bg-primary"},
+    "value": "+982"
+  }
+]

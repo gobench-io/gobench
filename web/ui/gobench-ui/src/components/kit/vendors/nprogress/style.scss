@@ -1,0 +1,114 @@
+@import 'components/mixins.scss';
+
+/////////////////////////////////////////////////////////////////////////////////////////
+/*  NPROGRESS */
+
+#nprogress {
+  pointer-events: none;
+}
+
+#nprogress .bar {
+  height: 3px;
+  background: $primary;
+
+  position: fixed;
+  z-index: 1031;
+  top: 0;
+  left: 0;
+
+  width: 100%;
+}
+
+/* Fancy blur effect */
+#nprogress .peg {
+  display: block;
+  position: absolute;
+  right: 0;
+  width: 100px;
+  height: 100%;
+  box-shadow: 0 0 10px #29d, 0 0 5px #29d;
+  opacity: 1;
+
+  -webkit-transform: rotate(3deg) translate(0, -4px);
+  -ms-transform: rotate(3deg) translate(0, -4px);
+  transform: rotate(3deg) translate(0, -4px);
+}
+
+#nprogress .spinner {
+  display: block;
+  position: fixed;
+  z-index: 1031;
+
+  width: rem(140);
+  padding: rem(8) rem(15);
+  background: $white;
+  border-radius: 4px;
+  border: 1px solid $border;
+  right: auto;
+  left: 50%;
+  top: rem(13);
+  margin-left: rem(-73);
+  &:after {
+    content: 'Loading...';
+    display: inline-block;
+    position: absolute;
+    top: rem(7);
+    left: rem(48);
+  }
+}
+
+#nprogress .spinner-icon {
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+
+  border: solid 2px transparent;
+  border-top-color: $primary;
+  border-left-color: $primary;
+  border-radius: 50%;
+
+  -webkit-animation: nprogress-spinner 400ms linear infinite;
+  animation: nprogress-spinner 400ms linear infinite;
+}
+
+.nprogress-custom-parent {
+  overflow: hidden;
+  position: relative;
+}
+
+.nprogress-custom-parent #nprogress .spinner,
+.nprogress-custom-parent #nprogress .bar {
+  position: absolute;
+}
+
+@-webkit-keyframes nprogress-spinner {
+  0% {
+    -webkit-transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+  }
+}
+@keyframes nprogress-spinner {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  #nprogress {
+    .spinner {
+      color: $white;
+      background: $primary;
+      border-color: $primary;
+      .spinner-icon {
+        border-top-color: $white;
+        border-left-color: $white;
+      }
+    }
+  }
+}

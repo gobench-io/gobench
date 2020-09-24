@@ -1,0 +1,213 @@
+@import 'components/mixins.scss';
+
+/////////////////////////////////////////////////////////////////////////////////////////
+/*  "COLORS" STYLES */
+
+// Redefined with the /vendors/bootstrap/css/utilities.scss styles if CleanUI KIT bootstrap theme installed
+
+// font color
+.text {
+  &-default {
+    color: $default !important;
+  }
+  &-primary {
+    color: $primary !important;
+  }
+  &-secondary {
+    color: $secondary !important;
+  }
+  &-success {
+    color: $success !important;
+  }
+  &-danger {
+    color: $danger !important;
+  }
+  &-warning {
+    color: $warning !important;
+  }
+  &-info {
+    color: $info !important;
+  }
+  &-light {
+    color: $light !important;
+  }
+  &-dark {
+    color: $dark !important;
+  }
+  &-white {
+    color: $white !important;
+  }
+  &-muted {
+    color: $gray-5 !important;
+  }
+  &-blue {
+    color: $blue !important;
+  }
+  &-blue-light {
+    color: $blue-light !important;
+  }
+  &-red {
+    color: $red !important;
+  }
+  &-yellow {
+    color: $yellow !important;
+  }
+  &-pink {
+    color: $pink !important;
+  }
+  &-orange {
+    color: $orange !important;
+  }
+  &-gray-1 {
+    color: $gray-1 !important;
+  }
+  &-gray-2 {
+    color: $gray-2 !important;
+  }
+  &-gray-3 {
+    color: $gray-3 !important;
+  }
+  &-gray-4 {
+    color: $gray-4 !important;
+  }
+  &-gray-5 {
+    color: $gray-5 !important;
+  }
+  &-gray-6 {
+    color: $gray-6 !important;
+  }
+}
+
+// background color
+.bg {
+  &-default {
+    background-color: $default !important;
+  }
+  &-primary {
+    background-color: $primary !important;
+  }
+  &-secondary {
+    background-color: $secondary !important;
+  }
+  &-success {
+    background-color: $success !important;
+  }
+  &-danger {
+    background-color: $danger !important;
+  }
+  &-warning {
+    background-color: $warning !important;
+  }
+  &-info {
+    background-color: $info !important;
+  }
+  &-light {
+    background-color: $light !important;
+  }
+  &-dark {
+    background-color: $dark !important;
+  }
+  &-white {
+    background-color: $white !important;
+  }
+  &-blue {
+    background-color: $blue !important;
+  }
+  &-blue-light {
+    background-color: $blue-light !important;
+  }
+  &-red {
+    background-color: $red !important;
+  }
+  &-yellow {
+    background-color: $yellow !important;
+  }
+  &-orange {
+    background-color: $orange !important;
+  }
+  &-gray-1 {
+    background-color: $gray-1 !important;
+  }
+  &-gray-2 {
+    background-color: $gray-2 !important;
+  }
+  &-gray-3 {
+    background-color: $gray-3 !important;
+  }
+  &-gray-4 {
+    background-color: $gray-4 !important;
+  }
+  &-gray-5 {
+    background-color: $gray-5 !important;
+  }
+  &-gray-6 {
+    background-color: $gray-6 !important;
+  }
+}
+
+// border color
+.border {
+  &-default {
+    border-color: $default !important;
+  }
+  &-primary {
+    border-color: $primary !important;
+  }
+  &-secondary {
+    border-color: $primary !important;
+  }
+  &-success {
+    border-color: $success !important;
+  }
+  &-danger {
+    border-color: $danger !important;
+  }
+  &-warning {
+    border-color: $warning !important;
+  }
+  &-info {
+    border-color: $info !important;
+  }
+  &-light {
+    border-color: $light !important;
+  }
+  &-dark {
+    border-color: $dark !important;
+  }
+  &-white {
+    border-color: $white !important;
+  }
+  &-blue {
+    border-color: $blue !important;
+  }
+  &-blue-light {
+    border-color: $blue-light !important;
+  }
+  &-red {
+    border-color: $red !important;
+  }
+  &-yellow {
+    border-color: $yellow !important;
+  }
+  &-orange {
+    border-color: $orange !important;
+  }
+  &-gray-1 {
+    border-color: $gray-1 !important;
+  }
+  &-gray-2 {
+    border-color: $gray-2 !important;
+  }
+  &-gray-3 {
+    border-color: $gray-3 !important;
+  }
+  &-gray-4 {
+    border-color: $gray-4 !important;
+  }
+  &-gray-5 {
+    border-color: $gray-5 !important;
+  }
+  &-gray-6 {
+    border-color: $gray-6 !important;
+  }
+}

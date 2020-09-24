@@ -1,0 +1,62 @@
+@import 'components/mixins.scss';
+
+.item {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  padding-bottom: rem(30);
+  position: relative;
+  min-height: 96px;
+
+  &:last-child {
+    padding-bottom: 0;
+
+    &::before {
+      display: none;
+    }
+  }
+}
+
+.itemDots {
+  content: '';
+  position: absolute;
+  top: calc(50% + 28px);
+  transform: translateY(-50%);
+  left: rem(33);
+  bottom: 0;
+  width: 5px;
+  height: 32px;
+  background-repeat: no-repeat;
+}
+
+.itemPicContainer {
+  align-self: flex-start;
+  position: relative;
+  margin-right: rem(20);
+  margin-left: rem(15);
+}
+
+.itemPic {
+  width: rem(43);
+  height: rem(43);
+  border-radius: 50%;
+  line-height: rem(43);
+  flex-shrink: 0;
+  opacity: 0.4;
+}
+
+.itemIcon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: rem(18);
+  color: $white;
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  .itemDots {
+    opacity: 0.1;
+  }
+}

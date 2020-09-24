@@ -1,0 +1,46 @@
+@import 'components/mixins.scss';
+
+/////////////////////////////////////////////////////////////////////////////////////////
+/* MODAL */
+
+.modal {
+  .modal-content {
+    border: none;
+  }
+  .modal-header {
+    .close {
+      background: $white;
+    }
+  }
+}
+
+.modal-backdrop {
+  background: $black;
+  &.show {
+    opacity: 0.3;
+  }
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  .modal {
+    &-content {
+      background: $dark-gray-6;
+    }
+    &-header,
+    &-footer {
+      border-color: $dark-gray-4;
+    }
+    &-backdrop {
+      &.show {
+        opacity: 0.7;
+      }
+    }
+
+    .close {
+      background: transparent;
+      color: $dark-gray-3;
+      text-shadow: none;
+    }
+  }
+}

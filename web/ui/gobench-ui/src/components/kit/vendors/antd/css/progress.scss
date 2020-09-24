@@ -1,0 +1,12 @@
+// Import mixins
+@import 'components/mixins.scss';
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// DARK THEME STYLES
+[data-kit-theme='dark'] {
+  .ant-progress {
+    &-inner {
+      background: $dark-gray-4;
+    }
+  }
+}

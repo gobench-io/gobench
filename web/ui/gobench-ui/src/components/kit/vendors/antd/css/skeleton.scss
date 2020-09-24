@@ -1,0 +1,10 @@
+// Import mixins
+@import 'components/mixins.scss';
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// DARK THEME STYLES
+[data-kit-theme='dark'] {
+  .ant-skeleton {
+    opacity: 0.1;
+  }
+}

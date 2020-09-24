@@ -1,0 +1,516 @@
+@import 'components/mixins.scss';
+
+/////////////////////////////////////////////////////////////////////////////////////////
+/*  "MEASUREMENTS" STYLES */
+
+// font size
+.kit__utils {
+  // link
+  &__link {
+    color: $primary;
+    transition: all 0.2s ease-in-out;
+    &:hover {
+      color: $blue-light;
+    }
+
+    &__underlined {
+      color: $primary;
+      border-bottom: 1px solid $blue-light;
+      transition: all 0.2s ease-in-out;
+      &:hover {
+        color: $blue-light;
+        border-bottom: 1px solid rgba($blue-light, 0.8);
+      }
+    }
+  }
+
+  // page heading
+  &__heading {
+    margin-bottom: rem(20);
+    h5 {
+      font-weight: bold;
+    }
+  }
+
+  // responsive table
+  &__table {
+    white-space: nowrap;
+    overflow-x: auto;
+  }
+
+  // avatar
+  &__avatar {
+    width: rem(40);
+    height: rem(40);
+    border-radius: 5px;
+    overflow: hidden;
+    background-color: $gray-1;
+    text-align: center;
+    vertical-align: middle;
+
+    &--rounded {
+      border-radius: 50%;
+    }
+
+    img {
+      width: 100%;
+      height: auto;
+    }
+
+    &--size27 {
+      width: rem(27);
+      height: rem(27);
+    }
+
+    &--size46 {
+      width: rem(46);
+      height: rem(46);
+    }
+
+    &--size50 {
+      width: rem(50);
+      height: rem(50);
+    }
+
+    &--size64 {
+      width: rem(64);
+      height: rem(64);
+    }
+
+    &--size84 {
+      width: rem(84);
+      height: rem(84);
+    }
+
+    &--size110 {
+      width: rem(110);
+      height: rem(110);
+    }
+  }
+
+  &__avatarGroup {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+
+    .kit__utils__avatar {
+      border: 3px solid $white;
+      flex-shrink: 0;
+
+      &:not(:first-child) {
+        margin-left: rem(-16);
+      }
+
+      &--rounded {
+        ~ .kit__utils__avatarGroupAdd {
+          border-radius: 50%;
+        }
+      }
+
+      &--size27 {
+        ~ .kit__utils__avatarGroupAdd {
+          width: rem(27);
+          height: rem(27);
+        }
+      }
+
+      &--size46 {
+        ~ .kit__utils__avatarGroupAdd {
+          width: rem(46);
+          height: rem(46);
+        }
+      }
+
+      &--size50 {
+        ~ .kit__utils__avatarGroupAdd {
+          width: rem(50);
+          height: rem(50);
+        }
+      }
+
+      &--size64 {
+        ~ .kit__utils__avatarGroupAdd {
+          width: rem(64);
+          height: rem(64);
+        }
+      }
+
+      &--size110 {
+        ~ .kit__utils__avatarGroupAdd {
+          width: rem(110);
+          height: rem(110);
+        }
+      }
+    }
+
+    .kit__utils__avatarGroupAdd {
+      flex-shrink: 0;
+      width: rem(40);
+      height: rem(40);
+      border-radius: 5px;
+      color: $gray-6;
+      background-color: $gray-2;
+      text-align: center;
+      border: 3px solid $white;
+      margin-left: rem(-16);
+      position: relative;
+      font-size: rem(18);
+
+      i {
+        position: absolute;
+        top: 50%;
+        left: calc(50% - 1px);
+        transform: translate(-50%, -50%);
+      }
+    }
+  }
+
+  // custom checkboxes and radios controls
+  &__control {
+    display: block;
+    position: relative;
+    margin-bottom: rem(10);
+    cursor: pointer;
+
+    input {
+      position: absolute;
+      z-index: -1;
+      opacity: 0;
+    }
+
+    &__indicator {
+      //position: absolute;
+      //top: 0;
+      //left: 0;
+      margin-right: rem(8);
+      vertical-align: top;
+      position: relative;
+      display: inline-block;
+      height: 18px;
+      width: 18px;
+      background: $gray-2;
+      border-radius: 3px;
+
+      &:after {
+        position: absolute;
+        display: none;
+        content: '';
+      }
+    }
+
+    &:hover input ~ .kit__utils__control__indicator,
+    input:focus ~ .kit__utils__control__indicator {
+      background: $gray-3;
+    }
+
+    input:checked ~ .kit__utils__control__indicator {
+      background: $primary;
+    }
+
+    &:hover input:not([disabled]):checked ~ .kit__utils__control__indicator,
+    .kit__utils__control input:checked:focus ~ .kit__utils__control__indicator {
+      background: $primary;
+      opacity: 0.8;
+    }
+
+    input:disabled ~ .kit__utils__control__indicator {
+      pointer-events: none;
+      opacity: 0.6;
+      background: $gray-2;
+    }
+
+    input:checked ~ .kit__utils__control__indicator:after {
+      display: block;
+    }
+
+    &__checkbox {
+      .kit__utils__control__indicator:after {
+        top: 3px;
+        left: 6px;
+        width: 6px;
+        height: 10px;
+        transform: rotate(45deg);
+        border: solid #fff;
+        border-width: 0 2px 2px 0;
+      }
+
+      input:disabled ~ .kit__utils__control__indicator:after {
+        border-color: #7b7b7b;
+      }
+    }
+
+    &__radio {
+      .kit__utils__control__indicator {
+        border-radius: 50% !important;
+
+        &:after {
+          top: 6px;
+          left: 6px;
+          width: 6px;
+          height: 6px;
+          border-radius: 50% !important;
+          background: #fff;
+        }
+      }
+
+      input:disabled ~ .kit__utils__control__indicator:after {
+        background: #7b7b7b;
+      }
+    }
+  }
+
+  // marked card
+  &__cardMarked {
+    position: relative;
+
+    &:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background-color: $gray-2;
+      overflow: hidden;
+      border-top-left-radius: calc(7px - 1px);
+      border-top-right-radius: calc(7px - 1px);
+    }
+
+    &--default {
+      &::before {
+        background-color: $default !important;
+      }
+    }
+    &--primary {
+      &::before {
+        background-color: $primary !important;
+      }
+    }
+    &--secondary {
+      &::before {
+        background-color: $primary !important;
+      }
+    }
+    &--success {
+      &::before {
+        background-color: $success !important;
+      }
+    }
+    &--danger {
+      &::before {
+        background-color: $danger !important;
+      }
+    }
+    &--warning {
+      &::before {
+        background-color: $warning !important;
+      }
+    }
+    &--info {
+      &::before {
+        background-color: $info !important;
+      }
+    }
+    &--light {
+      &::before {
+        background-color: $light !important;
+      }
+    }
+    &--dark {
+      &::before {
+        background-color: $dark !important;
+      }
+    }
+    &--white {
+      &::before {
+        background-color: $white !important;
+      }
+    }
+    &--blue {
+      &::before {
+        background-color: $blue !important;
+      }
+    }
+    &--red {
+      &::before {
+        background-color: $red !important;
+      }
+    }
+    &--yellow {
+      &::before {
+        background-color: $yellow !important;
+      }
+    }
+    &--orange {
+      &::before {
+        background-color: $orange !important;
+      }
+    }
+    &--gray-1 {
+      &::before {
+        background-color: $gray-1 !important;
+      }
+    }
+    &--gray-2 {
+      &::before {
+        background-color: $gray-2 !important;
+      }
+    }
+    &--gray-3 {
+      &::before {
+        background-color: $gray-3 !important;
+      }
+    }
+    &--gray-4 {
+      &::before {
+        background-color: $gray-4 !important;
+      }
+    }
+    &--gray-5 {
+      &::before {
+        background-color: $gray-5 !important;
+      }
+    }
+    &--gray-6 {
+      &::before {
+        background-color: $gray-6 !important;
+      }
+    }
+  }
+
+  // donut badge
+  &__donut {
+    display: inline-block;
+    width: rem(16);
+    height: rem(16);
+    border-radius: 100%;
+    border: 4px solid $default;
+    position: relative;
+    top: rem(2);
+    margin-right: rem(4);
+
+    &--md {
+      width: rem(26);
+      height: rem(26);
+    }
+
+    &--default {
+      border-color: $default;
+    }
+    &--primary {
+      border-color: $primary;
+    }
+    &--secondary {
+      border-color: $secondary;
+    }
+    &--success {
+      border-color: $success;
+    }
+    &--warning {
+      border-color: $warning;
+    }
+    &--danger {
+      border-color: $danger;
+    }
+    &--info {
+      border-color: $info;
+    }
+    &--yellow {
+      border-color: $yellow;
+    }
+    &--orange {
+      border-color: $orange;
+    }
+  }
+
+  // icon table
+  &__iconPresent {
+    padding: 0 0 rem(30);
+    text-align: center;
+
+    li {
+      text-align: center;
+      display: inline-block;
+      width: rem(40);
+      height: rem(40);
+      line-height: rem(40);
+      font-size: rem(36);
+      padding: rem(10) rem(30);
+      box-sizing: content-box !important;
+      border-radius: 3px;
+      background: $gray-1;
+      margin: rem(10);
+      &:hover {
+        background: $black;
+        color: $white;
+      }
+    }
+
+    .tooltip {
+      font-size: rem(18);
+    }
+  }
+
+  &__docs {
+    & > .container .row > [class^='col'],
+    & > .container-fluid .row > [class^='col'],
+    .themed-container {
+      padding-top: 0.75rem;
+      padding-bottom: 0.75rem;
+      background-color: $gray-1;
+      border: 1px solid $border;
+      margin-bottom: rem(10);
+    }
+  }
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  .kit {
+    &__utils {
+      &__link {
+        color: $primary;
+        &:hover {
+          color: $blue-light;
+        }
+        &__underlined {
+          color: $primary;
+          border-bottom: 1px solid $dark-gray-3;
+          &:hover {
+            color: $blue-light;
+            border-bottom: 1px solid $dark-gray-2;
+          }
+        }
+      }
+      &__avatar {
+        border-color: $dark-gray-4;
+        background: $dark-gray-4;
+      }
+      &__avatarGroupAdd {
+        border-color: $dark-gray-4;
+        background: $dark-gray-5;
+      }
+
+      &__iconPresent {
+        li {
+          background: $dark-gray-4;
+          color: $dark-gray-1;
+          &:hover {
+            background: $dark-gray-1;
+            color: $dark-gray-4;
+          }
+        }
+      }
+
+      &__docs {
+        & > .container .row > [class^='col'],
+        & > .container-fluid .row > [class^='col'],
+        .themed-container {
+          background-color: $dark-gray-5;
+          border: 1px solid $dark-gray-4;
+        }
+      }
+    }
+  }
+}

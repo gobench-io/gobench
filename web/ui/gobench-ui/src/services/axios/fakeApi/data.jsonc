@@ -1,0 +1,125 @@
+{
+  "accounts": [],
+  "activationCodes": [
+    {
+      "id": "",
+      "created": "",
+      "activationCode": "",
+      "userId": "",
+      "cabinetId": "",
+      "contractId": ""
+    }
+  ],
+  "ads": [],
+  "admins": [],
+  "authorizeddevices": [
+    {
+      "id": "",
+      "created": "",
+      "macAddress": "",
+      "fwName": "",
+      "username": "",
+      "password": "",
+      "pubKey": "",
+      "fwVersion": "",
+      "fwReportVersionAt": "",
+      "tx": "",
+      "rx": ""
+    }
+  ],
+  "contacts": [],
+  "contract": [
+    {
+      "id": "",
+      "created": "",
+      "contractNumber": "",
+      "clientId": "",
+      "start": "",
+      "end": "",
+      "maxSleepBots": "",
+      "maxMotionBots": ""
+    }
+  ],
+  "devices": [
+    {
+      "id": "",
+      "created": "",
+      "name": "",
+      "macAddress": "",
+      "username": "",
+      "password": "",
+      "userId": ""
+    }
+  ],
+  "deviceInfo": [{}],
+  "cabinets": [
+    {
+      "id": "",
+      "name": "",
+      "userId": "",
+      "zoneId": "",
+      "dtms": "",
+      "deviceId": "",
+      "created": "",
+      "wattage": ""
+    }
+  ],
+  "fotas": [
+    {
+      "id": "",
+      "fwName": "",
+      "version": "",
+      "signature": "",
+      "created": "",
+      "fwUrl": ""
+    }
+  ],
+  "users": [
+    {
+      "id": "",
+      "username": "",
+      "password": "",
+      "email": "",
+      "suspend": "",
+      "admin": "",
+      "emailVerified": "",
+      "verificationToken": "",
+      "avatarUrl": "",
+      "name": "",
+      "birthday": "",
+      "gender": "",
+      "address": "",
+      "phone": "",
+      "phoneVerified": "",
+      "phoneVerificationCode": "",
+      "sendPhoneVerificationAt": "",
+      "created": "",
+      "role": ""
+    }
+  ],
+  "userblocks": [
+    {
+      "id": "",
+      "ip": "",
+      "point": "",
+      "expireFromFirstFail": "",
+      "lastFail": "",
+      "created": "",
+      "userId": ""
+    }
+  ],
+  "zones": [
+    {
+      "id": "",
+      "name": "",
+      "lat": "",
+      "long": "",
+      "radius": "",
+      "address": "",
+      "county": "",
+      "city": "",
+      "created": "",
+      "country": ""
+    }
+  ]
+}

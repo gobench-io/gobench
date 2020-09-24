@@ -1,0 +1,13 @@
+// Import mixins
+@import 'components/mixins.scss';
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// DARK THEME STYLES
+[data-kit-theme='dark'] {
+  .ant-empty {
+    svg * {
+      fill: $gray-5;
+      stroke: $gray-6;
+    }
+  }
+}

@@ -1,0 +1,93 @@
+@plugin 'AntdThemeLoader';
+apply("dark");
+
+[data-kit-theme="dark"] {
+  @import '~antd/lib/style/components.less';
+
+  @kit-white: #ffffff;
+  @kit-black: #141322;
+  @kit-gray-dark-1: #aeaee0;
+  @kit-gray-dark-2: #7575a3;
+  @kit-gray-dark-4: #232135;
+  @kit-blue: #4b7cf3;
+  @kit-blue-light: #42baf9;
+  @kit-red: #f5222e;
+  @kit-green: #41b883;
+  @kit-orange: #faad15;
+
+  @text-color: @kit-gray-dark-1;
+  @primary-color: @kit-blue;
+  @info-color: @kit-blue-light;
+  @success-color: @kit-green;
+  @processing-color: @kit-blue;
+  @error-color: @kit-red;
+  @highlight-color: @kit-red;
+  @warning-color: @kit-red;
+  @normal-color: @kit-gray-dark-1;
+
+  @body-background: @kit-black;
+  @component-background: @kit-gray-dark-4;
+  @heading-color: @kit-white;
+
+  @layout-body-background: transparent;
+  @layout-header-background: transparent;
+  @layout-footer-background: transparent;
+
+  @border-color-base: @kit-gray-dark-4;
+  @border-color-split: @kit-gray-dark-4;
+  @border-color-inverse: @kit-gray-dark-4;
+  // '@border-radius-base: 2px;
+  @disabled-color: darken(@kit-gray-dark-2, 7%);
+  @disabled-bg: darken(@kit-gray-dark-4, 3%);
+
+  @btn-primary-color: @kit-white;
+  @btn-primary-bg: @kit-blue;
+  @btn-default-color: @kit-white;
+  @btn-default-bg: @kit-gray-dark-4;
+  @btn-danger-color: @kit-white;
+  @btn-danger-bg: @kit-red;
+  @btn-danger-border: @kit-red;
+
+  @link-color: @kit-white;
+  @link-hover-color: @kit-blue;
+  @link-active-color: @kit-blue-light;
+
+  @item-active-bg: lighten(@kit-gray-dark-4, 7%);
+  @item-hover-bg: lighten(@kit-gray-dark-4, 7%);
+
+  @input-placeholder-color: @kit-gray-dark-2;
+  @input-color: @kit-gray-dark-1;
+  @input-addon-bg: lighten(@kit-gray-dark-4, 7%);
+  @input-bg: @kit-gray-dark-4;
+  @input-border-color: @kit-gray-dark-4;
+
+  @alert-success-border-color: @kit-gray-dark-4;
+  @alert-success-bg-color: @kit-gray-dark-4;
+  @alert-success-icon-color: @kit-green;
+  @alert-info-border-color: @kit-gray-dark-4;
+  @alert-info-bg-color: @kit-gray-dark-4;
+  @alert-info-icon-color: @kit-blue;
+  @alert-warning-border-color: @kit-gray-dark-4;
+  @alert-warning-bg-color: @kit-gray-dark-4;
+  @alert-warning-icon-color: @kit-orange;
+  @alert-error-border-color: @kit-gray-dark-4;
+  @alert-error-bg-color: @kit-gray-dark-4;
+  @alert-error-icon-color: @kit-red;
+
+  @tabs-hover-color: @kit-blue;
+  @tabs-active-color: @kit-blue;
+  @tabs-card-active-color: @kit-blue;
+  @tabs-ink-bar-color: @kit-blue;
+  @tabs-highlight-color: @kit-blue;
+
+  @table-header-bg: @kit-gray-dark-4;
+  @table-header-color: @kit-gray-dark-1;
+  @table-footer-bg: @kit-gray-dark-4;
+  @table-footer-color: @kit-gray-dark-1;
+  @table-row-hover-bg: darken(@kit-gray-dark-4, 4%);
+  @table-selected-row-bg: @kit-gray-dark-4;
+  @table-expanded-row-bg: @kit-gray-dark-4;
+
+  @label-required-color: @kit-gray-dark-1;
+  @label-color: @kit-gray-dark-1;
+}

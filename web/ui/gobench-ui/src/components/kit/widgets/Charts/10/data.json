@@ -1,0 +1,13 @@
+{
+  "labels": ["Boston", "Gravity Falls", "New York"],
+  "datasets": [
+    {
+      "data": [45, 45, 45],
+      "backgroundColor": ["#46be8a", "#fb434a", "#1b55e3"],
+      "borderColor": "#fff",
+      "borderWidth": 2,
+      "hoverBorderWidth": 0,
+      "borderAlign": "inner"
+    }
+  ]
+}
