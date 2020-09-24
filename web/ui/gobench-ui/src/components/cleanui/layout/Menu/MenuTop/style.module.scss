@@ -1,0 +1,168 @@
+@import 'components/mixins.scss';
+
+/////////////////////////////////////////////////////////////////////////////////////////
+/* MENU COMPONENT */
+.menu {
+  border-bottom: 1px solid $border;
+  display: flex;
+  flex-direction: row;
+  background: $white;
+  font-size: rem(15);
+
+  /////////////////////////////////////////////////////////////////////////////////////////
+  /* LOGO */
+  .logoContainer {
+    height: 48px;
+    display: flex;
+    align-items: center;
+    padding: 0 rem(28);
+
+    .logo {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      height: rem(24);
+      white-space: nowrap;
+    }
+    .name {
+      font-size: rem(20);
+      font-weight: 700;
+      color: $black;
+    }
+    .descr {
+      margin-left: rem(13);
+      padding-left: rem(13);
+      height: rem(28);
+      line-height: rem(28);
+      border-left: 1px solid $gray-2;
+      font-size: rem(14);
+    }
+  }
+
+  /////////////////////////////////////////////////////////////////////////////////////////
+  /* ANTD MENU CUSTOMIZATION */
+  .navigation {
+    flex: 1 1 0%;
+    overflow: hidden;
+    padding-bottom: 1px;
+
+    .title {
+      font-size: rem(15);
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////
+    /* ICON */
+    .icon {
+      color: $gray-5;
+      margin-right: rem(10);
+      font-size: rem(17);
+      transition: color 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+      position: relative;
+      top: 2px;
+
+      @at-root {
+        :global(.ant-menu-submenu-popup) {
+          .icon {
+            display: none;
+          }
+        }
+      }
+    }
+
+    :global(.ant-menu-submenu-title) {
+      color: $text;
+
+      &:hover {
+        color: $primary;
+      }
+    }
+
+    :global(.ant-menu-item) {
+      > a {
+        color: $text;
+
+        &:hover {
+          color: $primary;
+
+          .icon {
+            color: $primary;
+          }
+        }
+      }
+    }
+
+    :global(.ant-menu-horizontal) {
+      border-bottom: 0;
+      background: transparent;
+    }
+
+    :global(.ant-menu-submenu-selected) {
+      :global(.ant-menu-submenu-title),
+      .icon {
+        color: $primary;
+      }
+    }
+
+    :global(.ant-menu-submenu-active) {
+      .icon {
+        color: $primary;
+      }
+    }
+  }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+/* GRAY THEME */
+.gray {
+  background: $gray-1 !important;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+/* DARK THEME */
+.dark {
+  color: $dark-gray-1;
+  background: $dark-gray-6 !important;
+  border-bottom: 1px solid $dark-gray-4;
+
+  .logoContainer {
+    .name {
+      color: $white;
+    }
+    .descr {
+      color: $dark-gray-2;
+      border-left: 1px solid $dark-gray-4;
+    }
+  }
+
+  .navigation {
+    .icon {
+      color: $dark-gray-2;
+    }
+
+    :global(.ant-menu-item-group-title) {
+      color: darken($dark-gray-3, 10%) !important;
+    }
+
+    :global(.ant-menu-submenu-title) {
+      color: $dark-gray-2;
+
+      &:hover {
+        color: $primary;
+      }
+    }
+
+    :global(.ant-menu-item) {
+      > a {
+        color: $dark-gray-2;
+
+        &:hover {
+          color: $primary;
+
+          .icon {
+            color: $primary;
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,72 @@
+[{
+  "key": "1",
+  "favorites": true,
+  "from": "Go Daddy",
+  "message": "Lorem Ipsum is simply dummy text of the printing and typesetting industry",
+  "attachments": true,
+  "time": "4:41PM"
+}, {
+  "key": "2",
+  "favorites": true,
+  "from": "Hetzner",
+  "message": "Lorem Ipsum is simply dummy text of the printing and typesetting industry",
+  "attachments": false,
+  "time": "4:41PM"
+}, {
+  "key": "3",
+  "favorites": false,
+  "from": "mail@google.com",
+  "message": "Lorem Ipsum is simply dummy text of the printing and typesetting industry",
+  "attachments": true,
+  "time": "4:41PM"
+}, {
+  "key": "4",
+  "favorites": true,
+  "from": "Google.com",
+  "message": "Lorem Ipsum is simply dummy text of the printing and typesetting industry",
+  "attachments": false,
+  "time": "4:41PM"
+}, {
+  "key": "5",
+  "favorites": false,
+  "from": "Go Daddy",
+  "message": "Lorem Ipsum is simply dummy text of the printing and typesetting industry",
+  "attachments": true,
+  "time": "4:41PM"
+}, {
+  "key": "6",
+  "favorites": true,
+  "from": "Go Daddy",
+  "message": "Awesome mail!",
+  "attachments": true,
+  "time": "4:41PM"
+}, {
+  "key": "7",
+  "favorites": true,
+  "from": "Hetzner",
+  "message": "Lorem Ipsum is simply dummy text of the printing and typesetting industry",
+  "attachments": false,
+  "time": "4:41PM"
+}, {
+  "key": "8",
+  "favorites": false,
+  "from": "mail@google.com",
+  "message": "Lorem Ipsum is simply dummy text of the printing and typesetting industry",
+  "attachments": true,
+  "time": "4:41PM"
+}, {
+  "key": "9",
+  "favorites": true,
+  "from": "Google.com",
+  "message": "Lorem Ipsum is simply dummy text of the printing and typesetting industry",
+  "attachments": false,
+  "time": "4:41PM"
+}, {
+  "key": "10",
+  "favorites": false,
+  "from": "Go Daddy",
+  "message": "Lorem Ipsum is simply dummy text of the printing and typesetting industry",
+  "attachments": true,
+  "time": "4:41PM"
+}
+]

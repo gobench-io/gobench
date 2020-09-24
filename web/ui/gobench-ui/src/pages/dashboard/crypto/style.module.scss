@@ -1,0 +1,175 @@
+@import 'components/mixins.scss';
+
+.crypto {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+
+  @media (max-width: $md-max-width) {
+    flex-direction: column;
+  }
+}
+
+.table {
+  :global(.ant-pagination) {
+    margin-bottom: 0;
+  }
+}
+
+.listMobile {
+  display: none;
+  margin-bottom: rem(30);
+
+  @media (max-width: $md-max-width) {
+    display: block;
+  }
+}
+
+.list {
+  width: 200px;
+  flex-shrink: 0;
+  @media (max-width: $md-max-width) {
+    display: none;
+  }
+}
+
+.listTitle {
+  font-weight: bold;
+  display: block;
+}
+
+.listItem {
+  display: block;
+  background: $gray-1;
+  padding: rem(10) rem(20);
+  margin-bottom: rem(10);
+  border-radius: 5px;
+  color: $black;
+  transition: all 0.1s ease-in-out;
+
+  @at-root {
+    :global(.cui__layout__grayBackground) & {
+      background: $white;
+    }
+  }
+
+  &:hover {
+    background: $primary;
+    color: $white;
+    .listPercents {
+      span {
+        color: $white !important;
+      }
+    }
+  }
+
+  &:after {
+    clear: both;
+    content: '';
+    display: block;
+  }
+}
+
+.listItemNegative {
+  .listPercents {
+    span {
+      color: #f75535;
+      &:after {
+        content: ' ↓';
+        font-family: monospace;
+        font-weight: bold;
+      }
+    }
+  }
+}
+
+.listCurrency {
+  float: left;
+  span {
+    display: block;
+    font-weight: bold;
+  }
+}
+
+.listPercents {
+  float: right;
+  text-align: right;
+  span {
+    display: block;
+    font-weight: bold;
+    color: #00a45b;
+    transition: all 0.1s ease-in-out;
+
+    &:after {
+      content: ' ↑';
+      font-family: monospace;
+      font-weight: bold;
+    }
+  }
+}
+
+.content {
+  margin-left: 30px;
+  flex-grow: 1;
+
+  @media (max-width: $md-max-width) {
+    margin-left: 0;
+  }
+}
+
+.warning {
+  padding-top: rem(20) !important;
+  padding-bottom: rem(20) !important;
+  cursor: pointer;
+}
+
+.order {
+  display: flex;
+
+  @media (max-width: $xxl-max-width) {
+    display: block;
+  }
+}
+
+.orderLeft {
+  flex-grow: 1;
+}
+
+.orderMiddle {
+  width: rem(250);
+  padding: 0 rem(30);
+
+  @media (max-width: $xxl-max-width) {
+    width: auto;
+    max-width: 350px;
+    margin: rem(20) auto rem(40);
+  }
+}
+
+.orderRight {
+  flex-grow: 1;
+}
+
+.form {
+  :global(.ant-form-item) {
+    margin-bottom: rem(5);
+  }
+}
+
+.formLabel {
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: rem(12);
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  .listItem {
+    background: $dark-gray-4;
+
+    &:hover {
+      background: $primary;
+      color: $white;
+    }
+  }
+}

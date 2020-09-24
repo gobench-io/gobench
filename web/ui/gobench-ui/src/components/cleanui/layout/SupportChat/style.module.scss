@@ -1,0 +1,112 @@
+@import 'components/mixins.scss';
+
+.toggleButton {
+  font-size: 18px;
+  height: rem(40);
+  padding: rem(10) rem(20);
+  background: $white;
+  border: none;
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.1) !important;
+  font-weight: bold;
+  border-radius: 30px;
+  color: $primary;
+  transition: all 0.3s ease-in-out;
+
+  &:hover {
+    background: $primary;
+    color: $white;
+  }
+
+  span {
+    font-size: 16px;
+    vertical-align: top;
+  }
+}
+
+.chat {
+  position: fixed;
+  z-index: 998;
+  bottom: rem(45);
+  right: rem(40);
+  @include transition-slow();
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  z-index: -1;
+  transform: translateY(10px);
+  opacity: 0;
+  visibility: hidden;
+  position: absolute;
+  bottom: calc(100% + 20px);
+  right: 0;
+  background-color: $white;
+  width: rem(330);
+  border-radius: 5px;
+  box-shadow: 0 5px 20px -5px rgba($black, 0.08), 0 5px 20px -5px rgba($black, 0.08);
+  padding-left: rem(25);
+  padding-right: rem(25);
+  padding-top: rem(15);
+  padding-bottom: rem(10);
+  @include transition-slow();
+
+  @media (max-width: $sm-max-width) {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    right: rem(52);
+    width: 0;
+    height: 0;
+    border-top: 7px solid white;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-bottom: 0;
+
+    @media (max-width: $md-max-width) {
+      right: rem(10);
+    }
+  }
+}
+
+.containerToggled {
+  z-index: 10;
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.innerContainer {
+  height: rem(300);
+
+  @media (max-width: $sm-max-width) {
+    flex-grow: 1;
+  }
+}
+
+.icon {
+  position: relative;
+  bottom: -1px;
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  .container {
+    background: $dark-gray-4;
+
+    &::before {
+      border-top: 7px solid $dark-gray-4;
+    }
+  }
+  .toggleButton {
+    background: $dark-gray-4;
+  }
+}

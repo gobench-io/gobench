@@ -1,0 +1,25 @@
+// Import mixins
+@import 'components/mixins.scss';
+
+.ant-layout {
+  min-height: 100vh !important;
+  min-width: 0;
+  background: transparent;
+}
+
+.ant-layout-header {
+  padding: 0 !important;
+  line-height: normal;
+  height: auto;
+  background: transparent;
+}
+
+.ant-layout-footer {
+  padding: 0 !important;
+  background: transparent;
+}
+
+.ant-layout.ant-layout-has-sider > .ant-layout,
+.ant-layout.ant-layout-has-sider > .ant-layout-content {
+  overflow-x: initial !important;
+}

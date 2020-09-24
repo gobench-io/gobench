@@ -1,0 +1,181 @@
+@import 'components/mixins.scss';
+
+.livesearch {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: $white;
+  z-index: 12000;
+  opacity: 0;
+  visibility: hidden;
+  @include transition-slow;
+}
+
+.livesearchVisible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.extInput {
+  input {
+    background-color: $gray-1;
+  }
+
+  @media screen and (max-width: 620px) {
+    width: 30px !important;
+    input {
+      width: 30px !important;
+      padding-left: 22px !important;
+    }
+    :global(.ant-input-prefix) {
+      left: 11px !important;
+      pointer-events: none;
+    }
+  }
+}
+
+.close {
+  font-size: rem(12);
+  color: $default;
+  position: absolute;
+  top: rem(30);
+  right: rem(30);
+  cursor: pointer;
+  z-index: 1;
+  border: none;
+  background-color: transparent;
+  @include transition-slow;
+
+  &:hover {
+    color: $text;
+  }
+}
+
+.wrapper {
+  padding-top: rem(60);
+  padding-left: rem(65);
+  padding-right: rem(15);
+  line-height: 1.7;
+
+  @media screen and (max-width: $sm-max-width) {
+    padding-left: rem(20);
+    padding-right: rem(20);
+  }
+}
+
+.logoContainer {
+  margin-top: rem(20);
+  margin-bottom: rem(30);
+}
+
+.logo {
+  height: rem(45);
+}
+
+.searchInput {
+  width: 100%;
+  border: none;
+  font-size: rem(64);
+  background-color: transparent;
+  font-weight: bold;
+  padding: 0;
+  margin-bottom: rem(20);
+
+  @media screen and (max-width: $sm-max-width) {
+    font-size: rem(40);
+  }
+}
+
+.options {
+  padding: 0;
+  margin: 0;
+  margin-bottom: rem(30);
+  list-style: none;
+}
+
+.option {
+  display: inline-block;
+  margin-right: rem(26);
+  font-size: rem(13);
+  color: $text;
+
+  &:last-child {
+    margin-right: 0;
+  }
+}
+
+.suggestion {
+  margin-bottom: rem(40);
+
+  @media (max-width: $sm-max-width) {
+    margin-bottom: rem(15);
+  }
+}
+
+.resultsTitle {
+  font-weight: 700;
+  margin-bottom: rem(20);
+}
+
+.resultThumb {
+  display: block;
+  width: rem(50);
+  height: rem(50);
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: $default;
+  color: #fff;
+  line-height: rem(54);
+  text-align: center;
+  font-size: rem(18);
+  font-weight: bold;
+  background-size: cover;
+  float: left;
+}
+
+.resultContent {
+  margin-bottom: rem(20);
+  min-height: rem(50);
+}
+
+.result {
+  display: block;
+  margin-left: rem(70);
+  padding-top: rem(8);
+}
+
+.resultText {
+  font-weight: 300;
+  font-size: rem(20);
+  line-height: 1;
+
+  @media (max-width: $sm-max-width) {
+    font-size: rem(16);
+  }
+}
+
+.resultSource {
+  color: $text;
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  .extInput {
+    input {
+      background-color: $dark-gray-4;
+    }
+    :global(.anticon) {
+      color: $dark-gray-3 !important;
+    }
+  }
+
+  .livesearch {
+    background-color: $dark-gray-6;
+  }
+
+  .resultThumb {
+    background-color: $dark-gray-4;
+  }
+}

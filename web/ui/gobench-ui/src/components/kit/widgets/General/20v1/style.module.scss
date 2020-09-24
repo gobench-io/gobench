@@ -1,0 +1,19 @@
+@import 'components/mixins.scss';
+
+.icon {
+  position: absolute;
+  font-size: rem(80);
+  right: rem(-10);
+  bottom: rem(-10);
+}
+
+.carousel {
+  :global(.ant-carousel .slick-dots-bottom) {
+    bottom: 24px;
+  }
+
+  :global(.ant-carousel .slick-dots li button) {
+    height: 7px;
+    border-radius: 3px;
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "inboundBandwidthData": {
+    "series": [
+      [
+        232,
+        111,
+        138,
+        144,
+        118,
+        210,
+        236
+      ]
+    ]
+  },
+  "outboundBandwidthData": {
+    "series": [
+      [
+        3,
+        14,
+        37,
+        26,
+        48,
+        8,
+        63,
+        21,
+        24,
+        52
+      ]
+    ]
+  },
+  "supportCasesTableData": [
+    {
+      "key": "1",
+      "type": "EPS",
+      "amount": "+12,42%"
+    },
+    {
+      "key": "2",
+      "type": "PDO",
+      "amount": "21,700"
+    },
+    {
+      "key": "3",
+      "type": "OPL Status",
+      "amount": "Negative"
+    },
+    {
+      "key": "4",
+      "type": "Priority",
+      "amount": "+235,200"
+    },
+    {
+      "key": "5",
+      "type": "Net Prifit",
+      "amount": "$19,235,516"
+    }
+  ],
+  "supportCasesPieData": {
+    "series": [
+      {
+        "name": "Ready",
+        "value": 65
+      },
+      {
+        "name": "In progress",
+        "value": 25
+      },
+      {
+        "name": "Defected",
+        "value": 10
+      }
+    ]
+  }
+}

@@ -1,0 +1,50 @@
+@import 'components/mixins.scss';
+
+/////////////////////////////////////////////////////////////////////////////////////////
+/*  Perfect Scrollbar */
+
+.ps__thumb-y {
+  width: 4px !important;
+  background: #c5cdd2 !important;
+}
+
+.ps__thumb-x {
+  height: 4px !important;
+  background: #c5cdd2 !important;
+}
+
+.ps .ps__rail-x:hover,
+.ps .ps__rail-y:hover,
+.ps .ps__rail-x:focus,
+.ps .ps__rail-y:focus,
+.ps .ps__rail-x.ps--clicking,
+.ps .ps__rail-y.ps--clicking {
+  background: none !important;
+}
+
+.ps__rail-y:hover > .ps__thumb-y,
+.ps__rail-y:focus > .ps__thumb-y,
+.ps__rail-y.ps--clicking .ps__thumb-y {
+  width: 4px !important;
+}
+
+.ps__rail-x:hover > .ps__thumb-x,
+.ps__rail-x:focus > .ps__thumb-x,
+.ps__rail-x.ps--clicking .ps__thumb-x {
+  height: 4px !important;
+}
+
+.ps-content {
+  height: 100%;
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  .ps__thumb-y {
+    background: #32304b !important;
+  }
+
+  .ps__thumb-x {
+    background: #32304b !important;
+  }
+}

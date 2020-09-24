@@ -1,0 +1,23 @@
+{
+  "labels": [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun"
+  ],
+  "series": [
+    {
+      "className": "ct-series-d",
+      "data": [
+        1,
+        5,
+        2,
+        5,
+        4,
+        7
+      ]
+    }
+  ]
+}

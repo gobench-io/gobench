@@ -1,0 +1,72 @@
+@import 'components/mixins.scss';
+
+.table {
+  white-space: nowrap !important;
+  :global(.ant-table-body) {
+    overflow-x: auto !important;
+  }
+}
+
+.tabs {
+  :global(.ant-tabs-bar) {
+    border-bottom: none;
+    position: relative;
+    padding-left: 25px;
+    padding-right: 25px;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 3px;
+      right: 0;
+      height: 1px;
+      background-color: $gray-2;
+    }
+  }
+
+  :global(.ant-tabs-nav) {
+    :global(.ant-tabs-tab) {
+      padding-left: 0;
+      padding-right: 0;
+      padding-bottom: 20px;
+      padding-top: 20px;
+      margin-right: 25px;
+    }
+
+    :global(.ant-tabs-tab-active) {
+      color: $blue;
+    }
+  }
+
+  :global(.ant-tabs-ink-bar) {
+    height: 7px;
+    border-radius: 5px;
+    background-color: $blue;
+  }
+
+  :global(.ant-tabs-tabpane) {
+    padding-left: 25px;
+    padding-right: 25px;
+  }
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  .tabs {
+    :global(.ant-tabs-bar) {
+      &::before {
+        background-color: $dark-gray-4;
+      }
+    }
+
+    :global(.ant-tabs-nav) {
+      :global(.ant-tabs-tab) {
+        color: $dark-gray-2;
+      }
+      :global(.ant-tabs-tab-active) {
+        color: $blue;
+      }
+    }
+  }
+}

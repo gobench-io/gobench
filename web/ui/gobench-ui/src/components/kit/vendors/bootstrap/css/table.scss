@@ -1,0 +1,199 @@
+@import 'components/mixins.scss';
+
+/////////////////////////////////////////////////////////////////////////////////////////
+/* TABLE */
+
+.table {
+  color: inherit;
+  thead {
+    th {
+      border-bottom: 1px solid $border;
+      outline: none !important;
+      &:focus {
+        background: $border;
+      }
+    }
+  }
+  td,
+  th {
+    border-color: $border;
+    &:focus {
+      background-color: $border;
+    }
+  }
+  tbody {
+    tr:first-child {
+      td {
+        border-top: none;
+      }
+    }
+  }
+  &.table-hover {
+    tbody {
+      tr {
+        &:hover {
+          background: $gray-1;
+        }
+      }
+    }
+  }
+  tr.active,
+  th.active {
+    background: $gray-1;
+  }
+  .thead-dark {
+    th {
+      color: $white;
+      background: $black;
+    }
+  }
+  .thead-default {
+    th {
+      background: $gray-1;
+    }
+  }
+
+  &.table-striped {
+    tbody tr:nth-of-type(odd) {
+      background: $gray-1;
+    }
+  }
+
+  &.table-vertical-middle {
+    td,
+    th {
+      vertical-align: middle;
+    }
+  }
+
+  &.table-dark {
+    color: $white;
+
+    &.table-hover {
+      tr:hover {
+        td,
+        th {
+          color: $white;
+        }
+      }
+    }
+
+    thead th {
+      border-bottom-color: lighten($black, 8%);
+      color: $white;
+    }
+    th,
+    td {
+      border-top-color: lighten($black, 8%);
+    }
+    th,
+    td,
+    thead th {
+      background: $black;
+      &:focus {
+        background: $black;
+      }
+    }
+    tr.active,
+    th.active {
+      background: $gray-3;
+    }
+  }
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  .table {
+    thead {
+      th {
+        border-color: $dark-gray-4;
+      }
+      &.thead-default {
+        th {
+          background: $dark-gray-4;
+          color: $white;
+        }
+      }
+    }
+    td,
+    th {
+      border-color: $dark-gray-4;
+    }
+    tr {
+      &.active {
+        background: $dark-gray-4;
+        color: $white;
+      }
+    }
+    .thead-dark {
+      th {
+        color: $text;
+        background: $white;
+      }
+    }
+    &.table-hover {
+      tbody {
+        tr {
+          &:hover {
+            background: $dark-gray-4;
+            color: $white;
+          }
+        }
+      }
+    }
+    &.table-striped {
+      tbody tr:nth-of-type(odd) {
+        background: $dark-gray-4;
+      }
+    }
+    &.table-dark {
+      color: inherit;
+      thead {
+        th {
+          border-bottom: 1px solid $border;
+          outline: none !important;
+          color: $text;
+          &:focus {
+            background: $border;
+          }
+        }
+      }
+      td,
+      th {
+        border-color: $border;
+        background: $white;
+        &:focus {
+          background-color: $border;
+        }
+      }
+      tbody {
+        tr:first-child {
+          td {
+            border-top: none;
+          }
+        }
+      }
+      &.table-hover {
+        tbody {
+          tr {
+            &:hover {
+              background: $gray-1;
+            }
+          }
+        }
+        td,
+        th {
+          color: $text;
+        }
+        tr {
+          &:hover {
+            td,
+            th {
+              background: $gray-1;
+            }
+          }
+        }
+      }
+    }
+  }
+}

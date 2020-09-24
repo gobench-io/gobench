@@ -1,0 +1,34 @@
+// Import mixins
+@import 'components/mixins.scss';
+
+.ant-input {
+  &:hover,
+  &:focus,
+  &:active {
+    border-color: $primary;
+  }
+}
+
+.ant-input-affix-wrapper {
+  &:hover,
+  &:focus,
+  &:active {
+    .ant-input:not(.ant-input-disabled) {
+      border-color: $primary;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// DARK THEME STYLES
+[data-kit-theme='dark'] {
+  .ant-input {
+    &-number {
+      &-handler {
+        &-wrap {
+          background: $dark-gray-3;
+        }
+      }
+    }
+  }
+}

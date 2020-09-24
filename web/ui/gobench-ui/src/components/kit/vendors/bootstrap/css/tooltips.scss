@@ -1,0 +1,13 @@
+@import 'components/mixins.scss';
+
+/////////////////////////////////////////////////////////////////////////////////////////
+/* TOOLTIPS */
+
+.tooltip {
+  .tooltip-inner {
+    background: $black;
+    padding: rem(4) rem(15);
+    color: $white;
+    font-size: rem(14);
+  }
+}

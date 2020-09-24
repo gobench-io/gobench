@@ -1,0 +1,21 @@
+@import 'components/mixins.scss';
+
+.item {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  margin-bottom: rem(20);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.separator {
+  height: rem(32);
+  width: rem(4);
+  border-radius: 3px;
+  flex-shrink: 0;
+  background-color: $gray-2;
+}

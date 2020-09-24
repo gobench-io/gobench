@@ -1,0 +1,29 @@
+@import 'components/mixins.scss';
+
+.item {
+  position: relative;
+  padding-left: rem(55);
+  padding-bottom: rem(6);
+}
+
+.icon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: rem(36);
+  color: $gray-5;
+}
+
+.title {
+  font-weight: bold;
+}
+
+.line {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 4px;
+  width: 100%;
+  border-radius: 2px;
+  background: $gray-2;
+}

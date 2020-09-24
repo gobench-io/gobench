@@ -1,0 +1,47 @@
+// Import mixins
+@import 'components/mixins.scss';
+
+.ant-fullcalendar-content {
+  ul {
+    padding-left: 0;
+  }
+}
+
+.ant-fullcalendar-fullscreen .ant-fullcalendar-month-panel-selected-cell .ant-fullcalendar-month,
+.ant-fullcalendar-fullscreen .ant-fullcalendar-selected-day .ant-fullcalendar-date {
+  background: $gray-1;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// DARK THEME STYLES
+[data-kit-theme='dark'] {
+  .ant-calendar {
+    &-range-picker-separator,
+    &-range-middle {
+      color: $gray-5;
+    }
+
+    &-active-week {
+      background: $dark-gray-5 !important;
+      &:hover {
+        background: $dark-gray-5 !important;
+      }
+    }
+
+    &-week-number {
+      .ant-calendar-body {
+        tr:hover {
+          background: $dark-gray-5 !important;
+        }
+      }
+    }
+  }
+
+  .ant-fullcalendar {
+    &-selected-day {
+      .ant-fullcalendar-date {
+        background: $dark-gray-5;
+      }
+    }
+  }
+}

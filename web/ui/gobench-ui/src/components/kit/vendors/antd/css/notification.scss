@@ -1,0 +1,21 @@
+// Import mixins
+@import 'components/mixins.scss';
+
+.ant-notification {
+  max-width: calc(100vw - 48px);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// DARK THEME STYLES
+[data-kit-theme='dark'] {
+  .ant-notification {
+    &-notice-message {
+      color: $white;
+    }
+    &-close-icon {
+      svg {
+        fill: $white;
+      }
+    }
+  }
+}

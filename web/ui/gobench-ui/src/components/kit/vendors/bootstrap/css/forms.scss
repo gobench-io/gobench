@@ -1,0 +1,159 @@
+@import 'components/mixins.scss';
+
+/////////////////////////////////////////////////////////////////////////////////////////
+/* FORMS */
+
+input::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder {
+  color: $gray-5 !important;
+}
+
+input::-moz-placeholder,
+textarea::-moz-placeholder {
+  color: $gray-5 !important;
+}
+
+input:-moz-placeholder,
+textarea:-moz-placeholder {
+  color: $gray-5 !important;
+}
+
+input:-ms-input-placeholder,
+textarea:-ms-input-placeholder {
+  color: $gray-5 !important;
+}
+
+.form-actions {
+  border-top: 1px solid $border;
+  padding-top: rem(20);
+  margin: rem(20) 0;
+}
+
+.form-control {
+  font-family: $base-font-family;
+  border-color: $border;
+  color: $text;
+  &.form-control-rounded {
+    border-radius: 500px;
+  }
+  &:focus {
+    border-color: $primary;
+  }
+  &.input-sm {
+    padding: rem(4) rem(8);
+  }
+}
+
+.col-form-label {
+  padding-top: rem(9);
+  padding-bottom: rem(9);
+}
+
+.form-control:disabled,
+.form-control[readonly] {
+  background-color: $gray-1;
+}
+
+.input-group-addon {
+  border-color: $border;
+  background-color: $gray-3;
+}
+
+span.input-group-addon {
+  outline: none !important;
+}
+
+.form-group {
+  &.has-danger {
+    .form-control {
+      border-color: $danger;
+    }
+  }
+  &.has-success {
+    .form-control {
+      border-color: $success;
+    }
+  }
+  &.has-warning {
+    .form-control {
+      border-color: $warning;
+    }
+  }
+  &.has-focused {
+    .form-control {
+      border-color: $primary;
+    }
+  }
+}
+
+.form-input-icon {
+  position: relative;
+  > i {
+    color: $gray-5;
+    position: absolute;
+    margin: rem(13) rem(2) rem(4) rem(10);
+    z-index: 3;
+    width: rem(16);
+    font-size: rem(16);
+    text-align: center;
+    left: 0;
+  }
+  .form-control {
+    padding-left: rem(34);
+  }
+  &.form-input-icon-right {
+    > i {
+      left: auto;
+      right: rem(3);
+      margin: rem(13) rem(10) rem(4) rem(2);
+    }
+    .form-control {
+      padding-left: rem(16);
+      padding-right: rem(34);
+    }
+  }
+}
+
+.input-group .add-on.input-group-addon {
+  width: 30px;
+  text-align: center;
+  display: inline-block;
+  i {
+    line-height: 2.2;
+  }
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  input::-webkit-input-placeholder {
+    color: $dark-gray-3 !important;
+  }
+
+  input::-moz-placeholder {
+    color: $dark-gray-3 !important;
+  }
+
+  input:-moz-placeholder {
+    color: $dark-gray-3 !important;
+  }
+
+  input:-ms-input-placeholder {
+    color: $dark-gray-3 !important;
+  }
+
+  .form-control {
+    background: $dark-gray-5;
+    border-color: $dark-gray-4;
+    color: $dark-gray-1;
+  }
+
+  .form-actions {
+    border-top: 1px solid $dark-gray-4;
+  }
+
+  .input-group-text {
+    background: $dark-gray-4;
+    border-color: $dark-gray-4;
+    color: $dark-gray-1;
+  }
+}

@@ -1,0 +1,37 @@
+@import 'components/mixins.scss';
+
+.breadcrumbs {
+  padding: rem(20) rem(30) 0;
+  font-size: rem(17);
+}
+
+.current {
+  color: $black;
+}
+
+.arrow {
+  display: inline-block;
+  margin: 0 rem(10);
+  &:after {
+    display: inline-block;
+    content: '·';
+    color: $gray-5;
+  }
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  .breadcrumbs {
+    color: $dark-gray-1;
+  }
+
+  .current {
+    color: $white;
+  }
+
+  .arrow {
+    &:after {
+      color: $dark-gray-1;
+    }
+  }
+}

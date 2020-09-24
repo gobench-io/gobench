@@ -1,0 +1,6 @@
+{
+  "series": [
+    {"className": "ct-series-n", "data": [10, 40, 30, 30, 55, 25]},
+    {"className": "ct-series-a", "data": [20, 60, 50, 45, 50, 60]}
+  ]
+}

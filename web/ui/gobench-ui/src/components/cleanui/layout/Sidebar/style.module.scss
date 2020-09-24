@@ -1,0 +1,275 @@
+@import 'components/mixins.scss';
+
+.cui__sidebar {
+  width: rem(300);
+  position: fixed;
+  z-index: 999;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background: $white;
+  transform: translateX(330px);
+  @include transition-slow();
+
+  &__toggled {
+    transform: translateX(0);
+    box-shadow: $shadow;
+  }
+
+  // mobile toggle button
+  &__toggleButton {
+    position: fixed;
+    z-index: 998;
+    right: rem(40);
+    box-shadow: 0 5px 14px rgba(0, 0, 0, 0.1) !important;
+    display: block;
+    width: rem(50);
+    height: rem(50);
+    line-height: 48px;
+    text-align: center;
+    border-radius: 30px;
+    background: $white;
+    font-size: 18px;
+    transition: all 0.3s ease-in-out;
+    color: $primary;
+
+    &:hover {
+      background: $primary;
+
+      i {
+        color: $white;
+      }
+    }
+
+    i {
+      transition: all 0.3s ease-in-out;
+      position: relative;
+      bottom: -3px;
+      color: $primary;
+    }
+  }
+
+  &__close {
+    float: right;
+    position: relative;
+    top: 4px;
+  }
+
+  &__inner {
+    padding: rem(23) rem(30) 0;
+
+    @media (max-width: $sm-max-width) {
+      padding: rem(23) rem(20) 0;
+    }
+  }
+
+  &__type {
+    padding: rem(20) 0;
+    border-top: 1px solid $border;
+    margin: rem(10) 0;
+
+    &__title {
+      margin: rem(-32) 0 rem(20);
+
+      span {
+        padding-right: rem(20);
+        background: $white;
+      }
+    }
+  }
+
+  &__item {
+    margin-bottom: rem(20);
+    display: flex;
+    align-items: center;
+  }
+
+  &__label {
+    margin-right: rem(10);
+  }
+
+  &__container {
+    margin-left: auto;
+  }
+
+  &__switch {
+    position: relative;
+    width: 50px;
+    height: 24px;
+    margin-bottom: 0;
+
+    input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+
+      &:checked + .air__sidebar__switch__slider {
+        background-color: $blue;
+      }
+
+      &:checked + .air__sidebar__switch__slider:before {
+        transform: translateX(26px);
+      }
+    }
+
+    &__slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: $gray-3;
+      transition: 0.4s;
+      border-radius: 22px;
+
+      &:before {
+        position: absolute;
+        content: '';
+        height: 16px;
+        width: 16px;
+        left: 4px;
+        bottom: 4px;
+        background-color: $white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+    }
+  }
+
+  &__select {
+    &__item {
+      margin-left: rem(2);
+      display: block;
+      width: 24px;
+      height: 24px;
+      border: 2px solid transparent;
+      border-radius: 24px;
+      float: left;
+      padding: 1px;
+      cursor: pointer;
+
+      &:after {
+        content: '';
+        display: block;
+        width: 18px;
+        height: 18px;
+        border-radius: 18px;
+      }
+
+      &__active {
+        border: 2px solid $blue;
+      }
+
+      &__white {
+        &:after {
+          border: 1px solid $gray-2;
+          background: $white;
+        }
+      }
+
+      &__gray {
+        &:after {
+          background: $gray-1;
+        }
+      }
+
+      &__blue {
+        &:after {
+          background: $blue;
+        }
+      }
+
+      &__black {
+        &:after {
+          background: $black;
+        }
+      }
+
+      &__img {
+        &:after {
+          background: linear-gradient(
+            to right,
+            rgba(240, 240, 240, 1) 0%,
+            rgba(210, 210, 220, 1) 100%
+          );
+        }
+      }
+    }
+  }
+}
+
+.color {
+  button {
+    padding: 0;
+    display: inline-block;
+    border-radius: 20px;
+    border: none;
+    position: absolute;
+    z-index: 1001;
+    height: 26px;
+    width: 26px;
+    top: -5px;
+    right: -7px;
+    line-height: 25px;
+    outline: none !important;
+    font-size: 18px;
+    box-shadow: 0 5px 14px rgba(0, 0, 0, 0.1) !important;
+
+    i {
+      color: $gray-6 !important;
+    }
+
+    &:hover {
+      background: $gray-3 !important;
+    }
+  }
+
+  input {
+    cursor: pointer;
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+  }
+
+  &.reset {
+    button {
+      display: none;
+    }
+  }
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  .cui__sidebar {
+    background: $dark-gray-6;
+
+    &__type {
+      border-top: 1px solid $dark-gray-5;
+
+      &__title {
+        span {
+          background: $dark-gray-6;
+        }
+      }
+    }
+
+    &__select {
+      &__item {
+        &__black {
+          &:after {
+            background: $dark-gray-4;
+          }
+        }
+      }
+    }
+
+    &__toggleButton {
+      background: $dark-gray-4;
+    }
+  }
+}

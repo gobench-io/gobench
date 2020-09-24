@@ -1,0 +1,293 @@
+
+
+.group {
+  margin: 16px 0;
+  background: #ffffff;
+}
+
+.group-graphs {
+  margin: 8px 0;
+}
+
+.group-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 16px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 5px;
+}
+
+.group-title {
+  display: block;
+  margin: 0;
+  font-size: 20px;
+}
+
+.graph {
+  height: 300px;
+  width: 100%;
+  padding: 8px 16px;
+  background-color: rgba(44, 44, 44, 0.04);
+}
+
+.graph-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.group-header:hover {
+  background-color: rgba(44, 44, 44, 0.04);
+}
+
+.graph-title {
+  margin: 0;
+  display: block;
+  font-size: 14px;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.chart {
+  width: 100%;
+  height: auto;
+  max-height: 220px;
+}
+
+.select-group {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 16px;
+  min-width: 220px;
+}
+
+select.select-box {
+  height: 36px;
+  width: auto;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  margin: 8px;
+  font-size: 14px;
+}
+
+.collapse {
+  visibility: hidden;
+  height: 0;
+}
+
+.collapse-button {
+  border: none;
+  font-size: 14px;
+  color: #346cb0;
+  outline: none;
+  padding: 4px 8px;
+}
+
+.collapse-button:hover {
+  background-color: #eeeeee;
+  border-radius: 3px;
+}
+
+.time-range-options-list {
+  clear: both;
+  list-style: none;
+  display: flex;
+  flex-direction: row;
+  float: right;
+  margin: 0;
+}
+
+.time-range-option > button {
+  padding: 4px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  font-size: 12px;
+}
+
+.time-range-option > button:hover {
+  background-color: #eeeeee;
+  border-radius: 3px;
+}
+
+.time-range-option > button.active {
+  font-weight: bold;
+}
+
+.legend {
+  clear: both;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.legend-item {
+  font-size: 12px;
+  position: relative;
+  padding: 4px 4px 4px 16px;
+  margin-right: 4px;
+  cursor: pointer;
+}
+
+.legend-item:hover {
+  background-color: #eeeeee;
+}
+
+.legend-item > span {
+  color: #000000;
+  margin: 0;
+}
+
+.legend-item.inactive {
+  opacity: 0.3;
+}
+
+.legend-item::before {
+  content: "\2022";
+  font-size: 24px;
+  position: absolute;
+  left: 4px;
+  top: -4px;
+}
+
+.text-center {
+  width: 100%;
+  text-align: center;
+}
+
+/*
+create-form
+*/
+.create-form {
+  width: 600px;
+}
+.text-danger {
+  color: red;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  font-size: 16px;
+  font-weight: bold;
+  margin-right: 8px;
+  margin-bottom: 16px;
+}
+
+.create-form-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.form-input {
+  height: 28px;
+  width: 220px;
+  padding: 2px 8px;
+  background-color: #fafafa;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+}
+
+.applications-list-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.applications-body {
+  padding: 1rem 0;
+}
+
+.applications-table {
+  width: 100%;
+  border-spacing: 0;
+  margin: 1rem 0;
+}
+
+.applications-table > thead {
+  text-align: left;
+}
+
+.applications-table > thead > tr > th {
+  padding: 4px 8px 4px 8px;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.applications-table > tbody {
+  text-align: left;
+}
+
+.applications-table > tbody > tr:nth-child(odd) {
+  background-color: #fafafa;
+}
+
+.applications-table > tbody > tr > td {
+  height: 40px;
+  padding: 8px;
+  border-top: 1px solid #eeeeee;
+}
+
+.card {
+  padding: 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 5px;
+  background: #ffffff;
+}
+
+.application-scenario {
+  width: 98%;
+  min-height: 50vh;
+  padding: 1rem;
+  font-size: 14px;
+  color: #2c2c2c;
+  background-color: #eeeeee;
+}
+
+.tabs {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  padding-top: 4px;
+  list-style: none;
+  clear: both;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.tab-nav-item {
+  margin: 0 16px;
+  padding: 4px 8px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: -3px;
+}
+
+.tab-nav-item.tab-active {
+  color: #346cb0;
+  border-bottom: 3px solid #346cb0;
+}
+.tab-content {
+  margin: 16px 0;
+}
+
+.apexcharts-legend {
+  height: 40px;
+}

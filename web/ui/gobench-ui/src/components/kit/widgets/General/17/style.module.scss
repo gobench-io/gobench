@@ -1,0 +1,19 @@
+@import 'components/mixins.scss';
+
+.flag {
+  position: absolute;
+  top: rem(10);
+  right: rem(-10);
+  background: $success;
+  color: $white;
+  border-radius: 3px;
+  box-shadow: 0 0 10px rgba(0, 0, 100, 0.2);
+  padding: 0 rem(13);
+  font-weight: bold;
+  font-size: rem(18);
+
+  @media (max-width: $md-max-width) {
+    right: auto;
+    left: rem(10);
+  }
+}

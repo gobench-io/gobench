@@ -1,0 +1,92 @@
+@import 'components/mixins.scss';
+
+/////////////////////////////////////////////////////////////////////////////////////////
+/* ALERTS */
+
+.alert {
+  border: none;
+  font-weight: normal;
+  color: $white;
+  .close {
+    color: $white;
+    opacity: 0.5;
+    outline: none !important;
+    &:hover {
+      opacity: 1;
+    }
+  }
+  a,
+  .alert-link {
+    font-weight: normal;
+    color: $white;
+    opacity: 0.7;
+    @include transition-color();
+    &:hover {
+      opacity: 1;
+      color: $white;
+    }
+  }
+  &.alert-default {
+    background: $default;
+  }
+  &.alert-primary {
+    background: $primary;
+  }
+  &.alert-secondary {
+    background: $secondary;
+  }
+  &.alert-success {
+    background: $success;
+  }
+  &.alert-danger {
+    background: $danger;
+  }
+  &.alert-warning {
+    background: $warning;
+  }
+  &.alert-info {
+    background: $info;
+  }
+  &.alert-light {
+    background: $light;
+    color: $text;
+    a,
+    .alert-link {
+      font-weight: normal;
+      color: $text;
+      opacity: 0.7;
+      @include transition-color();
+      &:hover {
+        opacity: 1;
+        color: $text;
+      }
+    }
+  }
+  &.alert-dark {
+    background: $dark;
+  }
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  .alert {
+    &.alert-light {
+      background: $dark;
+    }
+    &.alert-dark {
+      background: $light;
+      color: $dark-gray-1;
+      a,
+      .alert-link {
+        font-weight: normal;
+        color: $text;
+        opacity: 0.7;
+        @include transition-color();
+        &:hover {
+          opacity: 1;
+          color: $text;
+        }
+      }
+    }
+  }
+}

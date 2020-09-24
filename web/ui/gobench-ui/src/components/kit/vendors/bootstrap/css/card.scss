@@ -1,0 +1,95 @@
+@import 'components/mixins.scss';
+
+/////////////////////////////////////////////////////////////////////////////////////////
+/* CARDS */
+
+.card,
+.card-header,
+.card-footer {
+  border-color: $border;
+  border-radius: calc(7px - 1px);
+}
+
+.card-header,
+.card-footer,
+.card-body {
+  background: transparent;
+  padding: rem(20) rem(25);
+  @media (max-width: $md-max-width) {
+    padding-left: rem(15);
+    padding-right: rem(15);
+  }
+
+  &:last-child {
+    border-radius: 0 0 calc(7px - 1px) calc(7px - 1px);
+  }
+
+  &:first-child {
+    border-radius: calc(7px - 1px) calc(7px - 1px) 0 0;
+  }
+}
+
+.card {
+  margin-bottom: rem(30);
+  background: $white;
+
+  &-borderless {
+    border-color: transparent !important;
+  }
+
+  &-solid {
+    color: $white;
+    border-color: transparent !important;
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      color: $white !important;
+    }
+    .card-header,
+    .card-footer {
+      border-color: rgba($white, 0.3);
+    }
+  }
+}
+
+.card-header {
+  &:last-child {
+    border-bottom: none !important;
+  }
+
+  &-flex {
+    display: flex;
+    flex-direction: row;
+    padding-top: 0;
+    padding-bottom: 0;
+    min-height: rem(62);
+  }
+  &-borderless {
+    border-color: transparent !important;
+    + .card-body {
+      padding-top: 0;
+    }
+  }
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  .card {
+    background: $dark-gray-6;
+    border-color: $dark-gray-4;
+
+    &-solid {
+      .card-header,
+      .card-footer {
+        border-color: rgba($gray-2, 0.4);
+      }
+    }
+  }
+  .card-header,
+  .card-footer {
+    border-color: $dark-gray-4;
+  }
+}

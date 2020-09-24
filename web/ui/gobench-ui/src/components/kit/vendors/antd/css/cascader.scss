@@ -1,0 +1,16 @@
+// Import mixins
+@import 'components/mixins.scss';
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// DARK THEME STYLES
+[data-kit-theme='dark'] {
+  .ant-cascader {
+    &-menu-item-active {
+      background: $primary;
+
+      &:hover {
+        background: $primary;
+      }
+    }
+  }
+}

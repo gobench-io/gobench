@@ -1,0 +1,63 @@
+@import 'components/mixins.scss';
+
+.cui {
+  &__layout {
+    &__header {
+      background: $white !important;
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////
+    /* SETTINGS */
+    &__grayBackground {
+      background: $gray-1;
+    }
+    &__contentMaxWidth {
+      .cui__utils__content {
+        max-width: 1420px;
+        margin: 0 auto;
+      }
+    }
+    &__appMaxWidth {
+      max-width: 1420px;
+      margin: 0 auto;
+    }
+    &__squaredBorders {
+      .card {
+        border-radius: 0 !important;
+      }
+    }
+    &__cardsShadow {
+      .card {
+        box-shadow: $shadow-4;
+        .card {
+          box-shadow: none;
+        }
+      }
+    }
+    &__borderless {
+      .card {
+        border: none !important;
+      }
+    }
+    &__fixedHeader {
+      position: sticky;
+      top: 0;
+      z-index: 998;
+    }
+    &__headerGray {
+      background: $gray-1 !important;
+    }
+  }
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  .cui {
+    &__layout {
+      &__grayBackground,
+      &__headerGray {
+        background: transparent !important;
+      }
+    }
+  }
+}

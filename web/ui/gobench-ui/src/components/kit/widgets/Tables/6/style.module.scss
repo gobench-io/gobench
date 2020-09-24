@@ -1,0 +1,39 @@
+@import 'components/mixins.scss';
+
+.table {
+  white-space: nowrap !important;
+  :global(.ant-table-body) {
+    overflow-x: auto !important;
+  }
+}
+
+.textDivider {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+
+  &::before,
+  &::after {
+    content: '';
+    height: 1px;
+    width: 100%;
+    background-color: $gray-2;
+  }
+
+  &Content {
+    flex-shrink: 0;
+    padding-left: rem(24);
+    padding-right: rem(24);
+  }
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  .textDivider {
+    &::before,
+    &::after {
+      background-color: $dark-gray-4;
+    }
+  }
+}

@@ -1,0 +1,23 @@
+// Import mixins
+@import 'components/mixins.scss';
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// DARK THEME STYLES
+[data-kit-theme='dark'] {
+  .ant-checkbox {
+    &-inner {
+      background-color: $gray-6;
+    }
+    &-checked {
+      .ant-checkbox-inner {
+        background: $primary;
+      }
+    }
+    &-disabled {
+      .ant-checkbox-inner {
+        border-color: $dark-gray-4 !important;
+        opacity: 0.3;
+      }
+    }
+  }
+}

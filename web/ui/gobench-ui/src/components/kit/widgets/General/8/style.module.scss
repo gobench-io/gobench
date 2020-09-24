@@ -1,0 +1,21 @@
+@import 'components/mixins.scss';
+
+.items {
+  margin-left: rem(-5);
+  margin-right: rem(-5);
+  margin-bottom: rem(-10);
+}
+
+.item {
+  flex-basis: calc(100% / 3);
+  padding-left: rem(5);
+  padding-right: rem(5);
+  margin-bottom: rem(10);
+  border-radius: 5px;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: auto;
+  }
+}

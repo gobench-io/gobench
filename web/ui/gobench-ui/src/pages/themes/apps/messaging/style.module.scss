@@ -1,0 +1,126 @@
+@import 'components/mixins.scss';
+
+.dialogs {
+  height: 100%;
+
+  @media (max-width: $sm-max-width) {
+    max-height: rem(240);
+    margin-bottom: rem(15);
+    height: rem(300);
+  }
+}
+
+.item {
+  padding: rem(10);
+  cursor: pointer;
+  border-radius: 5px;
+  margin-bottom: rem(15);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &:hover {
+    background-color: lighten($gray-1, 2);
+  }
+}
+
+.current {
+  background-color: $gray-1;
+
+  &:hover {
+    background-color: $gray-1;
+  }
+}
+
+.info {
+  min-width: 0;
+}
+
+.unread {
+  min-width: 15px;
+}
+
+.message {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: flex-end;
+  justify-content: flex-end;
+  margin-top: rem(15);
+  overflow: hidden;
+  flex-shrink: 0;
+
+  &.answer {
+    flex-direction: row-reverse;
+
+    .messageAvatar {
+      margin-left: 0;
+      margin-right: rem(15);
+    }
+
+    .messageContent {
+      &::before {
+        left: auto;
+        right: 100%;
+        border-top: 5px solid transparent;
+        border-bottom: 5px solid transparent;
+        border-right: 4px solid $gray-1;
+        border-left: none;
+      }
+    }
+  }
+}
+
+.messageAvatar {
+  flex-shrink: 0;
+  margin-left: rem(15);
+}
+
+.messageContent {
+  background-color: $gray-1;
+  position: relative;
+  border-radius: 5px;
+  padding-left: rem(15);
+  padding-right: rem(15);
+  padding-top: rem(6);
+  padding-bottom: rem(6);
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 100%;
+    bottom: 16px;
+    width: 0;
+    height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 4px solid $gray-1;
+    border-right: none;
+  }
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  .messageContent {
+    background-color: $dark-gray-5;
+    &:before {
+      border-left-color: $dark-gray-5;
+    }
+  }
+  .message {
+    &.answer {
+      .messageContent {
+        &:before {
+          border-right-color: $dark-gray-5;
+        }
+      }
+    }
+  }
+  .item {
+    &:hover,
+    &.current {
+      background-color: $dark-gray-4;
+    }
+  }
+}
