@@ -1,0 +1,63 @@
+@import 'components/mixins.scss';
+
+/////////////////////////////////////////////////////////////////////////////////////////
+/* BADGE */
+
+.badge {
+  font-weight: normal;
+  background: $white;
+  color: $secondary;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+
+  &.badge-default {
+    background: $default;
+    color: $white;
+  }
+  &.badge-primary {
+    background: $primary;
+    color: $white;
+  }
+  &.badge-secondary {
+    background: $secondary;
+    color: $white;
+  }
+  &.badge-success {
+    background: $success;
+    color: $white;
+  }
+  &.badge-danger {
+    background: $danger;
+    color: $white;
+  }
+  &.badge-warning {
+    background: $warning;
+    color: $white;
+  }
+  &.badge-info {
+    background: $info;
+    color: $white;
+  }
+  &.badge-light {
+    background: $light;
+    color: $text;
+  }
+  &.badge-dark {
+    background: $dark;
+    color: $white;
+  }
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  .badge {
+    &.badge-light {
+      background: $dark;
+      color: $white;
+    }
+    &.badge-dark {
+      background: $light;
+      color: $text;
+    }
+  }
+}

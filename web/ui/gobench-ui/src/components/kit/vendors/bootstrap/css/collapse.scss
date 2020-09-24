@@ -1,0 +1,55 @@
+@import 'components/mixins.scss';
+
+/////////////////////////////////////////////////////////////////////////////////////////
+/* COLLAPSE */
+
+.accordion {
+  .card {
+    border-radius: 0;
+    margin-bottom: 0;
+    border-bottom-width: 0;
+    &:first-child {
+      border-radius: 5px 5px 0 0;
+    }
+    &:last-child {
+      border-radius: 0 0 5px 5px;
+      border-bottom-width: 1px;
+    }
+    .card-header {
+      cursor: pointer;
+      .card-title {
+        margin-bottom: 0;
+      }
+      &.collapsed {
+        border: none;
+      }
+    }
+  }
+  &.accordion-margin-bottom {
+    .card {
+      border-radius: 5px;
+      margin-bottom: rem(15);
+      border-bottom-width: 1px;
+    }
+  }
+  .accordion-indicator {
+    padding-top: 1px;
+    color: $gray-5;
+    .plus {
+      display: none;
+    }
+    .minus {
+      display: inline;
+    }
+  }
+  .collapsed {
+    .accordion-indicator {
+      .plus {
+        display: inline;
+      }
+      .minus {
+        display: none;
+      }
+    }
+  }
+}

@@ -1,0 +1,27 @@
+@import 'components/mixins.scss';
+
+.container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 5px;
+}
+
+.status {
+  position: absolute;
+  top: -1px;
+  bottom: -1px;
+  left: -1px;
+  width: 6px;
+  z-index: 1;
+}
+
+.footer {
+  background: $gray-1;
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  .footer {
+    background: $dark-gray-4;
+  }
+}

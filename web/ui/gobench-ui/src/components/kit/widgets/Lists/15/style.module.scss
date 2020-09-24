@@ -1,0 +1,53 @@
+@import 'components/mixins.scss';
+
+.item {
+  border-bottom: 1px solid $gray-2;
+
+  &:first-child {
+    .itemLink {
+      padding-top: 0;
+    }
+  }
+
+  &:last-child {
+    border-bottom: none;
+
+    .itemLink {
+      padding-bottom: 0;
+    }
+  }
+}
+
+.itemLink {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  color: inherit;
+  padding-top: rem(30);
+  padding-bottom: rem(25);
+
+  &:hover,
+  &:focus {
+    color: inherit;
+  }
+}
+
+.itemCover {
+  width: rem(73);
+  flex-shrink: 0;
+
+  img {
+    width: 100%;
+    height: auto;
+  }
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  .item {
+    border-bottom: 1px solid $dark-gray-4;
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+}

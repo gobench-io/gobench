@@ -1,0 +1,93 @@
+@import 'components/mixins.scss';
+
+/* Slide Fade Up */
+
+.slide-fadein-up-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.slide-fadein-up-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.3s, transform 0.4s;
+}
+
+.slide-fadein-up-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.slide-fadein-up-exit-active {
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 0.3s, transform 0.4s;
+}
+
+/* Slide Fade Right */
+
+.slide-fadein-right-enter {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+.slide-fadein-right-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 0.3s, transform 0.4s;
+}
+
+.slide-fadein-right-exit {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.slide-fadein-right-exit-active {
+  opacity: 0;
+  transform: translateX(20px);
+  transition: opacity 0.3s, transform 0.4s;
+}
+
+/* Zoom Fade */
+
+.zoom-fadein-enter {
+  opacity: 0;
+  transform: scale(0.99);
+}
+
+.zoom-fadein-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.zoom-fadein-exit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.zoom-fadein-exit-active {
+  opacity: 0;
+  transform: scale(1.01);
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+/* Fade */
+
+.fadein-enter {
+  opacity: 0;
+}
+
+.fadein-enter-active {
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.fadein-exit {
+  opacity: 1;
+}
+
+.fadein-exit-active {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}

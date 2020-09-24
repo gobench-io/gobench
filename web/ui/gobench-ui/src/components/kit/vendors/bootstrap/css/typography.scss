@@ -1,0 +1,34 @@
+@import 'components/mixins.scss';
+
+/////////////////////////////////////////////////////////////////////////////////////////
+/* TYPOGRAPHY */
+
+.mark,
+mark {
+  background: $orange;
+  color: $white;
+}
+
+.blockquote {
+  background: $gray-1;
+  padding: 30px;
+  border-left: 3px solid $border;
+  font-size: rem(15);
+
+  &-reverse {
+    text-align: right;
+    border-left: none;
+    border-right: 3px solid $border;
+  }
+  &-footer {
+    margin-top: rem(20);
+    color: $gray-5;
+  }
+}
+
+// darl-theme
+[data-kit-theme='dark'] {
+  .blockquote {
+    background: $dark-gray-4;
+  }
+}

@@ -1,0 +1,105 @@
+@import 'components/mixins.scss';
+
+.container {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  flex-shrink: 0;
+
+  &.white {
+    background: $white;
+  }
+
+  &.gray {
+    background: $gray-1;
+  }
+}
+
+.containerInner {
+  max-width: 32rem;
+  width: 100%;
+}
+
+.topbar {
+  height: rem(64);
+  border-bottom: 1px solid $border;
+  background: $white;
+  margin-bottom: 7vh;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: rem(28);
+  width: 100%;
+
+  &.topbarGray {
+    background: $gray-1;
+  }
+}
+
+.logoContainer {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 rem(28) 0 0;
+
+  .logo {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: rem(24);
+    white-space: nowrap;
+    width: 100%;
+  }
+  .name {
+    font-size: rem(20);
+    font-weight: 700;
+    color: $black;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 90%;
+    display: block;
+  }
+  .descr {
+    margin-left: rem(13);
+    padding-left: rem(13);
+    height: rem(38);
+    line-height: rem(38);
+    border-left: 1px solid $gray-2;
+    font-size: rem(14);
+  }
+}
+
+.footerNav {
+  li {
+    margin: rem(5) rem(14);
+  }
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  .container {
+    background: transparent !important;
+  }
+
+  .topbar {
+    background: $dark-gray-5 !important;
+    border-bottom: 1px solid $dark-gray-4 !important;
+  }
+
+  .logoContainer {
+    .name {
+      color: $white;
+    }
+    .descr {
+      color: $dark-gray-2;
+      border-left: 1px solid $dark-gray-4;
+    }
+  }
+}

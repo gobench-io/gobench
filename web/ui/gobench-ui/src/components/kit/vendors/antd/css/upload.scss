@@ -1,0 +1,21 @@
+// Import mixins
+@import 'components/mixins.scss';
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// DARK THEME STYLES
+[data-kit-theme='dark'] {
+  .ant-upload {
+    background: $dark-gray-4;
+    &.ant-upload-drag {
+      background: $dark-gray-4;
+    }
+
+    .ant-upload-text {
+      color: $dark-gray-1 !important;
+    }
+
+    .ant-upload-hint {
+      color: $dark-gray-3 !important;
+    }
+  }
+}

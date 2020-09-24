@@ -1,0 +1,25 @@
+{
+  "table": [
+    {
+      "key": "1",
+      "actionName": "New Users",
+      "location": "New York",
+      "phone": "+1 800 364 4774",
+      "value": "+3,125"
+    },
+    {
+      "key": "2",
+      "actionName": "New Reports",
+      "location": "Palo Alto",
+      "phone": "+1 800 364 4774",
+      "value": "+643"
+    },
+    {
+      "key": "3",
+      "actionName": "Quote Submits",
+      "location": "Las Vegas",
+      "phone": "+1 800 364 4774",
+      "value": "+982"
+    }
+  ]
+}

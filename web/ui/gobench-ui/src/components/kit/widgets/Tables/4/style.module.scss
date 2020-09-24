@@ -1,0 +1,51 @@
+@import 'components/mixins.scss';
+
+.head {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.headItem {
+  flex-basis: 50%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+.headIcon {
+  width: rem(50);
+  height: rem(50);
+  text-align: center;
+  border-radius: 5px;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  i {
+    vertical-align: middle;
+    line-height: rem(50);
+  }
+}
+
+.table {
+  white-space: nowrap !important;
+  :global(.ant-table-body) {
+    overflow-x: auto !important;
+  }
+}
+
+.avatar {
+  width: rem(40);
+  height: rem(40);
+  border-radius: 5px;
+  overflow: hidden;
+  background-color: $gray-1;
+  text-align: center;
+  vertical-align: middle;
+
+  img {
+    width: 100%;
+    height: auto;
+  }
+}

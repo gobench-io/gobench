@@ -1,0 +1,26 @@
+@import 'components/mixins.scss';
+
+.chartPieExample {
+  :global(.ct-chart) {
+    height: rem(200);
+  }
+
+  :global(.ct-series-a) path {
+    stroke: $success;
+  }
+
+  :global(.ct-series-b) path {
+    stroke: $primary;
+  }
+
+  :global(.ct-series-c) path {
+    stroke: $danger;
+  }
+
+  :global(.ct-series) path {
+    transition: stroke-opacity 0.2s ease-in-out;
+    &:hover {
+      stroke-opacity: 0.8;
+    }
+  }
+}

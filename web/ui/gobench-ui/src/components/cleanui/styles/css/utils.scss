@@ -1,0 +1,36 @@
+@import 'components/mixins.scss';
+
+.cui {
+  &__utils {
+    &__content {
+      padding: rem(30);
+      margin: 0 auto;
+
+      @media (max-width: $sm-max-width) {
+        padding: rem(30) rem(16);
+      }
+    }
+
+    &__heading {
+      color: $black;
+      font-size: rem(17);
+      text-transform: uppercase;
+      margin-bottom: rem(12);
+    }
+
+    &__shadow {
+      box-shadow: $shadow-ant;
+    }
+  }
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  .cui {
+    &__utils {
+      &__heading {
+        color: $dark-gray-1;
+      }
+    }
+  }
+}

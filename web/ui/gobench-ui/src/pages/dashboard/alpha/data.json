@@ -1,0 +1,31 @@
+{
+  "tableData": [
+    {
+      "key": "1",
+      "name": "Damon",
+      "position": "5516 Adolfo Green",
+      "office": "Littelhaven",
+      "age": 18,
+      "date": "2014/06/13",
+      "salary": 553.536
+    },
+    {
+      "key": "2",
+      "name": "Miracle",
+      "position": "176 Hirthe Squares",
+      "office": "Ryleetown",
+      "age": 35,
+      "date": "2013/09/27",
+      "salary": 784.802
+    },
+    {
+      "key": "3",
+      "name": "Torrey",
+      "position": "1995 Richie Neck",
+      "office": "West Sedrickstad",
+      "age": 15,
+      "date": "2014/09/12",
+      "salary": 344.302
+    }
+  ]
+}

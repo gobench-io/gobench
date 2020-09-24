@@ -1,0 +1,33 @@
+@import 'components/mixins.scss';
+
+.card {
+  background-color: $white;
+  border-radius: 3px;
+  box-shadow: 0 3px 5px rgba(22, 22, 53, 0.16);
+  margin-bottom: rem(15);
+  padding: rem(5);
+  min-height: rem(40);
+  cursor: move;
+}
+
+.content {
+  padding-left: rem(15);
+  position: relative;
+}
+
+.flag {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background-color: $gray-3;
+  width: 3px;
+  border-radius: 2px;
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  .card {
+    background: $dark-gray-4;
+  }
+}

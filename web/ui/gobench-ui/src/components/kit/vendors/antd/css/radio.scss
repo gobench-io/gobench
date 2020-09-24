@@ -1,0 +1,29 @@
+// Import mixins
+@import 'components/mixins.scss';
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// DARK THEME STYLES
+[data-kit-theme='dark'] {
+  .ant-radio-disabled {
+    .ant-radio-inner {
+      border-color: $dark-gray-4 !important;
+    }
+  }
+
+  .ant-radio-group-solid {
+    .ant-radio {
+      &-button {
+        &-wrapper {
+          color: $text;
+          &-checked {
+            color: $white;
+            &:hover,
+            &:active {
+              color: $white;
+            }
+          }
+        }
+      }
+    }
+  }
+}

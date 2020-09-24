@@ -1,0 +1,225 @@
+@import 'components/mixins.scss';
+
+/////////////////////////////////////////////////////////////////////////////////////////
+/*  "MEASUREMENTS" STYLES */
+
+// font size
+.font-size {
+  &-0 {
+    font-size: rem(0);
+  }
+  &-10 {
+    font-size: rem(10);
+  }
+  &-12 {
+    font-size: rem(12);
+  }
+  &-14 {
+    font-size: rem(14);
+  }
+  &-16 {
+    font-size: rem(16);
+  }
+  &-18 {
+    font-size: rem(18);
+  }
+  &-21 {
+    font-size: rem(20);
+  }
+  &-24 {
+    font-size: rem(24);
+  }
+  &-28 {
+    font-size: rem(26);
+  }
+  &-30 {
+    font-size: rem(30);
+  }
+  &-32 {
+    font-size: rem(30);
+  }
+  &-36 {
+    font-size: rem(36);
+  }
+  &-40 {
+    font-size: rem(40);
+  }
+  &-48 {
+    font-size: rem(48);
+  }
+  &-50 {
+    font-size: rem(50);
+  }
+  &-60 {
+    font-size: rem(60);
+  }
+  &-70 {
+    font-size: rem(70);
+  }
+  &-80 {
+    font-size: rem(80);
+  }
+}
+
+// quick height
+.height {
+  &-0 {
+    height: rem(0);
+  }
+  &-10 {
+    height: rem(10);
+  }
+  &-20 {
+    height: rem(20);
+  }
+  &-40 {
+    height: rem(40);
+  }
+  &-100 {
+    height: rem(100);
+  }
+  &-150 {
+    height: rem(150);
+  }
+  &-200 {
+    height: rem(200);
+  }
+  &-250 {
+    height: rem(250);
+  }
+  &-300 {
+    height: rem(300);
+  }
+  &-400 {
+    height: rem(400);
+  }
+  &-500 {
+    height: rem(500);
+  }
+  &-600 {
+    height: rem(600);
+  }
+  &-700 {
+    height: rem(700);
+  }
+  &-0p {
+    height: 0%;
+  }
+  &-10p {
+    height: 10%;
+  }
+  &-20p {
+    height: 20%;
+  }
+  &-25p {
+    height: 25%;
+  }
+  &-33p {
+    height: 33%;
+  }
+  &-50p {
+    width: 50%;
+  }
+  &-66p {
+    height: 66%;
+  }
+  &-75p {
+    height: 75%;
+  }
+  &-80p {
+    height: 80%;
+  }
+  &-90p {
+    height: 80%;
+  }
+  &-100p {
+    height: 100%;
+  }
+}
+
+// quick width
+.width {
+  &-10 {
+    width: rem(10);
+  }
+  &-20 {
+    width: rem(20);
+  }
+  &-40 {
+    width: rem(40);
+  }
+  &-50 {
+    width: rem(50);
+  }
+  &-100 {
+    width: rem(100);
+  }
+  &-150 {
+    width: rem(150);
+  }
+  &-200 {
+    width: rem(200);
+  }
+  &-250 {
+    width: rem(250);
+  }
+  &-300 {
+    width: rem(300);
+  }
+  &-350 {
+    width: rem(350);
+  }
+  &-400 {
+    width: rem(400);
+  }
+  &-500 {
+    width: rem(500);
+  }
+  &-600 {
+    width: rem(600);
+  }
+  &-700 {
+    width: rem(700);
+  }
+  &-0p {
+    width: 0%;
+  }
+  &-10p {
+    width: 10%;
+  }
+  &-20p {
+    width: 20%;
+  }
+  &-25p {
+    width: 25%;
+  }
+  &-33p {
+    width: 33%;
+  }
+  &-50p {
+    width: 50%;
+  }
+  &-66p {
+    width: 66%;
+  }
+  &-75p {
+    width: 75%;
+  }
+  &-80p {
+    width: 80%;
+  }
+  &-90p {
+    width: 80%;
+  }
+  &-100p {
+    width: 100%;
+  }
+}
+
+.line-height-1 {
+  line-height: 1;
+}
+
+.border-5 {
+  border-width: rem(5) !important;
+}

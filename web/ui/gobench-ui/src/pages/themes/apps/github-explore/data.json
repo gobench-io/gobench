@@ -1,0 +1,86 @@
+[
+  {
+    "type": "folder",
+    "name": "css",
+    "info": "info about file",
+    "time": "10 minutes ago"
+  },
+  {
+    "type": "folder",
+    "name": "font",
+    "info": "info about file",
+    "time": "18 minutes ago"
+  },
+  {
+    "type": "folder",
+    "name": "resources",
+    "info": "info about file",
+    "time": "18 minutes ago"
+  },
+  {
+    "type": "folder",
+    "name": "dist",
+    "info": "info about file",
+    "time": "8 minutes ago"
+  },
+  {
+    "type": "folder",
+    "name": "img",
+    "info": "info about file",
+    "time": "6 month ago"
+  },
+  {
+    "type": "folder",
+    "name": "js",
+    "info": "info about file",
+    "time": "3 month ago"
+  },
+  {
+    "type": "file",
+    "name": "Specification.md",
+    "info": "info about file",
+    "time": "3 month ago"
+  },
+  {
+    "type": "file",
+    "name": "Readme.md",
+    "info": "info about file",
+    "time": "3 month ago"
+  },
+  {
+    "type": "file",
+    "name": "index.html",
+    "info": "info about file",
+    "time": "3 month ago"
+  },
+  {
+    "type": "file",
+    "name": "text.html",
+    "info": "info about file",
+    "time": "3 month ago"
+  },
+  {
+    "type": "file",
+    "name": "gulp.js",
+    "info": "info about file",
+    "time": "3 month ago"
+  },
+  {
+    "type": "file",
+    "name": "autoload.php",
+    "info": "info about file",
+    "time": "3 month ago"
+  },
+  {
+    "type": "file",
+    "name": "bower.js",
+    "info": "info about file",
+    "time": "3 month ago"
+  },
+  {
+    "type": "file",
+    "name": "__exclude.js",
+    "info": "info about file",
+    "time": "3 month ago"
+  }
+]

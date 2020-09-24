@@ -1,0 +1,44 @@
+// Import mixins
+@import 'components/mixins.scss';
+
+.ant-modal {
+  &-mask {
+    background: rgba($gray-1, 0.9);
+  }
+  &-header {
+    border-color: transparent;
+  }
+  &-footer {
+    border-color: transparent;
+  }
+  &-content {
+    box-shadow: $shadow-3;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// DARK THEME STYLES
+[data-kit-theme='dark'] {
+  .ant-modal {
+    &-mask {
+      background: rgba($black, 0.84);
+    }
+    &-close-x {
+      color: $gray-5;
+
+      &:hover {
+        color: $gray-3;
+      }
+    }
+    &-content {
+      background: #131020;
+    }
+    &-header {
+      background: #131020;
+      border-color: #131020;
+    }
+    &-footer {
+      border-color: #131020;
+    }
+  }
+}

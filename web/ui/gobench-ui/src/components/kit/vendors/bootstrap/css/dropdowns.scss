@@ -1,0 +1,146 @@
+// Import mixins from "core" module
+@import 'components/mixins.scss';
+
+/////////////////////////////////////////////////////////////////////////////////////////
+/* DROPDOWNS */
+
+.dropdown,
+.btn-group {
+  .dropdown-toggle {
+    &::after {
+      opacity: 0.6;
+      transform: translateY(40%);
+    }
+  }
+
+  .dropdown-toggle-noarrow {
+    &:after {
+      display: none;
+    }
+  }
+
+  .dropdown-toggle-icon {
+    position: relative;
+    bottom: rem(-2);
+    margin-right: rem(5);
+    color: $gray-4;
+  }
+
+  .dropdown-menu-scroll-container {
+    position: relative;
+  }
+
+  .dropdown-menu {
+    border: 1px solid transparent;
+    background-color: $white;
+    border-radius: 5px;
+    box-shadow: $shadow-2;
+
+    .dropdown-icon {
+      margin-right: rem(5);
+    }
+    .dropdown-divider {
+      border-top-color: $border;
+    }
+    .dropdown-header {
+      padding: rem(7) rem(15);
+      color: $text;
+      font-size: rem(14);
+      font-weight: 600;
+    }
+    .dropdown-item {
+      color: $text;
+      background: none;
+      padding: rem(3) rem(15);
+      @include transition-color();
+      a {
+        color: $text;
+        &:hover,
+        &:active {
+          background: none;
+          color: $blue;
+        }
+      }
+      &.disabled {
+        cursor: not-allowed;
+        color: $border !important;
+        a {
+          color: $border !important;
+          cursor: not-allowed;
+        }
+      }
+      &.active {
+        background: $gray-3 !important;
+      }
+      &:hover,
+      &:active,
+      &:focus {
+        background: none;
+        color: $blue;
+      }
+    }
+  }
+
+  &.show {
+    .dropdown-toggle {
+      &::before {
+        display: block;
+      }
+    }
+
+    .dropdown-toggle-text {
+      color: $blue;
+    }
+  }
+}
+
+// dark theme
+[data-kit-theme='dark'] {
+  .dropdown-menu {
+    background-color: $dark-gray-6;
+  }
+  .dropdown,
+  .btn-group {
+    .dropdown-menu:not(.inner) {
+      border: 1px solid $dark-gray-4;
+    }
+    .dropdown-menu {
+      background-color: $dark-gray-6;
+      .dropdown-divider {
+        border-top-color: $dark-gray-4;
+      }
+      .dropdown-header {
+        color: $dark-gray-1;
+      }
+      .dropdown-item {
+        color: $dark-gray-1;
+        a {
+          color: $dark-gray-1;
+          &:hover,
+          &:active {
+            background: none;
+            color: $blue;
+          }
+        }
+        &.disabled {
+          cursor: not-allowed;
+          color: $dark-gray-3 !important;
+          a {
+            color: $dark-gray-3 !important;
+            cursor: not-allowed;
+          }
+        }
+        &.active {
+          background: $primary !important;
+          color: $white !important;
+        }
+        &:hover,
+        &:active,
+        &:focus {
+          background: none;
+          color: $blue;
+        }
+      }
+    }
+  }
+}

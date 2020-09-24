@@ -1,0 +1,88 @@
+@import 'components/mixins.scss';
+
+.itemLink {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+
+  &:hover {
+    color: inherit;
+
+    .itemAction {
+      span {
+        &:first-child {
+          opacity: 1;
+        }
+      }
+    }
+  }
+
+  &:focus {
+    color: inherit;
+  }
+}
+
+.itemMeta {
+  flex-basis: 50px;
+  margin-right: rem(10);
+  font-size: rem(18);
+  line-height: rem(20);
+  align-self: flex-start;
+}
+
+.itemAction {
+  margin-left: auto;
+  white-space: nowrap;
+
+  span {
+    @include transition-slow();
+    opacity: 0.9;
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
+    width: 15px;
+    height: 22px;
+
+    &:first-child {
+      opacity: 0.5;
+    }
+
+    &:last-child {
+      margin-left: -9px;
+    }
+
+    &:before {
+      position: absolute;
+      top: 5px;
+      left: 0;
+      transform: rotate(45deg);
+      content: '';
+      width: 15px;
+      height: 3px;
+      background-color: $blue;
+      border-radius: 5px;
+    }
+    &:after {
+      position: absolute;
+      top: 14px;
+      left: 0;
+      transform: rotate(-45deg);
+      content: '';
+      width: 15px;
+      height: 3px;
+      background-color: $blue;
+      border-radius: 5px;
+    }
+  }
+}
+
+.item {
+  display: block;
+  margin-bottom: rem(15);
+  color: $gray-6;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
