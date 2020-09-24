@@ -86,6 +86,14 @@ func NewMaster(opts *Options, logger logger.Logger) (m *Master, err error) {
 	return
 }
 
+// SetIsScheduled update isScheduled property
+func (m *Master) SetIsScheduled(is bool) *Master {
+	m.mu.Lock()
+	m.isScheduled = is
+	m.mu.Unlock()
+	return m
+}
+
 func (m *Master) Start() (err error) {
 	if err = m.setupDb(); err != nil {
 		return

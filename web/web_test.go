@@ -24,6 +24,8 @@ func newAPITest(t *testing.T, adminPassword string) (*chi.Mux, *httptest.Respons
 		DbPath: "./gobench.sqlite3",
 	}, logger)
 
+	m.SetIsScheduled(false)
+
 	err := m.Start()
 	assert.Nil(t, err)
 	h := newHandler(m, adminPassword, logger)
