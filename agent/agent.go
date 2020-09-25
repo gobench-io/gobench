@@ -30,9 +30,10 @@ type Agent struct {
 	route       string
 	clusterPort int
 
-	ml     pb.AgentServer
-	logger logger.Logger
-	socket string
+	ml             pb.AgentServer
+	logger         logger.Logger
+	executorLogger io.Writer // when running the executor, save log here
+	socket         string    // unix socket that the agent rpc server will listen at
 }
 
 func NewLocalAgent(ml pb.AgentServer, logger logger.Logger) (*Agent, error) {
@@ -54,12 +55,23 @@ func NewAgent(opts *Options, ml pb.AgentServer, logger logger.Logger) (*Agent, e
 	return a, nil
 }
 
+// SetMetricLogger sets metric logger property
 func (a *Agent) SetMetricLogger(ml pb.AgentServer) {
 	a.mu.Lock()
 	a.ml = ml
 	a.mu.Unlock()
 }
 
+// SetExecutorLogger sets executor log writer property
+func (a *Agent) SetExecutorLogger(w io.Writer) *Agent {
+	a.mu.Lock()
+	a.executorLogger = w
+	a.mu.Unlock()
+
+	return a
+}
+
+// SetLogger set the logger property
 func (a *Agent) SetLogger(l logger.Logger) {
 	a.mu.Lock()
 	a.logger = l
