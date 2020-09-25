@@ -72,7 +72,7 @@ func main() {
 		m, err := master.NewMaster(&master.Options{
 			Port:    opts.Port,
 			Program: opts.Program,
-			DbPath:  opts.DbPath,
+			HomeDir: opts.Dir,
 		}, logger)
 		if err != nil {
 			printAndDie(fmt.Sprintf("%s: %s", exe, err))

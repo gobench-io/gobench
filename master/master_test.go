@@ -18,7 +18,7 @@ func seedMaster(t *testing.T) *Master {
 	m, err := NewMaster(&Options{
 		Addr:    "0.0.0.0",
 		Port:    8080,
-		DbPath:  "./gobench.sqlite3",
+		HomeDir: "/tmp",
 		Program: "gobench",
 	}, logger)
 

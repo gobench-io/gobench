@@ -30,9 +30,8 @@ type Options struct {
 	AdminPassword string
 
 	// master mode
-	Port   int
-	DbPath string
-	Dir    string
+	Port int
+	Dir  string
 
 	// agent mode
 	Route string
@@ -120,7 +119,6 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 		}
 		opts.Port = port
 		opts.ClusterPort = clusterPort
-		opts.DbPath = dbPath
 		opts.AdminPassword = adminPassword
 		opts.Dir = dir
 		return opts, nil

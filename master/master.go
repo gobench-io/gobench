@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"os/user"
+	"path"
 	"path/filepath"
 	"strconv"
 	"sync"
@@ -39,6 +40,7 @@ type Master struct {
 
 	// database
 	isScheduled bool
+	homeDir     string
 	dbFilename  string
 	db          *ent.Client
 
@@ -56,23 +58,25 @@ type job struct {
 type Options struct {
 	Port    int
 	Addr    string
-	DbPath  string
 	Program string
+	HomeDir string
 }
 
 func NewMaster(opts *Options, logger logger.Logger) (m *Master, err error) {
 	logger.Infow("new master program",
 		"port", opts.Port,
-		"db file path", opts.DbPath,
+		"home directory", opts.HomeDir,
 	)
 
 	m = &Master{
-		addr:       opts.Addr,
-		port:       opts.Port,
-		dbFilename: opts.DbPath,
-		logger:     logger,
-		program:    opts.Program,
+		addr:    opts.Addr,
+		port:    opts.Port,
+		homeDir: opts.HomeDir,
+		logger:  logger,
+		program: opts.Program,
 	}
+
+	m.dbFilename = path.Join(m.homeDir, "gobench.sqlite3")
 
 	m.isScheduled = true // by default
 
