@@ -290,6 +290,7 @@ func (m *Master) schedule() {
 			cancel: cancel,
 		}
 
+		// once get a job, setup logger for this job
 		if _, err := job.setLogger(); err != nil {
 			m.logger.Errorw("failed set job logger", "err", err)
 		}
