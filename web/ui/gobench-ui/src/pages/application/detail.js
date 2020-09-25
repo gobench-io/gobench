@@ -31,8 +31,14 @@ const DefaultPage = ({ detail, dispatch }) => {
     }
   }, [detail])
   useEffect(() => {
+    if (status === 'running') {
+      return
+    }
     const interval = setInterval(() => {
-      console.log(Date.now())
+      dispatch({
+        type: 'application/DETAIL',
+        payload: { id }
+      })
     }, INTERVAL)
     // destroy interval on unmount
     return () => clearInterval(interval)
