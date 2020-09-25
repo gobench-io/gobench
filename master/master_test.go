@@ -305,5 +305,5 @@ func TestLogFile(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Contains(t, folder, fmt.Sprintf("/tmp/applications/%d", app.ID))
-	assert.Contains(t, f, fmt.Sprintf("/tmp/applications/%d/log", app.ID))
+	assert.Contains(t, f, fmt.Sprintf("/tmp/applications/%d/system.log", app.ID))
 }

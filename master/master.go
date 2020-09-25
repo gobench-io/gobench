@@ -506,7 +506,7 @@ func (m *Master) runJob(ctx context.Context) (err error) {
 // logFile return the log file for a certain log
 func (j *job) logFile(home string) (string, string, error) {
 	folder := filepath.Join(home, "applications", strconv.Itoa(j.app.ID))
-	f := filepath.Join(folder, "log")
+	f := filepath.Join(folder, "system.log")
 	return f, folder, nil
 }
 
