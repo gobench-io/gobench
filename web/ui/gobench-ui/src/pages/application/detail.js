@@ -39,7 +39,7 @@ const DefaultPage = ({ detail, dispatch }) => {
         type: 'application/DETAIL',
         payload: { id }
       })
-    }, INTERVAL)
+    }, INTERVAL / 3)
     // destroy interval on unmount
     return () => clearInterval(interval)
   })
