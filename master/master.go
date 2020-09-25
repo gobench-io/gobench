@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
-	"os/user"
 	"path"
 	"path/filepath"
 	"strconv"
@@ -295,7 +294,7 @@ func (m *Master) schedule() {
 		}
 
 		// once get a job, setup logger for this job
-		if _, err := job.setLogger(); err != nil {
+		if _, err := job.setLogger(m.homeDir); err != nil {
 			m.logger.Errorw("failed set job logger", "err", err)
 		}
 
@@ -505,24 +504,17 @@ func (m *Master) runJob(ctx context.Context) (err error) {
 }
 
 // logFile return the log file for a certain log
-// filepath = $HOME/.gobench/applications/appID/log
-func (j *job) logFile() (string, string, error) {
-	u, err := user.Current()
-	if err != nil {
-		return "", "", err
-	}
-	home := u.HomeDir
-
-	folder := filepath.Join(home, ".gobench", "applications", strconv.Itoa(j.app.ID))
+func (j *job) logFile(home string) (string, string, error) {
+	folder := filepath.Join(home, "applications", strconv.Itoa(j.app.ID))
 	f := filepath.Join(folder, "log")
 	return f, folder, nil
 }
 
 // setLogger setup logger for the job. The log is a file under
-// $HOME/.gobench/applications/$appID/log
-func (j *job) setLogger() (logger.Logger, error) {
+// ${home}/applications/$appID/log
+func (j *job) setLogger(home string) (logger.Logger, error) {
 	// create new log from the application id
-	lfile, lfolder, err := j.logFile()
+	lfile, lfolder, err := j.logFile(home)
 	if err != nil {
 		return nil, err
 	}

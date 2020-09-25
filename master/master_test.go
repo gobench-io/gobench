@@ -227,7 +227,7 @@ func f1(ctx context.Context, vui int) {
 		app:    app,
 		cancel: cancel,
 	}
-	_, err := j.setLogger()
+	_, err := j.setLogger("/tmp")
 	assert.Nil(t, err)
 
 	go func() {
@@ -286,7 +286,7 @@ func f(ctx context.Context, vui int) {
 	j := &job{
 		app: app,
 	}
-	_, err := j.setLogger()
+	_, err := j.setLogger("/tmp")
 	assert.Nil(t, err)
 
 	err = m.run(ctx, j)
@@ -301,9 +301,9 @@ func TestLogFile(t *testing.T) {
 		app: app,
 	}
 
-	f, folder, err := j.logFile()
+	f, folder, err := j.logFile("/tmp")
 
 	assert.Nil(t, err)
-	assert.Contains(t, folder, fmt.Sprintf(".gobench/applications/%d", app.ID))
-	assert.Contains(t, f, fmt.Sprintf(".gobench/applications/%d/log", app.ID))
+	assert.Contains(t, folder, fmt.Sprintf("/tmp/applications/%d", app.ID))
+	assert.Contains(t, f, fmt.Sprintf("/tmp/applications/%d/log", app.ID))
 }
