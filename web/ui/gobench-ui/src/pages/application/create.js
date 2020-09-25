@@ -21,6 +21,7 @@ const mapStateToProps = ({ application, dispatch }) => {
 const DefaultPage = ({ loading, clone, dispatch }) => {
   const [form] = Form.useForm()
   const history = useHistory()
+  const [name, setName] = useState('')
   const [scenario, setSceraio] = useState('')
   const [gomod, setGomod] = useState('')
   const [gosum, setGosum] = useState('')
@@ -31,6 +32,7 @@ const DefaultPage = ({ loading, clone, dispatch }) => {
       form.setFieldsValue({
         ...clone
       })
+      setName(clone.name)
       setSceraio(clone.scenario)
       setGomod(clone.gomod)
       setGosum(clone.gosum)
@@ -50,6 +52,7 @@ const DefaultPage = ({ loading, clone, dispatch }) => {
   }
   const onReset = () => {
     form.resetFields()
+    setName('')
     setSceraio('')
     setGomod('')
     setGosum('')
@@ -57,6 +60,9 @@ const DefaultPage = ({ loading, clone, dispatch }) => {
   const onChange = (field, value) => {
     form.setFieldsValue({ [field]: value })
     switch (field) {
+      case 'name':
+        setName(value)
+        break
       case 'scenario':
         setSceraio(value)
         break
@@ -110,7 +116,7 @@ const DefaultPage = ({ loading, clone, dispatch }) => {
                 <h4 className='mb-2'>
                   <strong>Application Name</strong>
                 </h4>
-                <Input />
+                <Input value={name} onChange={e => onChange('name', e.target.value)} />
               </Item>
               <Item
                 name='scenario'

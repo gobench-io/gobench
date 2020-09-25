@@ -6,6 +6,7 @@ import { withRouter, useParams, useHistory } from 'react-router-dom'
 import Dashboard from './dashboard'
 import Scenario from './scenario'
 import { statusColors } from 'utils/status'
+import { INTERVAL } from 'constant'
 import 'css/index.css'
 
 const { TabPane } = Tabs
@@ -19,7 +20,7 @@ const DefaultPage = ({ detail, dispatch }) => {
   const history = useHistory()
   const { id } = useParams()
   const { name, created_at: created, status, started_at: beginAt, ended_at: endAt } = detail
-  const duration = 10
+  const duration = (new Date(endAt)) - (new Date(beginAt)) | 0
   useEffect(() => {
     if (!fetching) {
       dispatch({
@@ -29,7 +30,13 @@ const DefaultPage = ({ detail, dispatch }) => {
       setFetching(true)
     }
   }, [detail])
-
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log(Date.now())
+    }, INTERVAL)
+    // destroy interval on unmount
+    return () => clearInterval(interval)
+  })
   return (
     <>
       <div className='application-detail'>
