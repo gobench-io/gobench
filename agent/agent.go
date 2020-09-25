@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"os"
 	"os/exec"
@@ -99,9 +99,14 @@ func (a *Agent) RunJob(ctx context.Context, executorPath string, appID int) (err
 		err = fmt.Errorf("cmd pipe stderr: %v", err)
 		return
 	}
+
+	file, err := os.Create("/tmp/gobenchlog")
+	defer file.Close()
+
 	go func() {
-		slurp, _ := ioutil.ReadAll(stderr)
-		fmt.Printf("%s\n", string(slurp))
+		if _, err := io.Copy(file, stderr); err != nil {
+			fmt.Println(err)
+		}
 	}()
 
 	// get the stdout log
@@ -111,8 +116,9 @@ func (a *Agent) RunJob(ctx context.Context, executorPath string, appID int) (err
 		return
 	}
 	go func() {
-		slurp, _ := ioutil.ReadAll(stdout)
-		fmt.Printf("%s\n", string(slurp))
+		if _, err := io.Copy(file, stdout); err != nil {
+			fmt.Println(err)
+		}
 	}()
 
 	// start the cmd, does not wait for it to complete
