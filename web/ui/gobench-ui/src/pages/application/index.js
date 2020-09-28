@@ -5,6 +5,7 @@ import { connect } from 'react-redux'
 import { withRouter, Link, useHistory } from 'react-router-dom'
 import { statusColors, formatTag } from 'utils/status'
 import { RetweetOutlined } from '@ant-design/icons'
+import moment from 'moment'
 
 const mapStateToProps = ({ application, dispatch }) => ({ application, dispatch })
 
@@ -65,12 +66,34 @@ const DefaultPage = ({ application, dispatch }) => {
       }
     },
     {
-      title: 'Created at',
-      dataIndex: 'created_at',
-      key: 'created',
+      title: 'Started at',
+      dataIndex: 'started_at',
+      key: 'started_at',
       sorter: (a, b) => a.name.length - b.name.length,
       render: x => {
-        return new Date(x).toLocaleString()
+        return new moment(x).utc().format()
+      }
+    },
+    {
+      title: 'Duration',
+      dataIndex: 'duration',
+      key: 'duration',
+      sorter: (a, b) => a.name.length - b.name.length,
+      render: (x, item) => {
+        const { started_at: startedAt, ended_at: finishedAt, updated_at: updated } = item
+        const start = moment(startedAt).utc() // some random moment in time (in ms)
+        if (['provisioning', 'pending', 'error'].includes(item.status)) {
+          return <span />
+        }
+        if (['finished', 'cancel'].includes(item.status)) {
+          const end = moment(updated).utc() // some random moment after start (in ms)
+          const diff = end.diff(start)
+          const duration = moment.utc(diff).format('HH:mm:ss.SSS')
+          return <span>{duration}</span>
+        }
+        const diff = moment.utc().diff(start)
+        const duration = moment.utc(diff).format('HH:mm:ss.SSS')
+        return <span>{duration}</span>
       }
     },
     {

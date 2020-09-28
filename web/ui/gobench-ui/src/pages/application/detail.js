@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, lazy } from 'react'
 import { Helmet } from 'react-helmet'
-import { Tabs, Tag, Button } from 'antd'
+import { Tabs, Tag, Button, Popconfirm } from 'antd'
 import { connect } from 'react-redux'
 import { withRouter, useParams, useHistory } from 'react-router-dom'
 import Dashboard from './dashboard'
 import Scenario from './scenario'
 import { statusColors } from 'utils/status'
 import { INTERVAL } from 'constant'
+import moment from 'moment'
 import 'css/index.css'
 
+const Log = lazy(() => import('./log'))
 const { TabPane } = Tabs
 
 const mapStateToProps = ({ application, dispatch }) => {
@@ -19,8 +21,12 @@ const DefaultPage = ({ detail, dispatch }) => {
   const [fetching, setFetching] = useState(false)
   const history = useHistory()
   const { id } = useParams()
-  const { name, created_at: created, status, started_at: beginAt, ended_at: endAt } = detail
-  const duration = (new Date(endAt)) - (new Date(beginAt)) | 0
+  const { name, created_at: created, status, started_at: startedAt, ended_at: finishedAt } = detail
+  const start = moment(startedAt).utc() // some random moment in time (in ms)
+  const end = moment(finishedAt).utc() // some random moment after start (in ms)
+  const diff = startedAt ? finishedAt ? end.diff(start) : moment.utc().diff(start) : 0
+  // execution
+  const duration = moment.utc(diff).format('HH:mm:ss.SSS')
   useEffect(() => {
     if (!fetching) {
       dispatch({
@@ -31,7 +37,7 @@ const DefaultPage = ({ detail, dispatch }) => {
     }
   }, [detail])
   useEffect(() => {
-    if (status === 'running') {
+    if (!['pending', 'provisioning'].includes(status)) {
       return
     }
     const interval = setInterval(() => {
@@ -43,6 +49,24 @@ const DefaultPage = ({ detail, dispatch }) => {
     // destroy interval on unmount
     return () => clearInterval(interval)
   })
+  const clone = (data) => {
+    dispatch({
+      type: 'application/CLONE',
+      payload: { data }
+    })
+  }
+  const cancel = (id) => {
+    dispatch({
+      type: 'application/CANCEL',
+      payload: { id }
+    })
+  }
+  const destroy = (id) => {
+    dispatch({
+      type: 'application/DELETE',
+      payload: { id }
+    })
+  }
   return (
     <>
       <div className='application-detail'>
@@ -56,13 +80,55 @@ const DefaultPage = ({ detail, dispatch }) => {
                   {(status || '').toUpperCase()}
                 </Tag>
               </div>
-              <div className='text-muted'>Created: <strong>{created}</strong></div>
-              <div className='text-muted'>Started: <strong>{beginAt}</strong></div>
-              <div className='text-muted'>Ended: <strong>{endAt}</strong></div>
+              <div className='text-muted'>Created: <strong>{moment(created).utc().format()} UTC</strong></div>
+              <div className='text-muted'>Started: <strong>{start.format()} UTC</strong></div>
+              <div className='text-muted'>Ended: <strong>{finishedAt ? `${end.format()} UTC` : <i>not finish yet</i>}</strong></div>
               <div className='text-muted'>Duration: <strong>{duration}</strong></div>
             </div>
             <div className='col-md-6'>
               <div className='text-right'>
+                <div style={{ float: 'right' }} key={detail.id}>
+                  <Button
+                    style={{ marginLeft: 5 }}
+                    type='default'
+                    onClick={() => clone(detail)}
+                  >
+              Clone
+                  </Button>
+                  {['running', 'pending'].includes(detail.status) && (
+                    <Popconfirm
+                      title={`Are you sure cancel application ${detail.name}?`}
+                      onConfirm={() => cancel(detail.id)}
+                      okText='Yes'
+                      cancelText='No'
+                    >
+                      <Button
+                        type='dashed'
+                        style={{ marginLeft: 5 }}
+                        danger
+                      >
+                  Cancel
+                      </Button>
+                    </Popconfirm>
+                  )}
+                  {['finished', 'pending', 'error', 'cancel'].includes(detail.status) && (
+                    <Popconfirm
+                      title={`Are you sure delete application ${detail.name}?`}
+                      onConfirm={() => destroy(detail.id)}
+                      okText='Yes'
+                      cancelText='No'
+                    >
+                      <Button
+                        type='primary'
+                        className='delete-button'
+                        style={{ marginLeft: 5, color: 'white', backgroundColor: '#f5222d!important' }}
+                        danger
+                      >
+                  Delete
+                      </Button>
+                    </Popconfirm>
+                  )}
+                </div>
                 <Button type='default' onClick={() => history.push('/applications')}>Back</Button>
               </div>
             </div>
@@ -85,7 +151,7 @@ const DefaultPage = ({ detail, dispatch }) => {
                 <Scenario />
               </TabPane>
               <TabPane tab='Log' key='3'>
-                Come in soon
+                <Log />
               </TabPane>
             </Tabs>
           </div>
