@@ -116,7 +116,7 @@ const DefaultPage = ({ loading, clone, dispatch }) => {
                 <h4 className='mb-2'>
                   <strong>Application Name</strong>
                 </h4>
-                <Input value={name} onChange={e => onChange('name', e.target.value)} />
+                <Input value={name} onChange={e => onChange('name', e.target.value)} placeholder='Please input the application name.' />
               </Item>
               <Item
                 name='scenario'
