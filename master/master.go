@@ -299,7 +299,7 @@ func (m *Master) schedule() {
 			cancel: cancel,
 		}
 
-		if _, err = job.setLogs(m.homeDir); err != nil {
+		if _, err = job.setLogs(m.Logpaths(app.ID)); err != nil {
 			m.logger.Errorw("failed set job logger", "err", err)
 			continue
 		}
@@ -513,27 +513,22 @@ func (m *Master) runJob(ctx context.Context) (err error) {
 	return m.la.RunJob(ctx, m.job.plugin, m.job.app.ID)
 }
 
-// logpaths returns folder, system log filepath, and user log filepath
-// system log path = ${home}/applications/$appID/system.log
-// user log path = ${home}/applications/$appID/user.log
-func (j *job) logpaths(home string) (string, string, string, error) {
-	folder := filepath.Join(home, "applications", strconv.Itoa(j.app.ID))
+// Logpaths for an application ID returns folder path, system log filepath, and
+// user log filepath
+func (m *Master) Logpaths(appID int) (string, string, string) {
+	folder := filepath.Join(m.homeDir, "applications", strconv.Itoa(appID))
 	sf := filepath.Join(folder, "system.log")
 	uf := filepath.Join(folder, "user.log")
 
-	if err := os.MkdirAll(folder, os.ModePerm); err != nil {
-		return "", "", "", err
-	}
-
-	return folder, sf, uf, nil
+	return folder, sf, uf
 }
 
-func (j *job) setLogs(home string) (*job, error) {
-	var err error
-	j.flog, j.slog, j.ulog, err = j.logpaths(home)
+func (j *job) setLogs(f, sf, uf string) (*job, error) {
+	err := os.MkdirAll(f, os.ModePerm)
 	if err != nil {
 		return j, err
 	}
+	j.flog, j.slog, j.ulog = f, sf, uf
 
 	j.logger, err = logger.NewApplicationLogger(j.slog)
 	if err != nil {

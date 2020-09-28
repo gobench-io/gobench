@@ -212,3 +212,16 @@ func (h *handler) setApplicationTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func (h *handler) getApplicationSystemLog(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	app, ok := ctx.Value(webKey("application")).(*ent.Application)
+	if !ok {
+		http.Error(w, http.StatusText(422), 422)
+		return
+	}
+	if err := render.Render(w, r, newApplicationResponse(app)); err != nil {
+		render.Render(w, r, ErrRender(err))
+		return
+	}
+}
