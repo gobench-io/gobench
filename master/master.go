@@ -3,10 +3,11 @@ package master
 import (
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
-	"os/user"
+	"path"
 	"path/filepath"
 	"strconv"
 	"sync"
@@ -39,6 +40,7 @@ type Master struct {
 
 	// database
 	isScheduled bool
+	homeDir     string
 	dbFilename  string
 	db          *ent.Client
 
@@ -49,30 +51,37 @@ type Master struct {
 type job struct {
 	app    *ent.Application
 	plugin string // plugin path
-	logger logger.Logger
-	cancel context.CancelFunc
+	flog   string // log folder
+	slog   string // system log filepath
+	ulog   string // user log filepath
+
+	ulogWriter io.WriteCloser
+	logger     logger.Logger
+	cancel     context.CancelFunc
 }
 
 type Options struct {
 	Port    int
 	Addr    string
-	DbPath  string
 	Program string
+	HomeDir string
 }
 
 func NewMaster(opts *Options, logger logger.Logger) (m *Master, err error) {
 	logger.Infow("new master program",
 		"port", opts.Port,
-		"db file path", opts.DbPath,
+		"home directory", opts.HomeDir,
 	)
 
 	m = &Master{
-		addr:       opts.Addr,
-		port:       opts.Port,
-		dbFilename: opts.DbPath,
-		logger:     logger,
-		program:    opts.Program,
+		addr:    opts.Addr,
+		port:    opts.Port,
+		homeDir: opts.HomeDir,
+		logger:  logger,
+		program: opts.Program,
 	}
+
+	m.dbFilename = path.Join(m.homeDir, "gobench.sqlite3")
 
 	m.isScheduled = true // by default
 
@@ -290,9 +299,11 @@ func (m *Master) schedule() {
 			cancel: cancel,
 		}
 
-		if _, err := job.setLogger(); err != nil {
+		if _, err = job.setLogs(m.homeDir); err != nil {
 			m.logger.Errorw("failed set job logger", "err", err)
+			continue
 		}
+		defer job.ulogWriter.Close()
 
 		if err = m.run(ctx, job); err != nil {
 			m.logger.Errorw("failed run the job", "err", err)
@@ -493,46 +504,48 @@ func (m *Master) jobCompile(ctx context.Context) error {
 
 // runJob runs the already compiled plugin, uses agent workhouse
 func (m *Master) runJob(ctx context.Context) (err error) {
+	m.la.SetLogger(m.job.logger)
 	defer m.la.SetLogger(m.logger)
 
-	m.la.SetLogger(m.job.logger)
+	m.la.SetExecutorLogger(m.job.ulogWriter)
+	defer m.la.SetExecutorLogger(nil)
+
 	return m.la.RunJob(ctx, m.job.plugin, m.job.app.ID)
 }
 
-// logFile return the log file for a certain log
-// filepath = $HOME/.gobench/applications/appID/log
-func (j *job) logFile() (string, string, error) {
-	u, err := user.Current()
-	if err != nil {
-		return "", "", err
-	}
-	home := u.HomeDir
+// logpaths returns folder, system log filepath, and user log filepath
+// system log path = ${home}/applications/$appID/system.log
+// user log path = ${home}/applications/$appID/user.log
+func (j *job) logpaths(home string) (string, string, string, error) {
+	folder := filepath.Join(home, "applications", strconv.Itoa(j.app.ID))
+	sf := filepath.Join(folder, "system.log")
+	uf := filepath.Join(folder, "user.log")
 
-	folder := filepath.Join(home, ".gobench", "applications", strconv.Itoa(j.app.ID))
-	f := filepath.Join(folder, "log")
-	return f, folder, nil
+	if err := os.MkdirAll(folder, os.ModePerm); err != nil {
+		return "", "", "", err
+	}
+
+	return folder, sf, uf, nil
 }
 
-// setLogger setup logger for the job. The log is a file under
-// $HOME/.gobench/applications/$appID/log
-func (j *job) setLogger() (logger.Logger, error) {
-	// create new log from the application id
-	lfile, lfolder, err := j.logFile()
+func (j *job) setLogs(home string) (*job, error) {
+	var err error
+	j.flog, j.slog, j.ulog, err = j.logpaths(home)
 	if err != nil {
-		return nil, err
+		return j, err
 	}
-	if err = os.MkdirAll(lfolder, os.ModePerm); err != nil {
-		return nil, err
-	}
-	l, err := logger.NewApplicationLogger(lfile)
 
+	j.logger, err = logger.NewApplicationLogger(j.slog)
 	if err != nil {
-		return l, err
+		return j, err
 	}
 
-	j.logger = l
+	j.ulogWriter, err = os.Create(j.ulog)
+	if err != nil {
+		return j, err
+	}
 
-	return l, nil
+	return j, nil
 }
 
 func (j *job) setStatus(ctx context.Context, state jobState) (err error) {

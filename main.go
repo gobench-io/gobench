@@ -26,6 +26,7 @@ Usage: gobench [options]
 Master Options:
     -a, --addr <host>   Bind to host address (default: 0.0.0.0)
     -p, --port <port>   Use port for web client (default: 8080).
+    --dir <dir path>    Working directory (default: ${HOME}). The result database and logs will be stored on this folder.
     -db <file>          Location for the server database (default: ${HOME}/gobench.sqlite3)
     --admin-password    Password required to login web dashboard
 
@@ -71,7 +72,7 @@ func main() {
 		m, err := master.NewMaster(&master.Options{
 			Port:    opts.Port,
 			Program: opts.Program,
-			DbPath:  opts.DbPath,
+			HomeDir: opts.Dir,
 		}, logger)
 		if err != nil {
 			printAndDie(fmt.Sprintf("%s: %s", exe, err))

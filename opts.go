@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"os"
+	"os/user"
 	"path/filepath"
 )
 
@@ -29,8 +30,8 @@ type Options struct {
 	AdminPassword string
 
 	// master mode
-	Port   int
-	DbPath string
+	Port int
+	Dir  string
 
 	// agent mode
 	Route string
@@ -55,11 +56,19 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 		port          int
 		dbPath        string
 		adminPassword string
+		dir           string
 
 		// agent mode
 		route       string
 		clusterPort int
 	)
+	// gen default working dir
+	u, err := user.Current()
+	if err != nil {
+		return nil, err
+	}
+	defDir := filepath.Join(u.HomeDir, ".gobench")
+
 	fs.BoolVar(&showVersion, "v", false, "Print version information")
 	fs.BoolVar(&showVersion, "version", false, "Print version information")
 	fs.BoolVar(&showHelp, "h", false, "Show this message")
@@ -72,6 +81,7 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 	fs.IntVar(&port, "port", DEFAULT_PORT, "Port of the master server.")
 	fs.StringVar(&dbPath, "db", "", "Name of the database.")
 	fs.StringVar(&adminPassword, "admin-password", "", "Admin password to login to web dashboard")
+	fs.StringVar(&dir, "dir", defDir, "Working directory (default: ${HOME}). The result database and logs will be stored on this folder.")
 
 	// agent
 	fs.IntVar(&clusterPort, "clusterPort", DEFAULT_CLUSTER_PORT, "Cluster port to solicit and connect.")
@@ -109,8 +119,8 @@ func ConfigureOptions(fs *flag.FlagSet, args []string, printVersion, printHelp f
 		}
 		opts.Port = port
 		opts.ClusterPort = clusterPort
-		opts.DbPath = dbPath
 		opts.AdminPassword = adminPassword
+		opts.Dir = dir
 		return opts, nil
 	}
 

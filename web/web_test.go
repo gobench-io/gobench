@@ -19,9 +19,9 @@ import (
 func newAPITest(t *testing.T, adminPassword string) (*chi.Mux, *httptest.ResponseRecorder) {
 	logger := logger.NewNopLogger()
 	m, _ := master.NewMaster(&master.Options{
-		Addr:   "0.0.0.0",
-		Port:   8080,
-		DbPath: "./gobench.sqlite3",
+		Addr:    "0.0.0.0",
+		Port:    8080,
+		HomeDir: "/tmp",
 	}, logger)
 
 	m.SetIsScheduled(false)

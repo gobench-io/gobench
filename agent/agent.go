@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"os"
 	"os/exec"
@@ -30,9 +30,10 @@ type Agent struct {
 	route       string
 	clusterPort int
 
-	ml     pb.AgentServer
-	logger logger.Logger
-	socket string
+	ml             pb.AgentServer
+	logger         logger.Logger
+	executorLogger io.WriteCloser // when running the executor, save log here
+	socket         string         // unix socket that the agent rpc server will listen at
 }
 
 func NewLocalAgent(ml pb.AgentServer, logger logger.Logger) (*Agent, error) {
@@ -54,12 +55,23 @@ func NewAgent(opts *Options, ml pb.AgentServer, logger logger.Logger) (*Agent, e
 	return a, nil
 }
 
+// SetMetricLogger sets metric logger property
 func (a *Agent) SetMetricLogger(ml pb.AgentServer) {
 	a.mu.Lock()
 	a.ml = ml
 	a.mu.Unlock()
 }
 
+// SetExecutorLogger sets executor log writer property
+func (a *Agent) SetExecutorLogger(w io.WriteCloser) *Agent {
+	a.mu.Lock()
+	a.executorLogger = w
+	a.mu.Unlock()
+
+	return a
+}
+
+// SetLogger set the logger property
 func (a *Agent) SetLogger(l logger.Logger) {
 	a.mu.Lock()
 	a.logger = l
@@ -99,9 +111,11 @@ func (a *Agent) RunJob(ctx context.Context, executorPath string, appID int) (err
 		err = fmt.Errorf("cmd pipe stderr: %v", err)
 		return
 	}
+
 	go func() {
-		slurp, _ := ioutil.ReadAll(stderr)
-		fmt.Printf("%s\n", string(slurp))
+		if _, err := io.Copy(a.executorLogger, stderr); err != nil {
+			a.logger.Errorw("failed write executor log", "err", err)
+		}
 	}()
 
 	// get the stdout log
@@ -111,8 +125,9 @@ func (a *Agent) RunJob(ctx context.Context, executorPath string, appID int) (err
 		return
 	}
 	go func() {
-		slurp, _ := ioutil.ReadAll(stdout)
-		fmt.Printf("%s\n", string(slurp))
+		if _, err := io.Copy(a.executorLogger, stdout); err != nil {
+			a.logger.Errorw("failed write executor log", "err", err)
+		}
 	}()
 
 	// start the cmd, does not wait for it to complete

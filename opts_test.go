@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"os/user"
 	"strings"
 	"testing"
 	"time"
@@ -83,13 +84,15 @@ func TestOptions(t *testing.T) {
 		assert.Equal(t, Master, opts.Mode)
 		assert.Equal(t, DEFAULT_PORT, opts.Port)
 		assert.Equal(t, DEFAULT_CLUSTER_PORT, opts.ClusterPort)
-		assert.Contains(t, opts.DbPath, DEFAULT_DB_NAME)
+
+		u, _ := user.Current()
+		assert.Equal(t, u.HomeDir+"/.gobench", opts.Dir)
 
 		opts = mustNotFail([]string{"me", "-p", "3000"})
 		assert.Equal(t, opts.Port, 3000)
 
-		opts = mustNotFail([]string{"me", "-db", "./foo.sqlite3"})
-		assert.Equal(t, opts.DbPath, "./foo.sqlite3")
+		opts = mustNotFail([]string{"me", "--dir", "/foo"})
+		assert.Equal(t, opts.Dir, "/foo")
 
 		opts = mustNotFail([]string{"me", "--admin-password", "apassword"})
 		assert.Equal(t, opts.AdminPassword, "apassword")
