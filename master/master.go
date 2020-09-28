@@ -50,6 +50,9 @@ type Master struct {
 type job struct {
 	app    *ent.Application
 	plugin string // plugin path
+	flog   string // log folder
+	slog   string // system log filepath
+	ulog   string // user log filepath
 	logger logger.Logger
 	cancel context.CancelFunc
 }
@@ -293,9 +296,13 @@ func (m *Master) schedule() {
 			cancel: cancel,
 		}
 
-		// once get a job, setup logger for this job
-		if _, err := job.setLogger(m.homeDir); err != nil {
+		if _, _, _, err = job.logpaths(m.homeDir); err != nil {
+			continue
+		}
+
+		if _, err = job.setSystemLogger(); err != nil {
 			m.logger.Errorw("failed set job logger", "err", err)
+			continue
 		}
 
 		if err = m.run(ctx, job); err != nil {
@@ -503,33 +510,34 @@ func (m *Master) runJob(ctx context.Context) (err error) {
 	return m.la.RunJob(ctx, m.job.plugin, m.job.app.ID)
 }
 
-// logFile return the log file for a certain log
-func (j *job) logFile(home string) (string, string, error) {
+// logpaths returns folder, system log filepath, and user log filepath
+// system log path = ${home}/applications/$appID/system.log
+// user log path = ${home}/applications/$appID/user.log
+func (j *job) logpaths(home string) (string, string, string, error) {
 	folder := filepath.Join(home, "applications", strconv.Itoa(j.app.ID))
-	f := filepath.Join(folder, "system.log")
-	return f, folder, nil
+	sf := filepath.Join(folder, "system.log")
+	uf := filepath.Join(folder, "user.log")
+
+	if err := os.MkdirAll(folder, os.ModePerm); err != nil {
+		return "", "", "", err
+	}
+	j.flog = folder
+	j.slog = sf
+	j.ulog = uf
+
+	return folder, sf, uf, nil
 }
 
-// setLogger setup logger for the job. The log is a file under
-// ${home}/applications/$appID/log
-func (j *job) setLogger(home string) (logger.Logger, error) {
-	// create new log from the application id
-	lfile, lfolder, err := j.logFile(home)
+// setSystemLogger setup system logger for a job, logger output is stdout and
+// slog file
+func (j *job) setSystemLogger() (logger.Logger, error) {
+	l, err := logger.NewApplicationLogger(j.slog)
 	if err != nil {
 		return nil, err
 	}
-	if err = os.MkdirAll(lfolder, os.ModePerm); err != nil {
-		return nil, err
-	}
-	l, err := logger.NewApplicationLogger(lfile)
-
-	if err != nil {
-		return l, err
-	}
-
 	j.logger = l
 
-	return l, nil
+	return j.logger, nil
 }
 
 func (j *job) setStatus(ctx context.Context, state jobState) (err error) {

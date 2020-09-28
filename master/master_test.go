@@ -227,7 +227,9 @@ func f1(ctx context.Context, vui int) {
 		app:    app,
 		cancel: cancel,
 	}
-	_, err := j.setLogger("/tmp")
+	_, _, _, err := j.logpaths("/tmp")
+	assert.Nil(t, err)
+	_, err = j.setSystemLogger()
 	assert.Nil(t, err)
 
 	go func() {
@@ -286,14 +288,16 @@ func f(ctx context.Context, vui int) {
 	j := &job{
 		app: app,
 	}
-	_, err := j.setLogger("/tmp")
+	_, _, _, err := j.logpaths("/tmp")
+	assert.Nil(t, err)
+	_, err = j.setSystemLogger()
 	assert.Nil(t, err)
 
 	err = m.run(ctx, j)
 	assert.Nil(t, err)
 }
 
-func TestLogFile(t *testing.T) {
+func TestLogpaths(t *testing.T) {
 	ctx := context.Background()
 	m := seedMaster(t)
 	app, _ := m.NewApplication(ctx, "name", "scenario", "", "")
@@ -301,9 +305,10 @@ func TestLogFile(t *testing.T) {
 		app: app,
 	}
 
-	f, folder, err := j.logFile("/tmp")
+	folder, sf, uf, err := j.logpaths("/tmp")
 
 	assert.Nil(t, err)
 	assert.Contains(t, folder, fmt.Sprintf("/tmp/applications/%d", app.ID))
-	assert.Contains(t, f, fmt.Sprintf("/tmp/applications/%d/system.log", app.ID))
+	assert.Contains(t, sf, fmt.Sprintf("/tmp/applications/%d/system.log", app.ID))
+	assert.Contains(t, uf, fmt.Sprintf("/tmp/applications/%d/user.log", app.ID))
 }
