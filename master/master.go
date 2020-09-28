@@ -3,6 +3,7 @@ package master
 import (
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -53,8 +54,10 @@ type job struct {
 	flog   string // log folder
 	slog   string // system log filepath
 	ulog   string // user log filepath
-	logger logger.Logger
-	cancel context.CancelFunc
+
+	ulogWriter io.Writer
+	logger     logger.Logger
+	cancel     context.CancelFunc
 }
 
 type Options struct {
@@ -296,11 +299,7 @@ func (m *Master) schedule() {
 			cancel: cancel,
 		}
 
-		if _, _, _, err = job.logpaths(m.homeDir); err != nil {
-			continue
-		}
-
-		if _, err = job.setSystemLogger(); err != nil {
+		if _, err = job.setLogs(m.homeDir); err != nil {
 			m.logger.Errorw("failed set job logger", "err", err)
 			continue
 		}
@@ -504,9 +503,9 @@ func (m *Master) jobCompile(ctx context.Context) error {
 
 // runJob runs the already compiled plugin, uses agent workhouse
 func (m *Master) runJob(ctx context.Context) (err error) {
+	m.la.SetLogger(m.job.logger)
 	defer m.la.SetLogger(m.logger)
 
-	m.la.SetLogger(m.job.logger)
 	return m.la.RunJob(ctx, m.job.plugin, m.job.app.ID)
 }
 
@@ -521,23 +520,28 @@ func (j *job) logpaths(home string) (string, string, string, error) {
 	if err := os.MkdirAll(folder, os.ModePerm); err != nil {
 		return "", "", "", err
 	}
-	j.flog = folder
-	j.slog = sf
-	j.ulog = uf
 
 	return folder, sf, uf, nil
 }
 
-// setSystemLogger setup system logger for a job, logger output is stdout and
-// slog file
-func (j *job) setSystemLogger() (logger.Logger, error) {
-	l, err := logger.NewApplicationLogger(j.slog)
+func (j *job) setLogs(home string) (*job, error) {
+	var err error
+	j.flog, j.slog, j.ulog, err = j.logpaths(home)
 	if err != nil {
-		return nil, err
+		return j, err
 	}
-	j.logger = l
 
-	return j.logger, nil
+	j.logger, err = logger.NewApplicationLogger(j.slog)
+	if err != nil {
+		return j, err
+	}
+
+	j.ulogWriter, err = os.Create(j.ulog)
+	if err != nil {
+		return j, err
+	}
+
+	return j, nil
 }
 
 func (j *job) setStatus(ctx context.Context, state jobState) (err error) {

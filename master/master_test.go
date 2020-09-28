@@ -227,9 +227,7 @@ func f1(ctx context.Context, vui int) {
 		app:    app,
 		cancel: cancel,
 	}
-	_, _, _, err := j.logpaths("/tmp")
-	assert.Nil(t, err)
-	_, err = j.setSystemLogger()
+	_, err := j.setLogs("/tmp")
 	assert.Nil(t, err)
 
 	go func() {
@@ -288,9 +286,8 @@ func f(ctx context.Context, vui int) {
 	j := &job{
 		app: app,
 	}
-	_, _, _, err := j.logpaths("/tmp")
-	assert.Nil(t, err)
-	_, err = j.setSystemLogger()
+
+	_, err := j.setLogs("/tmp")
 	assert.Nil(t, err)
 
 	err = m.run(ctx, j)
