@@ -114,7 +114,7 @@ func (a *Agent) RunJob(ctx context.Context, executorPath string, appID int) (err
 
 	go func() {
 		if _, err := io.Copy(a.executorLogger, stderr); err != nil {
-			fmt.Println(err)
+			a.logger.Errorw("failed write executor log", "err", err)
 		}
 	}()
 
@@ -126,7 +126,7 @@ func (a *Agent) RunJob(ctx context.Context, executorPath string, appID int) (err
 	}
 	go func() {
 		if _, err := io.Copy(a.executorLogger, stdout); err != nil {
-			fmt.Println(err)
+			a.logger.Errorw("failed write executor log", "err", err)
 		}
 	}()
 
