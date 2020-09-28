@@ -32,8 +32,8 @@ type Agent struct {
 
 	ml             pb.AgentServer
 	logger         logger.Logger
-	executorLogger io.Writer // when running the executor, save log here
-	socket         string    // unix socket that the agent rpc server will listen at
+	executorLogger io.WriteCloser // when running the executor, save log here
+	socket         string         // unix socket that the agent rpc server will listen at
 }
 
 func NewLocalAgent(ml pb.AgentServer, logger logger.Logger) (*Agent, error) {
@@ -63,7 +63,7 @@ func (a *Agent) SetMetricLogger(ml pb.AgentServer) {
 }
 
 // SetExecutorLogger sets executor log writer property
-func (a *Agent) SetExecutorLogger(w io.Writer) *Agent {
+func (a *Agent) SetExecutorLogger(w io.WriteCloser) *Agent {
 	a.mu.Lock()
 	a.executorLogger = w
 	a.mu.Unlock()
@@ -112,11 +112,8 @@ func (a *Agent) RunJob(ctx context.Context, executorPath string, appID int) (err
 		return
 	}
 
-	file, err := os.Create("/tmp/gobenchlog")
-	defer file.Close()
-
 	go func() {
-		if _, err := io.Copy(file, stderr); err != nil {
+		if _, err := io.Copy(a.executorLogger, stderr); err != nil {
 			fmt.Println(err)
 		}
 	}()
@@ -128,7 +125,7 @@ func (a *Agent) RunJob(ctx context.Context, executorPath string, appID int) (err
 		return
 	}
 	go func() {
-		if _, err := io.Copy(file, stdout); err != nil {
+		if _, err := io.Copy(a.executorLogger, stdout); err != nil {
 			fmt.Println(err)
 		}
 	}()

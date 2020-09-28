@@ -186,7 +186,7 @@ func f1(ctx context.Context, vui int) {
 	m.job = &job{
 		app: app,
 	}
-	m.job.logger = logger.NewNopLogger()
+	m.job.setLogs("/tmp/")
 
 	assert.Nil(t, m.jobCompile(ctx))
 

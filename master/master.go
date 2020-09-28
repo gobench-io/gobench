@@ -55,7 +55,7 @@ type job struct {
 	slog   string // system log filepath
 	ulog   string // user log filepath
 
-	ulogWriter io.Writer
+	ulogWriter io.WriteCloser
 	logger     logger.Logger
 	cancel     context.CancelFunc
 }
@@ -303,6 +303,7 @@ func (m *Master) schedule() {
 			m.logger.Errorw("failed set job logger", "err", err)
 			continue
 		}
+		defer job.ulogWriter.Close()
 
 		if err = m.run(ctx, job); err != nil {
 			m.logger.Errorw("failed run the job", "err", err)
@@ -505,6 +506,9 @@ func (m *Master) jobCompile(ctx context.Context) error {
 func (m *Master) runJob(ctx context.Context) (err error) {
 	m.la.SetLogger(m.job.logger)
 	defer m.la.SetLogger(m.logger)
+
+	m.la.SetExecutorLogger(m.job.ulogWriter)
+	defer m.la.SetExecutorLogger(nil)
 
 	return m.la.RunJob(ctx, m.job.plugin, m.job.app.ID)
 }
