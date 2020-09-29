@@ -134,6 +134,8 @@ func newHandler(s *master.Master, adminPassword string, logger logger.Logger) *h
 				r.Get("/groups", h.getApplicationGroups)
 				r.Put("/cancel", h.cancelApplication)
 				r.Patch("/tags", h.setApplicationTags)
+				r.Get("/logs/system", h.getApplicationSystemLog)
+				r.Get("/logs/user", h.getApplicationUserLog)
 			})
 		})
 	})

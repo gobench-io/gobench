@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os/exec"
 	"testing"
 
 	"github.com/go-chi/chi"
@@ -305,5 +306,37 @@ func TestSetApplicationTag(t *testing.T) {
 
 	r.ServeHTTP(w, req)
 
+	assert.Equal(t, 200, w.Code)
+}
+
+func TestGetApplicationLogs(t *testing.T) {
+	app := newApp(t)
+
+	// create 2 logs
+	fd := fmt.Sprintf("/tmp/applications/%d", app.ID)
+	ul := fmt.Sprintf("/tmp/applications/%d/user.log", app.ID)
+	sl := fmt.Sprintf("/tmp/applications/%d/system.log", app.ID)
+	err := exec.Command("mkdir", fd).Run()
+	assert.Nil(t, err)
+	err = exec.Command("sh", "-c", "echo user >"+ul).Run()
+	assert.Nil(t, err)
+	err = exec.Command("sh", "-c", "echo system >"+sl).Run()
+	assert.Nil(t, err)
+
+	r, w := newAPITest(t, "")
+	req, _ := http.NewRequest(
+		"GET",
+		fmt.Sprintf("/api/applications/%d/logs/system", app.ID),
+		nil,
+	)
+	r.ServeHTTP(w, req)
+	assert.Equal(t, 200, w.Code)
+
+	req, _ = http.NewRequest(
+		"GET",
+		fmt.Sprintf("/api/applications/%d/logs/user", app.ID),
+		nil,
+	)
+	r.ServeHTTP(w, req)
 	assert.Equal(t, 200, w.Code)
 }

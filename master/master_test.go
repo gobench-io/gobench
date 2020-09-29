@@ -186,7 +186,8 @@ func f1(ctx context.Context, vui int) {
 	m.job = &job{
 		app: app,
 	}
-	m.job.setLogs("/tmp/")
+	_, err = m.job.setLogs(m.Logpaths(app.ID))
+	assert.Nil(t, err)
 
 	assert.Nil(t, m.jobCompile(ctx))
 
@@ -223,11 +224,12 @@ func f1(ctx context.Context, vui int) {
 }`
 
 	app, _ := m.NewApplication(ctx, "cancel test", scenario, gomod, "")
-	j := &job{
+	m.job = &job{
 		app:    app,
 		cancel: cancel,
 	}
-	_, err := j.setLogs("/tmp")
+
+	_, err := m.job.setLogs(m.Logpaths(app.ID))
 	assert.Nil(t, err)
 
 	go func() {
@@ -245,7 +247,7 @@ func f1(ctx context.Context, vui int) {
 		assert.Nil(t, m.cancel(ctx, app.ID))
 	}()
 
-	err = m.run(ctx, j)
+	err = m.run(ctx)
 	assert.EqualError(t, err, ErrAppIsCanceled.Error())
 }
 
@@ -283,29 +285,23 @@ func f(ctx context.Context, vui int) {
 `
 
 	app, _ := m.NewApplication(ctx, "http metric log setup test", scenario, gomod, "")
-	j := &job{
+	m.job = &job{
 		app: app,
 	}
 
-	_, err := j.setLogs("/tmp")
+	_, err := m.job.setLogs(m.Logpaths(app.ID))
 	assert.Nil(t, err)
 
-	err = m.run(ctx, j)
+	err = m.run(ctx)
 	assert.Nil(t, err)
 }
 
 func TestLogpaths(t *testing.T) {
-	ctx := context.Background()
 	m := seedMaster(t)
-	app, _ := m.NewApplication(ctx, "name", "scenario", "", "")
-	j := &job{
-		app: app,
-	}
 
-	folder, sf, uf, err := j.logpaths("/tmp")
+	folder, sf, uf := m.Logpaths(12)
 
-	assert.Nil(t, err)
-	assert.Contains(t, folder, fmt.Sprintf("/tmp/applications/%d", app.ID))
-	assert.Contains(t, sf, fmt.Sprintf("/tmp/applications/%d/system.log", app.ID))
-	assert.Contains(t, uf, fmt.Sprintf("/tmp/applications/%d/user.log", app.ID))
+	assert.Contains(t, folder, "/tmp/applications/12")
+	assert.Contains(t, sf, "/tmp/applications/12/system.log")
+	assert.Contains(t, uf, "/tmp/applications/12/user.log")
 }
