@@ -1,17 +1,10 @@
 import { all, takeEvery, put, call, select } from 'redux-saga/effects'
 import { notification } from 'antd'
 import { history } from 'index'
-import * as firebase from 'services/firebase'
 import * as jwt from 'services/jwt'
 import actions from './actions'
 
 const mapAuthProviders = {
-  firebase: {
-    login: firebase.login,
-    register: firebase.register,
-    currentAccount: firebase.currentAccount,
-    logout: firebase.logout
-  },
   jwt: {
     login: jwt.login,
     register: jwt.register,
