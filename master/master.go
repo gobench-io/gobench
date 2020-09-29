@@ -314,7 +314,9 @@ func (m *Master) schedule() {
 }
 
 func (m *Master) run(ctx context.Context) (err error) {
+	m.mu.Lock()
 	j := m.job
+	m.mu.Unlock()
 
 	m.logger.Infow("handle new application", "application id", j.app.ID)
 
