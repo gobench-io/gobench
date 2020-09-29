@@ -2,12 +2,13 @@ import React, { useState } from 'react'
 import { FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { UserOutlined } from '@ant-design/icons'
-import { Menu, Dropdown, Avatar, Badge } from 'antd'
+import { Menu, Dropdown, Avatar } from 'antd'
+import { Link } from 'react-router-dom'
 import styles from './style.module.scss'
 
 const mapStateToProps = ({ user }) => ({ user })
 
-const ProfileMenu = ({ dispatch, user }) => {
+const ProfileMenu = ({ dispatch }) => {
   const [count, setCount] = useState(7)
 
   const logout = e => {
@@ -63,10 +64,10 @@ const ProfileMenu = ({ dispatch, user }) => {
       </Menu.Item>
       <Menu.Divider /> */}
       <Menu.Item>
-        <a href='#' onClick={logout}>
+        <Link to={null} onClick={logout}>
           <i className='fe fe-log-out mr-2' />
           <FormattedMessage id='topBar.profileMenu.logout' />
-        </a>
+        </Link>
       </Menu.Item>
     </Menu>
   )

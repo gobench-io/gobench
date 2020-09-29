@@ -31,14 +31,14 @@ const DefaultPage = ({ detail, graph, graphMetrics, metricDatas, unit, timeRange
     if (metrics.length > 0) {
       if (metricData.metrics.length > 0) {
       // no need get data again
-        return
+        return () => {}
       }
       dispatch({
         type: 'application/GRAPH_METRIC_DATA',
         payload: { id: graphId, metrics, timeRange, timestamp, isRealtime }
       })
     }
-  }, [graphId])
+  }, [graphId, timestamp, metricData.metrics.length, dispatch])
   useInterval(() => {
     dispatch({
       type: 'application/METRIC_DATA_POLLING',
