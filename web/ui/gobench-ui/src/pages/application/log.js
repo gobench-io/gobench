@@ -40,7 +40,6 @@ const DefaultPage = ({ detail, logs, dispatch }) => {
     <>
       <div className='application-log'>
         <Helmet title='Application| log' />
-        <h5>Log</h5>
         <TextArea readOnly value={logs} rows={50} />
       </div>
     </>

@@ -22,10 +22,16 @@ const DefaultPage = ({ detail, dispatch }) => {
   const [tab, setTab] = useState('1')
   const history = useHistory()
   const { id } = useParams()
-  const { name, created_at: created, status, started_at: startedAt, ended_at: finishedAt } = detail
+  const { name, created_at: created, status, started_at: startedAt, updated_at: finishedAt } = detail
   const start = moment(startedAt).utc() // some random moment in time (in ms)
-  const end = moment(finishedAt).utc() // some random moment after start (in ms)
-  const diff = startedAt ? finishedAt ? end.diff(start) : moment.utc().diff(start) : 0
+  let end = moment(finishedAt).utc() // some random moment after start (in ms)
+  if (status === 'running') {
+    end = moment.utc()
+  }
+  if (['pending', 'error', 'provisioning'].includes(status)) {
+    end = start
+  }
+  const diff = startedAt ? end.diff(start) : 0
   // execution
   const duration = moment.utc(diff).format('HH:mm:ss.SSS')
   useEffect(() => {
