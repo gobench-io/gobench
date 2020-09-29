@@ -12,7 +12,7 @@ const STORED_SETTINGS = storedSettings => {
 
 const initialState = {
   ...STORED_SETTINGS({
-    authProvider: 'jwt', // firebase, jwt
+    authProvider: 'jwt', //  jwt
     logo: 'Gobench',
     locale: 'en-US',
     isSidebarOpen: false,
