@@ -19,6 +19,7 @@ const mapStateToProps = ({ application, dispatch }) => {
 }
 const DefaultPage = ({ detail, dispatch }) => {
   const [fetching, setFetching] = useState(false)
+  const [tab, setTab] = useState('1')
   const history = useHistory()
   const { id } = useParams()
   const { name, created_at: created, status, started_at: startedAt, ended_at: finishedAt } = detail
@@ -66,6 +67,9 @@ const DefaultPage = ({ detail, dispatch }) => {
       type: 'application/DELETE',
       payload: { id }
     })
+  }
+  const onChange = (value) => {
+    setTab(value)
   }
   return (
     <>
@@ -143,15 +147,15 @@ const DefaultPage = ({ detail, dispatch }) => {
                 </div>
               </div>
             </div>
-            <Tabs defaultActiveKey='1' size='large'>
+            <Tabs defaultActiveKey='1' size='large' onChange={onChange}>
               <TabPane tab='Dashboard' key='1'>
-                <Dashboard />
+                {tab === '1' && <Dashboard />}
               </TabPane>
               <TabPane tab='Scenario' key='2'>
-                <Scenario />
+                {tab === '2' && <Scenario />}
               </TabPane>
               <TabPane tab='Log' key='3'>
-                <Log />
+                {tab === '3' && <Log />}
               </TabPane>
             </Tabs>
           </div>
