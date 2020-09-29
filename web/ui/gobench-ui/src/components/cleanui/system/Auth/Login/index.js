@@ -1,21 +1,20 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { Input, Button, Radio, Form, Tooltip } from 'antd'
-import { Link } from 'react-router-dom'
+import { Input, Button, Form } from 'antd'
 import style from '../style.module.scss'
 
 const mapStateToProps = ({ user, settings, dispatch }) => ({
   dispatch,
   user,
   authProvider: settings.authProvider,
-  logo: settings.logo,
+  logo: settings.logo
 })
 
-const Login = ({ dispatch, user, authProvider, logo }) => {
+const Login = ({ dispatch, user, logo }) => {
   const onFinish = values => {
     dispatch({
       type: 'user/LOGIN',
-      payload: {...values,username:'admin'},
+      payload: { ...values, username: 'admin' }
     })
   }
 
@@ -23,51 +22,41 @@ const Login = ({ dispatch, user, authProvider, logo }) => {
     console.log('Failed:', errorInfo)
   }
 
-
   return (
     <div>
-      <div className="text-center mb-5">
-        <h1 className="mb-5 px-3">
+      <div className='text-center mb-5'>
+        <h1 className='mb-5 px-3'>
           <strong>{logo}</strong>
         </h1>
-        <p>
-          A distributed benchmark tool with Golang
-          <br />
-          Supporting more than HTTP like MQTT, Websocket, graphQL. 
-          <br />
-          It can scale to support up to 1 million connection concurrently. 
-          <br />
-          It could support scriptable tool.
-        </p>
       </div>
       <div className={`card ${style.container}`}>
-        <div className="text-dark font-size-24 mb-3">
+        <div className='text-dark font-size-24 mb-3'>
           <strong>Enter your passphrase</strong>
         </div>
         <Form
-          layout="vertical"
+          layout='vertical'
           hideRequiredMark
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
-          className="mb-4"
+          className='mb-4'
         >
           <Form.Item
-            name="username"
+            name='username'
             rules={[{ required: false }]}
           >
             <Input type='hidden' value='admin' />
           </Form.Item>
           <Form.Item
-            name="password"
+            name='password'
             rules={[{ required: true, message: 'Please input password' }]}
           >
-            <Input size="large" type="password" placeholder="Password" />
+            <Input size='large' type='password' placeholder='Password' />
           </Form.Item>
           <Button
-            type="primary"
-            size="large"
-            className="text-center w-100"
-            htmlType="submit"
+            type='primary'
+            size='large'
+            className='text-center w-100'
+            htmlType='submit'
             loading={user.loading}
           >
             <strong>Sign in</strong>
