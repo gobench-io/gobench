@@ -4,7 +4,9 @@ import actions from './actions'
 import { history } from 'index'
 import {
   list, detail, create, update, destroy, cancel,
-  getGroups, getGraphs, getGraphMetrics, getCounters, getHistograms, getGauges, getMetrics, getMetricData, getMetricDataRealtime, getMetricDataPolling
+  getGroups, getGraphs, getGraphMetrics, getCounters,
+  getHistograms, getGauges, getMetrics, getMetricData,
+  getMetricDataRealtime, getMetricDataPolling, logs
 } from 'services/application'
 
 export function * LIST ({ payload }) {
@@ -288,6 +290,20 @@ export function * METRIC_DATA_POLLING ({ payload }) {
   }
   yield loading(false)
 }
+export function * LOG ({ payload }) {
+  const { id } = payload
+  yield loading(true)
+  const response = yield call(logs, id, 'user')
+  if (response) {
+    yield put({
+      type: 'application/SET_STATE',
+      payload: {
+        logs: response
+      }
+    })
+  }
+  yield loading(false)
+}
 function * loading (isLoading = false) {
   yield put({
     type: 'application/SET_STATE',
@@ -303,6 +319,7 @@ export default function * rootSaga () {
     takeEvery(actions.CREATE, CREATE),
     takeEvery(actions.UPDATE, UPDATE),
     takeEvery(actions.DELETE, DELETE),
+    takeEvery(actions.LOG, LOG),
 
     takeEvery(actions.CLONE, CLONE),
     takeEvery(actions.CANCEL, CANCEL),

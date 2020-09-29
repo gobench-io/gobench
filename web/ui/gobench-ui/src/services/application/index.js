@@ -10,6 +10,7 @@ const API = {
   create: '/applications',
   update: '/applications/{0}',
   delete: '/applications/{0}',
+  log: '/applications/{0}/logs/{1}',
   // other apis
   cancel: '/applications/{0}/cancel',
   groups: '/applications/{0}/groups',
@@ -173,4 +174,11 @@ export const getMetricDataPolling = async (metrics, oldData = []) => {
       }
     }
   })
+}
+
+export const logs = async (id, type) => {
+  const response = await apiClient.get(API.log.format(id, type))
+  if (response) {
+    return response.data
+  }
 }

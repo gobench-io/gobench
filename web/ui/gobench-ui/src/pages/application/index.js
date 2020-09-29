@@ -71,7 +71,7 @@ const DefaultPage = ({ application, dispatch }) => {
       key: 'started_at',
       sorter: (a, b) => a.name.length - b.name.length,
       render: x => {
-        return new moment(x).utc().format()
+        return moment(x).utc().format()
       }
     },
     {
@@ -80,7 +80,7 @@ const DefaultPage = ({ application, dispatch }) => {
       key: 'duration',
       sorter: (a, b) => a.name.length - b.name.length,
       render: (x, item) => {
-        const { started_at: startedAt, ended_at: finishedAt, updated_at: updated } = item
+        const { started_at: startedAt, updated_at: updated } = item
         const start = moment(startedAt).utc() // some random moment in time (in ms)
         if (['provisioning', 'pending', 'error'].includes(item.status)) {
           return <span />
