@@ -305,16 +305,18 @@ func (m *Master) schedule() {
 		}
 		defer job.ulogWriter.Close()
 
-		if err = m.run(ctx, job); err != nil {
+		m.job = job
+
+		if err = m.run(ctx); err != nil {
 			m.logger.Errorw("failed run the job", "err", err)
 		}
 	}
 }
 
-func (m *Master) run(ctx context.Context, j *job) (err error) {
-	m.logger.Infow("handle new application", "application id", j.app.ID)
+func (m *Master) run(ctx context.Context) (err error) {
+	j := m.job
 
-	m.job = j
+	m.logger.Infow("handle new application", "application id", j.app.ID)
 
 	defer func() {
 		je := jobFinished

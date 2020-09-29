@@ -224,7 +224,7 @@ func f1(ctx context.Context, vui int) {
 }`
 
 	app, _ := m.NewApplication(ctx, "cancel test", scenario, gomod, "")
-	j := &job{
+	m.job = &job{
 		app:    app,
 		cancel: cancel,
 	}
@@ -247,7 +247,7 @@ func f1(ctx context.Context, vui int) {
 		assert.Nil(t, m.cancel(ctx, app.ID))
 	}()
 
-	err = m.run(ctx, j)
+	err = m.run(ctx)
 	assert.EqualError(t, err, ErrAppIsCanceled.Error())
 }
 
@@ -285,14 +285,14 @@ func f(ctx context.Context, vui int) {
 `
 
 	app, _ := m.NewApplication(ctx, "http metric log setup test", scenario, gomod, "")
-	j := &job{
+	m.job = &job{
 		app: app,
 	}
 
 	_, err := m.job.setLogs(m.Logpaths(app.ID))
 	assert.Nil(t, err)
 
-	err = m.run(ctx, j)
+	err = m.run(ctx)
 	assert.Nil(t, err)
 }
 
