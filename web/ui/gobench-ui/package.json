@@ -1,12 +1,12 @@
 {
   "name": "gobench-ui",
   "author": "verik",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "scripts": {
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",
-    "build-demo": "REACT_APP_AUTHENTICATED=true react-app-rewired build",
+    "build-noauth": "REACT_APP_AUTHENTICATED=true react-app-rewired build",
     "test": "react-app-rewired test",
     "lint": "standard ",
     "lint-fix": "standard --fix"
@@ -34,7 +34,6 @@
     "d3-time-format": "^2.2.3",
     "draft-js": "^0.11.5",
     "faker": "^5.1.0",
-    "firebase": "^7.14.2",
     "history": "^4.10.1",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.15",
