@@ -159,7 +159,6 @@ const DefaultPage = ({ application, dispatch }) => {
     }
   }, [list, total])
   const onTableChange = (pagination, filters, sorter, extra) => {
-    console.log(filters, sorter, extra)
     setPagination(pagination)
     dispatch({
       type: 'application/LIST',
@@ -197,7 +196,6 @@ const DefaultPage = ({ application, dispatch }) => {
       payload: { id }
     })
   }
-  console.log(loading)
   return (
     <>
       <div className='application' onKeyUp={onSearch}>

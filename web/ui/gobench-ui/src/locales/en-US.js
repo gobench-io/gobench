@@ -13,7 +13,8 @@ const messages = {
   'topBar.profileMenu.email': 'Email',
   'topBar.profileMenu.phone': 'Phone',
   'topBar.profileMenu.editProfile': 'Edit Profile',
-  'topBar.profileMenu.logout': 'Logout'
+  'topBar.profileMenu.logout': 'Logout',
+  administrator: 'Administrator'
 }
 
 export default {
