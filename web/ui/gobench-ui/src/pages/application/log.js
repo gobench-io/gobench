@@ -32,7 +32,6 @@ const DefaultPage = ({ detail, logs, dispatch }) => {
     }, INTERVAL / 2)
     // destroy interval on unmount
     return () => {
-      console.log('unmout log')
       clearInterval(interval)
     }
   })

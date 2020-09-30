@@ -31,7 +31,7 @@ const Login = ({ dispatch, user, logo }) => {
       </div>
       <div className={`card ${style.container}`}>
         <div className='text-dark font-size-24 mb-3'>
-          <strong>Enter your passphrase</strong>
+          <strong>Enter your password</strong>
         </div>
         <Form
           layout='vertical'

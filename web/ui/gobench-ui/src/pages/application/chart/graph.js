@@ -22,13 +22,12 @@ const DefaultPage = ({ detail, graph, graphMetrics, timestamp, dispatch }) => {
   const isRealtime = !['finished', 'cancel'].includes(appStatus)
   useEffect(() => {
     if (graph) {
-      if (graphMetrics.some(x => x.graphId === graph.id)) {
-        return
+      if (graphMetrics.every(x => x.graphId !== graph.id)) {
+        dispatch({
+          type: 'application/GRAPH_METRICS',
+          payload: { id: graph.id }
+        })
       }
-      dispatch({
-        type: 'application/GRAPH_METRICS',
-        payload: { id: graph.id }
-      })
     }
   }, [graph.id])
   return (

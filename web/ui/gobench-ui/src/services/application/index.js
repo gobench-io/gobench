@@ -1,7 +1,6 @@
 import apiClient from 'services/axios'
 import { init, listApi, detailApi, createApi, updateApi, destroyApi } from '../index'
 import { METRIC_TYPE } from 'constant'
-import { mapLimit } from 'async'
 import { get, maxBy, orderBy } from 'lodash'
 import { getChartData, getDataByType } from 'utils/chart'
 const API = {
@@ -114,17 +113,18 @@ export const getMetricData = async (id = 0, type = METRIC_TYPE.COUNTER, fromTime
  * @returns {Promise<unknown[]>}
  */
 
-export const getMetricDataRealtime = async (metrics, timeRange = 3600, timestamp, isRealtime) => {
+export const getOfflineMetricData = async (metrics, timeRange = 3600, timestamp, isRealtime) => {
   const now = new Date().getTime()
   const fromTime = Math.round((now - timestamp) / 1000) < timeRange ? timestamp : (now - (timeRange * 1000))
-  return await mapLimit(metrics, 5, async (m) => {
-    let response
+
+  const metricsData = metrics.map(async m => {
+    let mData
     if (isRealtime) {
-      response = await getMetricData(m.id, m.type, fromTime, now)
+      mData = await getMetricData(m.id, m.type, fromTime, now)
     } else {
-      response = await getMetricData(m.id, m.type)
+      mData = await getMetricData(m.id, m.type)
     }
-    if (response.length === 0) {
+    if (mData.length === 0) {
       return {
         ...m,
         lastTimestamp: timestamp,
@@ -134,16 +134,19 @@ export const getMetricDataRealtime = async (metrics, timeRange = 3600, timestamp
         }
       }
     }
-    const lastTimestamp = get(maxBy(response, m => m.time), 'time')
+    const lastTimestamp = get(maxBy(mData, m => m.time), 'time')
     return {
       ...m,
       lastTimestamp,
       chartData: {
         name: m.title,
-        data: m.type === METRIC_TYPE.HISTOGRAM ? response : getChartData(m.type, response)
+        data: m.type === METRIC_TYPE.HISTOGRAM ? mData : getChartData(m.type, mData)
       }
     }
   })
+  return await Promise.all(metricsData)
+    .then(rs => rs)
+    .catch(err => err)
 }
 /***
  * get metrics data interval
@@ -152,28 +155,32 @@ export const getMetricDataRealtime = async (metrics, timeRange = 3600, timestamp
  * @returns {Promise<unknown[]>}
  */
 export const getMetricDataPolling = async (metrics, oldData = []) => {
-  return await mapLimit(metrics, 5, async (mtr) => {
+  return await Promise.all(metrics.map(mtr => {
     const oldMetricData = oldData.find(o => mtr.id === get(o, ['id'], ''))
     const timestamp = get(oldMetricData, 'lastTimestamp', '')
-    if (!timestamp) {
-      return oldMetricData
+    if (timestamp) {
+      return getMetricData(mtr.id, mtr.type, timestamp)
+        .then(mData => {
+          if (mData.length > 0) {
+            const dataByType = getDataByType(mData, mtr.type)
+            const oldMetricChartData = get(oldMetricData, ['chartData', 'data'], [])
+            const newData = [...oldMetricChartData, ...dataByType]
+            return {
+              ...oldMetricData,
+              lastTimestamp: get(orderBy(mData, ['time'], 'desc'), '[0].time'),
+              chartData: {
+                name: mtr.title,
+                data: newData
+              }
+            }
+          }
+          return oldMetricData
+        })
     }
-    const response = await getMetricData(mtr.id, mtr.type, timestamp)
-    if (!response || response.length === 0) {
-      return oldMetricData
-    }
-    const dataByType = getDataByType(response, mtr.type)
-    const oldMetricChartData = get(oldMetricData, ['chartData', 'data'], [])
-    const newData = [...oldMetricChartData, ...dataByType]
-    return {
-      ...oldMetricData,
-      lastTimestamp: get(orderBy(response, ['time'], 'desc'), '[0].time'),
-      chartData: {
-        name: mtr.title,
-        data: newData
-      }
-    }
-  })
+    return oldMetricData
+  }))
+    .then(rs => rs)
+    .catch(err => err)
 }
 
 export const logs = async (id, type) => {

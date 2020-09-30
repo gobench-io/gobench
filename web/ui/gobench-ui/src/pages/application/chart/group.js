@@ -15,19 +15,18 @@ const mapStateToProps = ({ application, dispatch }) => {
     dispatch
   }
 }
-const DefaultPage = ({ group, graphs, timestamp, expandDefault = false, dispatch }) => {
+const DefaultPage = ({ group, graphs = [], timestamp, expandDefault = false, dispatch }) => {
   const [collapsed, toggleCollapse] = useState(!expandDefault)
   const [_graphs, setGraphs] = useState([])
   const ag = graphs.some(x => x.groupId === group.id)
   useEffect(() => {
     if (group && !collapsed) {
-      if (graphs.some(x => x.groupId === group.id)) {
-        return
+      if (graphs.every(x => x.groupId !== group.id)) {
+        dispatch({
+          type: 'application/GRAPHS',
+          payload: { id: group.id }
+        })
       }
-      dispatch({
-        type: 'application/GRAPHS',
-        payload: { id: group.id }
-      })
     }
   }, [group, collapsed])
   useEffect(() => {
