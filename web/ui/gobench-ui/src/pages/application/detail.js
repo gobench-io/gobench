@@ -70,7 +70,7 @@ const DefaultPage = ({ detail, dispatch }) => {
   const destroy = (id) => {
     dispatch({
       type: 'application/DELETE',
-      payload: { id }
+      payload: { id, redirect: '/' }
     })
   }
   const onChange = (value) => {

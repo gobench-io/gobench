@@ -124,7 +124,7 @@ export function * CANCEL ({ payload }) {
   yield loading(false)
 }
 export function * DELETE ({ payload }) {
-  const { id } = payload
+  const { id, redirect } = payload
   const state = yield select()
   const { list, total } = state.application
   yield loading(true)
@@ -137,6 +137,9 @@ export function * DELETE ({ payload }) {
         total: total - 1
       }
     })
+    if (redirect) {
+      history.push(redirect)
+    }
   }
   yield loading(false)
 }
