@@ -1,7 +1,7 @@
 import React, { useEffect, useState, lazy, Suspense } from 'react'
 import { Helmet } from 'react-helmet'
 import { connect } from 'react-redux'
-import { withRouter } from 'react-router-dom'
+import { withRouter, useParams } from 'react-router-dom'
 import { isArray } from 'lodash'
 
 const Group = lazy(() => import('./chart/group'))
@@ -11,7 +11,7 @@ const mapStateToProps = ({ application, dispatch }) => ({ detail: application.de
 
 const DefaultPage = ({ detail, groups, dispatch }) => {
   const [fetching, setFetching] = useState(false)
-  const { id } = detail
+  const { id } = useParams()
 
   useEffect(() => {
     if (!fetching && id) {

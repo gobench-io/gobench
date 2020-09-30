@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Helmet } from 'react-helmet'
 import { connect } from 'react-redux'
-import { withRouter } from 'react-router-dom'
+import { withRouter, useParams } from 'react-router-dom'
 import 'prismjs/components/prism-clike'
 import 'prismjs/components/prism-go'
 import { INTERVAL } from 'constant'
@@ -13,7 +13,7 @@ const mapStateToProps = ({ application, dispatch }) => ({ detail: application.de
 
 const DefaultPage = ({ detail, logs, dispatch }) => {
   const [fetching, setFetching] = useState(false)
-  const { id } = detail
+  const { id } = useParams()
   useEffect(() => {
     if (!fetching) {
       dispatch({

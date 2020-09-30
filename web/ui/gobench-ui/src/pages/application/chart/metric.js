@@ -38,6 +38,7 @@ const DefaultPage = ({ detail, graph, graphMetrics, metricDatas, unit, timeRange
     }
   }, [graphId])
   useInterval(() => {
+    console.log('polling...')
     dispatch({
       type: 'application/METRIC_DATA_POLLING',
       payload: { id: graph.id, metrics, data: metricData.metrics }
