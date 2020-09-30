@@ -6,7 +6,7 @@ import {
   list, detail, create, update, destroy, cancel,
   getGroups, getGraphs, getGraphMetrics, getCounters,
   getHistograms, getGauges, getMetrics, getMetricData,
-  getMetricDataRealtime, getMetricDataPolling, logs
+  getOfflineMetricData, getMetricDataPolling, logs
 } from 'services/application'
 
 export function * LIST ({ payload }) {
@@ -263,7 +263,7 @@ export function * GRAPH_METRICS ({ payload }) {
 export function * GRAPH_METRIC_DATA ({ payload }) {
   const { id, metrics, timeRange, timestamp, isRealtime } = payload
   yield loading(true)
-  const response = yield call(getMetricDataRealtime, metrics, timeRange, timestamp, isRealtime)
+  const response = yield call(getOfflineMetricData, metrics, timeRange, timestamp, isRealtime)
   if (response) {
     yield put({
       type: 'application/SET_GRAPH_METRIC_DATA',

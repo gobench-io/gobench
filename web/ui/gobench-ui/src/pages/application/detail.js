@@ -44,17 +44,16 @@ const DefaultPage = ({ detail, dispatch }) => {
     }
   }, [detail])
   useEffect(() => {
-    if (!['pending', 'provisioning'].includes(status)) {
-      return
+    if (['pending', 'provisioning'].includes(status)) {
+      const interval = setInterval(() => {
+        dispatch({
+          type: 'application/DETAIL',
+          payload: { id }
+        })
+      }, INTERVAL / 3)
+      // destroy interval on unmount
+      return () => clearInterval(interval)
     }
-    const interval = setInterval(() => {
-      dispatch({
-        type: 'application/DETAIL',
-        payload: { id }
-      })
-    }, INTERVAL / 3)
-    // destroy interval on unmount
-    return () => clearInterval(interval)
   })
   const clone = (data) => {
     dispatch({

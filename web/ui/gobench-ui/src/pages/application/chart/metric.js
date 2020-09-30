@@ -29,16 +29,14 @@ const DefaultPage = ({ detail, graph, graphMetrics, metricDatas, unit, timeRange
   const metricType = get(metrics, '[0].type', '')
   useEffect(() => {
     if (metrics.length > 0) {
-      if (metricData.metrics.length > 0) {
-      // no need get data again
-        return
+      if (metricData.metrics.length === 0) {
+        dispatch({
+          type: 'application/GRAPH_METRIC_DATA',
+          payload: { id: graphId, metrics, timeRange, timestamp, isRealtime }
+        })
       }
-      dispatch({
-        type: 'application/GRAPH_METRIC_DATA',
-        payload: { id: graphId, metrics, timeRange, timestamp, isRealtime }
-      })
     }
-  }, [graphId, timestamp, metricData.metrics.length, dispatch])
+  }, [graphId])
   useInterval(() => {
     dispatch({
       type: 'application/METRIC_DATA_POLLING',

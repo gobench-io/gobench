@@ -11,7 +11,7 @@ const mapStateToProps = ({ application, dispatch }) => ({ application, dispatch 
 
 const DefaultPage = ({ application, dispatch }) => {
   const history = useHistory()
-  const { list, loading, total } = application
+  const { list = [], loading, total } = application
   const [fetching, setFetching] = useState(false)
   const [pagination, setPagination] = useState({
     current: 1,
