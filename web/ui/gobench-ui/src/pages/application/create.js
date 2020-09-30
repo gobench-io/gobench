@@ -50,13 +50,6 @@ const DefaultPage = ({ loading, clone, dispatch }) => {
       payload: values
     })
   }
-  const onReset = () => {
-    form.resetFields()
-    setName('')
-    setSceraio('')
-    setGomod('')
-    setGosum('')
-  }
   const onChange = (field, value) => {
     form.setFieldsValue({ [field]: value })
     switch (field) {
@@ -76,9 +69,6 @@ const DefaultPage = ({ loading, clone, dispatch }) => {
         break
     }
   }
-  const onCancel = () => {
-    history.push('/applications')
-  }
 
   const onFinishFailed = errorInfo => {
     console.log('Failed:', errorInfo)
@@ -87,28 +77,44 @@ const DefaultPage = ({ loading, clone, dispatch }) => {
     <>
       <div className='container'>
         <div className='card'>
-          <div className='card-header row'>
-            <div className='col-md-6'>
-              <div className='cui__utils__heading mb-0'>
-                <h3>Create new Application</h3>
+          <Form
+            layout='vertical'
+            hideRequiredMark
+            onFinish={onFinish}
+            onFinishFailed={onFinishFailed}
+            className='mb-4'
+            form={form}
+          >
+            <div className='card-header row'>
+              <div className='col-md-6'>
+                <div className='cui__utils__heading mb-0'>
+                  <h3>Create new Application</h3>
+                </div>
+                <div className='text-muted'>Tips: You can clone another application and run again!</div>
               </div>
-              <div className='text-muted'>Tips: You can clone another application and run again!</div>
-            </div>
-            <div className='col-md-6'>
-              <div className='text-right'>
-                <Button type='default' size='large' onClick={() => history.push('/applications')}>Back</Button>
+              <div className='col-md-6'>
+                <div className='text-right'>
+                  <Button
+                    type='primary'
+                    size='large'
+                    htmlType='submit'
+                    loading={loading}
+                  >
+                    <strong>Create</strong>
+                  </Button>
+
+                  <Button
+                    size='large'
+                    style={{ marginLeft: 5 }}
+                    onClick={() => history.push('/applications')}
+                  >
+                    <strong>Cancel</strong>
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
-          <div className='card-body'>
-            <Form
-              layout='vertical'
-              hideRequiredMark
-              onFinish={onFinish}
-              onFinishFailed={onFinishFailed}
-              className='mb-4'
-              form={form}
-            >
+            <div className='card-body'>
+
               <Item
                 name='name'
                 rules={[{ required: true, message: 'Application name is required' }]}
@@ -188,34 +194,8 @@ const DefaultPage = ({ loading, clone, dispatch }) => {
                   />
                 </div>
               </Item>
-              <div className='text-right'>
-                <Button
-                  type='primary'
-                  size='large'
-                  htmlType='submit'
-                  loading={loading}
-                >
-                  <strong>Create</strong>
-                </Button>
-                <Button
-                  size='large'
-                  type='dashed'
-                  style={{ marginLeft: 5 }}
-                  danger
-                  onClick={onReset}
-                >
-                Reset
-                </Button>
-                <Button
-                  size='large'
-                  style={{ marginLeft: 5 }}
-                  onClick={onCancel}
-                >
-                  <strong>Cancel</strong>
-                </Button>
-              </div>
-            </Form>
-          </div>
+            </div>
+          </Form>
         </div>
       </div>
     </>
