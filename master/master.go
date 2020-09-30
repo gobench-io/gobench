@@ -265,10 +265,15 @@ func (m *Master) cleanupDB() error {
 
 // setupDb setup the db in the master
 func (m *Master) setupDb() error {
-	filename := m.dbFilename
+	// create home dir if not existed yet
+	err := os.MkdirAll(m.homeDir, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
 	client, err := ent.Open(
 		"sqlite3",
-		filename+"?mode=rwc&cache=shared&&_busy_timeout=9999999&_fk=1")
+		m.dbFilename+"?mode=rwc&cache=shared&&_busy_timeout=9999999&_fk=1")
 
 	if err != nil {
 		return fmt.Errorf("failed opening sqlite3 connection: %v", err)
