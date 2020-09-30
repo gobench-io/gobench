@@ -99,7 +99,7 @@ func (a *Agent) StartSocketServer() error {
 // RunJob runs the executor in a shell
 func (a *Agent) RunJob(ctx context.Context, executorPath string, appID int) (err error) {
 	agentSock := a.socket
-	executorSock := fmt.Sprintf("/tmp/executorsock-%d", appID)
+	executorSock := fmt.Sprintf("/tmp/gobench-executorsock-%d-%d", appID, time.Now().Unix())
 
 	cmd := exec.CommandContext(ctx, executorPath,
 		"--agent-sock", agentSock,
