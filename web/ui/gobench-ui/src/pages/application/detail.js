@@ -23,8 +23,8 @@ const DefaultPage = ({ detail, dispatch }) => {
   const history = useHistory()
   const { id } = useParams()
   const { name, created_at: created, status, started_at: startedAt, updated_at: finishedAt } = detail
-  const start = moment(startedAt).utc() // some random moment in time (in ms)
-  let end = moment(finishedAt).utc() // some random moment after start (in ms)
+  const start = moment(startedAt).utc()
+  let end = moment(finishedAt).utc()
   if (status === 'running') {
     end = moment.utc()
   }
@@ -91,7 +91,7 @@ const DefaultPage = ({ detail, dispatch }) => {
               </div>
               <div className='text-muted'>Created: <strong>{moment(created).utc().format()} UTC</strong></div>
               <div className='text-muted'>Started: <strong>{start.format()} UTC</strong></div>
-              <div className='text-muted'>Ended: <strong>{finishedAt ? `${end.format()} UTC` : <i>not finish yet</i>}</strong></div>
+              <div className='text-muted'>Ended: <strong>{['pending', 'error', 'provisioning', 'running'].includes(status) ? <i>not finish yet</i> : `${end.format()} UTC`}</strong></div>
               <div className='text-muted'>Duration: <strong>{duration}</strong></div>
             </div>
             <div className='col-md-6'>
