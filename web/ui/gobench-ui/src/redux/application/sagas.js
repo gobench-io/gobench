@@ -113,7 +113,8 @@ export function * CANCEL ({ payload }) {
             return response
           }
           return x
-        })
+        }),
+        detail: response
       }
     })
     notification.success({
@@ -293,6 +294,20 @@ export function * METRIC_DATA_POLLING ({ payload }) {
   }
   yield loading(false)
 }
+export function * SYSLOG ({ payload }) {
+  const { id } = payload
+  yield loading(true)
+  const response = yield call(logs, id, 'system')
+  if (response) {
+    yield put({
+      type: 'application/SET_STATE',
+      payload: {
+        logs: response
+      }
+    })
+  }
+  yield loading(false)
+}
 export function * LOG ({ payload }) {
   const { id } = payload
   yield loading(true)
@@ -323,6 +338,7 @@ export default function * rootSaga () {
     takeEvery(actions.UPDATE, UPDATE),
     takeEvery(actions.DELETE, DELETE),
     takeEvery(actions.LOG, LOG),
+    takeEvery(actions.SYSLOG, SYSLOG),
 
     takeEvery(actions.CLONE, CLONE),
     takeEvery(actions.CANCEL, CANCEL),

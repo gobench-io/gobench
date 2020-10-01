@@ -26,7 +26,8 @@ const actions = {
   METRIC_DATA: 'application/METRIC_DATA',
   GRAPH_METRIC_DATA: 'application/GRAPH_METRIC_DATA',
   METRIC_DATA_POLLING: 'application/METRIC_DATA_POLLING',
-  LOG: 'application/LOG'
+  LOG: 'application/LOG',
+  SYSLOG: 'application/SYSLOG'
 
 }
 

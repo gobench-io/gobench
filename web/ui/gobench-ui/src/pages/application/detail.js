@@ -10,7 +10,8 @@ import { INTERVAL } from 'constant'
 import moment from 'moment'
 import 'css/index.css'
 
-const Log = lazy(() => import('./log'))
+const UserLog = lazy(() => import('./user-log'))
+const SystemLog = lazy(() => import('./system-log'))
 const { TabPane } = Tabs
 
 const mapStateToProps = ({ application, dispatch }) => {
@@ -159,8 +160,11 @@ const DefaultPage = ({ detail, dispatch }) => {
               <TabPane tab='Scenario' key='2'>
                 {tab === '2' && <Scenario />}
               </TabPane>
-              <TabPane tab='Log' key='3'>
-                {tab === '3' && <Log />}
+              <TabPane tab='User Log' key='3'>
+                {tab === '3' && <UserLog />}
+              </TabPane>
+              <TabPane tab='System Log' key='4'>
+                {tab === '4' && <SystemLog />}
               </TabPane>
             </Tabs>
           </div>
