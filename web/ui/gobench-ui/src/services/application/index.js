@@ -158,26 +158,23 @@ export const getMetricDataPolling = async (metrics, oldData = []) => {
   return await Promise.all(metrics.map(mtr => {
     const oldMetricData = oldData.find(o => mtr.id === get(o, ['id'], ''))
     const timestamp = get(oldMetricData, 'lastTimestamp', '')
-    if (timestamp) {
-      return getMetricData(mtr.id, mtr.type, timestamp)
-        .then(mData => {
-          if (mData.length > 0) {
-            const dataByType = getDataByType(mData, mtr.type)
-            const oldMetricChartData = get(oldMetricData, ['chartData', 'data'], [])
-            const newData = [...oldMetricChartData, ...dataByType]
-            return {
-              ...oldMetricData,
-              lastTimestamp: get(orderBy(mData, ['time'], 'desc'), '[0].time'),
-              chartData: {
-                name: mtr.title,
-                data: newData
-              }
+    return getMetricData(mtr.id, mtr.type, timestamp)
+      .then(mData => {
+        if (mData.length > 0) {
+          const dataByType = getDataByType(mData, mtr.type)
+          const oldMetricChartData = get(oldMetricData, ['chartData', 'data'], [])
+          const newData = [...oldMetricChartData, ...dataByType]
+          return {
+            ...oldMetricData,
+            lastTimestamp: get(orderBy(mData, ['time'], 'desc'), '[0].time'),
+            chartData: {
+              name: mtr.title,
+              data: newData
             }
           }
-          return oldMetricData
-        })
-    }
-    return oldMetricData
+        }
+        return oldMetricData
+      })
   }))
     .then(rs => rs)
     .catch(err => err)
