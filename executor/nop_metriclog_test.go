@@ -29,6 +29,7 @@ func (n *nopLog) FindCreateGroup(ctx context.Context, req *pb.FCGroupReq, opts .
 func (n *nopLog) FindCreateGraph(ctx context.Context, req *pb.FCGraphReq, opts ...grpc.CallOption) (*pb.FCGraphRes, error) {
 	return new(pb.FCGraphRes), nil
 }
+
 func (n *nopLog) FindCreateMetric(ctx context.Context, req *pb.FCMetricReq, opts ...grpc.CallOption) (*pb.FCMetricRes, error) {
 	return new(pb.FCMetricRes), nil
 }

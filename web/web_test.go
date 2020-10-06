@@ -36,6 +36,7 @@ func newAPITest(t *testing.T, adminPassword string) (*chi.Mux, *httptest.Respons
 
 	return r, w
 }
+
 func newAppTag(t *testing.T, appID int, name string) *ent.Tag {
 	r, w := newAPITest(t, "")
 	reqBody, _ := json.Marshal(map[string]string{
@@ -55,6 +56,7 @@ func newAppTag(t *testing.T, appID int, name string) *ent.Tag {
 
 	return &tag
 }
+
 func newApp(t *testing.T) *ent.Application {
 	r, w := newAPITest(t, "")
 	name := "name 1"
@@ -305,6 +307,7 @@ func TestDeleteApplication(t *testing.T) {
 
 	assert.Equal(t, 200, w.Code)
 }
+
 func TestAddApplicationTag(t *testing.T) {
 	tagName := "foo"
 	tag := &ent.Tag{}
@@ -329,6 +332,7 @@ func TestAddApplicationTag(t *testing.T) {
 	assert.Equal(t, tagName, tag.Name)
 	assert.Equal(t, 200, w.Code)
 }
+
 func TestAddApplicationTagAgain(t *testing.T) {
 	tagName := "foo"
 	tag := &ent.Tag{}
@@ -354,6 +358,7 @@ func TestAddApplicationTagAgain(t *testing.T) {
 	assert.Equal(t, tagName, tag.Name)
 	assert.Equal(t, 200, w.Code)
 }
+
 func TestDeleteApplicationTag(t *testing.T) {
 	tagName := "foo"
 	app := newApp(t)

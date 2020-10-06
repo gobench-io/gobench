@@ -41,6 +41,7 @@ func (m *Master) seedApplication(ctx context.Context, t *testing.T) *ent.Applica
 	assert.Equal(t, app.Scenario, "bar")
 	return app
 }
+
 func localGobenchMod(t *testing.T) string {
 	testDir, _ := os.Getwd()
 	mainDir, _ := exec.Command("dirname", testDir).CombinedOutput()
@@ -424,6 +425,7 @@ func TestMaster_GetTagByApplication(t *testing.T) {
 		})
 	}
 }
+
 func TestMaster_GetTagByID(t *testing.T) {
 	m := seedMaster(t)
 	ctx := context.Background()

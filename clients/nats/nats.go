@@ -169,6 +169,7 @@ func reconnectHandler(nc *nats.Conn) {
 	executor.Notify(conTotal, 1)
 	executor.Notify(conReconnect, 1)
 }
+
 func closeHandler(nc *nats.Conn) {
 	log.Printf("Exiting: %v\n", nc.LastError())
 }

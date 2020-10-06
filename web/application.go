@@ -137,6 +137,7 @@ func (h *handler) getApplicationTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
 func (h *handler) getApplicationGroups(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	app, ok := ctx.Value(webKey("application")).(*ent.Application)
@@ -184,6 +185,7 @@ func (h *handler) cancelApplication(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
 func (h *handler) deleteApplication(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	app, ok := ctx.Value(webKey("application")).(*ent.Application)
@@ -201,6 +203,7 @@ func (h *handler) deleteApplication(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
 func (h *handler) addApplicationTag(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var err error

@@ -45,6 +45,7 @@ func ErrUnauthenticated(err error) render.Renderer {
 		},
 	}
 }
+
 func ErrAppIsFinished(err error) render.Renderer {
 	return &ErrResponse{
 		Error: Err{
@@ -103,12 +104,14 @@ type applicationResponse struct {
 func (ar *applicationResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
+
 func newApplicationResponse(a *ent.Application) *applicationResponse {
 	return &applicationResponse{
 		a,
 		nil,
 	}
 }
+
 func newApplicationListResponse(aps []*ent.Application) []render.Renderer {
 	list := []render.Renderer{}
 	for _, ap := range aps {
@@ -126,12 +129,14 @@ type groupResponse struct {
 func (gr *groupResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
+
 func newGroupResponse(g *ent.Group) *groupResponse {
 	return &groupResponse{
 		g,
 		nil,
 	}
 }
+
 func newGroupListResponse(gs []*ent.Group) []render.Renderer {
 	list := []render.Renderer{}
 	for _, g := range gs {
@@ -149,12 +154,14 @@ type graphResponse struct {
 func (gr *graphResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
+
 func newGraphResponse(g *ent.Graph) *graphResponse {
 	return &graphResponse{
 		g,
 		nil,
 	}
 }
+
 func newGraphListResponse(gs []*ent.Graph) []render.Renderer {
 	list := []render.Renderer{}
 	for _, g := range gs {
@@ -172,12 +179,14 @@ type metricResponse struct {
 func (gr *metricResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
+
 func newMetricResponse(m *ent.Metric) *metricResponse {
 	return &metricResponse{
 		m,
 		nil,
 	}
 }
+
 func newMetricListResponse(ms []*ent.Metric) []render.Renderer {
 	list := []render.Renderer{}
 	for _, m := range ms {
@@ -196,6 +205,7 @@ type counterResponse struct {
 func (gr *counterResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
+
 func newCounterResponse(e *ent.Counter) *counterResponse {
 	return &counterResponse{
 		e,
@@ -203,6 +213,7 @@ func newCounterResponse(e *ent.Counter) *counterResponse {
 		nil,
 	}
 }
+
 func newCounterListResponse(es []*ent.Counter) []render.Renderer {
 	list := []render.Renderer{}
 	for _, e := range es {
@@ -220,12 +231,14 @@ type histogramResponse struct {
 func (gr *histogramResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
+
 func newHistogramResponse(e *ent.Histogram) *histogramResponse {
 	return &histogramResponse{
 		e,
 		nil,
 	}
 }
+
 func newHistogramListResponse(es []*ent.Histogram) []render.Renderer {
 	list := []render.Renderer{}
 	for _, e := range es {
@@ -243,12 +256,14 @@ type gaugeResponse struct {
 func (gr *gaugeResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
+
 func newGaugeResponse(e *ent.Gauge) *gaugeResponse {
 	return &gaugeResponse{
 		e,
 		nil,
 	}
 }
+
 func newGaugeListResponse(es []*ent.Gauge) []render.Renderer {
 	list := []render.Renderer{}
 	for _, e := range es {
@@ -295,6 +310,7 @@ func newTagResponse(t *ent.Tag) *tagResponse {
 		nil,
 	}
 }
+
 func newTagListResponse(tags []*ent.Tag) []render.Renderer {
 	list := []render.Renderer{}
 	for _, tag := range tags {
