@@ -13,6 +13,7 @@ const initialState = {
   metrics: [],
   metricDatas: [],
   metricDataRealtime: [],
+  tags: [],
   loading: false
 }
 
@@ -20,6 +21,11 @@ export default (state = initialState, action) => {
   switch (action.type) {
     case actions.SET_STATE:
       return { ...state, ...action.payload }
+    case actions.SET_TAG_STATE:
+      if (state.tags.some(x => x.id === action.payload[0].id)) {
+        return state
+      }
+      return { ...state, tags: [...state.tags, ...action.payload] }
     case actions.SET_GRAPH_STATE: {
       if (action.payload.graphs.some(x => state.graphs.some(a => a.id === x.id))) {
         const oldGraph = state.graphs.filter(x => action.payload.graphs.every(a => a.id !== x.id))

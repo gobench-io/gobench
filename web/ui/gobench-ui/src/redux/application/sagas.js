@@ -6,7 +6,8 @@ import {
   list, detail, create, update, destroy, cancel,
   getGroups, getGraphs, getGraphMetrics, getCounters,
   getHistograms, getGauges, getMetrics, getMetricData,
-  getOfflineMetricData, getMetricDataPolling, logs
+  getOfflineMetricData, getMetricDataPolling,
+  logs, addTag, removeTag, getTags
 } from 'services/application'
 
 export function * LIST ({ payload }) {
@@ -322,6 +323,52 @@ export function * LOG ({ payload }) {
   }
   yield loading(false)
 }
+export function * TAGS ({ payload }) {
+  const { id } = payload
+  yield loading(true)
+  const response = yield call(getTags, id)
+  if (response) {
+    yield put({
+      type: 'application/SET_STATE',
+      payload: {
+        tags: response
+      }
+    })
+  }
+  yield loading(false)
+}
+export function * TAG_ADD ({ payload }) {
+  const { id, name } = payload
+  yield loading(true)
+  const response = yield call(addTag, id, name)
+  if (response) {
+    yield put({
+      type: 'application/SET_TAG_STATE',
+      payload: [
+        response
+      ]
+    })
+  }
+  yield loading(false)
+}
+export function * TAG_REMOVE ({ payload }) {
+  const { id, tagId } = payload
+  yield loading(true)
+  const response = yield call(removeTag, id, tagId)
+  if (response) {
+    yield put({
+      type: 'application/SET_TAG_STATE',
+      payload: [
+        response
+      ]
+    })
+  }
+  notification.success({
+    message: 'Application Tag deleted',
+    description: 'You have successfully delete a tag for this application!'
+  })
+  yield loading(false)
+}
 function * loading (isLoading = false) {
   yield put({
     type: 'application/SET_STATE',
@@ -339,6 +386,9 @@ export default function * rootSaga () {
     takeEvery(actions.DELETE, DELETE),
     takeEvery(actions.LOG, LOG),
     takeEvery(actions.SYSLOG, SYSLOG),
+    takeEvery(actions.TAGS, TAGS),
+    takeEvery(actions.TAG_ADD, TAG_ADD),
+    takeEvery(actions.TAG_REMOVE, TAG_REMOVE),
 
     takeEvery(actions.CLONE, CLONE),
     takeEvery(actions.CANCEL, CANCEL),

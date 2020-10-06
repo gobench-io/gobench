@@ -9,9 +9,11 @@ import { statusColors } from 'utils/status'
 import { INTERVAL } from 'constant'
 import moment from 'moment'
 import 'css/index.css'
+import './style.scss'
 
 const UserLog = lazy(() => import('./user-log'))
 const SystemLog = lazy(() => import('./system-log'))
+const Tags = lazy(() => import('./tags'))
 const { TabPane } = Tabs
 
 const mapStateToProps = ({ application, dispatch }) => {
@@ -82,64 +84,71 @@ const DefaultPage = ({ detail, dispatch }) => {
       <div className='application-detail'>
         <Helmet title='Application|Detail' />
         <div className='card'>
-          <div className='card-header row'>
-            <div className='col-md-6'>
-              <div className='cui__utils__heading mb-0'>
-                <h2>{name}</h2>
-                <Tag color={statusColors[status]}>
-                  {(status || '').toUpperCase()}
-                </Tag>
-              </div>
-              <div className='text-muted'>Created: <strong>{moment(created).utc().format()} UTC</strong></div>
-              <div className='text-muted'>Started: <strong>{start.format()} UTC</strong></div>
-              <div className='text-muted'>Ended: <strong>{['pending', 'error', 'provisioning', 'running'].includes(status) ? <i>not finish yet</i> : `${end.format()} UTC`}</strong></div>
-              <div className='text-muted'>Duration: <strong>{duration}</strong></div>
-            </div>
-            <div className='col-md-6'>
-              <div className='text-right'>
-                <div style={{ float: 'right' }} key={detail.id}>
-                  <Button
-                    style={{ marginLeft: 5 }}
-                    type='default'
-                    onClick={() => clone(detail)}
-                  >
-              Clone
-                  </Button>
-                  {['running', 'pending'].includes(detail.status) && (
-                    <Popconfirm
-                      title={`Are you sure cancel application ${detail.name}?`}
-                      onConfirm={() => cancel(detail.id)}
-                      okText='Yes'
-                      cancelText='No'
-                    >
-                      <Button
-                        type='dashed'
-                        style={{ marginLeft: 5 }}
-                        danger
-                      >
-                  Cancel
-                      </Button>
-                    </Popconfirm>
-                  )}
-                  {['finished', 'pending', 'error', 'cancel'].includes(detail.status) && (
-                    <Popconfirm
-                      title={`Are you sure delete application ${detail.name}?`}
-                      onConfirm={() => destroy(detail.id)}
-                      okText='Yes'
-                      cancelText='No'
-                    >
-                      <Button
-                        type='primary'
-                        className='delete-button'
-                        style={{ marginLeft: 5, color: 'white', backgroundColor: '#f5222d!important' }}
-                        danger
-                      >
-                  Delete
-                      </Button>
-                    </Popconfirm>
-                  )}
+          <div className='card-header'>
+            <div className='row'>
+              <div className='col-md-6'>
+                <div className='cui__utils__heading mb-0'>
+                  <h2>{name}</h2>
+                  <Tag color={statusColors[status]}>
+                    {(status || '').toUpperCase()}
+                  </Tag>
                 </div>
-                <Button type='default' onClick={() => history.push('/applications')}>Back</Button>
+                <div className='text-muted'>Created: <strong>{moment(created).utc().format()} UTC</strong></div>
+                <div className='text-muted'>Started: <strong>{start.format()} UTC</strong></div>
+                <div className='text-muted'>Ended: <strong>{['pending', 'error', 'provisioning', 'running'].includes(status) ? <i>not finish yet</i> : `${end.format()} UTC`}</strong></div>
+                <div className='text-muted'>Duration: <strong>{duration}</strong></div>
+              </div>
+              <div className='col-md-6'>
+                <div className='text-right'>
+                  <div style={{ float: 'right' }} key={detail.id}>
+                    <Button
+                      style={{ marginLeft: 5 }}
+                      type='default'
+                      onClick={() => clone(detail)}
+                    >
+              Clone
+                    </Button>
+                    {['running', 'pending'].includes(detail.status) && (
+                      <Popconfirm
+                        title={`Are you sure cancel application ${detail.name}?`}
+                        onConfirm={() => cancel(detail.id)}
+                        okText='Yes'
+                        cancelText='No'
+                      >
+                        <Button
+                          type='dashed'
+                          style={{ marginLeft: 5 }}
+                          danger
+                        >
+                  Cancel
+                        </Button>
+                      </Popconfirm>
+                    )}
+                    {['finished', 'pending', 'error', 'cancel'].includes(detail.status) && (
+                      <Popconfirm
+                        title={`Are you sure delete application ${detail.name}?`}
+                        onConfirm={() => destroy(detail.id)}
+                        okText='Yes'
+                        cancelText='No'
+                      >
+                        <Button
+                          type='primary'
+                          className='delete-button'
+                          style={{ marginLeft: 5, color: 'white', backgroundColor: '#f5222d!important' }}
+                          danger
+                        >
+                  Delete
+                        </Button>
+                      </Popconfirm>
+                    )}
+                  </div>
+                  <Button type='default' onClick={() => history.push('/applications')}>Back</Button>
+                </div>
+              </div>
+            </div>
+            <div className='row'>
+              <div className='application-tag'>
+                <Tags />
               </div>
             </div>
           </div>

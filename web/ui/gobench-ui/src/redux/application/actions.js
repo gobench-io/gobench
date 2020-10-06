@@ -6,6 +6,7 @@ const actions = {
   SET_METRIC_STATE: 'application/SET_METRIC_STATE',
   SET_METRIC_DATA_REALTIME: 'application/SET_METRIC_DATA_REALTIME',
   SET_GRAPH_METRIC_DATA: 'application/SET_GRAPH_METRIC_DATA',
+  SET_TAG_STATE: 'application/SET_TAG_STATE',
   LIST: 'application/LIST',
   DETAIL: 'application/DETAIL',
   CREATE: 'application/CREATE',
@@ -27,8 +28,10 @@ const actions = {
   GRAPH_METRIC_DATA: 'application/GRAPH_METRIC_DATA',
   METRIC_DATA_POLLING: 'application/METRIC_DATA_POLLING',
   LOG: 'application/LOG',
-  SYSLOG: 'application/SYSLOG'
-
+  SYSLOG: 'application/SYSLOG',
+  TAGS: 'application/TAGS',
+  TAG_REMOVE: 'application/TAG_REMOVE',
+  TAG_ADD: 'application/TAG_ADD'
 }
 
 export default actions
