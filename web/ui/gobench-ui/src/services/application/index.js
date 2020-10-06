@@ -10,6 +10,9 @@ const API = {
   update: '/applications/{0}',
   delete: '/applications/{0}',
   log: '/applications/{0}/logs/{1}',
+  get_tag: '/applications/{0}/tags',
+  add_tag: '/applications/{0}/tags',
+  remove_tag: '/applications/{0}/tags/{1}',
   // other apis
   cancel: '/applications/{0}/cancel',
   groups: '/applications/{0}/groups',
@@ -43,6 +46,24 @@ export const destroy = async (id) => {
 }
 export const cancel = async (id) => {
   const response = await apiClient.put(API.cancel.format(id))
+  if (response) {
+    return response.data
+  }
+}
+export const getTags = async (id) => {
+  const response = await apiClient.get(API.get_tag.format(id))
+  if (response) {
+    return response.data
+  }
+}
+export const addTag = async (id, name) => {
+  const response = await apiClient.put(API.add_tag.format(id), { name })
+  if (response) {
+    return response.data
+  }
+}
+export const removeTag = async (id, tagId) => {
+  const response = await apiClient.delete(API.remove_tag.format(id, tagId))
   if (response) {
     return response.data
   }
