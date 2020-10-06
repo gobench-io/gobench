@@ -39,6 +39,7 @@ func (h *handler) applicationCtx(next http.Handler) http.Handler {
 func (h *handler) listApplications(w http.ResponseWriter, r *http.Request) {
 	aps, err := h.db().Application.
 		Query().
+		WithTags().
 		Order(
 			ent.Desc(application.FieldCreatedAt),
 		).
@@ -116,6 +117,26 @@ func (h *handler) getApplication(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (h *handler) getApplicationTags(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	app, ok := ctx.Value(webKey("application")).(*ent.Application)
+	if !ok {
+		http.Error(w, http.StatusText(422), 422)
+		return
+	}
+
+	ts, err := app.QueryTags().All(ctx)
+
+	if err != nil {
+		render.Render(w, r, ErrInternalServer(err))
+		return
+	}
+
+	if err := render.RenderList(w, r, newTagListResponse(ts)); err != nil {
+		render.Render(w, r, ErrRender(err))
+		return
+	}
+}
 func (h *handler) getApplicationGroups(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	app, ok := ctx.Value(webKey("application")).(*ent.Application)
@@ -180,34 +201,80 @@ func (h *handler) deleteApplication(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-func (h *handler) setApplicationTags(w http.ResponseWriter, r *http.Request) {
+func (h *handler) addApplicationTag(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	var err error
 	app, ok := ctx.Value(webKey("application")).(*ent.Application)
 	if !ok {
 		http.Error(w, http.StatusText(422), 422)
 		return
 	}
 
-	data := &applicationRequest{}
+	data := &tagRequest{}
 	if err := render.Bind(r, data); err != nil {
 		render.Render(w, r, ErrInvalidRequest(err))
 		return
 	}
-
-	if data.Tags == app.Tags {
-		if err := render.Render(w, r, newApplicationResponse(nil)); err != nil {
+	// get tags
+	tag, err := h.s.GetTagByApplication(ctx, app, data.Name)
+	if err != nil {
+		render.Render(w, r, ErrInternalServer(err))
+		return
+	}
+	// nochanges
+	if tag != nil {
+		if err := render.Render(w, r, newTagResponse(tag)); err != nil {
 			render.Render(w, r, ErrRender(err))
 			return
 		}
+		return
 	}
 
-	app, err := h.s.SetApplicationTags(ctx, app.ID, data.Tags)
+	tag, err = h.s.SetApplicationTag(ctx, app.ID, data.Name)
 	if err != nil {
 		render.Render(w, r, ErrInternalServer(err))
 		return
 	}
 
-	if err := render.Render(w, r, newApplicationResponse(app)); err != nil {
+	if err := render.Render(w, r, newTagResponse(tag)); err != nil {
+		render.Render(w, r, ErrRender(err))
+		return
+	}
+}
+
+func (h *handler) removeApplicationTag(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	var err error
+	app, ok := ctx.Value(webKey("application")).(*ent.Application)
+	if !ok {
+		http.Error(w, http.StatusText(422), 422)
+		return
+	}
+	if app == nil {
+		render.Render(w, r, ErrNotFoundRequest(errors.New("Application not found")))
+		return
+	}
+	tagID, err := strconv.Atoi(chi.URLParam(r, "tagID"))
+	if err != nil {
+		render.Render(w, r, ErrNotFoundRequest(err))
+		return
+	}
+	// get tags
+	tag, err := h.s.GetTagByID(ctx, tagID)
+	if err != nil {
+		render.Render(w, r, ErrInternalServer(err))
+		return
+	}
+	if tag == nil {
+		render.Render(w, r, ErrNotFoundRequest(errors.New("Tag not found")))
+		return
+	}
+	err = h.s.RemoveApplicationTag(ctx, tag)
+	if err != nil {
+		render.Render(w, r, ErrInternalServer(err))
+		return
+	}
+	if err := render.Render(w, r, newTagResponse(tag)); err != nil {
 		render.Render(w, r, ErrRender(err))
 		return
 	}

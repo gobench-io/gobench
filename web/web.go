@@ -133,7 +133,11 @@ func newHandler(s *master.Master, adminPassword string, logger logger.Logger) *h
 				r.Delete("/", h.deleteApplication)
 				r.Get("/groups", h.getApplicationGroups)
 				r.Put("/cancel", h.cancelApplication)
-				r.Patch("/tags", h.setApplicationTags)
+				r.Route("/tags", func(r chi.Router) {
+					r.Get("/", h.getApplicationTags)
+					r.Put("/", h.addApplicationTag)
+					r.Delete("/{tagID}", h.removeApplicationTag)
+				})
 				r.Get("/logs/system", h.getApplicationSystemLog)
 				r.Get("/logs/user", h.getApplicationUserLog)
 			})

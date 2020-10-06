@@ -18,6 +18,7 @@ import (
 	"github.com/gobench-io/gobench/agent"
 	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/ent/application"
+	"github.com/gobench-io/gobench/ent/tag"
 	"github.com/gobench-io/gobench/executor"
 	"github.com/gobench-io/gobench/logger"
 
@@ -179,14 +180,6 @@ func (m *Master) NewApplication(ctx context.Context, name, scenario, gomod, gosu
 		Save(ctx)
 }
 
-// SetApplicationTags set application tags
-func (m *Master) SetApplicationTags(ctx context.Context, appID int, tags string) (*ent.Application, error) {
-	return m.db.Application.
-		UpdateOneID(appID).
-		SetTags(tags).
-		Save(ctx)
-}
-
 // DeleteApplication a pending/finished/canceled/error application
 func (m *Master) DeleteApplication(ctx context.Context, appID int) error {
 	app, err := m.db.Application.
@@ -254,6 +247,53 @@ func (m *Master) CancelApplication(ctx context.Context, appID int) (*ent.Applica
 		UpdateOneID(appID).
 		SetStatus(string(jobCancel)).
 		Save(ctx)
+}
+
+// GetTagByID get a tag for an application
+func (m *Master) GetTagByID(ctx context.Context, tagID int) (*ent.Tag, error) {
+	tag, err := m.db.Tag.
+		Query().
+		Where(tag.ID(tagID)).
+		Only(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return tag, nil
+}
+
+// GetTagByApplication get a tag for an application
+func (m *Master) GetTagByApplication(ctx context.Context, app *ent.Application, tagName string) (*ent.Tag, error) {
+	tag, err := m.db.Tag.
+		Query().
+		Where(tag.Name(tagName)).
+		Where(tag.HasApplicationWith(application.ID(app.ID))).
+		Only(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return tag, nil
+}
+
+// SetApplicationTag create and new tag and assign it for an application
+func (m *Master) SetApplicationTag(ctx context.Context, appID int, tag string) (*ent.Tag, error) {
+	return m.db.Tag.
+		Create().
+		SetApplicationID(appID).
+		SetName(tag).
+		Save(ctx)
+}
+
+// RemoveApplicationTag remove tag from an application
+func (m *Master) RemoveApplicationTag(ctx context.Context, tag *ent.Tag) error {
+	return m.db.Tag.
+		DeleteOne(tag).
+		Exec(ctx)
 }
 
 // cleanupDB is the helper function to cleanup the DB for testing

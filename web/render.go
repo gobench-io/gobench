@@ -274,3 +274,35 @@ type accesstokenResponse struct {
 func (act *accesstokenResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
+
+type tagRequest struct {
+	*ent.Tag
+	ProtectedID int `json:"id"`
+}
+
+func (a *tagRequest) Bind(r *http.Request) (err error) {
+	return nil
+}
+
+type tagResponse struct {
+	*ent.Tag
+	Edges *struct{} `json:"edges,omitempty"`
+}
+
+func newTagResponse(t *ent.Tag) *tagResponse {
+	return &tagResponse{
+		t,
+		nil,
+	}
+}
+func newTagListResponse(tags []*ent.Tag) []render.Renderer {
+	list := []render.Renderer{}
+	for _, tag := range tags {
+		list = append(list, newTagResponse(tag))
+	}
+	return list
+}
+
+func (ar *tagResponse) Render(w http.ResponseWriter, r *http.Request) error {
+	return nil
+}
