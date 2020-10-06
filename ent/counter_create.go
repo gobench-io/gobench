@@ -64,20 +64,23 @@ func (cc *CounterCreate) Mutation() *CounterMutation {
 
 // Save creates the Counter in the database.
 func (cc *CounterCreate) Save(ctx context.Context) (*Counter, error) {
-	if err := cc.preSave(); err != nil {
-		return nil, err
-	}
 	var (
 		err  error
 		node *Counter
 	)
 	if len(cc.hooks) == 0 {
+		if err = cc.check(); err != nil {
+			return nil, err
+		}
 		node, err = cc.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*CounterMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = cc.check(); err != nil {
+				return nil, err
 			}
 			cc.mutation = mutation
 			node, err = cc.sqlSave(ctx)
@@ -103,7 +106,8 @@ func (cc *CounterCreate) SaveX(ctx context.Context) *Counter {
 	return v
 }
 
-func (cc *CounterCreate) preSave() error {
+// check runs all checks and user-defined validators on the builder.
+func (cc *CounterCreate) check() error {
 	if _, ok := cc.mutation.Time(); !ok {
 		return &ValidationError{Name: "time", err: errors.New("ent: missing required field \"time\"")}
 	}
@@ -117,7 +121,7 @@ func (cc *CounterCreate) preSave() error {
 }
 
 func (cc *CounterCreate) sqlSave(ctx context.Context) (*Counter, error) {
-	c, _spec := cc.createSpec()
+	_node, _spec := cc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, cc.driver, _spec); err != nil {
 		if cerr, ok := isSQLConstraintError(err); ok {
 			err = cerr
@@ -125,13 +129,13 @@ func (cc *CounterCreate) sqlSave(ctx context.Context) (*Counter, error) {
 		return nil, err
 	}
 	id := _spec.ID.Value.(int64)
-	c.ID = int(id)
-	return c, nil
+	_node.ID = int(id)
+	return _node, nil
 }
 
 func (cc *CounterCreate) createSpec() (*Counter, *sqlgraph.CreateSpec) {
 	var (
-		c     = &Counter{config: cc.config}
+		_node = &Counter{config: cc.config}
 		_spec = &sqlgraph.CreateSpec{
 			Table: counter.Table,
 			ID: &sqlgraph.FieldSpec{
@@ -146,7 +150,7 @@ func (cc *CounterCreate) createSpec() (*Counter, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: counter.FieldTime,
 		})
-		c.Time = value
+		_node.Time = value
 	}
 	if value, ok := cc.mutation.Count(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -154,7 +158,7 @@ func (cc *CounterCreate) createSpec() (*Counter, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: counter.FieldCount,
 		})
-		c.Count = value
+		_node.Count = value
 	}
 	if value, ok := cc.mutation.WID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -162,7 +166,7 @@ func (cc *CounterCreate) createSpec() (*Counter, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: counter.FieldWID,
 		})
-		c.WID = value
+		_node.WID = value
 	}
 	if nodes := cc.mutation.MetricIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -183,7 +187,7 @@ func (cc *CounterCreate) createSpec() (*Counter, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	return c, _spec
+	return _node, _spec
 }
 
 // CounterCreateBulk is the builder for creating a bulk of Counter entities.
@@ -201,12 +205,12 @@ func (ccb *CounterCreateBulk) Save(ctx context.Context) ([]*Counter, error) {
 		func(i int, root context.Context) {
 			builder := ccb.builders[i]
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-				if err := builder.preSave(); err != nil {
-					return nil, err
-				}
 				mutation, ok := m.(*CounterMutation)
 				if !ok {
 					return nil, fmt.Errorf("unexpected mutation type %T", m)
+				}
+				if err := builder.check(); err != nil {
+					return nil, err
 				}
 				builder.mutation = mutation
 				nodes[i], specs[i] = builder.createSpec()

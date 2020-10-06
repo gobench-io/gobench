@@ -64,20 +64,23 @@ func (gc *GaugeCreate) Mutation() *GaugeMutation {
 
 // Save creates the Gauge in the database.
 func (gc *GaugeCreate) Save(ctx context.Context) (*Gauge, error) {
-	if err := gc.preSave(); err != nil {
-		return nil, err
-	}
 	var (
 		err  error
 		node *Gauge
 	)
 	if len(gc.hooks) == 0 {
+		if err = gc.check(); err != nil {
+			return nil, err
+		}
 		node, err = gc.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*GaugeMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = gc.check(); err != nil {
+				return nil, err
 			}
 			gc.mutation = mutation
 			node, err = gc.sqlSave(ctx)
@@ -103,7 +106,8 @@ func (gc *GaugeCreate) SaveX(ctx context.Context) *Gauge {
 	return v
 }
 
-func (gc *GaugeCreate) preSave() error {
+// check runs all checks and user-defined validators on the builder.
+func (gc *GaugeCreate) check() error {
 	if _, ok := gc.mutation.Time(); !ok {
 		return &ValidationError{Name: "time", err: errors.New("ent: missing required field \"time\"")}
 	}
@@ -117,7 +121,7 @@ func (gc *GaugeCreate) preSave() error {
 }
 
 func (gc *GaugeCreate) sqlSave(ctx context.Context) (*Gauge, error) {
-	ga, _spec := gc.createSpec()
+	_node, _spec := gc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, gc.driver, _spec); err != nil {
 		if cerr, ok := isSQLConstraintError(err); ok {
 			err = cerr
@@ -125,13 +129,13 @@ func (gc *GaugeCreate) sqlSave(ctx context.Context) (*Gauge, error) {
 		return nil, err
 	}
 	id := _spec.ID.Value.(int64)
-	ga.ID = int(id)
-	return ga, nil
+	_node.ID = int(id)
+	return _node, nil
 }
 
 func (gc *GaugeCreate) createSpec() (*Gauge, *sqlgraph.CreateSpec) {
 	var (
-		ga    = &Gauge{config: gc.config}
+		_node = &Gauge{config: gc.config}
 		_spec = &sqlgraph.CreateSpec{
 			Table: gauge.Table,
 			ID: &sqlgraph.FieldSpec{
@@ -146,7 +150,7 @@ func (gc *GaugeCreate) createSpec() (*Gauge, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: gauge.FieldTime,
 		})
-		ga.Time = value
+		_node.Time = value
 	}
 	if value, ok := gc.mutation.Value(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -154,7 +158,7 @@ func (gc *GaugeCreate) createSpec() (*Gauge, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: gauge.FieldValue,
 		})
-		ga.Value = value
+		_node.Value = value
 	}
 	if value, ok := gc.mutation.WID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -162,7 +166,7 @@ func (gc *GaugeCreate) createSpec() (*Gauge, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: gauge.FieldWID,
 		})
-		ga.WID = value
+		_node.WID = value
 	}
 	if nodes := gc.mutation.MetricIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -183,7 +187,7 @@ func (gc *GaugeCreate) createSpec() (*Gauge, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	return ga, _spec
+	return _node, _spec
 }
 
 // GaugeCreateBulk is the builder for creating a bulk of Gauge entities.
@@ -201,12 +205,12 @@ func (gcb *GaugeCreateBulk) Save(ctx context.Context) ([]*Gauge, error) {
 		func(i int, root context.Context) {
 			builder := gcb.builders[i]
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-				if err := builder.preSave(); err != nil {
-					return nil, err
-				}
 				mutation, ok := m.(*GaugeMutation)
 				if !ok {
 					return nil, fmt.Errorf("unexpected mutation type %T", m)
+				}
+				if err := builder.check(); err != nil {
+					return nil, err
 				}
 				builder.mutation = mutation
 				nodes[i], specs[i] = builder.createSpec()

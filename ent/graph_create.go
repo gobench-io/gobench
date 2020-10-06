@@ -74,20 +74,23 @@ func (gc *GraphCreate) Mutation() *GraphMutation {
 
 // Save creates the Graph in the database.
 func (gc *GraphCreate) Save(ctx context.Context) (*Graph, error) {
-	if err := gc.preSave(); err != nil {
-		return nil, err
-	}
 	var (
 		err  error
 		node *Graph
 	)
 	if len(gc.hooks) == 0 {
+		if err = gc.check(); err != nil {
+			return nil, err
+		}
 		node, err = gc.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*GraphMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = gc.check(); err != nil {
+				return nil, err
 			}
 			gc.mutation = mutation
 			node, err = gc.sqlSave(ctx)
@@ -113,7 +116,8 @@ func (gc *GraphCreate) SaveX(ctx context.Context) *Graph {
 	return v
 }
 
-func (gc *GraphCreate) preSave() error {
+// check runs all checks and user-defined validators on the builder.
+func (gc *GraphCreate) check() error {
 	if _, ok := gc.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New("ent: missing required field \"title\"")}
 	}
@@ -124,7 +128,7 @@ func (gc *GraphCreate) preSave() error {
 }
 
 func (gc *GraphCreate) sqlSave(ctx context.Context) (*Graph, error) {
-	gr, _spec := gc.createSpec()
+	_node, _spec := gc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, gc.driver, _spec); err != nil {
 		if cerr, ok := isSQLConstraintError(err); ok {
 			err = cerr
@@ -132,13 +136,13 @@ func (gc *GraphCreate) sqlSave(ctx context.Context) (*Graph, error) {
 		return nil, err
 	}
 	id := _spec.ID.Value.(int64)
-	gr.ID = int(id)
-	return gr, nil
+	_node.ID = int(id)
+	return _node, nil
 }
 
 func (gc *GraphCreate) createSpec() (*Graph, *sqlgraph.CreateSpec) {
 	var (
-		gr    = &Graph{config: gc.config}
+		_node = &Graph{config: gc.config}
 		_spec = &sqlgraph.CreateSpec{
 			Table: graph.Table,
 			ID: &sqlgraph.FieldSpec{
@@ -153,7 +157,7 @@ func (gc *GraphCreate) createSpec() (*Graph, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: graph.FieldTitle,
 		})
-		gr.Title = value
+		_node.Title = value
 	}
 	if value, ok := gc.mutation.Unit(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -161,7 +165,7 @@ func (gc *GraphCreate) createSpec() (*Graph, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: graph.FieldUnit,
 		})
-		gr.Unit = value
+		_node.Unit = value
 	}
 	if nodes := gc.mutation.GroupIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -201,7 +205,7 @@ func (gc *GraphCreate) createSpec() (*Graph, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	return gr, _spec
+	return _node, _spec
 }
 
 // GraphCreateBulk is the builder for creating a bulk of Graph entities.
@@ -219,12 +223,12 @@ func (gcb *GraphCreateBulk) Save(ctx context.Context) ([]*Graph, error) {
 		func(i int, root context.Context) {
 			builder := gcb.builders[i]
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-				if err := builder.preSave(); err != nil {
-					return nil, err
-				}
 				mutation, ok := m.(*GraphMutation)
 				if !ok {
 					return nil, fmt.Errorf("unexpected mutation type %T", m)
+				}
+				if err := builder.check(); err != nil {
+					return nil, err
 				}
 				builder.mutation = mutation
 				nodes[i], specs[i] = builder.createSpec()

@@ -981,6 +981,7 @@ var file_agent_proto_depIdxs = []int32{
 }
 
 func init() { file_agent_proto_init() }
+
 func file_agent_proto_init() {
 	if File_agent_proto != nil {
 		return
@@ -1274,18 +1275,23 @@ type UnimplementedAgentServer struct {
 func (*UnimplementedAgentServer) FindCreateGroup(context.Context, *FCGroupReq) (*FCGroupRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindCreateGroup not implemented")
 }
+
 func (*UnimplementedAgentServer) FindCreateGraph(context.Context, *FCGraphReq) (*FCGraphRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindCreateGraph not implemented")
 }
+
 func (*UnimplementedAgentServer) FindCreateMetric(context.Context, *FCMetricReq) (*FCMetricRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindCreateMetric not implemented")
 }
+
 func (*UnimplementedAgentServer) Histogram(context.Context, *HistogramReq) (*HistogramRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Histogram not implemented")
 }
+
 func (*UnimplementedAgentServer) Counter(context.Context, *CounterReq) (*CounterRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Counter not implemented")
 }
+
 func (*UnimplementedAgentServer) Gauge(context.Context, *GaugeReq) (*GaugeRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Gauge not implemented")
 }

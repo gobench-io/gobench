@@ -10,6 +10,7 @@ import (
 
 	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/logger"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -30,6 +31,15 @@ func seedMaster(t *testing.T) *Master {
 	assert.Nil(t, m.Start())
 
 	return m
+}
+
+func (m *Master) seedApplication(ctx context.Context, t *testing.T) *ent.Application {
+	app, err := m.NewApplication(ctx, "foo", "bar", "", "")
+	assert.Nil(t, err)
+	assert.NotNil(t, app)
+	assert.Equal(t, app.Name, "foo")
+	assert.Equal(t, app.Scenario, "bar")
+	return app
 }
 
 func localGobenchMod(t *testing.T) string {
@@ -304,4 +314,192 @@ func TestLogpaths(t *testing.T) {
 	assert.Contains(t, folder, "/tmp/applications/12")
 	assert.Contains(t, sf, "/tmp/applications/12/system.log")
 	assert.Contains(t, uf, "/tmp/applications/12/user.log")
+}
+
+func TestMaster_SetApplicationTag(t *testing.T) {
+	m := seedMaster(t)
+	ctx := context.Background()
+	app := m.seedApplication(ctx, t)
+
+	type args struct {
+		appID int
+		tag   string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *ent.Tag
+		wantErr bool
+	}{
+		{
+			name:    "should return error with missing appID and tag",
+			args:    args{},
+			want:    nil,
+			wantErr: true,
+		},
+
+		{
+			name: "should return error with empty tag name",
+			args: args{
+				tag:   "",
+				appID: app.ID,
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "should return error with missing appID",
+			args: args{
+				tag: "bar",
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "should return success with valid name",
+			args: args{
+				tag:   "foo",
+				appID: app.ID,
+			},
+			want: &ent.Tag{
+				Name: "foo",
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			got, err := m.SetApplicationTag(ctx, tt.args.appID, tt.args.tag)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Master.SetApplicationTag() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != nil && got.Name != tt.want.Name {
+				t.Errorf("Master.SetApplicationTag() = %v, want %v", got.Name, tt.want.Name)
+			}
+		})
+	}
+}
+
+func TestMaster_GetTagByApplication(t *testing.T) {
+	m := seedMaster(t)
+	ctx := context.Background()
+	tagName := "foo"
+	app := m.seedApplication(ctx, t)
+	tag, err := m.SetApplicationTag(ctx, app.ID, tagName)
+	if err != nil {
+		t.Fatal("Master.GetTagByApplication() seed SetApplicationTag error")
+	}
+
+	type args struct {
+		app     *ent.Application
+		tagName string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *ent.Tag
+		wantErr bool
+	}{
+		{
+			name: "should return success with valid request",
+			args: args{
+				tagName: tag.Name,
+				app:     app,
+			},
+			want:    tag,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := m.GetTagByApplication(ctx, tt.args.app, tt.args.tagName)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Master.GetTagByApplication) error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != nil && got.Name != tt.want.Name {
+				t.Errorf("Master.GetTagByApplication() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMaster_GetTagByID(t *testing.T) {
+	m := seedMaster(t)
+	ctx := context.Background()
+	tagName := "foo"
+	app := m.seedApplication(ctx, t)
+	tag, err := m.SetApplicationTag(ctx, app.ID, tagName)
+	if err != nil {
+		t.Fatal("Master.GetTagByApplication() seed SetApplicationTag error")
+	}
+	type args struct {
+		tagID int
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *ent.Tag
+		wantErr bool
+	}{
+		{
+			name: "should return success with valid request",
+			args: args{
+				tagID: tag.ID,
+			},
+			want:    tag,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := m.GetTagByID(ctx, tt.args.tagID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Master.GetTagByID() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != nil && got.Name != tt.want.Name {
+				t.Errorf("Master.GetTagByID() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMaster_RemoveApplicationTag(t *testing.T) {
+	m := seedMaster(t)
+	ctx := context.Background()
+	tagName := "foo"
+	app := m.seedApplication(ctx, t)
+	tag, err := m.SetApplicationTag(ctx, app.ID, tagName)
+	if err != nil {
+		t.Fatal("Master.GetTagByApplication() seed SetApplicationTag error")
+	}
+
+	type args struct {
+		tag *ent.Tag
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *ent.Tag
+		wantErr bool
+	}{
+		{
+			name: "should return success with valid request",
+			args: args{
+				tag: tag,
+			},
+			want:    tag,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := m.RemoveApplicationTag(ctx, tt.args.tag); (err != nil) != tt.wantErr {
+				t.Errorf("Master.RemoveApplicationTag() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
 }

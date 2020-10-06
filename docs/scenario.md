@@ -3,6 +3,7 @@
 Example:
 
 ```{go}
+
 func export() {
     return Scenario{
         vus: []gobench.Vu{

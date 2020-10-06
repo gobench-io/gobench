@@ -44,6 +44,7 @@ func export() scenario.Vus {
 		},
 	}
 }
+
 func clientf(ctx context.Context, vui int) {
 	clientID := fmt.Sprintf("client-%d", vui)
 

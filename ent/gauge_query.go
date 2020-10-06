@@ -63,8 +63,12 @@ func (gq *GaugeQuery) QueryMetric() *MetricQuery {
 		if err := gq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
+		selector := gq.sqlQuery()
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(gauge.Table, gauge.FieldID, gq.sqlQuery()),
+			sqlgraph.From(gauge.Table, gauge.FieldID, selector),
 			sqlgraph.To(metric.Table, metric.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, gauge.MetricTable, gauge.MetricColumn),
 		)
@@ -76,23 +80,23 @@ func (gq *GaugeQuery) QueryMetric() *MetricQuery {
 
 // First returns the first Gauge entity in the query. Returns *NotFoundError when no gauge was found.
 func (gq *GaugeQuery) First(ctx context.Context) (*Gauge, error) {
-	gas, err := gq.Limit(1).All(ctx)
+	nodes, err := gq.Limit(1).All(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if len(gas) == 0 {
+	if len(nodes) == 0 {
 		return nil, &NotFoundError{gauge.Label}
 	}
-	return gas[0], nil
+	return nodes[0], nil
 }
 
 // FirstX is like First, but panics if an error occurs.
 func (gq *GaugeQuery) FirstX(ctx context.Context) *Gauge {
-	ga, err := gq.First(ctx)
+	node, err := gq.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
-	return ga
+	return node
 }
 
 // FirstID returns the first Gauge id in the query. Returns *NotFoundError when no id was found.
@@ -119,13 +123,13 @@ func (gq *GaugeQuery) FirstXID(ctx context.Context) int {
 
 // Only returns the only Gauge entity in the query, returns an error if not exactly one entity was returned.
 func (gq *GaugeQuery) Only(ctx context.Context) (*Gauge, error) {
-	gas, err := gq.Limit(2).All(ctx)
+	nodes, err := gq.Limit(2).All(ctx)
 	if err != nil {
 		return nil, err
 	}
-	switch len(gas) {
+	switch len(nodes) {
 	case 1:
-		return gas[0], nil
+		return nodes[0], nil
 	case 0:
 		return nil, &NotFoundError{gauge.Label}
 	default:
@@ -135,11 +139,11 @@ func (gq *GaugeQuery) Only(ctx context.Context) (*Gauge, error) {
 
 // OnlyX is like Only, but panics if an error occurs.
 func (gq *GaugeQuery) OnlyX(ctx context.Context) *Gauge {
-	ga, err := gq.Only(ctx)
+	node, err := gq.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
-	return ga
+	return node
 }
 
 // OnlyID returns the only Gauge id in the query, returns an error if not exactly one id was returned.
@@ -178,11 +182,11 @@ func (gq *GaugeQuery) All(ctx context.Context) ([]*Gauge, error) {
 
 // AllX is like All, but panics if an error occurs.
 func (gq *GaugeQuery) AllX(ctx context.Context) []*Gauge {
-	gas, err := gq.All(ctx)
+	nodes, err := gq.All(ctx)
 	if err != nil {
 		panic(err)
 	}
-	return gas
+	return nodes
 }
 
 // IDs executes the query and returns a list of Gauge ids.
@@ -435,7 +439,7 @@ func (gq *GaugeQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := gq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector)
+				ps[i](selector, gauge.ValidColumn)
 			}
 		}
 	}
@@ -454,7 +458,7 @@ func (gq *GaugeQuery) sqlQuery() *sql.Selector {
 		p(selector)
 	}
 	for _, p := range gq.order {
-		p(selector)
+		p(selector, gauge.ValidColumn)
 	}
 	if offset := gq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -689,8 +693,17 @@ func (ggb *GaugeGroupBy) BoolX(ctx context.Context) bool {
 }
 
 func (ggb *GaugeGroupBy) sqlScan(ctx context.Context, v interface{}) error {
+	for _, f := range ggb.fields {
+		if !gauge.ValidColumn(f) {
+			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
+		}
+	}
+	selector := ggb.sqlQuery()
+	if err := selector.Err(); err != nil {
+		return err
+	}
 	rows := &sql.Rows{}
-	query, args := ggb.sqlQuery().Query()
+	query, args := selector.Query()
 	if err := ggb.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
@@ -703,7 +716,7 @@ func (ggb *GaugeGroupBy) sqlQuery() *sql.Selector {
 	columns := make([]string, 0, len(ggb.fields)+len(ggb.fns))
 	columns = append(columns, ggb.fields...)
 	for _, fn := range ggb.fns {
-		columns = append(columns, fn(selector))
+		columns = append(columns, fn(selector, gauge.ValidColumn))
 	}
 	return selector.Select(columns...).GroupBy(ggb.fields...)
 }
@@ -923,6 +936,11 @@ func (gs *GaugeSelect) BoolX(ctx context.Context) bool {
 }
 
 func (gs *GaugeSelect) sqlScan(ctx context.Context, v interface{}) error {
+	for _, f := range gs.fields {
+		if !gauge.ValidColumn(f) {
+			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for selection", f)}
+		}
+	}
 	rows := &sql.Rows{}
 	query, args := gs.sqlQuery().Query()
 	if err := gs.driver.Query(ctx, query, args, rows); err != nil {

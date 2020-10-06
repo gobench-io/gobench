@@ -84,7 +84,7 @@ func (gu *GaugeUpdate) Mutation() *GaugeMutation {
 	return gu.mutation
 }
 
-// ClearMetric clears the metric edge to Metric.
+// ClearMetric clears the "metric" edge to type Metric.
 func (gu *GaugeUpdate) ClearMetric() *GaugeUpdate {
 	gu.mutation.ClearMetric()
 	return gu
@@ -92,7 +92,6 @@ func (gu *GaugeUpdate) ClearMetric() *GaugeUpdate {
 
 // Save executes the query and returns the number of rows/vertices matched by this operation.
 func (gu *GaugeUpdate) Save(ctx context.Context) (int, error) {
-
 	var (
 		err      error
 		affected int
@@ -304,7 +303,7 @@ func (guo *GaugeUpdateOne) Mutation() *GaugeMutation {
 	return guo.mutation
 }
 
-// ClearMetric clears the metric edge to Metric.
+// ClearMetric clears the "metric" edge to type Metric.
 func (guo *GaugeUpdateOne) ClearMetric() *GaugeUpdateOne {
 	guo.mutation.ClearMetric()
 	return guo
@@ -312,7 +311,6 @@ func (guo *GaugeUpdateOne) ClearMetric() *GaugeUpdateOne {
 
 // Save executes the query and returns the updated entity.
 func (guo *GaugeUpdateOne) Save(ctx context.Context) (*Gauge, error) {
-
 	var (
 		err  error
 		node *Gauge
@@ -342,11 +340,11 @@ func (guo *GaugeUpdateOne) Save(ctx context.Context) (*Gauge, error) {
 
 // SaveX is like Save, but panics if an error occurs.
 func (guo *GaugeUpdateOne) SaveX(ctx context.Context) *Gauge {
-	ga, err := guo.Save(ctx)
+	node, err := guo.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
-	return ga
+	return node
 }
 
 // Exec executes the query on the entity.
@@ -362,7 +360,7 @@ func (guo *GaugeUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
-func (guo *GaugeUpdateOne) sqlSave(ctx context.Context) (ga *Gauge, err error) {
+func (guo *GaugeUpdateOne) sqlSave(ctx context.Context) (_node *Gauge, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
 			Table:   gauge.Table,
@@ -448,9 +446,9 @@ func (guo *GaugeUpdateOne) sqlSave(ctx context.Context) (ga *Gauge, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	ga = &Gauge{config: guo.config}
-	_spec.Assign = ga.assignValues
-	_spec.ScanValues = ga.scanValues()
+	_node = &Gauge{config: guo.config}
+	_spec.Assign = _node.assignValues
+	_spec.ScanValues = _node.scanValues()
 	if err = sqlgraph.UpdateNode(ctx, guo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{gauge.Label}
@@ -459,5 +457,5 @@ func (guo *GaugeUpdateOne) sqlSave(ctx context.Context) (ga *Gauge, err error) {
 		}
 		return nil, err
 	}
-	return ga, nil
+	return _node, nil
 }

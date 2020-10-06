@@ -27,11 +27,11 @@ const (
 	FieldGomod = "gomod"
 	// FieldGosum holds the string denoting the gosum field in the database.
 	FieldGosum = "gosum"
-	// FieldTags holds the string denoting the tags field in the database.
-	FieldTags = "tags"
 
 	// EdgeGroups holds the string denoting the groups edge name in mutations.
 	EdgeGroups = "groups"
+	// EdgeTags holds the string denoting the tags edge name in mutations.
+	EdgeTags = "tags"
 
 	// Table holds the table name of the application in the database.
 	Table = "applications"
@@ -42,6 +42,13 @@ const (
 	GroupsInverseTable = "groups"
 	// GroupsColumn is the table column denoting the groups relation/edge.
 	GroupsColumn = "application_groups"
+	// TagsTable is the table the holds the tags relation/edge.
+	TagsTable = "tags"
+	// TagsInverseTable is the table name for the Tag entity.
+	// It exists in this package in order to avoid circular dependency with the "tag" package.
+	TagsInverseTable = "tags"
+	// TagsColumn is the table column denoting the tags relation/edge.
+	TagsColumn = "application_tags"
 )
 
 // Columns holds all SQL columns for application fields.
@@ -55,7 +62,16 @@ var Columns = []string{
 	FieldScenario,
 	FieldGomod,
 	FieldGosum,
-	FieldTags,
+}
+
+// ValidColumn reports if the column name is valid (part of the table columns).
+func ValidColumn(column string) bool {
+	for i := range Columns {
+		if column == Columns[i] {
+			return true
+		}
+	}
+	return false
 }
 
 var (
@@ -69,6 +85,4 @@ var (
 	DefaultGomod string
 	// DefaultGosum holds the default value on creation for the gosum field.
 	DefaultGosum string
-	// DefaultTags holds the default value on creation for the tags field.
-	DefaultTags string
 )

@@ -30,8 +30,6 @@ func (Application) Fields() []ent.Field {
 			Default(""),
 		field.Text("gosum").
 			Default(""),
-		field.String("tags").
-			Default(""),
 	}
 }
 
@@ -39,5 +37,6 @@ func (Application) Fields() []ent.Field {
 func (Application) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("groups", Group.Type),
+		edge.To("tags", Tag.Type),
 	}
 }

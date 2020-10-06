@@ -12,6 +12,7 @@ import (
 	"github.com/facebook/ent/schema/field"
 	"github.com/gobench-io/gobench/ent/application"
 	"github.com/gobench-io/gobench/ent/group"
+	"github.com/gobench-io/gobench/ent/tag"
 )
 
 // ApplicationCreate is the builder for creating a Application entity.
@@ -109,20 +110,6 @@ func (ac *ApplicationCreate) SetNillableGosum(s *string) *ApplicationCreate {
 	return ac
 }
 
-// SetTags sets the tags field.
-func (ac *ApplicationCreate) SetTags(s string) *ApplicationCreate {
-	ac.mutation.SetTags(s)
-	return ac
-}
-
-// SetNillableTags sets the tags field if the given value is not nil.
-func (ac *ApplicationCreate) SetNillableTags(s *string) *ApplicationCreate {
-	if s != nil {
-		ac.SetTags(*s)
-	}
-	return ac
-}
-
 // AddGroupIDs adds the groups edge to Group by ids.
 func (ac *ApplicationCreate) AddGroupIDs(ids ...int) *ApplicationCreate {
 	ac.mutation.AddGroupIDs(ids...)
@@ -138,6 +125,21 @@ func (ac *ApplicationCreate) AddGroups(g ...*Group) *ApplicationCreate {
 	return ac.AddGroupIDs(ids...)
 }
 
+// AddTagIDs adds the tags edge to Tag by ids.
+func (ac *ApplicationCreate) AddTagIDs(ids ...int) *ApplicationCreate {
+	ac.mutation.AddTagIDs(ids...)
+	return ac
+}
+
+// AddTags adds the tags edges to Tag.
+func (ac *ApplicationCreate) AddTags(t ...*Tag) *ApplicationCreate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return ac.AddTagIDs(ids...)
+}
+
 // Mutation returns the ApplicationMutation object of the builder.
 func (ac *ApplicationCreate) Mutation() *ApplicationMutation {
 	return ac.mutation
@@ -145,20 +147,24 @@ func (ac *ApplicationCreate) Mutation() *ApplicationMutation {
 
 // Save creates the Application in the database.
 func (ac *ApplicationCreate) Save(ctx context.Context) (*Application, error) {
-	if err := ac.preSave(); err != nil {
-		return nil, err
-	}
 	var (
 		err  error
 		node *Application
 	)
+	ac.defaults()
 	if len(ac.hooks) == 0 {
+		if err = ac.check(); err != nil {
+			return nil, err
+		}
 		node, err = ac.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*ApplicationMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = ac.check(); err != nil {
+				return nil, err
 			}
 			ac.mutation = mutation
 			node, err = ac.sqlSave(ctx)
@@ -184,13 +190,8 @@ func (ac *ApplicationCreate) SaveX(ctx context.Context) *Application {
 	return v
 }
 
-func (ac *ApplicationCreate) preSave() error {
-	if _, ok := ac.mutation.Name(); !ok {
-		return &ValidationError{Name: "name", err: errors.New("ent: missing required field \"name\"")}
-	}
-	if _, ok := ac.mutation.Status(); !ok {
-		return &ValidationError{Name: "status", err: errors.New("ent: missing required field \"status\"")}
-	}
+// defaults sets the default values of the builder before save.
+func (ac *ApplicationCreate) defaults() {
 	if _, ok := ac.mutation.CreatedAt(); !ok {
 		v := application.DefaultCreatedAt()
 		ac.mutation.SetCreatedAt(v)
@@ -198,9 +199,6 @@ func (ac *ApplicationCreate) preSave() error {
 	if _, ok := ac.mutation.UpdatedAt(); !ok {
 		v := application.DefaultUpdatedAt()
 		ac.mutation.SetUpdatedAt(v)
-	}
-	if _, ok := ac.mutation.Scenario(); !ok {
-		return &ValidationError{Name: "scenario", err: errors.New("ent: missing required field \"scenario\"")}
 	}
 	if _, ok := ac.mutation.Gomod(); !ok {
 		v := application.DefaultGomod
@@ -210,15 +208,36 @@ func (ac *ApplicationCreate) preSave() error {
 		v := application.DefaultGosum
 		ac.mutation.SetGosum(v)
 	}
-	if _, ok := ac.mutation.Tags(); !ok {
-		v := application.DefaultTags
-		ac.mutation.SetTags(v)
+}
+
+// check runs all checks and user-defined validators on the builder.
+func (ac *ApplicationCreate) check() error {
+	if _, ok := ac.mutation.Name(); !ok {
+		return &ValidationError{Name: "name", err: errors.New("ent: missing required field \"name\"")}
+	}
+	if _, ok := ac.mutation.Status(); !ok {
+		return &ValidationError{Name: "status", err: errors.New("ent: missing required field \"status\"")}
+	}
+	if _, ok := ac.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New("ent: missing required field \"created_at\"")}
+	}
+	if _, ok := ac.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New("ent: missing required field \"updated_at\"")}
+	}
+	if _, ok := ac.mutation.Scenario(); !ok {
+		return &ValidationError{Name: "scenario", err: errors.New("ent: missing required field \"scenario\"")}
+	}
+	if _, ok := ac.mutation.Gomod(); !ok {
+		return &ValidationError{Name: "gomod", err: errors.New("ent: missing required field \"gomod\"")}
+	}
+	if _, ok := ac.mutation.Gosum(); !ok {
+		return &ValidationError{Name: "gosum", err: errors.New("ent: missing required field \"gosum\"")}
 	}
 	return nil
 }
 
 func (ac *ApplicationCreate) sqlSave(ctx context.Context) (*Application, error) {
-	a, _spec := ac.createSpec()
+	_node, _spec := ac.createSpec()
 	if err := sqlgraph.CreateNode(ctx, ac.driver, _spec); err != nil {
 		if cerr, ok := isSQLConstraintError(err); ok {
 			err = cerr
@@ -226,13 +245,13 @@ func (ac *ApplicationCreate) sqlSave(ctx context.Context) (*Application, error) 
 		return nil, err
 	}
 	id := _spec.ID.Value.(int64)
-	a.ID = int(id)
-	return a, nil
+	_node.ID = int(id)
+	return _node, nil
 }
 
 func (ac *ApplicationCreate) createSpec() (*Application, *sqlgraph.CreateSpec) {
 	var (
-		a     = &Application{config: ac.config}
+		_node = &Application{config: ac.config}
 		_spec = &sqlgraph.CreateSpec{
 			Table: application.Table,
 			ID: &sqlgraph.FieldSpec{
@@ -247,7 +266,7 @@ func (ac *ApplicationCreate) createSpec() (*Application, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: application.FieldName,
 		})
-		a.Name = value
+		_node.Name = value
 	}
 	if value, ok := ac.mutation.Status(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -255,7 +274,7 @@ func (ac *ApplicationCreate) createSpec() (*Application, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: application.FieldStatus,
 		})
-		a.Status = value
+		_node.Status = value
 	}
 	if value, ok := ac.mutation.CreatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -263,7 +282,7 @@ func (ac *ApplicationCreate) createSpec() (*Application, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: application.FieldCreatedAt,
 		})
-		a.CreatedAt = value
+		_node.CreatedAt = value
 	}
 	if value, ok := ac.mutation.StartedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -271,7 +290,7 @@ func (ac *ApplicationCreate) createSpec() (*Application, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: application.FieldStartedAt,
 		})
-		a.StartedAt = value
+		_node.StartedAt = value
 	}
 	if value, ok := ac.mutation.UpdatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -279,7 +298,7 @@ func (ac *ApplicationCreate) createSpec() (*Application, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: application.FieldUpdatedAt,
 		})
-		a.UpdatedAt = value
+		_node.UpdatedAt = value
 	}
 	if value, ok := ac.mutation.Scenario(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -287,7 +306,7 @@ func (ac *ApplicationCreate) createSpec() (*Application, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: application.FieldScenario,
 		})
-		a.Scenario = value
+		_node.Scenario = value
 	}
 	if value, ok := ac.mutation.Gomod(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -295,7 +314,7 @@ func (ac *ApplicationCreate) createSpec() (*Application, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: application.FieldGomod,
 		})
-		a.Gomod = value
+		_node.Gomod = value
 	}
 	if value, ok := ac.mutation.Gosum(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -303,15 +322,7 @@ func (ac *ApplicationCreate) createSpec() (*Application, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: application.FieldGosum,
 		})
-		a.Gosum = value
-	}
-	if value, ok := ac.mutation.Tags(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: application.FieldTags,
-		})
-		a.Tags = value
+		_node.Gosum = value
 	}
 	if nodes := ac.mutation.GroupsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -332,7 +343,26 @@ func (ac *ApplicationCreate) createSpec() (*Application, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	return a, _spec
+	if nodes := ac.mutation.TagsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   application.TagsTable,
+			Columns: []string{application.TagsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	return _node, _spec
 }
 
 // ApplicationCreateBulk is the builder for creating a bulk of Application entities.
@@ -349,13 +379,14 @@ func (acb *ApplicationCreateBulk) Save(ctx context.Context) ([]*Application, err
 	for i := range acb.builders {
 		func(i int, root context.Context) {
 			builder := acb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-				if err := builder.preSave(); err != nil {
-					return nil, err
-				}
 				mutation, ok := m.(*ApplicationMutation)
 				if !ok {
 					return nil, fmt.Errorf("unexpected mutation type %T", m)
+				}
+				if err := builder.check(); err != nil {
+					return nil, err
 				}
 				builder.mutation = mutation
 				nodes[i], specs[i] = builder.createSpec()

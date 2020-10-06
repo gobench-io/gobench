@@ -16,6 +16,7 @@ import (
 	"github.com/gobench-io/gobench/ent/group"
 	"github.com/gobench-io/gobench/ent/histogram"
 	"github.com/gobench-io/gobench/ent/metric"
+	"github.com/gobench-io/gobench/ent/tag"
 
 	"github.com/facebook/ent/dialect"
 	"github.com/facebook/ent/dialect/sql"
@@ -41,6 +42,8 @@ type Client struct {
 	Histogram *HistogramClient
 	// Metric is the client for interacting with the Metric builders.
 	Metric *MetricClient
+	// Tag is the client for interacting with the Tag builders.
+	Tag *TagClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -61,6 +64,7 @@ func (c *Client) init() {
 	c.Group = NewGroupClient(c.config)
 	c.Histogram = NewHistogramClient(c.config)
 	c.Metric = NewMetricClient(c.config)
+	c.Tag = NewTagClient(c.config)
 }
 
 // Open opens a database/sql.DB specified by the driver name and
@@ -100,6 +104,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Group:       NewGroupClient(cfg),
 		Histogram:   NewHistogramClient(cfg),
 		Metric:      NewMetricClient(cfg),
+		Tag:         NewTagClient(cfg),
 	}, nil
 }
 
@@ -122,6 +127,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Group:       NewGroupClient(cfg),
 		Histogram:   NewHistogramClient(cfg),
 		Metric:      NewMetricClient(cfg),
+		Tag:         NewTagClient(cfg),
 	}, nil
 }
 
@@ -157,6 +163,7 @@ func (c *Client) Use(hooks ...Hook) {
 	c.Group.Use(hooks...)
 	c.Histogram.Use(hooks...)
 	c.Metric.Use(hooks...)
+	c.Tag.Use(hooks...)
 }
 
 // ApplicationClient is a client for the Application schema.
@@ -235,11 +242,11 @@ func (c *ApplicationClient) Get(ctx context.Context, id int) (*Application, erro
 
 // GetX is like Get, but panics if an error occurs.
 func (c *ApplicationClient) GetX(ctx context.Context, id int) *Application {
-	a, err := c.Get(ctx, id)
+	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
 	}
-	return a
+	return obj
 }
 
 // QueryGroups queries the groups edge of a Application.
@@ -251,6 +258,22 @@ func (c *ApplicationClient) QueryGroups(a *Application) *GroupQuery {
 			sqlgraph.From(application.Table, application.FieldID, id),
 			sqlgraph.To(group.Table, group.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, application.GroupsTable, application.GroupsColumn),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTags queries the tags edge of a Application.
+func (c *ApplicationClient) QueryTags(a *Application) *TagQuery {
+	query := &TagQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(application.Table, application.FieldID, id),
+			sqlgraph.To(tag.Table, tag.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, application.TagsTable, application.TagsColumn),
 		)
 		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
 		return fromV, nil
@@ -339,11 +362,11 @@ func (c *CounterClient) Get(ctx context.Context, id int) (*Counter, error) {
 
 // GetX is like Get, but panics if an error occurs.
 func (c *CounterClient) GetX(ctx context.Context, id int) *Counter {
-	co, err := c.Get(ctx, id)
+	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
 	}
-	return co
+	return obj
 }
 
 // QueryMetric queries the metric edge of a Counter.
@@ -443,11 +466,11 @@ func (c *GaugeClient) Get(ctx context.Context, id int) (*Gauge, error) {
 
 // GetX is like Get, but panics if an error occurs.
 func (c *GaugeClient) GetX(ctx context.Context, id int) *Gauge {
-	ga, err := c.Get(ctx, id)
+	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
 	}
-	return ga
+	return obj
 }
 
 // QueryMetric queries the metric edge of a Gauge.
@@ -547,11 +570,11 @@ func (c *GraphClient) Get(ctx context.Context, id int) (*Graph, error) {
 
 // GetX is like Get, but panics if an error occurs.
 func (c *GraphClient) GetX(ctx context.Context, id int) *Graph {
-	gr, err := c.Get(ctx, id)
+	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
 	}
-	return gr
+	return obj
 }
 
 // QueryGroup queries the group edge of a Graph.
@@ -667,11 +690,11 @@ func (c *GroupClient) Get(ctx context.Context, id int) (*Group, error) {
 
 // GetX is like Get, but panics if an error occurs.
 func (c *GroupClient) GetX(ctx context.Context, id int) *Group {
-	gr, err := c.Get(ctx, id)
+	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
 	}
-	return gr
+	return obj
 }
 
 // QueryApplication queries the application edge of a Group.
@@ -787,11 +810,11 @@ func (c *HistogramClient) Get(ctx context.Context, id int) (*Histogram, error) {
 
 // GetX is like Get, but panics if an error occurs.
 func (c *HistogramClient) GetX(ctx context.Context, id int) *Histogram {
-	h, err := c.Get(ctx, id)
+	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
 	}
-	return h
+	return obj
 }
 
 // QueryMetric queries the metric edge of a Histogram.
@@ -891,11 +914,11 @@ func (c *MetricClient) Get(ctx context.Context, id int) (*Metric, error) {
 
 // GetX is like Get, but panics if an error occurs.
 func (c *MetricClient) GetX(ctx context.Context, id int) *Metric {
-	m, err := c.Get(ctx, id)
+	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
 	}
-	return m
+	return obj
 }
 
 // QueryGraph queries the graph edge of a Metric.
@@ -965,4 +988,108 @@ func (c *MetricClient) QueryGauges(m *Metric) *GaugeQuery {
 // Hooks returns the client hooks.
 func (c *MetricClient) Hooks() []Hook {
 	return c.hooks.Metric
+}
+
+// TagClient is a client for the Tag schema.
+type TagClient struct {
+	config
+}
+
+// NewTagClient returns a client for the Tag from the given config.
+func NewTagClient(c config) *TagClient {
+	return &TagClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `tag.Hooks(f(g(h())))`.
+func (c *TagClient) Use(hooks ...Hook) {
+	c.hooks.Tag = append(c.hooks.Tag, hooks...)
+}
+
+// Create returns a create builder for Tag.
+func (c *TagClient) Create() *TagCreate {
+	mutation := newTagMutation(c.config, OpCreate)
+	return &TagCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// BulkCreate returns a builder for creating a bulk of Tag entities.
+func (c *TagClient) CreateBulk(builders ...*TagCreate) *TagCreateBulk {
+	return &TagCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Tag.
+func (c *TagClient) Update() *TagUpdate {
+	mutation := newTagMutation(c.config, OpUpdate)
+	return &TagUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TagClient) UpdateOne(t *Tag) *TagUpdateOne {
+	mutation := newTagMutation(c.config, OpUpdateOne, withTag(t))
+	return &TagUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TagClient) UpdateOneID(id int) *TagUpdateOne {
+	mutation := newTagMutation(c.config, OpUpdateOne, withTagID(id))
+	return &TagUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Tag.
+func (c *TagClient) Delete() *TagDelete {
+	mutation := newTagMutation(c.config, OpDelete)
+	return &TagDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *TagClient) DeleteOne(t *Tag) *TagDeleteOne {
+	return c.DeleteOneID(t.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *TagClient) DeleteOneID(id int) *TagDeleteOne {
+	builder := c.Delete().Where(tag.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TagDeleteOne{builder}
+}
+
+// Query returns a query builder for Tag.
+func (c *TagClient) Query() *TagQuery {
+	return &TagQuery{config: c.config}
+}
+
+// Get returns a Tag entity by its id.
+func (c *TagClient) Get(ctx context.Context, id int) (*Tag, error) {
+	return c.Query().Where(tag.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TagClient) GetX(ctx context.Context, id int) *Tag {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryApplication queries the application edge of a Tag.
+func (c *TagClient) QueryApplication(t *Tag) *ApplicationQuery {
+	query := &ApplicationQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := t.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(tag.Table, tag.FieldID, id),
+			sqlgraph.To(application.Table, application.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, tag.ApplicationTable, tag.ApplicationColumn),
+		)
+		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *TagClient) Hooks() []Hook {
+	return c.hooks.Tag
 }

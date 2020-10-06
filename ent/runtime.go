@@ -7,6 +7,7 @@ import (
 
 	"github.com/gobench-io/gobench/ent/application"
 	"github.com/gobench-io/gobench/ent/schema"
+	"github.com/gobench-io/gobench/ent/tag"
 )
 
 // The init function reads all schema descriptors with runtime
@@ -33,8 +34,24 @@ func init() {
 	applicationDescGosum := applicationFields[7].Descriptor()
 	// application.DefaultGosum holds the default value on creation for the gosum field.
 	application.DefaultGosum = applicationDescGosum.Default.(string)
-	// applicationDescTags is the schema descriptor for tags field.
-	applicationDescTags := applicationFields[8].Descriptor()
-	// application.DefaultTags holds the default value on creation for the tags field.
-	application.DefaultTags = applicationDescTags.Default.(string)
+	tagFields := schema.Tag{}.Fields()
+	_ = tagFields
+	// tagDescName is the schema descriptor for name field.
+	tagDescName := tagFields[0].Descriptor()
+	// tag.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	tag.NameValidator = func() func(string) error {
+		validators := tagDescName.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(name string) error {
+			for _, fn := range fns {
+				if err := fn(name); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 }

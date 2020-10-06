@@ -19,7 +19,6 @@ var (
 		{Name: "scenario", Type: field.TypeString, Size: 2147483647},
 		{Name: "gomod", Type: field.TypeString, Size: 2147483647, Default: ""},
 		{Name: "gosum", Type: field.TypeString, Size: 2147483647, Default: ""},
-		{Name: "tags", Type: field.TypeString, Default: ""},
 	}
 	// ApplicationsTable holds the schema information for the "applications" table.
 	ApplicationsTable = &schema.Table{
@@ -171,6 +170,34 @@ var (
 			},
 		},
 	}
+	// TagsColumns holds the columns for the "tags" table.
+	TagsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString, Size: 255},
+		{Name: "application_tags", Type: field.TypeInt, Nullable: true},
+	}
+	// TagsTable holds the schema information for the "tags" table.
+	TagsTable = &schema.Table{
+		Name:       "tags",
+		Columns:    TagsColumns,
+		PrimaryKey: []*schema.Column{TagsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:  "tags_applications_tags",
+				Columns: []*schema.Column{TagsColumns[2]},
+
+				RefColumns: []*schema.Column{ApplicationsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "tag_name_application_tags",
+				Unique:  true,
+				Columns: []*schema.Column{TagsColumns[1], TagsColumns[2]},
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		ApplicationsTable,
@@ -180,6 +207,7 @@ var (
 		GroupsTable,
 		HistogramsTable,
 		MetricsTable,
+		TagsTable,
 	}
 )
 
@@ -190,4 +218,5 @@ func init() {
 	GroupsTable.ForeignKeys[0].RefTable = ApplicationsTable
 	HistogramsTable.ForeignKeys[0].RefTable = MetricsTable
 	MetricsTable.ForeignKeys[0].RefTable = GraphsTable
+	TagsTable.ForeignKeys[0].RefTable = ApplicationsTable
 }

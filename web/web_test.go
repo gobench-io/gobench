@@ -37,6 +37,26 @@ func newAPITest(t *testing.T, adminPassword string) (*chi.Mux, *httptest.Respons
 	return r, w
 }
 
+func newAppTag(t *testing.T, appID int, name string) *ent.Tag {
+	r, w := newAPITest(t, "")
+	reqBody, _ := json.Marshal(map[string]string{
+		"Name": name,
+	})
+	req, _ := http.NewRequest("PUT",
+		fmt.Sprintf("/api/applications/%d/tags", appID),
+		bytes.NewBuffer(reqBody))
+	req.Header.Set("Content-Type", "application/json")
+
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, 200, w.Code)
+
+	var tag ent.Tag
+	_ = json.Unmarshal(w.Body.Bytes(), &tag)
+
+	return &tag
+}
+
 func newApp(t *testing.T) *ent.Application {
 	r, w := newAPITest(t, "")
 	name := "name 1"
@@ -287,19 +307,69 @@ func TestDeleteApplication(t *testing.T) {
 
 	assert.Equal(t, 200, w.Code)
 }
-func TestSetApplicationTag(t *testing.T) {
+
+func TestAddApplicationTag(t *testing.T) {
+	tagName := "foo"
+	tag := &ent.Tag{}
 	app := newApp(t)
 
 	r, w := newAPITest(t, "")
 
 	reqBody, _ := json.Marshal(map[string]string{
-		"tags": "test,test2,test3",
+		"name": tagName,
 	})
 
 	req, _ := http.NewRequest(
-		"PATCH",
+		"PUT",
 		fmt.Sprintf("/api/applications/%d/tags", app.ID),
 		bytes.NewBuffer(reqBody),
+	)
+
+	req.Header.Set("Content-Type", "application/json")
+
+	r.ServeHTTP(w, req)
+	_ = json.Unmarshal(w.Body.Bytes(), &tag)
+	assert.Equal(t, tagName, tag.Name)
+	assert.Equal(t, 200, w.Code)
+}
+
+func TestAddApplicationTagAgain(t *testing.T) {
+	tagName := "foo"
+	tag := &ent.Tag{}
+	app := newApp(t)
+	_ = newAppTag(t, app.ID, tagName)
+
+	r, w := newAPITest(t, "")
+
+	reqBody, _ := json.Marshal(map[string]string{
+		"name": tagName,
+	})
+
+	req, _ := http.NewRequest(
+		"PUT",
+		fmt.Sprintf("/api/applications/%d/tags", app.ID),
+		bytes.NewBuffer(reqBody),
+	)
+
+	req.Header.Set("Content-Type", "application/json")
+
+	r.ServeHTTP(w, req)
+	_ = json.Unmarshal(w.Body.Bytes(), &tag)
+	assert.Equal(t, tagName, tag.Name)
+	assert.Equal(t, 200, w.Code)
+}
+
+func TestDeleteApplicationTag(t *testing.T) {
+	tagName := "foo"
+	app := newApp(t)
+	fooTag := newAppTag(t, app.ID, tagName)
+
+	r, w := newAPITest(t, "")
+
+	req, _ := http.NewRequest(
+		"DELETE",
+		fmt.Sprintf("/api/applications/%d/tags/%d", app.ID, fooTag.ID),
+		bytes.NewBuffer(nil),
 	)
 
 	req.Header.Set("Content-Type", "application/json")

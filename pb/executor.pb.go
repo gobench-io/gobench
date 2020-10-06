@@ -301,6 +301,7 @@ var file_executor_proto_depIdxs = []int32{
 }
 
 func init() { file_executor_proto_init() }
+
 func file_executor_proto_init() {
 	if File_executor_proto != nil {
 		return
@@ -430,6 +431,7 @@ type UnimplementedExecutorServer struct {
 func (*UnimplementedExecutorServer) Start(context.Context, *StartRequest) (*StartResult, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Start not implemented")
 }
+
 func (*UnimplementedExecutorServer) Terminate(context.Context, *TermRequest) (*TermResult, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Terminate not implemented")
 }
