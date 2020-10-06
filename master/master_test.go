@@ -32,11 +32,13 @@ func seedMaster(t *testing.T) *Master {
 
 	return m
 }
-func (m *Master) seedApplication(ctx context.Context) *ent.Application {
+
+func (m *Master) seedApplication(ctx context.Context, t *testing.T) *ent.Application {
 	app, err := m.NewApplication(ctx, "foo", "bar", "", "")
-	if err != nil {
-		panic(err)
-	}
+	assert.Nil(t, err)
+	assert.NotNil(t, app)
+	assert.Equal(t, app.Name, "foo")
+	assert.Equal(t, app.Scenario, "bar")
 	return app
 }
 func localGobenchMod(t *testing.T) string {
@@ -316,7 +318,7 @@ func TestLogpaths(t *testing.T) {
 func TestMaster_SetApplicationTag(t *testing.T) {
 	m := seedMaster(t)
 	ctx := context.Background()
-	app := m.seedApplication(ctx)
+	app := m.seedApplication(ctx, t)
 
 	type args struct {
 		appID int
@@ -383,7 +385,7 @@ func TestMaster_GetTagByApplication(t *testing.T) {
 	m := seedMaster(t)
 	ctx := context.Background()
 	tagName := "foo"
-	app := m.seedApplication(ctx)
+	app := m.seedApplication(ctx, t)
 	tag, err := m.SetApplicationTag(ctx, app.ID, tagName)
 	if err != nil {
 		t.Fatal("Master.GetTagByApplication() seed SetApplicationTag error")
@@ -426,7 +428,7 @@ func TestMaster_GetTagByID(t *testing.T) {
 	m := seedMaster(t)
 	ctx := context.Background()
 	tagName := "foo"
-	app := m.seedApplication(ctx)
+	app := m.seedApplication(ctx, t)
 	tag, err := m.SetApplicationTag(ctx, app.ID, tagName)
 	if err != nil {
 		t.Fatal("Master.GetTagByApplication() seed SetApplicationTag error")
@@ -467,7 +469,7 @@ func TestMaster_RemoveApplicationTag(t *testing.T) {
 	m := seedMaster(t)
 	ctx := context.Background()
 	tagName := "foo"
-	app := m.seedApplication(ctx)
+	app := m.seedApplication(ctx, t)
 	tag, err := m.SetApplicationTag(ctx, app.ID, tagName)
 	if err != nil {
 		t.Fatal("Master.GetTagByApplication() seed SetApplicationTag error")
