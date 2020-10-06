@@ -26,3 +26,6 @@ type Histogram func(*sql.Selector)
 
 // Metric is the predicate function for metric builders.
 type Metric func(*sql.Selector)
+
+// Tag is the predicate function for tag builders.
+type Tag func(*sql.Selector)

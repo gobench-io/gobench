@@ -15,6 +15,7 @@ import (
 	"github.com/gobench-io/gobench/ent/group"
 	"github.com/gobench-io/gobench/ent/histogram"
 	"github.com/gobench-io/gobench/ent/metric"
+	"github.com/gobench-io/gobench/ent/tag"
 
 	"github.com/facebook/ent"
 )
@@ -35,6 +36,7 @@ const (
 	TypeGroup       = "Group"
 	TypeHistogram   = "Histogram"
 	TypeMetric      = "Metric"
+	TypeTag         = "Tag"
 )
 
 // ApplicationMutation represents an operation that mutate the Applications
@@ -52,10 +54,13 @@ type ApplicationMutation struct {
 	scenario      *string
 	gomod         *string
 	gosum         *string
-	tags          *string
 	clearedFields map[string]struct{}
 	groups        map[int]struct{}
 	removedgroups map[int]struct{}
+	clearedgroups bool
+	tags          map[int]struct{}
+	removedtags   map[int]struct{}
+	clearedtags   bool
 	done          bool
 	oldValue      func(context.Context) (*Application, error)
 }
@@ -448,43 +453,6 @@ func (m *ApplicationMutation) ResetGosum() {
 	m.gosum = nil
 }
 
-// SetTags sets the tags field.
-func (m *ApplicationMutation) SetTags(s string) {
-	m.tags = &s
-}
-
-// Tags returns the tags value in the mutation.
-func (m *ApplicationMutation) Tags() (r string, exists bool) {
-	v := m.tags
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTags returns the old tags value of the Application.
-// If the Application object wasn't provided to the builder, the object is fetched
-// from the database.
-// An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *ApplicationMutation) OldTags(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldTags is allowed only on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldTags requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTags: %w", err)
-	}
-	return oldValue.Tags, nil
-}
-
-// ResetTags reset all changes of the "tags" field.
-func (m *ApplicationMutation) ResetTags() {
-	m.tags = nil
-}
-
 // AddGroupIDs adds the groups edge to Group by ids.
 func (m *ApplicationMutation) AddGroupIDs(ids ...int) {
 	if m.groups == nil {
@@ -493,6 +461,16 @@ func (m *ApplicationMutation) AddGroupIDs(ids ...int) {
 	for i := range ids {
 		m.groups[ids[i]] = struct{}{}
 	}
+}
+
+// ClearGroups clears the groups edge to Group.
+func (m *ApplicationMutation) ClearGroups() {
+	m.clearedgroups = true
+}
+
+// GroupsCleared returns if the edge groups was cleared.
+func (m *ApplicationMutation) GroupsCleared() bool {
+	return m.clearedgroups
 }
 
 // RemoveGroupIDs removes the groups edge to Group by ids.
@@ -524,7 +502,61 @@ func (m *ApplicationMutation) GroupsIDs() (ids []int) {
 // ResetGroups reset all changes of the "groups" edge.
 func (m *ApplicationMutation) ResetGroups() {
 	m.groups = nil
+	m.clearedgroups = false
 	m.removedgroups = nil
+}
+
+// AddTagIDs adds the tags edge to Tag by ids.
+func (m *ApplicationMutation) AddTagIDs(ids ...int) {
+	if m.tags == nil {
+		m.tags = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.tags[ids[i]] = struct{}{}
+	}
+}
+
+// ClearTags clears the tags edge to Tag.
+func (m *ApplicationMutation) ClearTags() {
+	m.clearedtags = true
+}
+
+// TagsCleared returns if the edge tags was cleared.
+func (m *ApplicationMutation) TagsCleared() bool {
+	return m.clearedtags
+}
+
+// RemoveTagIDs removes the tags edge to Tag by ids.
+func (m *ApplicationMutation) RemoveTagIDs(ids ...int) {
+	if m.removedtags == nil {
+		m.removedtags = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.removedtags[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTags returns the removed ids of tags.
+func (m *ApplicationMutation) RemovedTagsIDs() (ids []int) {
+	for id := range m.removedtags {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// TagsIDs returns the tags ids in the mutation.
+func (m *ApplicationMutation) TagsIDs() (ids []int) {
+	for id := range m.tags {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTags reset all changes of the "tags" edge.
+func (m *ApplicationMutation) ResetTags() {
+	m.tags = nil
+	m.clearedtags = false
+	m.removedtags = nil
 }
 
 // Op returns the operation name.
@@ -541,7 +573,7 @@ func (m *ApplicationMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *ApplicationMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 8)
 	if m.name != nil {
 		fields = append(fields, application.FieldName)
 	}
@@ -565,9 +597,6 @@ func (m *ApplicationMutation) Fields() []string {
 	}
 	if m.gosum != nil {
 		fields = append(fields, application.FieldGosum)
-	}
-	if m.tags != nil {
-		fields = append(fields, application.FieldTags)
 	}
 	return fields
 }
@@ -593,8 +622,6 @@ func (m *ApplicationMutation) Field(name string) (ent.Value, bool) {
 		return m.Gomod()
 	case application.FieldGosum:
 		return m.Gosum()
-	case application.FieldTags:
-		return m.Tags()
 	}
 	return nil, false
 }
@@ -620,8 +647,6 @@ func (m *ApplicationMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldGomod(ctx)
 	case application.FieldGosum:
 		return m.OldGosum(ctx)
-	case application.FieldTags:
-		return m.OldTags(ctx)
 	}
 	return nil, fmt.Errorf("unknown Application field %s", name)
 }
@@ -686,13 +711,6 @@ func (m *ApplicationMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetGosum(v)
-		return nil
-	case application.FieldTags:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTags(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Application field %s", name)
@@ -777,9 +795,6 @@ func (m *ApplicationMutation) ResetField(name string) error {
 	case application.FieldGosum:
 		m.ResetGosum()
 		return nil
-	case application.FieldTags:
-		m.ResetTags()
-		return nil
 	}
 	return fmt.Errorf("unknown Application field %s", name)
 }
@@ -787,9 +802,12 @@ func (m *ApplicationMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this
 // mutation.
 func (m *ApplicationMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.groups != nil {
 		edges = append(edges, application.EdgeGroups)
+	}
+	if m.tags != nil {
+		edges = append(edges, application.EdgeTags)
 	}
 	return edges
 }
@@ -804,6 +822,12 @@ func (m *ApplicationMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case application.EdgeTags:
+		ids := make([]ent.Value, 0, len(m.tags))
+		for id := range m.tags {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
@@ -811,9 +835,12 @@ func (m *ApplicationMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this
 // mutation.
 func (m *ApplicationMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.removedgroups != nil {
 		edges = append(edges, application.EdgeGroups)
+	}
+	if m.removedtags != nil {
+		edges = append(edges, application.EdgeTags)
 	}
 	return edges
 }
@@ -828,6 +855,12 @@ func (m *ApplicationMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case application.EdgeTags:
+		ids := make([]ent.Value, 0, len(m.removedtags))
+		for id := range m.removedtags {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
@@ -835,7 +868,13 @@ func (m *ApplicationMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this
 // mutation.
 func (m *ApplicationMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
+	if m.clearedgroups {
+		edges = append(edges, application.EdgeGroups)
+	}
+	if m.clearedtags {
+		edges = append(edges, application.EdgeTags)
+	}
 	return edges
 }
 
@@ -843,6 +882,10 @@ func (m *ApplicationMutation) ClearedEdges() []string {
 // cleared in this mutation.
 func (m *ApplicationMutation) EdgeCleared(name string) bool {
 	switch name {
+	case application.EdgeGroups:
+		return m.clearedgroups
+	case application.EdgeTags:
+		return m.clearedtags
 	}
 	return false
 }
@@ -862,6 +905,9 @@ func (m *ApplicationMutation) ResetEdge(name string) error {
 	switch name {
 	case application.EdgeGroups:
 		m.ResetGroups()
+		return nil
+	case application.EdgeTags:
+		m.ResetTags()
 		return nil
 	}
 	return fmt.Errorf("unknown Application edge %s", name)
@@ -1963,6 +2009,7 @@ type GraphMutation struct {
 	clearedgroup   bool
 	metrics        map[int]struct{}
 	removedmetrics map[int]struct{}
+	clearedmetrics bool
 	done           bool
 	oldValue       func(context.Context) (*Graph, error)
 }
@@ -2169,6 +2216,16 @@ func (m *GraphMutation) AddMetricIDs(ids ...int) {
 	}
 }
 
+// ClearMetrics clears the metrics edge to Metric.
+func (m *GraphMutation) ClearMetrics() {
+	m.clearedmetrics = true
+}
+
+// MetricsCleared returns if the edge metrics was cleared.
+func (m *GraphMutation) MetricsCleared() bool {
+	return m.clearedmetrics
+}
+
 // RemoveMetricIDs removes the metrics edge to Metric by ids.
 func (m *GraphMutation) RemoveMetricIDs(ids ...int) {
 	if m.removedmetrics == nil {
@@ -2198,6 +2255,7 @@ func (m *GraphMutation) MetricsIDs() (ids []int) {
 // ResetMetrics reset all changes of the "metrics" edge.
 func (m *GraphMutation) ResetMetrics() {
 	m.metrics = nil
+	m.clearedmetrics = false
 	m.removedmetrics = nil
 }
 
@@ -2392,6 +2450,9 @@ func (m *GraphMutation) ClearedEdges() []string {
 	if m.clearedgroup {
 		edges = append(edges, graph.EdgeGroup)
 	}
+	if m.clearedmetrics {
+		edges = append(edges, graph.EdgeMetrics)
+	}
 	return edges
 }
 
@@ -2401,6 +2462,8 @@ func (m *GraphMutation) EdgeCleared(name string) bool {
 	switch name {
 	case graph.EdgeGroup:
 		return m.clearedgroup
+	case graph.EdgeMetrics:
+		return m.clearedmetrics
 	}
 	return false
 }
@@ -2444,6 +2507,7 @@ type GroupMutation struct {
 	clearedapplication bool
 	graphs             map[int]struct{}
 	removedgraphs      map[int]struct{}
+	clearedgraphs      bool
 	done               bool
 	oldValue           func(context.Context) (*Group, error)
 }
@@ -2613,6 +2677,16 @@ func (m *GroupMutation) AddGraphIDs(ids ...int) {
 	}
 }
 
+// ClearGraphs clears the graphs edge to Graph.
+func (m *GroupMutation) ClearGraphs() {
+	m.clearedgraphs = true
+}
+
+// GraphsCleared returns if the edge graphs was cleared.
+func (m *GroupMutation) GraphsCleared() bool {
+	return m.clearedgraphs
+}
+
 // RemoveGraphIDs removes the graphs edge to Graph by ids.
 func (m *GroupMutation) RemoveGraphIDs(ids ...int) {
 	if m.removedgraphs == nil {
@@ -2642,6 +2716,7 @@ func (m *GroupMutation) GraphsIDs() (ids []int) {
 // ResetGraphs reset all changes of the "graphs" edge.
 func (m *GroupMutation) ResetGraphs() {
 	m.graphs = nil
+	m.clearedgraphs = false
 	m.removedgraphs = nil
 }
 
@@ -2819,6 +2894,9 @@ func (m *GroupMutation) ClearedEdges() []string {
 	if m.clearedapplication {
 		edges = append(edges, group.EdgeApplication)
 	}
+	if m.clearedgraphs {
+		edges = append(edges, group.EdgeGraphs)
+	}
 	return edges
 }
 
@@ -2828,6 +2906,8 @@ func (m *GroupMutation) EdgeCleared(name string) bool {
 	switch name {
 	case group.EdgeApplication:
 		return m.clearedapplication
+	case group.EdgeGraphs:
+		return m.clearedgraphs
 	}
 	return false
 }
@@ -4205,10 +4285,13 @@ type MetricMutation struct {
 	clearedgraph      bool
 	histograms        map[int]struct{}
 	removedhistograms map[int]struct{}
+	clearedhistograms bool
 	counters          map[int]struct{}
 	removedcounters   map[int]struct{}
+	clearedcounters   bool
 	gauges            map[int]struct{}
 	removedgauges     map[int]struct{}
+	clearedgauges     bool
 	done              bool
 	oldValue          func(context.Context) (*Metric, error)
 }
@@ -4415,6 +4498,16 @@ func (m *MetricMutation) AddHistogramIDs(ids ...int) {
 	}
 }
 
+// ClearHistograms clears the histograms edge to Histogram.
+func (m *MetricMutation) ClearHistograms() {
+	m.clearedhistograms = true
+}
+
+// HistogramsCleared returns if the edge histograms was cleared.
+func (m *MetricMutation) HistogramsCleared() bool {
+	return m.clearedhistograms
+}
+
 // RemoveHistogramIDs removes the histograms edge to Histogram by ids.
 func (m *MetricMutation) RemoveHistogramIDs(ids ...int) {
 	if m.removedhistograms == nil {
@@ -4444,6 +4537,7 @@ func (m *MetricMutation) HistogramsIDs() (ids []int) {
 // ResetHistograms reset all changes of the "histograms" edge.
 func (m *MetricMutation) ResetHistograms() {
 	m.histograms = nil
+	m.clearedhistograms = false
 	m.removedhistograms = nil
 }
 
@@ -4455,6 +4549,16 @@ func (m *MetricMutation) AddCounterIDs(ids ...int) {
 	for i := range ids {
 		m.counters[ids[i]] = struct{}{}
 	}
+}
+
+// ClearCounters clears the counters edge to Counter.
+func (m *MetricMutation) ClearCounters() {
+	m.clearedcounters = true
+}
+
+// CountersCleared returns if the edge counters was cleared.
+func (m *MetricMutation) CountersCleared() bool {
+	return m.clearedcounters
 }
 
 // RemoveCounterIDs removes the counters edge to Counter by ids.
@@ -4486,6 +4590,7 @@ func (m *MetricMutation) CountersIDs() (ids []int) {
 // ResetCounters reset all changes of the "counters" edge.
 func (m *MetricMutation) ResetCounters() {
 	m.counters = nil
+	m.clearedcounters = false
 	m.removedcounters = nil
 }
 
@@ -4497,6 +4602,16 @@ func (m *MetricMutation) AddGaugeIDs(ids ...int) {
 	for i := range ids {
 		m.gauges[ids[i]] = struct{}{}
 	}
+}
+
+// ClearGauges clears the gauges edge to Gauge.
+func (m *MetricMutation) ClearGauges() {
+	m.clearedgauges = true
+}
+
+// GaugesCleared returns if the edge gauges was cleared.
+func (m *MetricMutation) GaugesCleared() bool {
+	return m.clearedgauges
 }
 
 // RemoveGaugeIDs removes the gauges edge to Gauge by ids.
@@ -4528,6 +4643,7 @@ func (m *MetricMutation) GaugesIDs() (ids []int) {
 // ResetGauges reset all changes of the "gauges" edge.
 func (m *MetricMutation) ResetGauges() {
 	m.gauges = nil
+	m.clearedgauges = false
 	m.removedgauges = nil
 }
 
@@ -4758,6 +4874,15 @@ func (m *MetricMutation) ClearedEdges() []string {
 	if m.clearedgraph {
 		edges = append(edges, metric.EdgeGraph)
 	}
+	if m.clearedhistograms {
+		edges = append(edges, metric.EdgeHistograms)
+	}
+	if m.clearedcounters {
+		edges = append(edges, metric.EdgeCounters)
+	}
+	if m.clearedgauges {
+		edges = append(edges, metric.EdgeGauges)
+	}
 	return edges
 }
 
@@ -4767,6 +4892,12 @@ func (m *MetricMutation) EdgeCleared(name string) bool {
 	switch name {
 	case metric.EdgeGraph:
 		return m.clearedgraph
+	case metric.EdgeHistograms:
+		return m.clearedhistograms
+	case metric.EdgeCounters:
+		return m.clearedcounters
+	case metric.EdgeGauges:
+		return m.clearedgauges
 	}
 	return false
 }
@@ -4801,4 +4932,366 @@ func (m *MetricMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown Metric edge %s", name)
+}
+
+// TagMutation represents an operation that mutate the Tags
+// nodes in the graph.
+type TagMutation struct {
+	config
+	op                 Op
+	typ                string
+	id                 *int
+	name               *string
+	clearedFields      map[string]struct{}
+	application        *int
+	clearedapplication bool
+	done               bool
+	oldValue           func(context.Context) (*Tag, error)
+}
+
+var _ ent.Mutation = (*TagMutation)(nil)
+
+// tagOption allows to manage the mutation configuration using functional options.
+type tagOption func(*TagMutation)
+
+// newTagMutation creates new mutation for $n.Name.
+func newTagMutation(c config, op Op, opts ...tagOption) *TagMutation {
+	m := &TagMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeTag,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withTagID sets the id field of the mutation.
+func withTagID(id int) tagOption {
+	return func(m *TagMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Tag
+		)
+		m.oldValue = func(ctx context.Context) (*Tag, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Tag.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withTag sets the old Tag of the mutation.
+func withTag(node *Tag) tagOption {
+	return func(m *TagMutation) {
+		m.oldValue = func(context.Context) (*Tag, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m TagMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m TagMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the id value in the mutation. Note that, the id
+// is available only if it was provided to the builder.
+func (m *TagMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetName sets the name field.
+func (m *TagMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the name value in the mutation.
+func (m *TagMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old name value of the Tag.
+// If the Tag object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *TagMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldName is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName reset all changes of the "name" field.
+func (m *TagMutation) ResetName() {
+	m.name = nil
+}
+
+// SetApplicationID sets the application edge to Application by id.
+func (m *TagMutation) SetApplicationID(id int) {
+	m.application = &id
+}
+
+// ClearApplication clears the application edge to Application.
+func (m *TagMutation) ClearApplication() {
+	m.clearedapplication = true
+}
+
+// ApplicationCleared returns if the edge application was cleared.
+func (m *TagMutation) ApplicationCleared() bool {
+	return m.clearedapplication
+}
+
+// ApplicationID returns the application id in the mutation.
+func (m *TagMutation) ApplicationID() (id int, exists bool) {
+	if m.application != nil {
+		return *m.application, true
+	}
+	return
+}
+
+// ApplicationIDs returns the application ids in the mutation.
+// Note that ids always returns len(ids) <= 1 for unique edges, and you should use
+// ApplicationID instead. It exists only for internal usage by the builders.
+func (m *TagMutation) ApplicationIDs() (ids []int) {
+	if id := m.application; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetApplication reset all changes of the "application" edge.
+func (m *TagMutation) ResetApplication() {
+	m.application = nil
+	m.clearedapplication = false
+}
+
+// Op returns the operation name.
+func (m *TagMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (Tag).
+func (m *TagMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during
+// this mutation. Note that, in order to get all numeric
+// fields that were in/decremented, call AddedFields().
+func (m *TagMutation) Fields() []string {
+	fields := make([]string, 0, 1)
+	if m.name != nil {
+		fields = append(fields, tag.FieldName)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name.
+// The second boolean value indicates that this field was
+// not set, or was not define in the schema.
+func (m *TagMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case tag.FieldName:
+		return m.Name()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database.
+// An error is returned if the mutation operation is not UpdateOne,
+// or the query to the database was failed.
+func (m *TagMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case tag.FieldName:
+		return m.OldName(ctx)
+	}
+	return nil, fmt.Errorf("unknown Tag field %s", name)
+}
+
+// SetField sets the value for the given name. It returns an
+// error if the field is not defined in the schema, or if the
+// type mismatch the field type.
+func (m *TagMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case tag.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Tag field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented
+// or decremented during this mutation.
+func (m *TagMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was in/decremented
+// from a field with the given name. The second value indicates
+// that this field was not set, or was not define in the schema.
+func (m *TagMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value for the given name. It returns an
+// error if the field is not defined in the schema, or if the
+// type mismatch the field type.
+func (m *TagMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Tag numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared
+// during this mutation.
+func (m *TagMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicates if this field was
+// cleared in this mutation.
+func (m *TagMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value for the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *TagMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Tag nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation regarding the
+// given field name. It returns an error if the field is not
+// defined in the schema.
+func (m *TagMutation) ResetField(name string) error {
+	switch name {
+	case tag.FieldName:
+		m.ResetName()
+		return nil
+	}
+	return fmt.Errorf("unknown Tag field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this
+// mutation.
+func (m *TagMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.application != nil {
+		edges = append(edges, tag.EdgeApplication)
+	}
+	return edges
+}
+
+// AddedIDs returns all ids (to other nodes) that were added for
+// the given edge name.
+func (m *TagMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case tag.EdgeApplication:
+		if id := m.application; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this
+// mutation.
+func (m *TagMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all ids (to other nodes) that were removed for
+// the given edge name.
+func (m *TagMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this
+// mutation.
+func (m *TagMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedapplication {
+		edges = append(edges, tag.EdgeApplication)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean indicates if this edge was
+// cleared in this mutation.
+func (m *TagMutation) EdgeCleared(name string) bool {
+	switch name {
+	case tag.EdgeApplication:
+		return m.clearedapplication
+	}
+	return false
+}
+
+// ClearEdge clears the value for the given name. It returns an
+// error if the edge name is not defined in the schema.
+func (m *TagMutation) ClearEdge(name string) error {
+	switch name {
+	case tag.EdgeApplication:
+		m.ClearApplication()
+		return nil
+	}
+	return fmt.Errorf("unknown Tag unique edge %s", name)
+}
+
+// ResetEdge resets all changes in the mutation regarding the
+// given edge name. It returns an error if the edge is not
+// defined in the schema.
+func (m *TagMutation) ResetEdge(name string) error {
+	switch name {
+	case tag.EdgeApplication:
+		m.ResetApplication()
+		return nil
+	}
+	return fmt.Errorf("unknown Tag edge %s", name)
 }

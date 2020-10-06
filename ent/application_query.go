@@ -15,6 +15,7 @@ import (
 	"github.com/gobench-io/gobench/ent/application"
 	"github.com/gobench-io/gobench/ent/group"
 	"github.com/gobench-io/gobench/ent/predicate"
+	"github.com/gobench-io/gobench/ent/tag"
 )
 
 // ApplicationQuery is the builder for querying Application entities.
@@ -27,6 +28,7 @@ type ApplicationQuery struct {
 	predicates []predicate.Application
 	// eager-loading edges.
 	withGroups *GroupQuery
+	withTags   *TagQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -63,8 +65,12 @@ func (aq *ApplicationQuery) QueryGroups() *GroupQuery {
 		if err := aq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
+		selector := aq.sqlQuery()
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(application.Table, application.FieldID, aq.sqlQuery()),
+			sqlgraph.From(application.Table, application.FieldID, selector),
 			sqlgraph.To(group.Table, group.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, application.GroupsTable, application.GroupsColumn),
 		)
@@ -74,25 +80,47 @@ func (aq *ApplicationQuery) QueryGroups() *GroupQuery {
 	return query
 }
 
+// QueryTags chains the current query on the tags edge.
+func (aq *ApplicationQuery) QueryTags() *TagQuery {
+	query := &TagQuery{config: aq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := aq.sqlQuery()
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(application.Table, application.FieldID, selector),
+			sqlgraph.To(tag.Table, tag.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, application.TagsTable, application.TagsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first Application entity in the query. Returns *NotFoundError when no application was found.
 func (aq *ApplicationQuery) First(ctx context.Context) (*Application, error) {
-	as, err := aq.Limit(1).All(ctx)
+	nodes, err := aq.Limit(1).All(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if len(as) == 0 {
+	if len(nodes) == 0 {
 		return nil, &NotFoundError{application.Label}
 	}
-	return as[0], nil
+	return nodes[0], nil
 }
 
 // FirstX is like First, but panics if an error occurs.
 func (aq *ApplicationQuery) FirstX(ctx context.Context) *Application {
-	a, err := aq.First(ctx)
+	node, err := aq.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
-	return a
+	return node
 }
 
 // FirstID returns the first Application id in the query. Returns *NotFoundError when no id was found.
@@ -119,13 +147,13 @@ func (aq *ApplicationQuery) FirstXID(ctx context.Context) int {
 
 // Only returns the only Application entity in the query, returns an error if not exactly one entity was returned.
 func (aq *ApplicationQuery) Only(ctx context.Context) (*Application, error) {
-	as, err := aq.Limit(2).All(ctx)
+	nodes, err := aq.Limit(2).All(ctx)
 	if err != nil {
 		return nil, err
 	}
-	switch len(as) {
+	switch len(nodes) {
 	case 1:
-		return as[0], nil
+		return nodes[0], nil
 	case 0:
 		return nil, &NotFoundError{application.Label}
 	default:
@@ -135,11 +163,11 @@ func (aq *ApplicationQuery) Only(ctx context.Context) (*Application, error) {
 
 // OnlyX is like Only, but panics if an error occurs.
 func (aq *ApplicationQuery) OnlyX(ctx context.Context) *Application {
-	a, err := aq.Only(ctx)
+	node, err := aq.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
-	return a
+	return node
 }
 
 // OnlyID returns the only Application id in the query, returns an error if not exactly one id was returned.
@@ -178,11 +206,11 @@ func (aq *ApplicationQuery) All(ctx context.Context) ([]*Application, error) {
 
 // AllX is like All, but panics if an error occurs.
 func (aq *ApplicationQuery) AllX(ctx context.Context) []*Application {
-	as, err := aq.All(ctx)
+	nodes, err := aq.All(ctx)
 	if err != nil {
 		panic(err)
 	}
-	return as
+	return nodes
 }
 
 // IDs executes the query and returns a list of Application ids.
@@ -264,6 +292,17 @@ func (aq *ApplicationQuery) WithGroups(opts ...func(*GroupQuery)) *ApplicationQu
 	return aq
 }
 
+//  WithTags tells the query-builder to eager-loads the nodes that are connected to
+// the "tags" edge. The optional arguments used to configure the query builder of the edge.
+func (aq *ApplicationQuery) WithTags(opts ...func(*TagQuery)) *ApplicationQuery {
+	query := &TagQuery{config: aq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	aq.withTags = query
+	return aq
+}
+
 // GroupBy used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -330,8 +369,9 @@ func (aq *ApplicationQuery) sqlAll(ctx context.Context) ([]*Application, error) 
 	var (
 		nodes       = []*Application{}
 		_spec       = aq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			aq.withGroups != nil,
+			aq.withTags != nil,
 		}
 	)
 	_spec.ScanValues = func() []interface{} {
@@ -383,6 +423,34 @@ func (aq *ApplicationQuery) sqlAll(ctx context.Context) ([]*Application, error) 
 		}
 	}
 
+	if query := aq.withTags; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*Application)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+		}
+		query.withFKs = true
+		query.Where(predicate.Tag(func(s *sql.Selector) {
+			s.Where(sql.InValues(application.TagsColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.application_tags
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "application_tags" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "application_tags" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.Tags = append(node.Edges.Tags, n)
+		}
+	}
+
 	return nodes, nil
 }
 
@@ -428,7 +496,7 @@ func (aq *ApplicationQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := aq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector)
+				ps[i](selector, application.ValidColumn)
 			}
 		}
 	}
@@ -447,7 +515,7 @@ func (aq *ApplicationQuery) sqlQuery() *sql.Selector {
 		p(selector)
 	}
 	for _, p := range aq.order {
-		p(selector)
+		p(selector, application.ValidColumn)
 	}
 	if offset := aq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -682,8 +750,17 @@ func (agb *ApplicationGroupBy) BoolX(ctx context.Context) bool {
 }
 
 func (agb *ApplicationGroupBy) sqlScan(ctx context.Context, v interface{}) error {
+	for _, f := range agb.fields {
+		if !application.ValidColumn(f) {
+			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
+		}
+	}
+	selector := agb.sqlQuery()
+	if err := selector.Err(); err != nil {
+		return err
+	}
 	rows := &sql.Rows{}
-	query, args := agb.sqlQuery().Query()
+	query, args := selector.Query()
 	if err := agb.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
@@ -696,7 +773,7 @@ func (agb *ApplicationGroupBy) sqlQuery() *sql.Selector {
 	columns := make([]string, 0, len(agb.fields)+len(agb.fns))
 	columns = append(columns, agb.fields...)
 	for _, fn := range agb.fns {
-		columns = append(columns, fn(selector))
+		columns = append(columns, fn(selector, application.ValidColumn))
 	}
 	return selector.Select(columns...).GroupBy(agb.fields...)
 }
@@ -916,6 +993,11 @@ func (as *ApplicationSelect) BoolX(ctx context.Context) bool {
 }
 
 func (as *ApplicationSelect) sqlScan(ctx context.Context, v interface{}) error {
+	for _, f := range as.fields {
+		if !application.ValidColumn(f) {
+			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for selection", f)}
+		}
+	}
 	rows := &sql.Rows{}
 	query, args := as.sqlQuery().Query()
 	if err := as.driver.Query(ctx, query, args, rows); err != nil {

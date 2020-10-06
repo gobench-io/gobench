@@ -63,8 +63,12 @@ func (hq *HistogramQuery) QueryMetric() *MetricQuery {
 		if err := hq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
+		selector := hq.sqlQuery()
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(histogram.Table, histogram.FieldID, hq.sqlQuery()),
+			sqlgraph.From(histogram.Table, histogram.FieldID, selector),
 			sqlgraph.To(metric.Table, metric.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, histogram.MetricTable, histogram.MetricColumn),
 		)
@@ -76,23 +80,23 @@ func (hq *HistogramQuery) QueryMetric() *MetricQuery {
 
 // First returns the first Histogram entity in the query. Returns *NotFoundError when no histogram was found.
 func (hq *HistogramQuery) First(ctx context.Context) (*Histogram, error) {
-	hs, err := hq.Limit(1).All(ctx)
+	nodes, err := hq.Limit(1).All(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if len(hs) == 0 {
+	if len(nodes) == 0 {
 		return nil, &NotFoundError{histogram.Label}
 	}
-	return hs[0], nil
+	return nodes[0], nil
 }
 
 // FirstX is like First, but panics if an error occurs.
 func (hq *HistogramQuery) FirstX(ctx context.Context) *Histogram {
-	h, err := hq.First(ctx)
+	node, err := hq.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
-	return h
+	return node
 }
 
 // FirstID returns the first Histogram id in the query. Returns *NotFoundError when no id was found.
@@ -119,13 +123,13 @@ func (hq *HistogramQuery) FirstXID(ctx context.Context) int {
 
 // Only returns the only Histogram entity in the query, returns an error if not exactly one entity was returned.
 func (hq *HistogramQuery) Only(ctx context.Context) (*Histogram, error) {
-	hs, err := hq.Limit(2).All(ctx)
+	nodes, err := hq.Limit(2).All(ctx)
 	if err != nil {
 		return nil, err
 	}
-	switch len(hs) {
+	switch len(nodes) {
 	case 1:
-		return hs[0], nil
+		return nodes[0], nil
 	case 0:
 		return nil, &NotFoundError{histogram.Label}
 	default:
@@ -135,11 +139,11 @@ func (hq *HistogramQuery) Only(ctx context.Context) (*Histogram, error) {
 
 // OnlyX is like Only, but panics if an error occurs.
 func (hq *HistogramQuery) OnlyX(ctx context.Context) *Histogram {
-	h, err := hq.Only(ctx)
+	node, err := hq.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
-	return h
+	return node
 }
 
 // OnlyID returns the only Histogram id in the query, returns an error if not exactly one id was returned.
@@ -178,11 +182,11 @@ func (hq *HistogramQuery) All(ctx context.Context) ([]*Histogram, error) {
 
 // AllX is like All, but panics if an error occurs.
 func (hq *HistogramQuery) AllX(ctx context.Context) []*Histogram {
-	hs, err := hq.All(ctx)
+	nodes, err := hq.All(ctx)
 	if err != nil {
 		panic(err)
 	}
-	return hs
+	return nodes
 }
 
 // IDs executes the query and returns a list of Histogram ids.
@@ -435,7 +439,7 @@ func (hq *HistogramQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := hq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector)
+				ps[i](selector, histogram.ValidColumn)
 			}
 		}
 	}
@@ -454,7 +458,7 @@ func (hq *HistogramQuery) sqlQuery() *sql.Selector {
 		p(selector)
 	}
 	for _, p := range hq.order {
-		p(selector)
+		p(selector, histogram.ValidColumn)
 	}
 	if offset := hq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -689,8 +693,17 @@ func (hgb *HistogramGroupBy) BoolX(ctx context.Context) bool {
 }
 
 func (hgb *HistogramGroupBy) sqlScan(ctx context.Context, v interface{}) error {
+	for _, f := range hgb.fields {
+		if !histogram.ValidColumn(f) {
+			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
+		}
+	}
+	selector := hgb.sqlQuery()
+	if err := selector.Err(); err != nil {
+		return err
+	}
 	rows := &sql.Rows{}
-	query, args := hgb.sqlQuery().Query()
+	query, args := selector.Query()
 	if err := hgb.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
@@ -703,7 +716,7 @@ func (hgb *HistogramGroupBy) sqlQuery() *sql.Selector {
 	columns := make([]string, 0, len(hgb.fields)+len(hgb.fns))
 	columns = append(columns, hgb.fields...)
 	for _, fn := range hgb.fns {
-		columns = append(columns, fn(selector))
+		columns = append(columns, fn(selector, histogram.ValidColumn))
 	}
 	return selector.Select(columns...).GroupBy(hgb.fields...)
 }
@@ -923,6 +936,11 @@ func (hs *HistogramSelect) BoolX(ctx context.Context) bool {
 }
 
 func (hs *HistogramSelect) sqlScan(ctx context.Context, v interface{}) error {
+	for _, f := range hs.fields {
+		if !histogram.ValidColumn(f) {
+			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for selection", f)}
+		}
+	}
 	rows := &sql.Rows{}
 	query, args := hs.sqlQuery().Query()
 	if err := hs.driver.Query(ctx, query, args, rows); err != nil {

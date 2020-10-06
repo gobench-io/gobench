@@ -32,8 +32,6 @@ type Application struct {
 	Gomod string `json:"gomod,omitempty"`
 	// Gosum holds the value of the "gosum" field.
 	Gosum string `json:"gosum,omitempty"`
-	// Tags holds the value of the "tags" field.
-	Tags string `json:"tags,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ApplicationQuery when eager-loading is set.
 	Edges ApplicationEdges `json:"edges"`
@@ -43,9 +41,11 @@ type Application struct {
 type ApplicationEdges struct {
 	// Groups holds the value of the groups edge.
 	Groups []*Group
+	// Tags holds the value of the tags edge.
+	Tags []*Tag
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // GroupsOrErr returns the Groups value or an error if the edge
@@ -55,6 +55,15 @@ func (e ApplicationEdges) GroupsOrErr() ([]*Group, error) {
 		return e.Groups, nil
 	}
 	return nil, &NotLoadedError{edge: "groups"}
+}
+
+// TagsOrErr returns the Tags value or an error if the edge
+// was not loaded in eager-loading.
+func (e ApplicationEdges) TagsOrErr() ([]*Tag, error) {
+	if e.loadedTypes[1] {
+		return e.Tags, nil
+	}
+	return nil, &NotLoadedError{edge: "tags"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -69,7 +78,6 @@ func (*Application) scanValues() []interface{} {
 		&sql.NullString{}, // scenario
 		&sql.NullString{}, // gomod
 		&sql.NullString{}, // gosum
-		&sql.NullString{}, // tags
 	}
 }
 
@@ -125,17 +133,17 @@ func (a *Application) assignValues(values ...interface{}) error {
 	} else if value.Valid {
 		a.Gosum = value.String
 	}
-	if value, ok := values[8].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field tags", values[8])
-	} else if value.Valid {
-		a.Tags = value.String
-	}
 	return nil
 }
 
 // QueryGroups queries the groups edge of the Application.
 func (a *Application) QueryGroups() *GroupQuery {
 	return (&ApplicationClient{config: a.config}).QueryGroups(a)
+}
+
+// QueryTags queries the tags edge of the Application.
+func (a *Application) QueryTags() *TagQuery {
+	return (&ApplicationClient{config: a.config}).QueryTags(a)
 }
 
 // Update returns a builder for updating this Application.
@@ -177,8 +185,6 @@ func (a *Application) String() string {
 	builder.WriteString(a.Gomod)
 	builder.WriteString(", gosum=")
 	builder.WriteString(a.Gosum)
-	builder.WriteString(", tags=")
-	builder.WriteString(a.Tags)
 	builder.WriteByte(')')
 	return builder.String()
 }

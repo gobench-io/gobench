@@ -149,13 +149,6 @@ func Gosum(v string) predicate.Application {
 	})
 }
 
-// Tags applies equality check predicate on the "tags" field. It's identical to TagsEQ.
-func Tags(v string) predicate.Application {
-	return predicate.Application(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldTags), v))
-	})
-}
-
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.Application {
 	return predicate.Application(func(s *sql.Selector) {
@@ -953,117 +946,6 @@ func GosumContainsFold(v string) predicate.Application {
 	})
 }
 
-// TagsEQ applies the EQ predicate on the "tags" field.
-func TagsEQ(v string) predicate.Application {
-	return predicate.Application(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldTags), v))
-	})
-}
-
-// TagsNEQ applies the NEQ predicate on the "tags" field.
-func TagsNEQ(v string) predicate.Application {
-	return predicate.Application(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldTags), v))
-	})
-}
-
-// TagsIn applies the In predicate on the "tags" field.
-func TagsIn(vs ...string) predicate.Application {
-	v := make([]interface{}, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Application(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
-		s.Where(sql.In(s.C(FieldTags), v...))
-	})
-}
-
-// TagsNotIn applies the NotIn predicate on the "tags" field.
-func TagsNotIn(vs ...string) predicate.Application {
-	v := make([]interface{}, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Application(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
-		s.Where(sql.NotIn(s.C(FieldTags), v...))
-	})
-}
-
-// TagsGT applies the GT predicate on the "tags" field.
-func TagsGT(v string) predicate.Application {
-	return predicate.Application(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldTags), v))
-	})
-}
-
-// TagsGTE applies the GTE predicate on the "tags" field.
-func TagsGTE(v string) predicate.Application {
-	return predicate.Application(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldTags), v))
-	})
-}
-
-// TagsLT applies the LT predicate on the "tags" field.
-func TagsLT(v string) predicate.Application {
-	return predicate.Application(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldTags), v))
-	})
-}
-
-// TagsLTE applies the LTE predicate on the "tags" field.
-func TagsLTE(v string) predicate.Application {
-	return predicate.Application(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldTags), v))
-	})
-}
-
-// TagsContains applies the Contains predicate on the "tags" field.
-func TagsContains(v string) predicate.Application {
-	return predicate.Application(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldTags), v))
-	})
-}
-
-// TagsHasPrefix applies the HasPrefix predicate on the "tags" field.
-func TagsHasPrefix(v string) predicate.Application {
-	return predicate.Application(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldTags), v))
-	})
-}
-
-// TagsHasSuffix applies the HasSuffix predicate on the "tags" field.
-func TagsHasSuffix(v string) predicate.Application {
-	return predicate.Application(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldTags), v))
-	})
-}
-
-// TagsEqualFold applies the EqualFold predicate on the "tags" field.
-func TagsEqualFold(v string) predicate.Application {
-	return predicate.Application(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldTags), v))
-	})
-}
-
-// TagsContainsFold applies the ContainsFold predicate on the "tags" field.
-func TagsContainsFold(v string) predicate.Application {
-	return predicate.Application(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldTags), v))
-	})
-}
-
 // HasGroups applies the HasEdge predicate on the "groups" edge.
 func HasGroups() predicate.Application {
 	return predicate.Application(func(s *sql.Selector) {
@@ -1083,6 +965,34 @@ func HasGroupsWith(preds ...predicate.Group) predicate.Application {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(GroupsInverseTable, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, GroupsTable, GroupsColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasTags applies the HasEdge predicate on the "tags" edge.
+func HasTags() predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(TagsTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, TagsTable, TagsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTagsWith applies the HasEdge predicate on the "tags" edge with a given conditions (other predicates).
+func HasTagsWith(preds ...predicate.Tag) predicate.Application {
+	return predicate.Application(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(TagsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, TagsTable, TagsColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

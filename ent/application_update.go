@@ -13,6 +13,7 @@ import (
 	"github.com/gobench-io/gobench/ent/application"
 	"github.com/gobench-io/gobench/ent/group"
 	"github.com/gobench-io/gobench/ent/predicate"
+	"github.com/gobench-io/gobench/ent/tag"
 )
 
 // ApplicationUpdate is the builder for updating Application entities.
@@ -115,20 +116,6 @@ func (au *ApplicationUpdate) SetNillableGosum(s *string) *ApplicationUpdate {
 	return au
 }
 
-// SetTags sets the tags field.
-func (au *ApplicationUpdate) SetTags(s string) *ApplicationUpdate {
-	au.mutation.SetTags(s)
-	return au
-}
-
-// SetNillableTags sets the tags field if the given value is not nil.
-func (au *ApplicationUpdate) SetNillableTags(s *string) *ApplicationUpdate {
-	if s != nil {
-		au.SetTags(*s)
-	}
-	return au
-}
-
 // AddGroupIDs adds the groups edge to Group by ids.
 func (au *ApplicationUpdate) AddGroupIDs(ids ...int) *ApplicationUpdate {
 	au.mutation.AddGroupIDs(ids...)
@@ -144,9 +131,30 @@ func (au *ApplicationUpdate) AddGroups(g ...*Group) *ApplicationUpdate {
 	return au.AddGroupIDs(ids...)
 }
 
+// AddTagIDs adds the tags edge to Tag by ids.
+func (au *ApplicationUpdate) AddTagIDs(ids ...int) *ApplicationUpdate {
+	au.mutation.AddTagIDs(ids...)
+	return au
+}
+
+// AddTags adds the tags edges to Tag.
+func (au *ApplicationUpdate) AddTags(t ...*Tag) *ApplicationUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return au.AddTagIDs(ids...)
+}
+
 // Mutation returns the ApplicationMutation object of the builder.
 func (au *ApplicationUpdate) Mutation() *ApplicationMutation {
 	return au.mutation
+}
+
+// ClearGroups clears all "groups" edges to type Group.
+func (au *ApplicationUpdate) ClearGroups() *ApplicationUpdate {
+	au.mutation.ClearGroups()
+	return au
 }
 
 // RemoveGroupIDs removes the groups edge to Group by ids.
@@ -164,17 +172,34 @@ func (au *ApplicationUpdate) RemoveGroups(g ...*Group) *ApplicationUpdate {
 	return au.RemoveGroupIDs(ids...)
 }
 
+// ClearTags clears all "tags" edges to type Tag.
+func (au *ApplicationUpdate) ClearTags() *ApplicationUpdate {
+	au.mutation.ClearTags()
+	return au
+}
+
+// RemoveTagIDs removes the tags edge to Tag by ids.
+func (au *ApplicationUpdate) RemoveTagIDs(ids ...int) *ApplicationUpdate {
+	au.mutation.RemoveTagIDs(ids...)
+	return au
+}
+
+// RemoveTags removes tags edges to Tag.
+func (au *ApplicationUpdate) RemoveTags(t ...*Tag) *ApplicationUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return au.RemoveTagIDs(ids...)
+}
+
 // Save executes the query and returns the number of rows/vertices matched by this operation.
 func (au *ApplicationUpdate) Save(ctx context.Context) (int, error) {
-	if _, ok := au.mutation.UpdatedAt(); !ok {
-		v := application.UpdateDefaultUpdatedAt()
-		au.mutation.SetUpdatedAt(v)
-	}
-
 	var (
 		err      error
 		affected int
 	)
+	au.defaults()
 	if len(au.hooks) == 0 {
 		affected, err = au.sqlSave(ctx)
 	} else {
@@ -217,6 +242,14 @@ func (au *ApplicationUpdate) Exec(ctx context.Context) error {
 func (au *ApplicationUpdate) ExecX(ctx context.Context) {
 	if err := au.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (au *ApplicationUpdate) defaults() {
+	if _, ok := au.mutation.UpdatedAt(); !ok {
+		v := application.UpdateDefaultUpdatedAt()
+		au.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -300,14 +333,23 @@ func (au *ApplicationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: application.FieldGosum,
 		})
 	}
-	if value, ok := au.mutation.Tags(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: application.FieldTags,
-		})
+	if au.mutation.GroupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   application.GroupsTable,
+			Columns: []string{application.GroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: group.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := au.mutation.RemovedGroupsIDs(); len(nodes) > 0 {
+	if nodes := au.mutation.RemovedGroupsIDs(); len(nodes) > 0 && !au.mutation.GroupsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -337,6 +379,60 @@ func (au *ApplicationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: group.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if au.mutation.TagsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   application.TagsTable,
+			Columns: []string{application.TagsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.RemovedTagsIDs(); len(nodes) > 0 && !au.mutation.TagsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   application.TagsTable,
+			Columns: []string{application.TagsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.TagsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   application.TagsTable,
+			Columns: []string{application.TagsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tag.FieldID,
 				},
 			},
 		}
@@ -449,20 +545,6 @@ func (auo *ApplicationUpdateOne) SetNillableGosum(s *string) *ApplicationUpdateO
 	return auo
 }
 
-// SetTags sets the tags field.
-func (auo *ApplicationUpdateOne) SetTags(s string) *ApplicationUpdateOne {
-	auo.mutation.SetTags(s)
-	return auo
-}
-
-// SetNillableTags sets the tags field if the given value is not nil.
-func (auo *ApplicationUpdateOne) SetNillableTags(s *string) *ApplicationUpdateOne {
-	if s != nil {
-		auo.SetTags(*s)
-	}
-	return auo
-}
-
 // AddGroupIDs adds the groups edge to Group by ids.
 func (auo *ApplicationUpdateOne) AddGroupIDs(ids ...int) *ApplicationUpdateOne {
 	auo.mutation.AddGroupIDs(ids...)
@@ -478,9 +560,30 @@ func (auo *ApplicationUpdateOne) AddGroups(g ...*Group) *ApplicationUpdateOne {
 	return auo.AddGroupIDs(ids...)
 }
 
+// AddTagIDs adds the tags edge to Tag by ids.
+func (auo *ApplicationUpdateOne) AddTagIDs(ids ...int) *ApplicationUpdateOne {
+	auo.mutation.AddTagIDs(ids...)
+	return auo
+}
+
+// AddTags adds the tags edges to Tag.
+func (auo *ApplicationUpdateOne) AddTags(t ...*Tag) *ApplicationUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return auo.AddTagIDs(ids...)
+}
+
 // Mutation returns the ApplicationMutation object of the builder.
 func (auo *ApplicationUpdateOne) Mutation() *ApplicationMutation {
 	return auo.mutation
+}
+
+// ClearGroups clears all "groups" edges to type Group.
+func (auo *ApplicationUpdateOne) ClearGroups() *ApplicationUpdateOne {
+	auo.mutation.ClearGroups()
+	return auo
 }
 
 // RemoveGroupIDs removes the groups edge to Group by ids.
@@ -498,17 +601,34 @@ func (auo *ApplicationUpdateOne) RemoveGroups(g ...*Group) *ApplicationUpdateOne
 	return auo.RemoveGroupIDs(ids...)
 }
 
+// ClearTags clears all "tags" edges to type Tag.
+func (auo *ApplicationUpdateOne) ClearTags() *ApplicationUpdateOne {
+	auo.mutation.ClearTags()
+	return auo
+}
+
+// RemoveTagIDs removes the tags edge to Tag by ids.
+func (auo *ApplicationUpdateOne) RemoveTagIDs(ids ...int) *ApplicationUpdateOne {
+	auo.mutation.RemoveTagIDs(ids...)
+	return auo
+}
+
+// RemoveTags removes tags edges to Tag.
+func (auo *ApplicationUpdateOne) RemoveTags(t ...*Tag) *ApplicationUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return auo.RemoveTagIDs(ids...)
+}
+
 // Save executes the query and returns the updated entity.
 func (auo *ApplicationUpdateOne) Save(ctx context.Context) (*Application, error) {
-	if _, ok := auo.mutation.UpdatedAt(); !ok {
-		v := application.UpdateDefaultUpdatedAt()
-		auo.mutation.SetUpdatedAt(v)
-	}
-
 	var (
 		err  error
 		node *Application
 	)
+	auo.defaults()
 	if len(auo.hooks) == 0 {
 		node, err = auo.sqlSave(ctx)
 	} else {
@@ -534,11 +654,11 @@ func (auo *ApplicationUpdateOne) Save(ctx context.Context) (*Application, error)
 
 // SaveX is like Save, but panics if an error occurs.
 func (auo *ApplicationUpdateOne) SaveX(ctx context.Context) *Application {
-	a, err := auo.Save(ctx)
+	node, err := auo.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
-	return a
+	return node
 }
 
 // Exec executes the query on the entity.
@@ -554,7 +674,15 @@ func (auo *ApplicationUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
-func (auo *ApplicationUpdateOne) sqlSave(ctx context.Context) (a *Application, err error) {
+// defaults sets the default values of the builder before save.
+func (auo *ApplicationUpdateOne) defaults() {
+	if _, ok := auo.mutation.UpdatedAt(); !ok {
+		v := application.UpdateDefaultUpdatedAt()
+		auo.mutation.SetUpdatedAt(v)
+	}
+}
+
+func (auo *ApplicationUpdateOne) sqlSave(ctx context.Context) (_node *Application, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
 			Table:   application.Table,
@@ -632,14 +760,23 @@ func (auo *ApplicationUpdateOne) sqlSave(ctx context.Context) (a *Application, e
 			Column: application.FieldGosum,
 		})
 	}
-	if value, ok := auo.mutation.Tags(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: application.FieldTags,
-		})
+	if auo.mutation.GroupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   application.GroupsTable,
+			Columns: []string{application.GroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: group.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := auo.mutation.RemovedGroupsIDs(); len(nodes) > 0 {
+	if nodes := auo.mutation.RemovedGroupsIDs(); len(nodes) > 0 && !auo.mutation.GroupsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -677,9 +814,63 @@ func (auo *ApplicationUpdateOne) sqlSave(ctx context.Context) (a *Application, e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	a = &Application{config: auo.config}
-	_spec.Assign = a.assignValues
-	_spec.ScanValues = a.scanValues()
+	if auo.mutation.TagsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   application.TagsTable,
+			Columns: []string{application.TagsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.RemovedTagsIDs(); len(nodes) > 0 && !auo.mutation.TagsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   application.TagsTable,
+			Columns: []string{application.TagsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.TagsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   application.TagsTable,
+			Columns: []string{application.TagsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	_node = &Application{config: auo.config}
+	_spec.Assign = _node.assignValues
+	_spec.ScanValues = _node.scanValues()
 	if err = sqlgraph.UpdateNode(ctx, auo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{application.Label}
@@ -688,5 +879,5 @@ func (auo *ApplicationUpdateOne) sqlSave(ctx context.Context) (a *Application, e
 		}
 		return nil, err
 	}
-	return a, nil
+	return _node, nil
 }

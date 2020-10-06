@@ -31,6 +31,7 @@ type hooks struct {
 	Group       []ent.Hook
 	Histogram   []ent.Hook
 	Metric      []ent.Hook
+	Tag         []ent.Hook
 }
 
 // Options applies the options on the config object.

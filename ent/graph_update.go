@@ -74,9 +74,15 @@ func (gu *GraphUpdate) Mutation() *GraphMutation {
 	return gu.mutation
 }
 
-// ClearGroup clears the group edge to Group.
+// ClearGroup clears the "group" edge to type Group.
 func (gu *GraphUpdate) ClearGroup() *GraphUpdate {
 	gu.mutation.ClearGroup()
+	return gu
+}
+
+// ClearMetrics clears all "metrics" edges to type Metric.
+func (gu *GraphUpdate) ClearMetrics() *GraphUpdate {
+	gu.mutation.ClearMetrics()
 	return gu
 }
 
@@ -97,7 +103,6 @@ func (gu *GraphUpdate) RemoveMetrics(m ...*Metric) *GraphUpdate {
 
 // Save executes the query and returns the number of rows/vertices matched by this operation.
 func (gu *GraphUpdate) Save(ctx context.Context) (int, error) {
-
 	var (
 		err      error
 		affected int
@@ -207,7 +212,23 @@ func (gu *GraphUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if nodes := gu.mutation.RemovedMetricsIDs(); len(nodes) > 0 {
+	if gu.mutation.MetricsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   graph.MetricsTable,
+			Columns: []string{graph.MetricsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: metric.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := gu.mutation.RemovedMetricsIDs(); len(nodes) > 0 && !gu.mutation.MetricsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -308,9 +329,15 @@ func (guo *GraphUpdateOne) Mutation() *GraphMutation {
 	return guo.mutation
 }
 
-// ClearGroup clears the group edge to Group.
+// ClearGroup clears the "group" edge to type Group.
 func (guo *GraphUpdateOne) ClearGroup() *GraphUpdateOne {
 	guo.mutation.ClearGroup()
+	return guo
+}
+
+// ClearMetrics clears all "metrics" edges to type Metric.
+func (guo *GraphUpdateOne) ClearMetrics() *GraphUpdateOne {
+	guo.mutation.ClearMetrics()
 	return guo
 }
 
@@ -331,7 +358,6 @@ func (guo *GraphUpdateOne) RemoveMetrics(m ...*Metric) *GraphUpdateOne {
 
 // Save executes the query and returns the updated entity.
 func (guo *GraphUpdateOne) Save(ctx context.Context) (*Graph, error) {
-
 	var (
 		err  error
 		node *Graph
@@ -361,11 +387,11 @@ func (guo *GraphUpdateOne) Save(ctx context.Context) (*Graph, error) {
 
 // SaveX is like Save, but panics if an error occurs.
 func (guo *GraphUpdateOne) SaveX(ctx context.Context) *Graph {
-	gr, err := guo.Save(ctx)
+	node, err := guo.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
-	return gr
+	return node
 }
 
 // Exec executes the query on the entity.
@@ -381,7 +407,7 @@ func (guo *GraphUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
-func (guo *GraphUpdateOne) sqlSave(ctx context.Context) (gr *Graph, err error) {
+func (guo *GraphUpdateOne) sqlSave(ctx context.Context) (_node *Graph, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
 			Table:   graph.Table,
@@ -439,7 +465,23 @@ func (guo *GraphUpdateOne) sqlSave(ctx context.Context) (gr *Graph, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if nodes := guo.mutation.RemovedMetricsIDs(); len(nodes) > 0 {
+	if guo.mutation.MetricsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   graph.MetricsTable,
+			Columns: []string{graph.MetricsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: metric.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := guo.mutation.RemovedMetricsIDs(); len(nodes) > 0 && !guo.mutation.MetricsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -477,9 +519,9 @@ func (guo *GraphUpdateOne) sqlSave(ctx context.Context) (gr *Graph, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	gr = &Graph{config: guo.config}
-	_spec.Assign = gr.assignValues
-	_spec.ScanValues = gr.scanValues()
+	_node = &Graph{config: guo.config}
+	_spec.Assign = _node.assignValues
+	_spec.ScanValues = _node.scanValues()
 	if err = sqlgraph.UpdateNode(ctx, guo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{graph.Label}
@@ -488,5 +530,5 @@ func (guo *GraphUpdateOne) sqlSave(ctx context.Context) (gr *Graph, err error) {
 		}
 		return nil, err
 	}
-	return gr, nil
+	return _node, nil
 }

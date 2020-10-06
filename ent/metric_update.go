@@ -106,9 +106,15 @@ func (mu *MetricUpdate) Mutation() *MetricMutation {
 	return mu.mutation
 }
 
-// ClearGraph clears the graph edge to Graph.
+// ClearGraph clears the "graph" edge to type Graph.
 func (mu *MetricUpdate) ClearGraph() *MetricUpdate {
 	mu.mutation.ClearGraph()
+	return mu
+}
+
+// ClearHistograms clears all "histograms" edges to type Histogram.
+func (mu *MetricUpdate) ClearHistograms() *MetricUpdate {
+	mu.mutation.ClearHistograms()
 	return mu
 }
 
@@ -127,6 +133,12 @@ func (mu *MetricUpdate) RemoveHistograms(h ...*Histogram) *MetricUpdate {
 	return mu.RemoveHistogramIDs(ids...)
 }
 
+// ClearCounters clears all "counters" edges to type Counter.
+func (mu *MetricUpdate) ClearCounters() *MetricUpdate {
+	mu.mutation.ClearCounters()
+	return mu
+}
+
 // RemoveCounterIDs removes the counters edge to Counter by ids.
 func (mu *MetricUpdate) RemoveCounterIDs(ids ...int) *MetricUpdate {
 	mu.mutation.RemoveCounterIDs(ids...)
@@ -140,6 +152,12 @@ func (mu *MetricUpdate) RemoveCounters(c ...*Counter) *MetricUpdate {
 		ids[i] = c[i].ID
 	}
 	return mu.RemoveCounterIDs(ids...)
+}
+
+// ClearGauges clears all "gauges" edges to type Gauge.
+func (mu *MetricUpdate) ClearGauges() *MetricUpdate {
+	mu.mutation.ClearGauges()
+	return mu
 }
 
 // RemoveGaugeIDs removes the gauges edge to Gauge by ids.
@@ -159,7 +177,6 @@ func (mu *MetricUpdate) RemoveGauges(g ...*Gauge) *MetricUpdate {
 
 // Save executes the query and returns the number of rows/vertices matched by this operation.
 func (mu *MetricUpdate) Save(ctx context.Context) (int, error) {
-
 	var (
 		err      error
 		affected int
@@ -269,7 +286,23 @@ func (mu *MetricUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if nodes := mu.mutation.RemovedHistogramsIDs(); len(nodes) > 0 {
+	if mu.mutation.HistogramsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   metric.HistogramsTable,
+			Columns: []string{metric.HistogramsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: histogram.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := mu.mutation.RemovedHistogramsIDs(); len(nodes) > 0 && !mu.mutation.HistogramsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -307,7 +340,23 @@ func (mu *MetricUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if nodes := mu.mutation.RemovedCountersIDs(); len(nodes) > 0 {
+	if mu.mutation.CountersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   metric.CountersTable,
+			Columns: []string{metric.CountersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: counter.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := mu.mutation.RemovedCountersIDs(); len(nodes) > 0 && !mu.mutation.CountersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -345,7 +394,23 @@ func (mu *MetricUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if nodes := mu.mutation.RemovedGaugesIDs(); len(nodes) > 0 {
+	if mu.mutation.GaugesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   metric.GaugesTable,
+			Columns: []string{metric.GaugesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: gauge.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := mu.mutation.RemovedGaugesIDs(); len(nodes) > 0 && !mu.mutation.GaugesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -476,9 +541,15 @@ func (muo *MetricUpdateOne) Mutation() *MetricMutation {
 	return muo.mutation
 }
 
-// ClearGraph clears the graph edge to Graph.
+// ClearGraph clears the "graph" edge to type Graph.
 func (muo *MetricUpdateOne) ClearGraph() *MetricUpdateOne {
 	muo.mutation.ClearGraph()
+	return muo
+}
+
+// ClearHistograms clears all "histograms" edges to type Histogram.
+func (muo *MetricUpdateOne) ClearHistograms() *MetricUpdateOne {
+	muo.mutation.ClearHistograms()
 	return muo
 }
 
@@ -497,6 +568,12 @@ func (muo *MetricUpdateOne) RemoveHistograms(h ...*Histogram) *MetricUpdateOne {
 	return muo.RemoveHistogramIDs(ids...)
 }
 
+// ClearCounters clears all "counters" edges to type Counter.
+func (muo *MetricUpdateOne) ClearCounters() *MetricUpdateOne {
+	muo.mutation.ClearCounters()
+	return muo
+}
+
 // RemoveCounterIDs removes the counters edge to Counter by ids.
 func (muo *MetricUpdateOne) RemoveCounterIDs(ids ...int) *MetricUpdateOne {
 	muo.mutation.RemoveCounterIDs(ids...)
@@ -510,6 +587,12 @@ func (muo *MetricUpdateOne) RemoveCounters(c ...*Counter) *MetricUpdateOne {
 		ids[i] = c[i].ID
 	}
 	return muo.RemoveCounterIDs(ids...)
+}
+
+// ClearGauges clears all "gauges" edges to type Gauge.
+func (muo *MetricUpdateOne) ClearGauges() *MetricUpdateOne {
+	muo.mutation.ClearGauges()
+	return muo
 }
 
 // RemoveGaugeIDs removes the gauges edge to Gauge by ids.
@@ -529,7 +612,6 @@ func (muo *MetricUpdateOne) RemoveGauges(g ...*Gauge) *MetricUpdateOne {
 
 // Save executes the query and returns the updated entity.
 func (muo *MetricUpdateOne) Save(ctx context.Context) (*Metric, error) {
-
 	var (
 		err  error
 		node *Metric
@@ -559,11 +641,11 @@ func (muo *MetricUpdateOne) Save(ctx context.Context) (*Metric, error) {
 
 // SaveX is like Save, but panics if an error occurs.
 func (muo *MetricUpdateOne) SaveX(ctx context.Context) *Metric {
-	m, err := muo.Save(ctx)
+	node, err := muo.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
-	return m
+	return node
 }
 
 // Exec executes the query on the entity.
@@ -579,7 +661,7 @@ func (muo *MetricUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
-func (muo *MetricUpdateOne) sqlSave(ctx context.Context) (m *Metric, err error) {
+func (muo *MetricUpdateOne) sqlSave(ctx context.Context) (_node *Metric, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
 			Table:   metric.Table,
@@ -637,7 +719,23 @@ func (muo *MetricUpdateOne) sqlSave(ctx context.Context) (m *Metric, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if nodes := muo.mutation.RemovedHistogramsIDs(); len(nodes) > 0 {
+	if muo.mutation.HistogramsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   metric.HistogramsTable,
+			Columns: []string{metric.HistogramsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: histogram.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := muo.mutation.RemovedHistogramsIDs(); len(nodes) > 0 && !muo.mutation.HistogramsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -675,7 +773,23 @@ func (muo *MetricUpdateOne) sqlSave(ctx context.Context) (m *Metric, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if nodes := muo.mutation.RemovedCountersIDs(); len(nodes) > 0 {
+	if muo.mutation.CountersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   metric.CountersTable,
+			Columns: []string{metric.CountersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: counter.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := muo.mutation.RemovedCountersIDs(); len(nodes) > 0 && !muo.mutation.CountersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -713,7 +827,23 @@ func (muo *MetricUpdateOne) sqlSave(ctx context.Context) (m *Metric, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if nodes := muo.mutation.RemovedGaugesIDs(); len(nodes) > 0 {
+	if muo.mutation.GaugesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   metric.GaugesTable,
+			Columns: []string{metric.GaugesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: gauge.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := muo.mutation.RemovedGaugesIDs(); len(nodes) > 0 && !muo.mutation.GaugesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -751,9 +881,9 @@ func (muo *MetricUpdateOne) sqlSave(ctx context.Context) (m *Metric, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	m = &Metric{config: muo.config}
-	_spec.Assign = m.assignValues
-	_spec.ScanValues = m.scanValues()
+	_node = &Metric{config: muo.config}
+	_spec.Assign = _node.assignValues
+	_spec.ScanValues = _node.scanValues()
 	if err = sqlgraph.UpdateNode(ctx, muo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{metric.Label}
@@ -762,5 +892,5 @@ func (muo *MetricUpdateOne) sqlSave(ctx context.Context) (m *Metric, err error) 
 		}
 		return nil, err
 	}
-	return m, nil
+	return _node, nil
 }

@@ -70,8 +70,12 @@ func (mq *MetricQuery) QueryGraph() *GraphQuery {
 		if err := mq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
+		selector := mq.sqlQuery()
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(metric.Table, metric.FieldID, mq.sqlQuery()),
+			sqlgraph.From(metric.Table, metric.FieldID, selector),
 			sqlgraph.To(graph.Table, graph.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, metric.GraphTable, metric.GraphColumn),
 		)
@@ -88,8 +92,12 @@ func (mq *MetricQuery) QueryHistograms() *HistogramQuery {
 		if err := mq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
+		selector := mq.sqlQuery()
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(metric.Table, metric.FieldID, mq.sqlQuery()),
+			sqlgraph.From(metric.Table, metric.FieldID, selector),
 			sqlgraph.To(histogram.Table, histogram.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, metric.HistogramsTable, metric.HistogramsColumn),
 		)
@@ -106,8 +114,12 @@ func (mq *MetricQuery) QueryCounters() *CounterQuery {
 		if err := mq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
+		selector := mq.sqlQuery()
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(metric.Table, metric.FieldID, mq.sqlQuery()),
+			sqlgraph.From(metric.Table, metric.FieldID, selector),
 			sqlgraph.To(counter.Table, counter.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, metric.CountersTable, metric.CountersColumn),
 		)
@@ -124,8 +136,12 @@ func (mq *MetricQuery) QueryGauges() *GaugeQuery {
 		if err := mq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
+		selector := mq.sqlQuery()
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(metric.Table, metric.FieldID, mq.sqlQuery()),
+			sqlgraph.From(metric.Table, metric.FieldID, selector),
 			sqlgraph.To(gauge.Table, gauge.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, metric.GaugesTable, metric.GaugesColumn),
 		)
@@ -137,23 +153,23 @@ func (mq *MetricQuery) QueryGauges() *GaugeQuery {
 
 // First returns the first Metric entity in the query. Returns *NotFoundError when no metric was found.
 func (mq *MetricQuery) First(ctx context.Context) (*Metric, error) {
-	ms, err := mq.Limit(1).All(ctx)
+	nodes, err := mq.Limit(1).All(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if len(ms) == 0 {
+	if len(nodes) == 0 {
 		return nil, &NotFoundError{metric.Label}
 	}
-	return ms[0], nil
+	return nodes[0], nil
 }
 
 // FirstX is like First, but panics if an error occurs.
 func (mq *MetricQuery) FirstX(ctx context.Context) *Metric {
-	m, err := mq.First(ctx)
+	node, err := mq.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
-	return m
+	return node
 }
 
 // FirstID returns the first Metric id in the query. Returns *NotFoundError when no id was found.
@@ -180,13 +196,13 @@ func (mq *MetricQuery) FirstXID(ctx context.Context) int {
 
 // Only returns the only Metric entity in the query, returns an error if not exactly one entity was returned.
 func (mq *MetricQuery) Only(ctx context.Context) (*Metric, error) {
-	ms, err := mq.Limit(2).All(ctx)
+	nodes, err := mq.Limit(2).All(ctx)
 	if err != nil {
 		return nil, err
 	}
-	switch len(ms) {
+	switch len(nodes) {
 	case 1:
-		return ms[0], nil
+		return nodes[0], nil
 	case 0:
 		return nil, &NotFoundError{metric.Label}
 	default:
@@ -196,11 +212,11 @@ func (mq *MetricQuery) Only(ctx context.Context) (*Metric, error) {
 
 // OnlyX is like Only, but panics if an error occurs.
 func (mq *MetricQuery) OnlyX(ctx context.Context) *Metric {
-	m, err := mq.Only(ctx)
+	node, err := mq.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
-	return m
+	return node
 }
 
 // OnlyID returns the only Metric id in the query, returns an error if not exactly one id was returned.
@@ -239,11 +255,11 @@ func (mq *MetricQuery) All(ctx context.Context) ([]*Metric, error) {
 
 // AllX is like All, but panics if an error occurs.
 func (mq *MetricQuery) AllX(ctx context.Context) []*Metric {
-	ms, err := mq.All(ctx)
+	nodes, err := mq.All(ctx)
 	if err != nil {
 		panic(err)
 	}
-	return ms
+	return nodes
 }
 
 // IDs executes the query and returns a list of Metric ids.
@@ -616,7 +632,7 @@ func (mq *MetricQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := mq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector)
+				ps[i](selector, metric.ValidColumn)
 			}
 		}
 	}
@@ -635,7 +651,7 @@ func (mq *MetricQuery) sqlQuery() *sql.Selector {
 		p(selector)
 	}
 	for _, p := range mq.order {
-		p(selector)
+		p(selector, metric.ValidColumn)
 	}
 	if offset := mq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -870,8 +886,17 @@ func (mgb *MetricGroupBy) BoolX(ctx context.Context) bool {
 }
 
 func (mgb *MetricGroupBy) sqlScan(ctx context.Context, v interface{}) error {
+	for _, f := range mgb.fields {
+		if !metric.ValidColumn(f) {
+			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
+		}
+	}
+	selector := mgb.sqlQuery()
+	if err := selector.Err(); err != nil {
+		return err
+	}
 	rows := &sql.Rows{}
-	query, args := mgb.sqlQuery().Query()
+	query, args := selector.Query()
 	if err := mgb.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
@@ -884,7 +909,7 @@ func (mgb *MetricGroupBy) sqlQuery() *sql.Selector {
 	columns := make([]string, 0, len(mgb.fields)+len(mgb.fns))
 	columns = append(columns, mgb.fields...)
 	for _, fn := range mgb.fns {
-		columns = append(columns, fn(selector))
+		columns = append(columns, fn(selector, metric.ValidColumn))
 	}
 	return selector.Select(columns...).GroupBy(mgb.fields...)
 }
@@ -1104,6 +1129,11 @@ func (ms *MetricSelect) BoolX(ctx context.Context) bool {
 }
 
 func (ms *MetricSelect) sqlScan(ctx context.Context, v interface{}) error {
+	for _, f := range ms.fields {
+		if !metric.ValidColumn(f) {
+			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for selection", f)}
+		}
+	}
 	rows := &sql.Rows{}
 	query, args := ms.sqlQuery().Query()
 	if err := ms.driver.Query(ctx, query, args, rows); err != nil {

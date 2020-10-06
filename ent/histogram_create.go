@@ -118,20 +118,23 @@ func (hc *HistogramCreate) Mutation() *HistogramMutation {
 
 // Save creates the Histogram in the database.
 func (hc *HistogramCreate) Save(ctx context.Context) (*Histogram, error) {
-	if err := hc.preSave(); err != nil {
-		return nil, err
-	}
 	var (
 		err  error
 		node *Histogram
 	)
 	if len(hc.hooks) == 0 {
+		if err = hc.check(); err != nil {
+			return nil, err
+		}
 		node, err = hc.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*HistogramMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = hc.check(); err != nil {
+				return nil, err
 			}
 			hc.mutation = mutation
 			node, err = hc.sqlSave(ctx)
@@ -157,7 +160,8 @@ func (hc *HistogramCreate) SaveX(ctx context.Context) *Histogram {
 	return v
 }
 
-func (hc *HistogramCreate) preSave() error {
+// check runs all checks and user-defined validators on the builder.
+func (hc *HistogramCreate) check() error {
 	if _, ok := hc.mutation.Time(); !ok {
 		return &ValidationError{Name: "time", err: errors.New("ent: missing required field \"time\"")}
 	}
@@ -198,7 +202,7 @@ func (hc *HistogramCreate) preSave() error {
 }
 
 func (hc *HistogramCreate) sqlSave(ctx context.Context) (*Histogram, error) {
-	h, _spec := hc.createSpec()
+	_node, _spec := hc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, hc.driver, _spec); err != nil {
 		if cerr, ok := isSQLConstraintError(err); ok {
 			err = cerr
@@ -206,13 +210,13 @@ func (hc *HistogramCreate) sqlSave(ctx context.Context) (*Histogram, error) {
 		return nil, err
 	}
 	id := _spec.ID.Value.(int64)
-	h.ID = int(id)
-	return h, nil
+	_node.ID = int(id)
+	return _node, nil
 }
 
 func (hc *HistogramCreate) createSpec() (*Histogram, *sqlgraph.CreateSpec) {
 	var (
-		h     = &Histogram{config: hc.config}
+		_node = &Histogram{config: hc.config}
 		_spec = &sqlgraph.CreateSpec{
 			Table: histogram.Table,
 			ID: &sqlgraph.FieldSpec{
@@ -227,7 +231,7 @@ func (hc *HistogramCreate) createSpec() (*Histogram, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: histogram.FieldTime,
 		})
-		h.Time = value
+		_node.Time = value
 	}
 	if value, ok := hc.mutation.Count(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -235,7 +239,7 @@ func (hc *HistogramCreate) createSpec() (*Histogram, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: histogram.FieldCount,
 		})
-		h.Count = value
+		_node.Count = value
 	}
 	if value, ok := hc.mutation.Min(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -243,7 +247,7 @@ func (hc *HistogramCreate) createSpec() (*Histogram, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: histogram.FieldMin,
 		})
-		h.Min = value
+		_node.Min = value
 	}
 	if value, ok := hc.mutation.Max(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -251,7 +255,7 @@ func (hc *HistogramCreate) createSpec() (*Histogram, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: histogram.FieldMax,
 		})
-		h.Max = value
+		_node.Max = value
 	}
 	if value, ok := hc.mutation.Mean(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -259,7 +263,7 @@ func (hc *HistogramCreate) createSpec() (*Histogram, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: histogram.FieldMean,
 		})
-		h.Mean = value
+		_node.Mean = value
 	}
 	if value, ok := hc.mutation.Stddev(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -267,7 +271,7 @@ func (hc *HistogramCreate) createSpec() (*Histogram, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: histogram.FieldStddev,
 		})
-		h.Stddev = value
+		_node.Stddev = value
 	}
 	if value, ok := hc.mutation.Median(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -275,7 +279,7 @@ func (hc *HistogramCreate) createSpec() (*Histogram, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: histogram.FieldMedian,
 		})
-		h.Median = value
+		_node.Median = value
 	}
 	if value, ok := hc.mutation.P75(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -283,7 +287,7 @@ func (hc *HistogramCreate) createSpec() (*Histogram, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: histogram.FieldP75,
 		})
-		h.P75 = value
+		_node.P75 = value
 	}
 	if value, ok := hc.mutation.P95(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -291,7 +295,7 @@ func (hc *HistogramCreate) createSpec() (*Histogram, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: histogram.FieldP95,
 		})
-		h.P95 = value
+		_node.P95 = value
 	}
 	if value, ok := hc.mutation.P99(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -299,7 +303,7 @@ func (hc *HistogramCreate) createSpec() (*Histogram, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: histogram.FieldP99,
 		})
-		h.P99 = value
+		_node.P99 = value
 	}
 	if value, ok := hc.mutation.P999(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -307,7 +311,7 @@ func (hc *HistogramCreate) createSpec() (*Histogram, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: histogram.FieldP999,
 		})
-		h.P999 = value
+		_node.P999 = value
 	}
 	if value, ok := hc.mutation.WID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -315,7 +319,7 @@ func (hc *HistogramCreate) createSpec() (*Histogram, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: histogram.FieldWID,
 		})
-		h.WID = value
+		_node.WID = value
 	}
 	if nodes := hc.mutation.MetricIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -336,7 +340,7 @@ func (hc *HistogramCreate) createSpec() (*Histogram, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	return h, _spec
+	return _node, _spec
 }
 
 // HistogramCreateBulk is the builder for creating a bulk of Histogram entities.
@@ -354,12 +358,12 @@ func (hcb *HistogramCreateBulk) Save(ctx context.Context) ([]*Histogram, error) 
 		func(i int, root context.Context) {
 			builder := hcb.builders[i]
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-				if err := builder.preSave(); err != nil {
-					return nil, err
-				}
 				mutation, ok := m.(*HistogramMutation)
 				if !ok {
 					return nil, fmt.Errorf("unexpected mutation type %T", m)
+				}
+				if err := builder.check(); err != nil {
+					return nil, err
 				}
 				builder.mutation = mutation
 				nodes[i], specs[i] = builder.createSpec()

@@ -26,6 +26,8 @@ type Tx struct {
 	Histogram *HistogramClient
 	// Metric is the client for interacting with the Metric builders.
 	Metric *MetricClient
+	// Tag is the client for interacting with the Tag builders.
+	Tag *TagClient
 
 	// lazily loaded.
 	client     *Client
@@ -168,6 +170,7 @@ func (tx *Tx) init() {
 	tx.Group = NewGroupClient(tx.config)
 	tx.Histogram = NewHistogramClient(tx.config)
 	tx.Metric = NewMetricClient(tx.config)
+	tx.Tag = NewTagClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

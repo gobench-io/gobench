@@ -201,7 +201,7 @@ func (hu *HistogramUpdate) Mutation() *HistogramMutation {
 	return hu.mutation
 }
 
-// ClearMetric clears the metric edge to Metric.
+// ClearMetric clears the "metric" edge to type Metric.
 func (hu *HistogramUpdate) ClearMetric() *HistogramUpdate {
 	hu.mutation.ClearMetric()
 	return hu
@@ -209,7 +209,6 @@ func (hu *HistogramUpdate) ClearMetric() *HistogramUpdate {
 
 // Save executes the query and returns the number of rows/vertices matched by this operation.
 func (hu *HistogramUpdate) Save(ctx context.Context) (int, error) {
-
 	var (
 		err      error
 		affected int
@@ -664,7 +663,7 @@ func (huo *HistogramUpdateOne) Mutation() *HistogramMutation {
 	return huo.mutation
 }
 
-// ClearMetric clears the metric edge to Metric.
+// ClearMetric clears the "metric" edge to type Metric.
 func (huo *HistogramUpdateOne) ClearMetric() *HistogramUpdateOne {
 	huo.mutation.ClearMetric()
 	return huo
@@ -672,7 +671,6 @@ func (huo *HistogramUpdateOne) ClearMetric() *HistogramUpdateOne {
 
 // Save executes the query and returns the updated entity.
 func (huo *HistogramUpdateOne) Save(ctx context.Context) (*Histogram, error) {
-
 	var (
 		err  error
 		node *Histogram
@@ -702,11 +700,11 @@ func (huo *HistogramUpdateOne) Save(ctx context.Context) (*Histogram, error) {
 
 // SaveX is like Save, but panics if an error occurs.
 func (huo *HistogramUpdateOne) SaveX(ctx context.Context) *Histogram {
-	h, err := huo.Save(ctx)
+	node, err := huo.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
-	return h
+	return node
 }
 
 // Exec executes the query on the entity.
@@ -722,7 +720,7 @@ func (huo *HistogramUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
-func (huo *HistogramUpdateOne) sqlSave(ctx context.Context) (h *Histogram, err error) {
+func (huo *HistogramUpdateOne) sqlSave(ctx context.Context) (_node *Histogram, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
 			Table:   histogram.Table,
@@ -934,9 +932,9 @@ func (huo *HistogramUpdateOne) sqlSave(ctx context.Context) (h *Histogram, err e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	h = &Histogram{config: huo.config}
-	_spec.Assign = h.assignValues
-	_spec.ScanValues = h.scanValues()
+	_node = &Histogram{config: huo.config}
+	_spec.Assign = _node.assignValues
+	_spec.ScanValues = _node.scanValues()
 	if err = sqlgraph.UpdateNode(ctx, huo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{histogram.Label}
@@ -945,5 +943,5 @@ func (huo *HistogramUpdateOne) sqlSave(ctx context.Context) (h *Histogram, err e
 		}
 		return nil, err
 	}
-	return h, nil
+	return _node, nil
 }

@@ -84,7 +84,7 @@ func (cu *CounterUpdate) Mutation() *CounterMutation {
 	return cu.mutation
 }
 
-// ClearMetric clears the metric edge to Metric.
+// ClearMetric clears the "metric" edge to type Metric.
 func (cu *CounterUpdate) ClearMetric() *CounterUpdate {
 	cu.mutation.ClearMetric()
 	return cu
@@ -92,7 +92,6 @@ func (cu *CounterUpdate) ClearMetric() *CounterUpdate {
 
 // Save executes the query and returns the number of rows/vertices matched by this operation.
 func (cu *CounterUpdate) Save(ctx context.Context) (int, error) {
-
 	var (
 		err      error
 		affected int
@@ -304,7 +303,7 @@ func (cuo *CounterUpdateOne) Mutation() *CounterMutation {
 	return cuo.mutation
 }
 
-// ClearMetric clears the metric edge to Metric.
+// ClearMetric clears the "metric" edge to type Metric.
 func (cuo *CounterUpdateOne) ClearMetric() *CounterUpdateOne {
 	cuo.mutation.ClearMetric()
 	return cuo
@@ -312,7 +311,6 @@ func (cuo *CounterUpdateOne) ClearMetric() *CounterUpdateOne {
 
 // Save executes the query and returns the updated entity.
 func (cuo *CounterUpdateOne) Save(ctx context.Context) (*Counter, error) {
-
 	var (
 		err  error
 		node *Counter
@@ -342,11 +340,11 @@ func (cuo *CounterUpdateOne) Save(ctx context.Context) (*Counter, error) {
 
 // SaveX is like Save, but panics if an error occurs.
 func (cuo *CounterUpdateOne) SaveX(ctx context.Context) *Counter {
-	c, err := cuo.Save(ctx)
+	node, err := cuo.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
-	return c
+	return node
 }
 
 // Exec executes the query on the entity.
@@ -362,7 +360,7 @@ func (cuo *CounterUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
-func (cuo *CounterUpdateOne) sqlSave(ctx context.Context) (c *Counter, err error) {
+func (cuo *CounterUpdateOne) sqlSave(ctx context.Context) (_node *Counter, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
 			Table:   counter.Table,
@@ -448,9 +446,9 @@ func (cuo *CounterUpdateOne) sqlSave(ctx context.Context) (c *Counter, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	c = &Counter{config: cuo.config}
-	_spec.Assign = c.assignValues
-	_spec.ScanValues = c.scanValues()
+	_node = &Counter{config: cuo.config}
+	_spec.Assign = _node.assignValues
+	_spec.ScanValues = _node.scanValues()
 	if err = sqlgraph.UpdateNode(ctx, cuo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{counter.Label}
@@ -459,5 +457,5 @@ func (cuo *CounterUpdateOne) sqlSave(ctx context.Context) (c *Counter, err error
 		}
 		return nil, err
 	}
-	return c, nil
+	return _node, nil
 }

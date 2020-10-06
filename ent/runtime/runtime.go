@@ -5,5 +5,6 @@ package runtime
 // The schema-stitching logic is generated in github.com/gobench-io/gobench/ent/runtime.go
 
 const (
-	Version = "(devel)" // Version of ent codegen.
+	Version = "v0.4.3"                                          // Version of ent codegen.
+	Sum     = "h1:ds9HENceKzpGBgCRlkZNq6TqBIegwKcF3e5reuV9Z0M=" // Sum of ent codegen.
 )
