@@ -42,7 +42,6 @@ const DefaultPage = ({ tags, dispatch }) => {
 
     setNewTag('')
   }
-  console.log('tags', tags)
   return (
     <>
       {tags && tags.map(({ id, name }, index) => {
