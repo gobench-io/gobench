@@ -12,7 +12,7 @@ RUN go build -o /gobench ./
 # deployment
 FROM golang:1.14-alpine
 
-RUN apk add build-base
+RUN apk add build-base gcc
 
 COPY --from=build gobench .
 
