@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet'
-import { Table, Tag, Button, Popconfirm, Tooltip } from 'antd'
+import { Table, Tag, Input, Button, Popconfirm, Tooltip } from 'antd'
 import { connect } from 'react-redux'
 import { withRouter, Link, useHistory } from 'react-router-dom'
 import { statusColors, formatTag } from 'utils/status'
 import { RetweetOutlined } from '@ant-design/icons'
 import moment from 'moment'
+import './style.scss'
 
-const mapStateToProps = ({ application, dispatch }) => ({ application, dispatch })
+const { Search } = Input
+const mapStateToProps = ({ application, dispatch }) => {
+  const { list, loading, total } = application
+  return { list, loading, total, dispatch }
+}
 
-const DefaultPage = ({ application, dispatch }) => {
+const DefaultPage = ({ list, loading, total, dispatch }) => {
   const history = useHistory()
-  const { list = [], loading, total } = application
   const [fetching, setFetching] = useState(false)
   const [pagination, setPagination] = useState({
     current: 1,
@@ -78,15 +82,14 @@ const DefaultPage = ({ application, dispatch }) => {
       title: 'Duration',
       dataIndex: 'duration',
       key: 'duration',
-      sorter: (a, b) => a.name.length - b.name.length,
       render: (x, item) => {
         const { started_at: startedAt, updated_at: updated } = item
-        const start = moment(startedAt).utc() // some random moment in time (in ms)
+        const start = moment(startedAt).utc()
         if (['provisioning', 'pending', 'error'].includes(item.status)) {
           return <span />
         }
         if (['finished', 'cancel'].includes(item.status)) {
-          const end = moment(updated).utc() // some random moment after start (in ms)
+          const end = moment(updated).utc()
           const diff = end.diff(start)
           const duration = moment.utc(diff).format('HH:mm:ss.SSS')
           return <span>{duration}</span>
@@ -149,33 +152,30 @@ const DefaultPage = ({ application, dispatch }) => {
     }
   ]
   useEffect(() => {
-    //   fetch data when the first time access
     if (!fetching) {
       dispatch({
         type: 'application/LIST',
-        payload: { skip: pagination.current - 1, limit: pagination.pageSize }
+        payload: { offset: (pagination.current - 1) * pagination.pageSize, limit: pagination.pageSize }
       })
       setFetching(true)
     }
   }, [list, total])
+  useEffect(() => {
+    if (total > 0 && total !== pagination.total) {
+      setPagination({ ...pagination, total })
+    }
+  }, [total])
   const onTableChange = (pagination, filters, sorter, extra) => {
     setPagination(pagination)
     dispatch({
       type: 'application/LIST',
-      payload: { skip: pagination.current - 1, limit: pagination.pageSize, pagination, filters, sorter }
+      payload: { offset: (pagination.current - 1) * pagination.pageSize, limit: pagination.pageSize, pagination, filters, sorter }
     })
   }
-  const onSearch = (e) => {
-    if (e.key === 'Enter') {
-      dispatch({
-        type: 'application/LIST',
-        payload: { skip: 0, limit: pagination.pageSize }
-      })
-      return
-    }
+  const onSearch = (keyword) => {
     dispatch({
       type: 'application/LIST',
-      payload: { skip: 0, limit: pagination.pageSize }
+      payload: { offset: 0, limit: pagination.pageSize, keyword }
     })
   }
   const clone = (data) => {
@@ -198,7 +198,7 @@ const DefaultPage = ({ application, dispatch }) => {
   }
   return (
     <>
-      <div className='application' onKeyUp={onSearch}>
+      <div className='application'>
         <Helmet title='Applications' />
 
         <div className='card'>
@@ -224,11 +224,14 @@ const DefaultPage = ({ application, dispatch }) => {
           </div>
           <div className='card-body'>
             <div className='application-header'>
-              <div className='search-bar'>
-                <div className='row'>
-                  <div className='col-md-3 col-xs-12'>
-                    {/* <Search placeholder='input application name or tags' onSearch={value => onSearch(value)}>Search</Search> */}
-                  </div>
+              <div className='search-bar row'>
+                <div className='col-md-6 col-xs-12' />
+                <div className='col-md-6 col-xs-12'>
+                  <Search
+                    placeholder='input application name or tags'
+                    enterButton='Search'
+                    onSearch={value => onSearch(value)}
+                  />
                 </div>
               </div>
             </div>

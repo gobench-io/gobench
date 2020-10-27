@@ -48,7 +48,6 @@ const MainLayout = ({
         {/* <SupportChat /> */}
         {/* <Menu /> */}
         <Layout>
-          <div className='xxxxxxxxxxxxxxxxx' />
           <Layout.Header
             className={classNames('cui__layout__header', {
               cui__layout__fixedHeader: isTopbarFixed,
