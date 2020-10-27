@@ -123,8 +123,9 @@ func newHandler(s *master.Master, adminPassword string, logger logger.Logger) *h
 		r.Route("/applications", func(r chi.Router) {
 			setAuth(r, tokenAuth)
 
-			r.Get("/", h.listApplications)   // GET /applications
-			r.Post("/", h.createApplication) // POST /applications
+			r.Get("/", h.listApplications)       // GET /applications
+			r.Get("/count", h.countApplications) // GET /applications/count
+			r.Post("/", h.createApplication)     // POST /applications
 
 			r.Route("/{applicationID}", func(r chi.Router) {
 				r.Use(h.applicationCtx)

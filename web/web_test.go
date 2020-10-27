@@ -144,14 +144,266 @@ func TestAuth200(t *testing.T) {
 	assert.Equal(t, 200, w.Code)
 }
 
-func TestListApplications(t *testing.T) {
+func Test_handler_listApplications(t *testing.T) {
+	// init test
 	r, w := newAPITest(t, "")
-	req, _ := http.NewRequest("GET", "/api/applications", nil)
+	reqBody, _ := json.Marshal(map[string]string{
+		"Name":     "foo",
+		"Scenario": base64.StdEncoding.EncodeToString([]byte("foo")),
+	})
+	req, _ := http.NewRequest("POST", "/api/applications", bytes.NewBuffer(reqBody))
+	req.Header.Set("Content-Type", "application/json")
 	r.ServeHTTP(w, req)
+	assert.Equal(t, w.Code, 201)
+	// another application
+	reqBody, _ = json.Marshal(map[string]string{
+		"Name":     "foo1",
+		"Scenario": base64.StdEncoding.EncodeToString([]byte("foo1")),
+	})
+	req, _ = http.NewRequest("POST", "/api/applications", bytes.NewBuffer(reqBody))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, w.Code, 201)
 
-	assert.Equal(t, 200, w.Code)
+	type args struct {
+		keyword string
+		limit   int
+		offset  int
+		order   string
+		isAsc   bool
+	}
+	type wantData []struct {
+		Name     string
+		Scenario string
+	}
+	tests := []struct {
+		name     string
+		args     args
+		wantErr  bool
+		wantData wantData
+	}{
+		{
+			name:    "should return success when no parameters is set",
+			args:    args{},
+			wantErr: false,
+			wantData: wantData{
+				{
+					Name:     "foo1",
+					Scenario: "foo1",
+				},
+				{
+					Name:     "foo",
+					Scenario: "foo",
+				},
+			},
+		},
+		{
+			name:    "should return success when have a keyword match",
+			args:    args{keyword: "foo"},
+			wantErr: false,
+			wantData: wantData{
+				{
+					Name:     "foo1",
+					Scenario: "foo1",
+				},
+				{
+					Name:     "foo",
+					Scenario: "foo",
+				},
+			},
+		},
+		{
+			name:    "should return success when have a keyword match again",
+			args:    args{keyword: "foo1"},
+			wantErr: false,
+			wantData: wantData{
+				{
+					Name:     "foo1",
+					Scenario: "foo1",
+				},
+			},
+		},
+		{
+			name:     "should return success when have a keyword does not match",
+			args:     args{keyword: "bar"},
+			wantErr:  false,
+			wantData: wantData{},
+		},
+		{
+			name:    "should return success when have limit is set 1",
+			args:    args{limit: 1},
+			wantErr: false,
+			wantData: wantData{
+				{
+					Name:     "foo1",
+					Scenario: "foo1",
+				},
+			},
+		},
+		{
+			name:    "should return success when have offset is set 1",
+			args:    args{offset: 1},
+			wantErr: false,
+			wantData: wantData{
+				{
+					Name:     "foo",
+					Scenario: "foo",
+				},
+			},
+		},
+		{
+			name:    "should return success when have isAsc is set true",
+			args:    args{isAsc: true},
+			wantErr: false,
+			wantData: wantData{
+				{
+					Name:     "foo",
+					Scenario: "foo",
+				},
+				{
+					Name:     "foo1",
+					Scenario: "foo1",
+				},
+			},
+		},
+		{
+			name:    "should return success when have order is set name and isAsc is true",
+			args:    args{order: "name", isAsc: true},
+			wantErr: false,
+			wantData: wantData{
+				{
+					Name:     "foo",
+					Scenario: "foo",
+				},
+				{
+					Name:     "foo1",
+					Scenario: "foo1",
+				},
+			},
+		},
+		{
+			name:    "should return success when have order is set name and isAsc is false",
+			args:    args{order: "name", isAsc: false},
+			wantErr: false,
+			wantData: wantData{
+				{
+					Name:     "foo1",
+					Scenario: "foo1",
+				},
+				{
+					Name:     "foo",
+					Scenario: "foo",
+				},
+			},
+		},
+		{
+			name:    "should return success when have order is set name and isAsc is false, limit is 1 and offset is 1",
+			args:    args{order: "name", isAsc: false, limit: 1, offset: 1},
+			wantErr: false,
+			wantData: wantData{
+				{
+					Name:     "foo",
+					Scenario: "foo",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r, w := newAPITest(t, "")
+			req, _ := http.NewRequest("GET", fmt.Sprintf("/api/applications?keyword=%s&limit=%d&offset=%d&order=%s&isAsc=%v", tt.args.keyword, tt.args.limit, tt.args.offset, tt.args.order, tt.args.isAsc), nil)
+			req.Header.Set("Content-Type", "application/json")
+
+			r.ServeHTTP(w, req)
+			assert.Equal(t, tt.wantErr, w.Code >= 400)
+			if !tt.wantErr {
+				assert.Equal(t, w.Code, 200)
+				result := wantData{}
+				json.Unmarshal(w.Body.Bytes(), &result)
+				assert.Equal(t, len(tt.wantData), len(result))
+				for k, v := range result {
+					assert.Equal(t, tt.wantData[k].Name, v.Name)
+					assert.Equal(t, tt.wantData[k].Scenario, v.Scenario)
+				}
+			}
+		})
+	}
 }
+func Test_handler_countApplications(t *testing.T) {
+	// init test
+	r, w := newAPITest(t, "")
+	reqBody, _ := json.Marshal(map[string]string{
+		"Name":     "foo",
+		"Scenario": base64.StdEncoding.EncodeToString([]byte("foo")),
+	})
+	req, _ := http.NewRequest("POST", "/api/applications", bytes.NewBuffer(reqBody))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, w.Code, 201)
+	// another application
+	reqBody, _ = json.Marshal(map[string]string{
+		"Name":     "foo1",
+		"Scenario": base64.StdEncoding.EncodeToString([]byte("foo1")),
+	})
+	req, _ = http.NewRequest("POST", "/api/applications", bytes.NewBuffer(reqBody))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, w.Code, 201)
 
+	type args struct {
+		keyword string
+	}
+	type wantData struct {
+		Count int
+	}
+	tests := []struct {
+		name     string
+		args     args
+		wantErr  bool
+		wantData wantData
+	}{
+		{
+			name:     "should return success when no parameters is set",
+			args:     args{keyword: ""},
+			wantErr:  false,
+			wantData: wantData{Count: 2},
+		},
+		{
+			name:     "should return success when have a keyword match",
+			args:     args{keyword: "foo"},
+			wantErr:  false,
+			wantData: wantData{Count: 2},
+		},
+		{
+			name:     "should return success when have a keyword match again",
+			args:     args{keyword: "foo1"},
+			wantErr:  false,
+			wantData: wantData{Count: 1},
+		},
+		{
+			name:     "should return success when have a keyword does not match",
+			args:     args{keyword: "bar"},
+			wantErr:  false,
+			wantData: wantData{Count: 0},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r, w := newAPITest(t, "")
+			req, _ := http.NewRequest("GET", fmt.Sprintf("/api/applications/count?keyword=%s", tt.args.keyword), nil)
+			req.Header.Set("Content-Type", "application/json")
+
+			r.ServeHTTP(w, req)
+			assert.Equal(t, tt.wantErr, w.Code >= 400)
+			if !tt.wantErr {
+				assert.Equal(t, w.Code, 200)
+				result := wantData{}
+				json.Unmarshal(w.Body.Bytes(), &result)
+				assert.Equal(t, tt.wantData.Count, result.Count)
+			}
+		})
+	}
+}
 func TestCreateApplications(t *testing.T) {
 	t.Run("successful request", func(t *testing.T) {
 		r, w := newAPITest(t, "")

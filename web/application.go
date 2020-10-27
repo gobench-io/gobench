@@ -36,14 +36,59 @@ func (h *handler) applicationCtx(next http.Handler) http.Handler {
 	})
 }
 
+func (h *handler) countApplications(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	keyword := r.URL.Query().Get("keyword")
+	q := h.db().Application.
+		Query()
+	if keyword != "" {
+		q = q.Where(application.NameContains(keyword))
+	}
+	count, err := q.Count(ctx)
+	if err != nil {
+		render.Render(w, r, ErrInternalServer(err))
+		return
+	}
+	if err := render.Render(w, r, newCountApplicationResponse(count)); err != nil {
+		render.Render(w, r, ErrRender(err))
+		return
+	}
+}
+
 func (h *handler) listApplications(w http.ResponseWriter, r *http.Request) {
-	aps, err := h.db().Application.
+	ctx := r.Context()
+	keyword := r.URL.Query().Get("keyword")
+	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+	offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
+	order := r.URL.Query().Get("order")
+	isAsc, _ := strconv.ParseBool(r.URL.Query().Get("isAsc"))
+	if limit == 0 || limit > 100 {
+		limit = 20
+	}
+	if offset < 0 || offset > 100 {
+		offset = 0
+	}
+	if order == "" {
+		order = "created_at"
+	}
+	q := h.db().Application.
 		Query().
-		WithTags().
-		Order(
+		WithTags()
+	if keyword != "" {
+		q = q.Where(application.NameContains(keyword))
+	}
+	if !isAsc {
+		q = q.Order(
 			ent.Desc(application.FieldCreatedAt),
-		).
-		All(r.Context())
+		)
+	} else {
+		q = q.Order(
+			ent.Asc(application.FieldCreatedAt),
+		)
+	}
+	aps, err := q.Offset(offset).
+		Limit(limit).
+		All(ctx)
 	if err != nil {
 		render.Render(w, r, ErrInternalServer(err))
 		return
