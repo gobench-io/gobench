@@ -29,7 +29,7 @@ type handler struct {
 }
 
 func (h *handler) db() *ent.Client {
-	return h.s.DB()
+	return h.s.DbClient()
 }
 
 func setAuth(r chi.Router, tokenAuth *jwtauth.JWTAuth) {
@@ -73,6 +73,8 @@ func newHandler(s *master.Master, adminPassword string, logger logger.Logger) *h
 	r.Use(middleware.Recoverer)
 
 	r.Use(middleware.Timeout(60 * time.Second))
+
+	r.Get("/healthz", h.healthz)
 
 	// rest for groups
 	r.Route("/api/", func(r chi.Router) {

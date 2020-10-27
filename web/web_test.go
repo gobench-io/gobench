@@ -653,3 +653,13 @@ func TestGetApplicationLogs(t *testing.T) {
 	r.ServeHTTP(w, req)
 	assert.Equal(t, 200, w.Code)
 }
+
+func TestGetHeathz(t *testing.T) {
+	r, w := newAPITest(t, "adminPassword")
+
+	healthzReq, _ := http.NewRequest("GET", "/healthz", nil)
+	healthzReq.Header.Set("Content-Type", "application/json")
+
+	r.ServeHTTP(w, healthzReq)
+	assert.Equal(t, 200, w.Code)
+}

@@ -22,6 +22,7 @@ import (
 	"github.com/gobench-io/gobench/executor"
 	"github.com/gobench-io/gobench/logger"
 
+	"github.com/facebook/ent/dialect/sql"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -31,6 +32,7 @@ type jobState string
 
 type Master struct {
 	mu          sync.Mutex
+	hostname    string
 	addr        string // host name
 	port        int    // api port
 	clusterPort int    // cluster port
@@ -44,6 +46,7 @@ type Master struct {
 	homeDir     string
 	dbFilename  string
 	db          *ent.Client
+	dbDrv       *sql.Driver
 
 	la  *agent.Agent // local agent
 	job *job
@@ -74,12 +77,18 @@ func NewMaster(opts *Options, logger logger.Logger) (m *Master, err error) {
 		"home directory", opts.HomeDir,
 	)
 
+	hostname, err := os.Hostname()
+	if err != nil {
+		return
+	}
+
 	m = &Master{
-		addr:    opts.Addr,
-		port:    opts.Port,
-		homeDir: opts.HomeDir,
-		logger:  logger,
-		program: opts.Program,
+		hostname: hostname,
+		addr:     opts.Addr,
+		port:     opts.Port,
+		homeDir:  opts.HomeDir,
+		logger:   logger,
+		program:  opts.Program,
 	}
 
 	m.dbFilename = path.Join(m.homeDir, "gobench.sqlite3")
@@ -94,6 +103,14 @@ func NewMaster(opts *Options, logger logger.Logger) (m *Master, err error) {
 	m.la = la
 
 	return
+}
+
+// GetHostname returns the hostname
+func (m *Master) GetHostname() string {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	return m.hostname
 }
 
 // SetIsScheduled update isScheduled property
@@ -140,9 +157,17 @@ func (m *Master) CleanupRunningApps() (err error) {
 	return
 }
 
-// DB returns the db client
-func (m *Master) DB() *ent.Client {
+// DbClient returns the db client
+func (m *Master) DbClient() *ent.Client {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
 	return m.db
+}
+
+// PingDb health check the using database
+func (m *Master) PingDb() error {
+	return m.dbDrv.DB().Ping()
 }
 
 func (m *Master) finish(status status) error {
@@ -311,19 +336,23 @@ func (m *Master) setupDb() error {
 		return err
 	}
 
-	client, err := ent.Open(
+	drv, err := sql.Open(
 		"sqlite3",
-		m.dbFilename+"?mode=rwc&cache=shared&&_busy_timeout=9999999&_fk=1")
-
+		m.dbFilename+"?mode=rwc&cache=shared&&_busy_timeout=9999999&_fk=1",
+	)
 	if err != nil {
 		return fmt.Errorf("failed opening sqlite3 connection: %v", err)
 	}
+	client := ent.NewClient(ent.Driver(drv))
 
 	if err = client.Schema.Create(context.Background()); err != nil {
 		return fmt.Errorf("failed creating schema resources: %v", err)
 	}
 
+	m.mu.Lock()
 	m.db = client
+	m.dbDrv = drv
+	m.mu.Unlock()
 
 	return nil
 }
