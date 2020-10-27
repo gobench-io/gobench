@@ -37,6 +37,29 @@ func newAPITest(t *testing.T, adminPassword string) (*chi.Mux, *httptest.Respons
 	return r, w
 }
 
+func cleanApplication(t *testing.T) {
+	r, w := newAPITest(t, "")
+	req, _ := http.NewRequest("GET", fmt.Sprintf("/api/applications?limit=%d", ^uint(0)), nil)
+	req.Header.Set("Content-Type", "application/json")
+
+	r.ServeHTTP(w, req)
+	assert.Less(t, w.Code, 400)
+
+	var apps []ent.Application
+	err := json.Unmarshal(w.Body.Bytes(), &apps)
+	assert.Equal(t, err, nil)
+	for _, app := range apps {
+		r, w := newAPITest(t, "")
+		req, _ := http.NewRequest(
+			"DELETE",
+			fmt.Sprintf("/api/applications/%d", app.ID),
+			nil,
+		)
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, 200, w.Code)
+	}
+}
 func newAppTag(t *testing.T, appID int, name string) *ent.Tag {
 	r, w := newAPITest(t, "")
 	reqBody, _ := json.Marshal(map[string]string{
@@ -57,10 +80,8 @@ func newAppTag(t *testing.T, appID int, name string) *ent.Tag {
 	return &tag
 }
 
-func newApp(t *testing.T) *ent.Application {
+func newApp(t *testing.T, name string, scenario string) *ent.Application {
 	r, w := newAPITest(t, "")
-	name := "name 1"
-	scenario := "scenario 1"
 	encScenario := base64.StdEncoding.EncodeToString([]byte(scenario))
 
 	reqBody, _ := json.Marshal(map[string]string{
@@ -144,14 +165,236 @@ func TestAuth200(t *testing.T) {
 	assert.Equal(t, 200, w.Code)
 }
 
-func TestListApplications(t *testing.T) {
-	r, w := newAPITest(t, "")
-	req, _ := http.NewRequest("GET", "/api/applications", nil)
-	r.ServeHTTP(w, req)
+func Test_handler_countApplications(t *testing.T) {
+	// init test
+	cleanApplication(t)
+	_ = newApp(t, "foo", "foo")
+	_ = newApp(t, "foo1", "foo1")
 
-	assert.Equal(t, 200, w.Code)
+	type args struct {
+		keyword string
+	}
+	type wantData struct {
+		Count int
+	}
+	tests := []struct {
+		name     string
+		args     args
+		wantErr  bool
+		wantData wantData
+	}{
+		{
+			name:     "should return success when have no params",
+			args:     args{},
+			wantErr:  false,
+			wantData: wantData{Count: 2},
+		},
+		{
+			name:     "should return success when have a keyword match",
+			args:     args{keyword: "foo"},
+			wantErr:  false,
+			wantData: wantData{Count: 2},
+		},
+		{
+			name:     "should return success when have a keyword match again",
+			args:     args{keyword: "foo1"},
+			wantErr:  false,
+			wantData: wantData{Count: 1},
+		},
+		{
+			name:     "should return success when have a keyword does not match",
+			args:     args{keyword: "bar"},
+			wantErr:  false,
+			wantData: wantData{Count: 0},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r, w := newAPITest(t, "")
+			req, _ := http.NewRequest("GET", fmt.Sprintf("/api/applications/count?keyword=%s", tt.args.keyword), nil)
+			req.Header.Set("Content-Type", "application/json")
+
+			r.ServeHTTP(w, req)
+			assert.Equal(t, tt.wantErr, w.Code >= 400)
+			if !tt.wantErr {
+				assert.Equal(t, w.Code, 200)
+				result := wantData{}
+				json.Unmarshal(w.Body.Bytes(), &result)
+				assert.Equal(t, tt.wantData.Count, result.Count)
+			}
+		})
+	}
 }
+func Test_handler_listApplications(t *testing.T) {
+	// init test
+	cleanApplication(t)
+	_ = newApp(t, "foo", "foo")
+	_ = newApp(t, "foo1", "foo1")
 
+	type args struct {
+		keyword string
+		limit   int
+		offset  int
+		order   string
+		isAsc   bool
+	}
+	type wantData []struct {
+		Name     string
+		Scenario string
+	}
+	tests := []struct {
+		name     string
+		args     args
+		wantErr  bool
+		wantData wantData
+	}{
+		{
+			name:    "should return success when have no params",
+			args:    args{},
+			wantErr: false,
+			wantData: wantData{
+				{
+					Name:     "foo1",
+					Scenario: "foo1",
+				},
+				{
+					Name:     "foo",
+					Scenario: "foo",
+				},
+			},
+		},
+		{
+			name:    "should return success when have a keyword match",
+			args:    args{keyword: "foo"},
+			wantErr: false,
+			wantData: wantData{
+				{
+					Name:     "foo1",
+					Scenario: "foo1",
+				},
+				{
+					Name:     "foo",
+					Scenario: "foo",
+				},
+			},
+		},
+		{
+			name:    "should return success when have a keyword match again",
+			args:    args{keyword: "foo1"},
+			wantErr: false,
+			wantData: wantData{
+				{
+					Name:     "foo1",
+					Scenario: "foo1",
+				},
+			},
+		},
+		{
+			name:     "should return success when have a keyword does not match",
+			args:     args{keyword: "foo1111"},
+			wantErr:  false,
+			wantData: wantData{},
+		},
+		{
+			name:    "should return success when have limit is set 1",
+			args:    args{limit: 1},
+			wantErr: false,
+			wantData: wantData{
+				{
+					Name:     "foo1",
+					Scenario: "foo1",
+				},
+			},
+		},
+		{
+			name:    "should return success when have offset is set 1",
+			args:    args{offset: 1},
+			wantErr: false,
+			wantData: wantData{
+				{
+					Name:     "foo",
+					Scenario: "foo",
+				},
+			},
+		},
+		{
+			name:    "should return success when have isAsc is set true",
+			args:    args{isAsc: true},
+			wantErr: false,
+			wantData: wantData{
+				{
+					Name:     "foo",
+					Scenario: "foo",
+				},
+				{
+					Name:     "foo1",
+					Scenario: "foo1",
+				},
+			},
+		},
+		{
+			name:    "should return success when have order is set name and isAsc is true",
+			args:    args{order: "name", isAsc: true},
+			wantErr: false,
+			wantData: wantData{
+				{
+					Name:     "foo",
+					Scenario: "foo",
+				},
+				{
+					Name:     "foo1",
+					Scenario: "foo1",
+				},
+			},
+		},
+		{
+			name:    "should return success when have order is set name and isAsc is false",
+			args:    args{order: "name", isAsc: false},
+			wantErr: false,
+			wantData: wantData{
+				{
+					Name:     "foo1",
+					Scenario: "foo1",
+				},
+				{
+					Name:     "foo",
+					Scenario: "foo",
+				},
+			},
+		},
+		{
+			name:    "should return success when have order is set name and isAsc is false, limit is 1 and offset is 1",
+			args:    args{order: "name", isAsc: false, limit: 1, offset: 1},
+			wantErr: false,
+			wantData: wantData{
+				{
+					Name:     "foo",
+					Scenario: "foo",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r, w := newAPITest(t, "")
+			req, _ := http.NewRequest("GET", fmt.Sprintf("/api/applications?keyword=%s&limit=%d&offset=%d&order=%s&isAsc=%v", tt.args.keyword, tt.args.limit, tt.args.offset, tt.args.order, tt.args.isAsc), nil)
+			req.Header.Set("Content-Type", "application/json")
+
+			r.ServeHTTP(w, req)
+			assert.Equal(t, tt.wantErr, w.Code >= 400)
+			if !tt.wantErr {
+				assert.Equal(t, w.Code, 200)
+				result := wantData{}
+				json.Unmarshal(w.Body.Bytes(), &result)
+				assert.Equal(t, len(tt.wantData), len(result))
+				for k, v := range tt.wantData {
+					assert.Equal(t, tt.wantData[k].Name, v.Name)
+					assert.Equal(t, tt.wantData[k].Scenario, v.Scenario)
+				}
+			}
+		})
+	}
+}
 func TestCreateApplications(t *testing.T) {
 	t.Run("successful request", func(t *testing.T) {
 		r, w := newAPITest(t, "")
@@ -259,7 +502,7 @@ func TestGetApplication(t *testing.T) {
 	})
 
 	t.Run("successful request", func(t *testing.T) {
-		app := newApp(t)
+		app := newApp(t, "name 1", "scenario 1")
 
 		r, w := newAPITest(t, "")
 		req, _ := http.NewRequest(
@@ -277,7 +520,7 @@ func TestGetApplication(t *testing.T) {
 }
 
 func TestCancelApplication(t *testing.T) {
-	app := newApp(t)
+	app := newApp(t, "name 1", "scenario 1")
 
 	r, w := newAPITest(t, "")
 	req, _ := http.NewRequest(
@@ -295,7 +538,7 @@ func TestCancelApplication(t *testing.T) {
 }
 
 func TestDeleteApplication(t *testing.T) {
-	app := newApp(t)
+	app := newApp(t, "name 1", "scenario 1")
 
 	r, w := newAPITest(t, "")
 	req, _ := http.NewRequest(
@@ -311,7 +554,7 @@ func TestDeleteApplication(t *testing.T) {
 func TestAddApplicationTag(t *testing.T) {
 	tagName := "foo"
 	tag := &ent.Tag{}
-	app := newApp(t)
+	app := newApp(t, "name 1", "scenario 1")
 
 	r, w := newAPITest(t, "")
 
@@ -336,7 +579,7 @@ func TestAddApplicationTag(t *testing.T) {
 func TestAddApplicationTagAgain(t *testing.T) {
 	tagName := "foo"
 	tag := &ent.Tag{}
-	app := newApp(t)
+	app := newApp(t, "name 1", "scenario 1")
 	_ = newAppTag(t, app.ID, tagName)
 
 	r, w := newAPITest(t, "")
@@ -361,7 +604,7 @@ func TestAddApplicationTagAgain(t *testing.T) {
 
 func TestDeleteApplicationTag(t *testing.T) {
 	tagName := "foo"
-	app := newApp(t)
+	app := newApp(t, "name 1", "scenario 1")
 	fooTag := newAppTag(t, app.ID, tagName)
 
 	r, w := newAPITest(t, "")
@@ -380,7 +623,7 @@ func TestDeleteApplicationTag(t *testing.T) {
 }
 
 func TestGetApplicationLogs(t *testing.T) {
-	app := newApp(t)
+	app := newApp(t, "name 1", "scenario 1")
 
 	// create 2 logs
 	fd := fmt.Sprintf("/tmp/applications/%d", app.ID)

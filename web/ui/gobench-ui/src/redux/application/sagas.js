@@ -11,16 +11,17 @@ import {
 } from 'services/application'
 
 export function * LIST ({ payload }) {
-  const { skip, limit } = payload
+  let { keyword, limit, offset, sorter, order, isAsc } = payload
+  if (sorter && sorter.field) {
+    order = sorter.field
+    isAsc = sorter.order === 'ascend'
+  }
   yield loading(true)
-  const response = yield call(list, skip, limit)
+  const response = yield call(list, limit, offset, order, isAsc, keyword)
   if (response) {
     yield put({
       type: 'application/SET_STATE',
-      payload: {
-        list: response,
-        total: (response || []).length
-      }
+      payload: response
     })
   }
   yield loading(false)

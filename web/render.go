@@ -101,8 +101,22 @@ type applicationResponse struct {
 	Edges *struct{} `json:"edges,omitempty"`
 }
 
+type countApplicationResponse struct {
+	Count int `json:"count"`
+}
+
 func (ar *applicationResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
+}
+
+func (ar *countApplicationResponse) Render(w http.ResponseWriter, r *http.Request) error {
+	return nil
+}
+
+func newCountApplicationResponse(count int) *countApplicationResponse {
+	return &countApplicationResponse{
+		Count: count,
+	}
 }
 
 func newApplicationResponse(a *ent.Application) *applicationResponse {

@@ -3,17 +3,22 @@ let API
 export const init = (api) => {
   API = api
 }
-export const listApi = async (limit = 10, skip = 0, name, tag) => {
-  let url = `${API.list}?limit=${limit}&skip=${skip}`
-  if (name) {
-    url += `&filter[where][name][like]=${name}`
+export const listApi = async (limit, offset, order, isAsc, keyword) => {
+  if (typeof keyword !== 'string') {
+    keyword = ''
   }
-  if (tag) {
-    url += `&filter[where][tag][like]=${tag}`
+  const res = await apiClient.get(`${API.count}?keyword=${keyword}`)
+  if (!res) {
+    return
   }
+  const { count } = res.data
+  const url = `${API.list}?limit=${limit}&offset=${offset}&order=${order}&isAsc=${isAsc}&keyword=${keyword}`
   const response = await apiClient.get(url)
   if (response) {
-    return response.data
+    return {
+      total: count,
+      list: response.data
+    }
   }
 }
 export const detailApi = async (id) => {

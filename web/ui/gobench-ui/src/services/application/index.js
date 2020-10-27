@@ -4,6 +4,7 @@ import { METRIC_TYPE } from 'constant'
 import { get, maxBy, orderBy } from 'lodash'
 import { getChartData, getDataByType } from 'utils/chart'
 const API = {
+  count: '/applications/count',
   list: '/applications',
   detail: '/applications/{0}',
   create: '/applications',
@@ -24,9 +25,9 @@ const API = {
   metrics: '/metrics/{0}'
 
 }
-export const list = async (limit = 10, skip = 0, name, zone, dtms) => {
+export const list = async (limit = 10, offset = 0, order = 'created_at', isAsc = false, keyword) => {
   init(API)
-  return listApi(limit, skip, name, zone, dtms)
+  return listApi(limit, offset, order, isAsc, keyword)
 }
 export const detail = async (id) => {
   init(API)
