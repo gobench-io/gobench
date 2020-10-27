@@ -412,11 +412,11 @@ func TestGetApplicationLogs(t *testing.T) {
 }
 
 func TestGetHeathz(t *testing.T) {
-	r, w := newAPITest(t, adminPassword)
+	r, w := newAPITest(t, "adminPassword")
 
-	loginReq, _ := http.NewRequest("POST", "/api/users/login", bytes.NewBuffer(reqBody))
-	loginReq.Header.Set("Content-Type", "application/json")
+	healthzReq, _ := http.NewRequest("GET", "/healthz", nil)
+	healthzReq.Header.Set("Content-Type", "application/json")
 
-	r.ServeHTTP(w, loginReq)
-	assert.Equal(t, tc.want, w.Code)
+	r.ServeHTTP(w, healthzReq)
+	assert.Equal(t, 200, w.Code)
 }
