@@ -29,19 +29,13 @@ func groups() []metrics.Group {
 		Name: "NAT Connections",
 		Graphs: []metrics.Graph{
 			{
-				Title: "Total Connections",
+				Title: "Connections",
 				Unit:  "N",
 				Metrics: []metrics.Metric{
 					{
 						Title: conTotal,
 						Type:  metrics.Counter,
 					},
-				},
-			},
-			{
-				Title: "Connection Errors",
-				Unit:  "N",
-				Metrics: []metrics.Metric{
 					{
 						Title: conError,
 						Type:  metrics.Counter,
@@ -106,7 +100,7 @@ func groups() []metrics.Group {
 		},
 	}
 	consumerGroup := metrics.Group{
-		Name: "MQTT Consumers",
+		Name: "NATS Consumers",
 		Graphs: []metrics.Graph{
 			{
 				Title: "Suback Latency",
@@ -119,19 +113,13 @@ func groups() []metrics.Group {
 				},
 			},
 			{
-				Title: "Subscriber Total",
+				Title: "Subscriber Total/Errors",
 				Unit:  "N",
 				Metrics: []metrics.Metric{
 					{
 						Title: subTotal,
 						Type:  metrics.Counter,
 					},
-				},
-			},
-			{
-				Title: "Subscriber Suback Errors",
-				Unit:  "N",
-				Metrics: []metrics.Metric{
 					{
 						Title: subError,
 						Type:  metrics.Counter,
