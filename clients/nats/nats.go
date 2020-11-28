@@ -21,8 +21,8 @@ const pubWaiting string = "nats.publisher.puback.waiting"
 
 const subLatency string = "nats.subscriber.suback.latency"
 const unsubLatency string = "nats.subscriber.unsuback.latency"
-const subTotal string = "nats.subsciber.current_total"
-const subError string = "nats.subsciber.suback.error"
+const subTotal string = "nats.subscriber.current_total"
+const subError string = "nats.subscriber.suback.error"
 const msgSubTotal string = "nats.message.consumed.total"
 
 func groups() []metrics.Group {

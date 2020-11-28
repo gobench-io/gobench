@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"strconv"
 	"time"
@@ -11,43 +12,64 @@ import (
 	"github.com/gobench-io/gobench/executor/scenario"
 )
 
+var server = "127.0.0.1"
+
 func export() scenario.Vus {
-	// nats benchmark example
 	return scenario.Vus{
 		{
-			Nu:   3000,
-			Rate: 1000,
-			Fu:   f,
+			Nu:   2,
+			Rate: 100,
+			Fu:   resf,
+		},
+		{
+			Nu:   10,
+			Rate: 100,
+			Fu:   reqf,
 		},
 	}
 }
 
-func f(ctx context.Context, vui int) {
-	url := "127.0.0.1"
-	client, err := nats.NewNatClient(ctx, url)
+func resf(ctx context.Context, vui int) {
+	client, err := nats.NewNatClient(ctx, server)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	err = client.QueueSubscribe(ctx, "rpc.*", "foo", func(msg *nats.Msg) {
+		log.Printf("[vu %d]: %s\n", vui, string(msg.Data))
+		msg.Respond([]byte(fmt.Sprintf("response from vui %d for request %s", vui, string(msg.Data))))
+	})
+
+	if err != nil {
+		log.Println(err)
+		return
+	}
+}
+
+func reqf(ctx context.Context, vui int) {
+	client, err := nats.NewNatClient(ctx, server)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	// wait 1 sec
-	dis.SleepRatePoisson(1)
-
-	// subscribe_to_self("prefix/clients/", 0)
-	_ = client.Subscribe(ctx, "hello."+strconv.Itoa(vui), nil)
-
 	rate := 1.0 // rps
-	timeout := time.After(5 * time.Minute)
+	timeout := time.After(1 * time.Minute)
+
+	i := 1
+
 	for {
 		select {
 		case <-ctx.Done():
-			return
+			break
 		case <-timeout:
 			_ = client.Disconnect(ctx)
-			return
+			break
 		default:
-			_ = client.Publish(ctx, "hello."+strconv.Itoa(vui), []byte("hello world"))
-			dis.SleepRatePoisson(rate)
+			_ = client.Request(ctx, "rpc."+strconv.Itoa(vui),
+				[]byte("hello world"+strconv.Itoa(i)), 2*time.Second)
+			i++
+			dis.SleepRateLinear(rate)
 		}
 	}
 }
