@@ -34,7 +34,7 @@ func f(ctx context.Context, vui int) {
 	dis.SleepRatePoisson(1)
 
 	// subscribe_to_self("prefix/clients/", 0)
-	_ = client.Subscribe(ctx, "hello."+strconv.Itoa(vui))
+	_ = client.Subscribe(ctx, "hello."+strconv.Itoa(vui), nil)
 
 	rate := 1.0 // rps
 	timeout := time.After(5 * time.Minute)
