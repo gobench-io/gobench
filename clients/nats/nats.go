@@ -177,6 +177,10 @@ type NatsClient struct {
 	conn *nats.Conn
 }
 
+type Msg struct {
+	nats.Msg
+}
+
 func NewNatClient(ctx context.Context, url string) (natsClient NatsClient, err error) {
 	if err := executor.Setup(groups()); err != nil {
 		return natsClient, err
@@ -216,7 +220,7 @@ func (c *NatsClient) Publish(ctx context.Context, topic string, data []byte) err
 	return nil
 }
 
-func (c *NatsClient) Subscribe(ctx context.Context, topic string) error {
+func (c *NatsClient) Subscribe(ctx context.Context, topic string, cb func(msg *Msg)) error {
 	ch := make(chan *nats.Msg, 1)
 	begin := time.Now()
 
@@ -234,8 +238,11 @@ func (c *NatsClient) Subscribe(ctx context.Context, topic string) error {
 	go func(ch chan *nats.Msg) {
 		for {
 			select {
-			case <-ch:
+			case msg := <-ch:
 				executor.Notify(msgSubTotal, 1)
+				if cb != nil {
+					cb(&Msg{*msg})
+				}
 			}
 		}
 	}(ch)
