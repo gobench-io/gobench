@@ -340,6 +340,10 @@ func (c *Conn) Request(ctx context.Context, sub string, data []byte,
 	return &Msg{*m}, nil
 }
 
+func (c *Conn) Flush() error {
+	return (*nats.Conn)(c).Flush()
+}
+
 // Disconnect drains and closes the connection
 func (c *Conn) Disconnect(ctx context.Context) error {
 	(*nats.Conn)(c).Drain()

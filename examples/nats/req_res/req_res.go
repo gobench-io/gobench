@@ -17,7 +17,7 @@ var server = "127.0.0.1"
 func export() scenario.Vus {
 	return scenario.Vus{
 		{
-			Nu:   2,
+			Nu:   10,
 			Rate: 100,
 			Fu:   resf,
 		},
@@ -36,13 +36,16 @@ func resf(ctx context.Context, vui int) {
 		return
 	}
 	err = client.QueueSubscribe(ctx, "rpc.*", "foo", func(msg *nats.Msg) {
-		log.Printf("[vu %d]: %s\n", vui, string(msg.Data))
 		msg.Respond([]byte(fmt.Sprintf("response from vui %d for request %s", vui, string(msg.Data))))
 	})
 
 	if err != nil {
 		log.Println(err)
 		return
+	}
+	err = client.Flush()
+	if err != nil {
+		fmt.Println(err)
 	}
 }
 
@@ -58,16 +61,22 @@ func reqf(ctx context.Context, vui int) {
 
 	i := 1
 
+L:
 	for {
 		select {
 		case <-ctx.Done():
-			break
+			break L
 		case <-timeout:
 			_ = client.Disconnect(ctx)
-			break
+			break L
 		default:
-			_ = client.Request(ctx, "rpc."+strconv.Itoa(vui),
-				[]byte("hello world"+strconv.Itoa(i)), 2*time.Second)
+			reqMsg := fmt.Sprintf("req vui %d. no %d", vui, i)
+			m, err := client.Request(ctx, "rpc."+strconv.Itoa(vui), []byte(reqMsg), 2*time.Second)
+			if err == nil {
+				log.Println(string(m.Data))
+			} else {
+				log.Printf("req fail for %s: %s", reqMsg, err)
+			}
 			i++
 			dis.SleepRateLinear(rate)
 		}
