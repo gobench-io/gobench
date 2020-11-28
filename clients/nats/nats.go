@@ -23,6 +23,7 @@ const subLatency string = "nats.subscriber.suback.latency"
 const unsubLatency string = "nats.subscriber.unsuback.latency"
 const subTotal string = "nats.subsciber.current_total"
 const subError string = "nats.subsciber.suback.error"
+const msgSubTotal string = "nats.message.consumed.total"
 
 func groups() []metrics.Group {
 	conGroup := metrics.Group{
@@ -136,6 +137,16 @@ func groups() []metrics.Group {
 					},
 				},
 			},
+			{
+				Title: "Total Consumed Message",
+				Unit:  "N",
+				Metrics: []metrics.Metric{
+					{
+						Title: msgSubTotal,
+						Type:  metrics.Counter,
+					},
+				},
+			},
 		},
 	}
 	return []metrics.Group{
@@ -221,7 +232,12 @@ func (c *NatsClient) Subscribe(ctx context.Context, topic string) error {
 	executor.Notify(subLatency, diff.Microseconds())
 
 	go func(ch chan *nats.Msg) {
-		<-ch
+		for {
+			select {
+			case <-ch:
+				executor.Notify(msgSubTotal, 1)
+			}
+		}
 	}(ch)
 
 	return nil
