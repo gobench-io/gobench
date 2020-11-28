@@ -173,17 +173,19 @@ func closeHandler(nc *nats.Conn) {
 	log.Printf("Exiting: %v\n", nc.LastError())
 }
 
-type NatsClient struct {
-	conn *nats.Conn
-}
+// A Conn represents a bare connection to a nats-server. It can send and receive
+// []byte payloads. It is a type definition of nats.Conn
+type Conn nats.Conn
 
+// Msg is a structure used by Subscribers and PublishMsg()
 type Msg struct {
 	nats.Msg
 }
 
-func NewNatClient(ctx context.Context, url string) (natsClient NatsClient, err error) {
+// NewNatClient creates a NATS client that connect to given url
+func NewNatClient(ctx context.Context, url string) (*Conn, error) {
 	if err := executor.Setup(groups()); err != nil {
-		return natsClient, err
+		return nil, err
 	}
 
 	// nats opts
@@ -193,10 +195,12 @@ func NewNatClient(ctx context.Context, url string) (natsClient NatsClient, err e
 	opts = append(opts, nats.ClosedHandler(closeHandler))
 
 	begin := time.Now()
-	if natsClient.conn, err = nats.Connect(url, opts...); err != nil {
+	c, err := nats.Connect(url, opts...)
+	if err != nil {
 		log.Printf("Connect error: %v\n", err)
 		executor.Notify(conError, 1)
-		return natsClient, err
+
+		return nil, err
 	}
 
 	diff := time.Since(begin)
@@ -204,12 +208,13 @@ func NewNatClient(ctx context.Context, url string) (natsClient NatsClient, err e
 	executor.Notify(conTotal, 1)
 	executor.Notify(conLatency, diff.Microseconds())
 
-	return natsClient, nil
+	return (*Conn)(c), nil
 }
 
-func (c *NatsClient) Publish(ctx context.Context, topic string, data []byte) error {
+// Publish publishes given data to a topic
+func (c *Conn) Publish(ctx context.Context, topic string, data []byte) error {
 	begin := time.Now()
-	if err := c.conn.Publish(topic, data); err != nil {
+	if err := (*nats.Conn)(c).Publish(topic, data); err != nil {
 		return err
 	}
 	diff := time.Since(begin)
@@ -220,12 +225,12 @@ func (c *NatsClient) Publish(ctx context.Context, topic string, data []byte) err
 	return nil
 }
 
-func (c *NatsClient) Subscribe(ctx context.Context, topic string, cb func(msg *Msg)) error {
+// Subscribe to a topic, given callback function
+func (c *Conn) Subscribe(ctx context.Context, topic string, cb func(msg *Msg)) error {
 	ch := make(chan *nats.Msg, 1)
 	begin := time.Now()
 
-	// begin to sub, ignore sub
-	if _, err := c.conn.ChanSubscribe(topic, ch); err != nil {
+	if _, err := (*nats.Conn)(c).ChanSubscribe(topic, ch); err != nil {
 		executor.Notify(subError, 1)
 		return err
 	}
@@ -250,9 +255,10 @@ func (c *NatsClient) Subscribe(ctx context.Context, topic string, cb func(msg *M
 	return nil
 }
 
-func (c *NatsClient) Disconnect(ctx context.Context) error {
-	c.conn.Drain()
-	c.conn.Close()
+// Disconnect drains and closes the connection
+func (c *Conn) Disconnect(ctx context.Context) error {
+	(*nats.Conn)(c).Drain()
+	(*nats.Conn)(c).Close()
 
 	return nil
 }
