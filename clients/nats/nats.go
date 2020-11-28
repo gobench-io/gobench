@@ -26,7 +26,7 @@ const subError string = "nats.subscriber.suback.error"
 const msgSubTotal string = "nats.message.consumed.total"
 
 const reqLatency string = "nats.req.latency"
-const reqTotal string = "nats.req.in.total"
+const reqOk string = "nats.req.ok"
 const reqErr string = "nats.req.err"
 
 func groups() []metrics.Group {
@@ -157,19 +157,13 @@ func groups() []metrics.Group {
 		Name: "NAT Request",
 		Graphs: []metrics.Graph{
 			{
-				Title: "Request in Total",
+				Title: "Request Number",
 				Unit:  "N",
 				Metrics: []metrics.Metric{
 					{
-						Title: reqTotal,
+						Title: reqOk,
 						Type:  metrics.Counter,
 					},
-				},
-			},
-			{
-				Title: "Request Error",
-				Unit:  "N",
-				Metrics: []metrics.Metric{
 					{
 						Title: reqErr,
 						Type:  metrics.Counter,
@@ -335,23 +329,15 @@ func (c *Conn) Request(ctx context.Context, sub string, data []byte,
 
 	diff := time.Since(begin)
 
-	// notify sub total and latency
-	executor.Notify(subTotal, 1)
-	executor.Notify(subLatency, diff.Microseconds())
+	executor.Notify(reqLatency, diff.Microseconds())
+	if err != nil {
+		executor.Notify(reqErr, 1)
+		return nil, err
+	}
 
-	go func(ch chan *nats.Msg) {
-		for {
-			select {
-			case msg := <-ch:
-				executor.Notify(msgSubTotal, 1)
-				if cb != nil {
-					cb(&Msg{*msg})
-				}
-			}
-		}
-	}(ch)
+	executor.Notify(reqOk, 1)
 
-	return nil
+	return &Msg{*m}, nil
 }
 
 // Disconnect drains and closes the connection
