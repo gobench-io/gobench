@@ -25,6 +25,10 @@ const subTotal string = "nats.subscriber.current_total"
 const subError string = "nats.subscriber.suback.error"
 const msgSubTotal string = "nats.message.consumed.total"
 
+const reqLatency string = "nats.req.latency"
+const reqTotal string = "nats.req.in.total"
+const reqErr string = "nats.req.err"
+
 func groups() []metrics.Group {
 	conGroup := metrics.Group{
 		Name: "NAT Connections",
@@ -149,10 +153,46 @@ func groups() []metrics.Group {
 			},
 		},
 	}
+	reqGroup := metrics.Group{
+		Name: "NAT Request",
+		Graphs: []metrics.Graph{
+			{
+				Title: "Request in Total",
+				Unit:  "N",
+				Metrics: []metrics.Metric{
+					{
+						Title: reqTotal,
+						Type:  metrics.Counter,
+					},
+				},
+			},
+			{
+				Title: "Request Error",
+				Unit:  "N",
+				Metrics: []metrics.Metric{
+					{
+						Title: reqErr,
+						Type:  metrics.Counter,
+					},
+				},
+			},
+			{
+				Title: "Request Latency",
+				Unit:  "Microsecond",
+				Metrics: []metrics.Metric{
+					{
+						Title: reqLatency,
+						Type:  metrics.Histogram,
+					},
+				},
+			},
+		},
+	}
 	return []metrics.Group{
 		conGroup,
 		pubGroup,
 		consumerGroup,
+		reqGroup,
 	}
 }
 
@@ -264,6 +304,35 @@ func (c *Conn) QueueSubscribe(ctx context.Context, sub, group string, cb func(ms
 		executor.Notify(subError, 1)
 		return err
 	}
+	diff := time.Since(begin)
+
+	// notify sub total and latency
+	executor.Notify(subTotal, 1)
+	executor.Notify(subLatency, diff.Microseconds())
+
+	go func(ch chan *nats.Msg) {
+		for {
+			select {
+			case msg := <-ch:
+				executor.Notify(msgSubTotal, 1)
+				if cb != nil {
+					cb(&Msg{*msg})
+				}
+			}
+		}
+	}(ch)
+
+	return nil
+}
+
+// Request will send a request payload and deliver the response message, or an
+// error, including a timeout if no message was received correctly
+func (c *Conn) Request(ctx context.Context, sub string, data []byte,
+	timeout time.Duration) (*Msg, error) {
+	begin := time.Now()
+
+	m, err := (*nats.Conn)(c).Request(sub, data, timeout)
+
 	diff := time.Since(begin)
 
 	// notify sub total and latency
