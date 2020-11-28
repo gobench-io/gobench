@@ -255,6 +255,36 @@ func (c *Conn) Subscribe(ctx context.Context, topic string, cb func(msg *Msg)) e
 	return nil
 }
 
+// QueueSubscribe to a topic, given callback function
+func (c *Conn) QueueSubscribe(ctx context.Context, sub, group string, cb func(msg *Msg)) error {
+	ch := make(chan *nats.Msg, 1)
+	begin := time.Now()
+
+	if _, err := (*nats.Conn)(c).ChanQueueSubscribe(sub, group, ch); err != nil {
+		executor.Notify(subError, 1)
+		return err
+	}
+	diff := time.Since(begin)
+
+	// notify sub total and latency
+	executor.Notify(subTotal, 1)
+	executor.Notify(subLatency, diff.Microseconds())
+
+	go func(ch chan *nats.Msg) {
+		for {
+			select {
+			case msg := <-ch:
+				executor.Notify(msgSubTotal, 1)
+				if cb != nil {
+					cb(&Msg{*msg})
+				}
+			}
+		}
+	}(ch)
+
+	return nil
+}
+
 // Disconnect drains and closes the connection
 func (c *Conn) Disconnect(ctx context.Context) error {
 	(*nats.Conn)(c).Drain()
