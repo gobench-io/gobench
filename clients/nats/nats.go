@@ -21,9 +21,13 @@ const pubWaiting string = "nats.publisher.puback.waiting"
 
 const subLatency string = "nats.subscriber.suback.latency"
 const unsubLatency string = "nats.subscriber.unsuback.latency"
-const subTotal string = "nats.subsciber.current_total"
-const subError string = "nats.subsciber.suback.error"
+const subTotal string = "nats.subscriber.current_total"
+const subError string = "nats.subscriber.suback.error"
 const msgSubTotal string = "nats.message.consumed.total"
+
+const reqLatency string = "nats.req.latency"
+const reqOk string = "nats.req.ok"
+const reqErr string = "nats.req.err"
 
 func groups() []metrics.Group {
 	conGroup := metrics.Group{
@@ -149,10 +153,40 @@ func groups() []metrics.Group {
 			},
 		},
 	}
+	reqGroup := metrics.Group{
+		Name: "NAT Request",
+		Graphs: []metrics.Graph{
+			{
+				Title: "Request Number",
+				Unit:  "N",
+				Metrics: []metrics.Metric{
+					{
+						Title: reqOk,
+						Type:  metrics.Counter,
+					},
+					{
+						Title: reqErr,
+						Type:  metrics.Counter,
+					},
+				},
+			},
+			{
+				Title: "Request Latency",
+				Unit:  "Microsecond",
+				Metrics: []metrics.Metric{
+					{
+						Title: reqLatency,
+						Type:  metrics.Histogram,
+					},
+				},
+			},
+		},
+	}
 	return []metrics.Group{
 		conGroup,
 		pubGroup,
 		consumerGroup,
+		reqGroup,
 	}
 }
 
@@ -283,6 +317,31 @@ func (c *Conn) QueueSubscribe(ctx context.Context, sub, group string, cb func(ms
 	}(ch)
 
 	return nil
+}
+
+// Request will send a request payload and deliver the response message, or an
+// error, including a timeout if no message was received correctly
+func (c *Conn) Request(ctx context.Context, sub string, data []byte,
+	timeout time.Duration) (*Msg, error) {
+	begin := time.Now()
+
+	m, err := (*nats.Conn)(c).Request(sub, data, timeout)
+
+	diff := time.Since(begin)
+
+	executor.Notify(reqLatency, diff.Microseconds())
+	if err != nil {
+		executor.Notify(reqErr, 1)
+		return nil, err
+	}
+
+	executor.Notify(reqOk, 1)
+
+	return &Msg{*m}, nil
+}
+
+func (c *Conn) Flush() error {
+	return (*nats.Conn)(c).Flush()
 }
 
 // Disconnect drains and closes the connection

@@ -15,7 +15,7 @@ require (
 	github.com/mackerelio/go-osstat v0.1.0
 	github.com/mattn/go-sqlite3 v1.14.3
 	github.com/nats-io/nats-server/v2 v2.1.0 // indirect
-	github.com/nats-io/nats.go v1.8.1
+	github.com/nats-io/nats.go v1.10.0
 	github.com/rakyll/statik v0.1.7
 	github.com/rcrowley/go-metrics v0.0.0-20190826022208-cac0b30c2563
 	github.com/stretchr/testify v1.6.1
