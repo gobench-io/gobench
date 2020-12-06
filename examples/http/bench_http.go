@@ -1,6 +1,8 @@
-package main
+// Test a server running on a local machine on port 8080.
+// Send 10 requests per second for 2 minute from 5 nodes in parallel,
+// which totals up to 50 requests per second altogether.
 
-// This runs a benchmark for 30 seconds, using 12 threads
+package main
 
 import (
 	"context"
@@ -8,13 +10,14 @@ import (
 	"time"
 
 	httpClient "github.com/gobench-io/gobench/clients/http"
+	"github.com/gobench-io/gobench/dis"
 	"github.com/gobench-io/gobench/executor/scenario"
 )
 
 func export() scenario.Vus {
 	return scenario.Vus{
 		{
-			Nu:   12,
+			Nu:   5,
 			Rate: 1000,
 			Fu:   f,
 		},
@@ -22,28 +25,23 @@ func export() scenario.Vus {
 }
 
 func f(ctx context.Context, vui int) {
-	client1, err := httpClient.NewHttpClient(ctx, "home")
+	client, err := httpClient.NewHttpClient(ctx, "home")
 	if err != nil {
-		log.Println("create new client1 fail: " + err.Error())
+		log.Println("create new client fail: " + err.Error())
 		return
 	}
 
-	url1 := "http://192.168.2.35"
+	url1 := "http://localhost:8080"
 
-	headers := map[string]string{
-		// "Content-Type": "application/json",
-	}
-
-	timeout := time.After(30 * time.Second)
+	timeout := time.After(2 * time.Minute)
 
 	for {
 		select {
-		case <-ctx.Done():
-			return
 		case <-timeout:
 			return
 		default:
-			client1.Get(ctx, url1, headers)
+			go client.Get(ctx, url1, nil)
+			dis.SleepRatePoisson(10)
 		}
 	}
 }
