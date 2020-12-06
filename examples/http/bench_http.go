@@ -31,7 +31,7 @@ func f(ctx context.Context, vui int) {
 		return
 	}
 
-	url1 := "http://localhost:8080"
+	url := "http://localhost:8080/healthz"
 
 	timeout := time.After(2 * time.Minute)
 
@@ -40,7 +40,7 @@ func f(ctx context.Context, vui int) {
 		case <-timeout:
 			return
 		default:
-			go client.Get(ctx, url1, nil)
+			go client.Get(ctx, url, nil)
 			dis.SleepRatePoisson(10)
 		}
 	}
