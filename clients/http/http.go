@@ -3,7 +3,6 @@ package http
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -15,9 +14,24 @@ import (
 type HttpClient struct {
 	prefix string
 	client *http.Client
+
+	title struct {
+		success   string
+		fail      string
+		otherFail string
+		latency   string
+	}
 }
 
 func NewHttpClient(ctx context.Context, prefix string) (HttpClient, error) {
+	httpClient := HttpClient{}
+
+	httpClient.prefix = prefix
+	httpClient.title.success = prefix + ".http_ok"
+	httpClient.title.otherFail = prefix + ".http_other_fail"
+	httpClient.title.fail = prefix + ".http_fail"
+	httpClient.title.latency = prefix + ".latency"
+
 	group := metrics.Group{
 		Name: "HTTP (" + prefix + ")",
 		Graphs: []metrics.Graph{
@@ -26,15 +40,15 @@ func NewHttpClient(ctx context.Context, prefix string) (HttpClient, error) {
 				Unit:  "N",
 				Metrics: []metrics.Metric{
 					{
-						Title: prefix + ".http_ok",
+						Title: httpClient.title.success,
 						Type:  metrics.Counter,
 					},
 					{
-						Title: prefix + ".http_fail",
+						Title: httpClient.title.fail,
 						Type:  metrics.Counter,
 					},
 					{
-						Title: prefix + ".http_other_fail",
+						Title: httpClient.title.otherFail,
 						Type:  metrics.Counter,
 					},
 				},
@@ -44,7 +58,7 @@ func NewHttpClient(ctx context.Context, prefix string) (HttpClient, error) {
 				Unit:  "Microsecond",
 				Metrics: []metrics.Metric{
 					{
-						Title: prefix + ".latency",
+						Title: httpClient.title.latency,
 						Type:  metrics.Histogram,
 					},
 				},
@@ -59,14 +73,9 @@ func NewHttpClient(ctx context.Context, prefix string) (HttpClient, error) {
 		MaxIdleConnsPerHost: 300,
 	}
 
-	client := &http.Client{
+	httpClient.client = &http.Client{
 		Transport: tr,
 		Timeout:   time.Second * 10,
-	}
-
-	httpClient := HttpClient{
-		prefix: prefix,
-		client: client,
 	}
 
 	if err := executor.Setup(groups); err != nil {
@@ -80,24 +89,19 @@ func (h *HttpClient) do(method, url string, body []byte, headers map[string]stri
 	res *http.Response, err error,
 ) {
 	begin := time.Now()
-	otherFail := h.prefix + ".http_other_fail"
-	fail := h.prefix + ".http_fail"
-	success := h.prefix + ".http_ok"
-	latency := h.prefix + ".latency"
 
 	defer func() {
 		diff := time.Since(begin)
-		executor.Notify(latency, diff.Microseconds())
+		executor.Notify(h.title.latency, diff.Microseconds())
 		if err != nil {
-			executor.Notify(otherFail, 1)
+			executor.Notify(h.title.otherFail, 1)
 			return
 		}
 		if res.StatusCode >= 300 || res.StatusCode < 200 {
-			executor.Notify(fail, 1)
-			err = fmt.Errorf("request failed with status code %d", res.StatusCode)
+			executor.Notify(h.title.fail, 1)
 			return
 		}
-		executor.Notify(success, 1)
+		executor.Notify(h.title.success, 1)
 	}()
 
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(body))
