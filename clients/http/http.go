@@ -76,13 +76,14 @@ func NewHttpClient(ctx context.Context, prefix string) (HttpClient, error) {
 	return httpClient, nil
 }
 
-func (h *HttpClient) do(method, url string, body []byte, headers map[string]string) (buf []byte, err error) {
+func (h *HttpClient) do(method, url string, body []byte, headers map[string]string) (
+	res *http.Response, err error,
+) {
 	begin := time.Now()
 	otherFail := h.prefix + ".http_other_fail"
 	fail := h.prefix + ".http_fail"
 	success := h.prefix + ".http_ok"
 	latency := h.prefix + ".latency"
-	var res *http.Response
 
 	defer func() {
 		diff := time.Since(begin)
@@ -110,25 +111,52 @@ func (h *HttpClient) do(method, url string, body []byte, headers map[string]stri
 	}
 
 	res, err = h.client.Do(req)
-	if err != nil {
-		return
-	}
-
-	// io.Copy(ioutil.Discard, res.Body)
-
-	defer res.Body.Close()
-
-	buf, err = ioutil.ReadAll(res.Body)
 
 	return
 }
 
+func (h *HttpClient) captureRes(verb string, url string, body []byte, headers map[string]string) ([]byte, error) {
+	res, err := h.do(verb, url, body, headers)
+	if err != nil {
+		return nil, err
+	}
+
+	defer res.Body.Close()
+
+	buf, err := ioutil.ReadAll(res.Body)
+
+	return buf, err
+}
+
+func (h *HttpClient) ignoreRes(verb string, url string, body []byte, headers map[string]string) error {
+	res, err := h.do(verb, url, body, headers)
+	if err != nil {
+		return err
+	}
+
+	res.Body.Close()
+
+	return nil
+}
+
 // Get makes http get request and record the metrics
 func (h *HttpClient) Get(ctx context.Context, url string, headers map[string]string) ([]byte, error) {
-	return h.do("GET", url, nil, headers)
+	return h.captureRes("GET", url, nil, headers)
+}
+
+// GetIgnoreRes makes http get request, records the metrics, but ignore the
+// responding body. Use this when you need high speed traffic generation
+func (h *HttpClient) GetIgnoreRes(ctx context.Context, url string, headers map[string]string) error {
+	return h.ignoreRes("GET", url, nil, headers)
 }
 
 // Post makes http post request and record the metrics
 func (h *HttpClient) Post(ctx context.Context, url string, body []byte, headers map[string]string) ([]byte, error) {
-	return h.do("POST", url, body, headers)
+	return h.captureRes("POST", url, body, headers)
+}
+
+// PostIgnoreRes makes http get request, records the metrics, but ignore the
+// responding body. Use this when you need high speed traffic generation
+func (h *HttpClient) PostIgnoreRes(ctx context.Context, url string, body []byte, headers map[string]string) error {
+	return h.ignoreRes("POST", url, body, headers)
 }
