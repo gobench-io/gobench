@@ -3,6 +3,7 @@ package http
 import (
 	"bytes"
 	"context"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -138,7 +139,8 @@ func (h *HttpClient) ignoreRes(verb string, url string, body []byte, headers map
 		return err
 	}
 
-	res.Body.Close()
+	defer res.Body.Close()
+	io.Copy(ioutil.Discard, res.Body)
 
 	return nil
 }
