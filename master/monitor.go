@@ -47,6 +47,8 @@ func (m *Master) Varz() (*Varz, error) {
 	return varz, nil
 }
 
+// myUptime returns duration in year-day-hour-min-second format
+// inspired by nats-server
 func myUptime(d time.Duration) string {
 	tsecs := d / time.Second
 	tmins := tsecs / 60
