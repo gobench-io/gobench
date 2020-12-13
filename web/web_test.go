@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os/exec"
@@ -673,6 +674,10 @@ func TestGetVarz(t *testing.T) {
 	r.ServeHTTP(w, varzReq)
 	assert.Equal(t, 200, w.Code)
 
-	err := json.Unmarshal(w.Body.Bytes(), &master.Varz{})
+	log.Println(string(w.Body.Bytes()))
+
+	var vr varzResponse
+	err := json.Unmarshal(w.Body.Bytes(), &vr)
 	assert.Nil(t, err)
+	assert.Equal(t, "0.0.1", vr.Version)
 }

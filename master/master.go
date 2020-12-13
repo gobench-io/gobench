@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"sync"
 	"time"
@@ -23,6 +24,7 @@ import (
 	"github.com/gobench-io/gobench/logger"
 
 	"github.com/facebook/ent/dialect/sql"
+	"github.com/google/uuid"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -90,16 +92,26 @@ func NewMaster(opts *Options, logger logger.Logger) (m *Master, err error) {
 	if err != nil {
 		return
 	}
-
-	m = &Master{
-		hostname: hostname,
-		addr:     opts.Addr,
-		port:     opts.Port,
-		homeDir:  opts.HomeDir,
-		logger:   logger,
-		program:  opts.Program,
+	id, err := uuid.NewUUID()
+	if err != nil {
+		return
 	}
 
+	m = &Master{
+		id:        id.String(),
+		version:   VERSION,
+		gitCommit: gitCommit,
+		goVersion: runtime.Version(),
+		hostname:  hostname,
+		addr:      opts.Addr,
+		port:      opts.Port,
+
+		homeDir: opts.HomeDir,
+		logger:  logger,
+		program: opts.Program,
+	}
+
+	m.start = time.Now()
 	m.dbFilename = path.Join(m.homeDir, "gobench.sqlite3")
 
 	m.isScheduled = true // by default
