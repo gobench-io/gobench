@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"runtime"
 	"time"
+
+	"github.com/mackerelio/go-osstat/cpu"
+	"github.com/mackerelio/go-osstat/memory"
 )
 
 // Snapshot this
@@ -24,10 +27,10 @@ type Varz struct {
 	Start     time.Time `json:"start"`
 	Now       time.Time `json:"now"`
 	Uptime    string    `json:"uptime"`
-	Mem       int64     `json:"mem"`
+	Mem       uint64    `json:"mem"`
 	Cores     int       `json:"cores"`
 	MaxProcs  int       `json:"gomaxprocs"`
-	CPU       float64   `json:"cpu"`
+	CPU       uint64    `json:"cpu"`
 }
 
 // Varz returns a Varz struct containing the server information.
@@ -43,6 +46,18 @@ func (m *Master) Varz() (*Varz, error) {
 		MaxProcs:  maxProcs,
 	}
 	varz.Uptime = myUptime(varz.Now.Sub(varz.Start))
+
+	mem, err := memory.Get()
+	if err != nil {
+		return varz, err
+	}
+	varz.Mem = mem.Used
+
+	cpu, err := cpu.Get()
+	if err != nil {
+		return varz, err
+	}
+	varz.CPU = cpu.User
 
 	return varz, nil
 }
