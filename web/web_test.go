@@ -696,6 +696,9 @@ func TestGetVarz(t *testing.T) {
 	if vr.Uptime == "" {
 		assert.Fail(t, "Expect uptime to be valid")
 	}
+	if vr.Mem == 0 {
+		assert.Fail(t, "Expect mem usage to be valid")
+	}
 	if vr.Cores == 0 {
 		assert.Fail(t, "Expect cores to be valid")
 	}

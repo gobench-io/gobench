@@ -3,6 +3,8 @@ GO ?= go
 PACKAGES := $(shell go list ./...)
 EXAMPLES := $(shell go list ./... | grep "examples")
 UI_PATH := ./web/ui/gobench-ui
+LDFLAGS="-X github.com/gobench-io/gobench/master.gitCommit=`git rev-parse --short HEAD`"
+
 .PHONY: lint build examples tools ent statik pb
 
 pb:
@@ -26,7 +28,7 @@ lint:
 	staticcheck $(go list ./... | grep -v ent/privacy)
 
 build:
-	go build -o gobench ./
+	go build -ldflags $(LDFLAGS) -o gobench ./
 
 test:
 	./scripts/cov.sh
@@ -48,4 +50,4 @@ build-web-ui:
 update-statik: build-web-ui statik
 
 run:
-	go run .
+	go run -ldflags $(LDFLAGS) .
