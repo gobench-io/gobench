@@ -30,11 +30,7 @@ var (
 )
 
 var (
-	// gitCommit injected at build
+	// gitCommit, gitTag injected at build
 	gitCommit string
-)
-
-const (
-	// VERSION is the current version for the server.
-	VERSION = "0.0.1"
+	gitTag    string
 )

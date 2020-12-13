@@ -5,7 +5,7 @@ WORKDIR $GOPATH/src/github.com/gobench-io/gobench
 
 COPY . .
 
-RUN apk add build-base
+RUN apk add build-base git
 
 RUN make build
 

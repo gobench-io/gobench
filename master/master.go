@@ -99,7 +99,7 @@ func NewMaster(opts *Options, logger logger.Logger) (m *Master, err error) {
 
 	m = &Master{
 		id:        id.String(),
-		version:   VERSION,
+		version:   gitTag,
 		gitCommit: gitCommit,
 		goVersion: runtime.Version(),
 		hostname:  hostname,
