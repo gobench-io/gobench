@@ -5,8 +5,7 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/mackerelio/go-osstat/cpu"
-	"github.com/mackerelio/go-osstat/memory"
+	"github.com/gobench-io/gobench/pse"
 )
 
 // Snapshot this
@@ -30,7 +29,7 @@ type Varz struct {
 	Mem       uint64    `json:"mem"`
 	Cores     int       `json:"cores"`
 	MaxProcs  int       `json:"gomaxprocs"`
-	CPU       uint64    `json:"cpu"`
+	CPU       float64   `json:"cpu"`
 }
 
 // Varz returns a Varz struct containing the server information.
@@ -45,19 +44,16 @@ func (m *Master) Varz() (*Varz, error) {
 		Cores:     numCores,
 		MaxProcs:  maxProcs,
 	}
+	var pcpu float64
+	var mem uint64
+	if err := pse.ProcUsage(&pcpu, &mem); err != nil {
+		return varz, err
+	}
+
+	varz.CPU = pcpu
+	varz.Mem = mem
+
 	varz.Uptime = myUptime(varz.Now.Sub(varz.Start))
-
-	mem, err := memory.Get()
-	if err != nil {
-		return varz, err
-	}
-	varz.Mem = mem.Used
-
-	cpu, err := cpu.Get()
-	if err != nil {
-		return varz, err
-	}
-	varz.CPU = cpu.User
 
 	return varz, nil
 }
