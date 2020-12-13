@@ -663,3 +663,16 @@ func TestGetHeathz(t *testing.T) {
 	r.ServeHTTP(w, healthzReq)
 	assert.Equal(t, 200, w.Code)
 }
+
+func TestGetVarz(t *testing.T) {
+	r, w := newAPITest(t, "adminPassword")
+
+	varzReq, _ := http.NewRequest("GET", "/varz", nil)
+	varzReq.Header.Set("Content-Type", "application/json")
+
+	r.ServeHTTP(w, varzReq)
+	assert.Equal(t, 200, w.Code)
+
+	err := json.Unmarshal(w.Body.Bytes(), &master.Varz{})
+	assert.Nil(t, err)
+}

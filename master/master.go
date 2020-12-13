@@ -31,12 +31,19 @@ import (
 type jobState string
 
 type Master struct {
-	mu          sync.Mutex
+	mu sync.Mutex
+
+	// information
+	id          string // server id
+	version     string
+	gitCommit   string
+	goVersion   string
 	hostname    string
 	addr        string // host name
 	port        int    // api port
 	clusterPort int    // cluster port
 
+	start   time.Time
 	status  status
 	logger  logger.Logger
 	program string
@@ -71,6 +78,8 @@ type Options struct {
 	HomeDir string
 }
 
+// NewMaster will setup a new master struct given options and logger.
+// Could return an error if options can not be validated.
 func NewMaster(opts *Options, logger logger.Logger) (m *Master, err error) {
 	logger.Infow("new master program",
 		"port", opts.Port,

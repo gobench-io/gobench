@@ -28,3 +28,13 @@ var (
 	ErrAppIsCanceled = errors.New("application is canceled")
 	ErrCantDeleteApp = errors.New("cannot delete a %s application")
 )
+
+var (
+	// gitCommit injected at build
+	gitCommit string
+)
+
+const (
+	// VERSION is the current version for the server.
+	VERSION = "0.0.1"
+)
