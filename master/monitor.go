@@ -1,6 +1,7 @@
 package master
 
 import (
+	"fmt"
 	"runtime"
 	"time"
 )
@@ -41,6 +42,29 @@ func (m *Master) Varz() (*Varz, error) {
 		Cores:     numCores,
 		MaxProcs:  maxProcs,
 	}
+	varz.Uptime = myUptime(varz.Now.Sub(varz.Start))
 
 	return varz, nil
+}
+
+func myUptime(d time.Duration) string {
+	tsecs := d / time.Second
+	tmins := tsecs / 60
+	thrs := tmins / 60
+	tdays := thrs / 24
+	tyrs := tdays / 365
+
+	if tyrs > 0 {
+		return fmt.Sprintf("%dy%dd%dh%dm%ds", tyrs, tdays%365, thrs%24, tmins%60, tsecs%60)
+	}
+	if tdays > 0 {
+		return fmt.Sprintf("%dd%dh%dm%ds", tdays, thrs%24, tmins%60, tsecs%60)
+	}
+	if thrs > 0 {
+		return fmt.Sprintf("%dh%dm%ds", thrs, tmins%60, tsecs%60)
+	}
+	if tmins > 0 {
+		return fmt.Sprintf("%dm%ds", tmins, tsecs%60)
+	}
+	return fmt.Sprintf("%ds", tsecs)
 }

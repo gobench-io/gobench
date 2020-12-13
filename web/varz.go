@@ -1,7 +1,6 @@
 package web
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/go-chi/render"
@@ -15,13 +14,7 @@ func (h *handler) varz(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("varz %+v\n", varz)
-
 	vr := varzResponse{*varz}
-
-	render.Respond(w, r, render.M{
-		"hostname": h.s.GetHostname(),
-	})
 
 	err = render.Render(w, r, &vr)
 	if err != nil {
