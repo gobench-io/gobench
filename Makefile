@@ -3,9 +3,9 @@ GO ?= go
 PACKAGES := $(shell go list ./...)
 EXAMPLES := $(shell go list ./... | grep "examples")
 UI_PATH := ./web/ui/gobench-ui
-githash := `git rev-parse HEAD`
-gittag=`git describe --tags --always`
-LDFLAGS="-X github.com/gobench-io/gobench/master.gitCommit=$(githash) -X github.com/gobench-io/gobench/master.gitTag=$(gittag)"
+GITHASH := `git rev-parse HEAD`
+GITTAG := `git describe --tags --always`
+LDFLAGS="-X github.com/gobench-io/gobench/master.gitCommit=$(GITHASH) -X github.com/gobench-io/gobench/master.gitTag=$(GITTAG)"
 
 .PHONY: lint build examples tools ent statik pb
 
