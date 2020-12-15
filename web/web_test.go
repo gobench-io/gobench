@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"os/exec"
 	"testing"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/gobench-io/gobench/ent"
@@ -597,7 +598,8 @@ func TestAddApplicationTagAgain(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 
 	r.ServeHTTP(w, req)
-	_ = json.Unmarshal(w.Body.Bytes(), &tag)
+	err := json.Unmarshal(w.Body.Bytes(), &tag)
+	assert.Nil(t, err)
 	assert.Equal(t, tagName, tag.Name)
 	assert.Equal(t, 200, w.Code)
 }
@@ -662,4 +664,44 @@ func TestGetHeathz(t *testing.T) {
 
 	r.ServeHTTP(w, healthzReq)
 	assert.Equal(t, 200, w.Code)
+}
+
+func TestGetVarz(t *testing.T) {
+	r, w := newAPITest(t, "adminPassword")
+
+	varzReq, _ := http.NewRequest("GET", "/varz", nil)
+	varzReq.Header.Set("Content-Type", "application/json")
+
+	r.ServeHTTP(w, varzReq)
+	assert.Equal(t, 200, w.Code)
+
+	var vr varzResponse
+	err := json.Unmarshal(w.Body.Bytes(), &vr)
+	assert.Nil(t, err)
+
+	// Do some sanity checks on values
+	if time.Since(vr.Start) > 10*time.Second {
+		assert.Fail(t, "Expected start time to be within 10 seconds.")
+	}
+	if vr.ID == "" {
+		assert.Fail(t, "Expect server_id to be valid")
+	}
+	// if vr.Version == "" {
+	// 	assert.Fail(t, "Expect version to be valid")
+	// }
+	if vr.GoVersion == "" {
+		assert.Fail(t, "Expect Go version to be valid")
+	}
+	if vr.Uptime == "" {
+		assert.Fail(t, "Expect uptime to be valid")
+	}
+	if vr.Mem == 0 {
+		assert.Fail(t, "Expect mem usage to be valid")
+	}
+	if vr.Cores == 0 {
+		assert.Fail(t, "Expect cores to be valid")
+	}
+	if vr.MaxProcs == 0 {
+		assert.Fail(t, "Expect gomaxprocs to be valid")
+	}
 }

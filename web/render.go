@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-chi/render"
 	"github.com/gobench-io/gobench/ent"
+	"github.com/gobench-io/gobench/master"
 )
 
 // Err is the error struct that compatible to Google API recommendation
@@ -334,5 +335,14 @@ func newTagListResponse(tags []*ent.Tag) []render.Renderer {
 }
 
 func (ar *tagResponse) Render(w http.ResponseWriter, r *http.Request) error {
+	return nil
+}
+
+// varz response
+type varzResponse struct {
+	master.Varz
+}
+
+func (vr  *varzResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }

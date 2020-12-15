@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"sync"
 	"time"
@@ -23,6 +24,7 @@ import (
 	"github.com/gobench-io/gobench/logger"
 
 	"github.com/facebook/ent/dialect/sql"
+	"github.com/google/uuid"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -31,12 +33,19 @@ import (
 type jobState string
 
 type Master struct {
-	mu          sync.Mutex
+	mu sync.Mutex
+
+	// information
+	id          string // server id
+	version     string
+	gitCommit   string
+	goVersion   string
 	hostname    string
 	addr        string // host name
 	port        int    // api port
 	clusterPort int    // cluster port
 
+	start   time.Time
 	status  status
 	logger  logger.Logger
 	program string
@@ -71,6 +80,8 @@ type Options struct {
 	HomeDir string
 }
 
+// NewMaster will setup a new master struct given options and logger.
+// Could return an error if options can not be validated.
 func NewMaster(opts *Options, logger logger.Logger) (m *Master, err error) {
 	logger.Infow("new master program",
 		"port", opts.Port,
@@ -81,16 +92,26 @@ func NewMaster(opts *Options, logger logger.Logger) (m *Master, err error) {
 	if err != nil {
 		return
 	}
-
-	m = &Master{
-		hostname: hostname,
-		addr:     opts.Addr,
-		port:     opts.Port,
-		homeDir:  opts.HomeDir,
-		logger:   logger,
-		program:  opts.Program,
+	id, err := uuid.NewUUID()
+	if err != nil {
+		return
 	}
 
+	m = &Master{
+		id:        id.String(),
+		version:   gitTag,
+		gitCommit: gitCommit,
+		goVersion: runtime.Version(),
+		hostname:  hostname,
+		addr:      opts.Addr,
+		port:      opts.Port,
+
+		homeDir: opts.HomeDir,
+		logger:  logger,
+		program: opts.Program,
+	}
+
+	m.start = time.Now()
 	m.dbFilename = path.Join(m.homeDir, "gobench.sqlite3")
 
 	m.isScheduled = true // by default

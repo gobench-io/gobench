@@ -76,6 +76,8 @@ func newHandler(s *master.Master, adminPassword string, logger logger.Logger) *h
 
 	r.Get("/healthz", h.healthz)
 
+	r.Get("/varz", h.varz)
+
 	// rest for groups
 	r.Route("/api/", func(r chi.Router) {
 		r.Post("/users/login", h.userLogin(tokenAuth))

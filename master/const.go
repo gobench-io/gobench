@@ -28,3 +28,9 @@ var (
 	ErrAppIsCanceled = errors.New("application is canceled")
 	ErrCantDeleteApp = errors.New("cannot delete a %s application")
 )
+
+var (
+	// gitCommit, gitTag injected at build
+	gitCommit string
+	gitTag    string
+)

@@ -143,7 +143,6 @@ When your benchmark scenario is more complecated, you can define multiple
 virtual user types
 
 ```{golang}
-
 func export() scenario.Vus {
     return scenario.Vus{
         {
