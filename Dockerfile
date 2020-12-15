@@ -14,7 +14,7 @@ FROM golang:1.14-alpine
 
 RUN apk add build-base gcc
 
-COPY --from=build gobench .
+COPY --from=build $GOPATH/src/github.com/gobench-io/gobench/gobench .
 
 EXPOSE 8080
 
