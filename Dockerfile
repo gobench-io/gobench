@@ -3,9 +3,9 @@ FROM golang:1.14-alpine AS build
 
 WORKDIR $GOPATH/src/github.com/gobench-io/gobench
 
-COPY . .
-
 RUN apk add build-base git
+
+COPY . .
 
 RUN make build
 
