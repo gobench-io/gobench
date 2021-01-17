@@ -51,6 +51,15 @@ docker run -p 8080:8080 nqdinh/gobench:latest
 
 After that, open http://localhost:8080 to see the dashboard.
 
+To setup admin password, add `--admin-password` to argument. To save the results
+to the host machine, mount `/root/.gobench` (the default `--dir`)  to a host
+path. For example, save the result data to /tmp/abc and set admin password to
+supertest with the following command:
+
+```
+docker run -p 8080:8080 -v "/tmp/abc:/root/.gobench" nqdinh/gobench:latest --admin-password supertest
+```
+
 ## Quick start
 
 Start the Gobench server, go to http://localhost:8080 dashboard, create new
