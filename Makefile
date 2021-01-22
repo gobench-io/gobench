@@ -10,8 +10,12 @@ LDFLAGS="-X github.com/gobench-io/gobench/master.gitCommit=$(GITHASH) -X github.
 .PHONY: lint build examples tools ent statik pb
 
 pb:
-	protoc -I pb pb/executor.proto --go_out=plugins=grpc:./pb
-	protoc -I pb pb/agent.proto --go_out=plugins=grpc:./pb
+	protoc --go_out=. --go_opt=paths=source_relative \
+		--go-grpc_out=. --go-grpc_opt=paths=source_relative,require_unimplemented_servers=false \
+		pb/agent.proto
+	protoc --go_out=. --go_opt=paths=source_relative \
+		--go-grpc_out=. --go-grpc_opt=paths=source_relative,require_unimplemented_servers=false \
+		pb/executor.proto
 
 # run supported packages
 lint-pkgs:
