@@ -585,7 +585,7 @@ func (m *Master) jobCompile(ctx context.Context) error {
 	out, err := exec.
 		Command(
 			"sh", "-c",
-			fmt.Sprintf("cd %s; go build -o %s", dir, binaryPath),
+			fmt.Sprintf("cd %s; go get; go build -o %s", dir, binaryPath),
 		).
 		CombinedOutput()
 

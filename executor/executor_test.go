@@ -101,7 +101,7 @@ func f1(ctx context.Context, vui int) {
 	gomodFile, _ := os.OpenFile(gomodPath, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0600)
 	_, _ = gomodFile.Write([]byte(gomod))
 
-	out, err := exec.Command("sh", "-c", fmt.Sprintf("cd %s; go build -o main.out", dir)).CombinedOutput()
+	out, err := exec.Command("sh", "-c", fmt.Sprintf("cd %s; go get; go build -o main.out", dir)).CombinedOutput()
 	assert.Nil(t, err, string(out))
 }
 
