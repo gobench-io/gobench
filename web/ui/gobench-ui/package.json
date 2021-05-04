@@ -21,7 +21,7 @@
     "antd": "^4.2.0",
     "apexcharts": "^3.21.0",
     "async": "^3.2.0",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "axios-mock-adapter": "^1.18.1",
     "bootstrap": "^4.4.1",
     "chart.js": "^2.9.3",
