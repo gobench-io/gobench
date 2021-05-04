@@ -1,5 +1,5 @@
 # build
-FROM golang:1.14-alpine AS build
+FROM golang:1.16-alpine AS build
 
 WORKDIR $GOPATH/src/github.com/gobench-io/gobench
 
@@ -10,7 +10,7 @@ COPY . .
 RUN make build
 
 # deployment
-FROM golang:1.14-alpine
+FROM golang:1.16-alpine
 
 RUN apk add build-base gcc
 
