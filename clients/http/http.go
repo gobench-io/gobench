@@ -147,22 +147,32 @@ func (h *HttpClient) ignoreRes(verb string, url string, body []byte, headers map
 
 // Get makes http get request and record the metrics
 func (h *HttpClient) Get(ctx context.Context, url string, headers map[string]string) ([]byte, error) {
-	return h.captureRes("GET", url, nil, headers)
+	return h.captureRes(http.MethodGet, url, nil, headers)
 }
 
 // GetIgnoreRes makes http get request, records the metrics, but ignore the
 // responding body. Use this when you need high speed traffic generation
 func (h *HttpClient) GetIgnoreRes(ctx context.Context, url string, headers map[string]string) error {
-	return h.ignoreRes("GET", url, nil, headers)
+	return h.ignoreRes(http.MethodGet, url, nil, headers)
 }
 
 // Post makes http post request and record the metrics
 func (h *HttpClient) Post(ctx context.Context, url string, body []byte, headers map[string]string) ([]byte, error) {
-	return h.captureRes("POST", url, body, headers)
+	return h.captureRes(http.MethodPost, url, body, headers)
 }
 
 // PostIgnoreRes makes http get request, records the metrics, but ignore the
 // responding body. Use this when you need high speed traffic generation
 func (h *HttpClient) PostIgnoreRes(ctx context.Context, url string, body []byte, headers map[string]string) error {
-	return h.ignoreRes("POST", url, body, headers)
+	return h.ignoreRes(http.MethodPost, url, body, headers)
+}
+
+// Put makes http put request and record the metrics
+func (h *HttpClient) Put(ctx context.Context, url string, body []byte, headers map[string]string) ([]byte, error) {
+	return h.captureRes(http.MethodPut, url, body, headers)
+}
+
+// Patch makes http patch request and record the metrics
+func (h *HttpClient) Patch(ctx context.Context, url string, body []byte, headers map[string]string) ([]byte, error) {
+	return h.captureRes(http.MethodPatch, url, body, headers)
 }
