@@ -87,10 +87,6 @@ func getExecutor() *Executor {
 	return &executorInstance
 }
 
-func getClientConnect() ClientConnector {
-	return &executorInstance
-}
-
 // NewExecutor creates a new executor
 // also load the plugin from driver path
 func NewExecutor(opts *Options, logger logger.Logger) (e *Executor, err error) {

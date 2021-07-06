@@ -9,9 +9,19 @@ type ClientConnector interface {
 	Notify(title string, value int64) error
 }
 
+var clientConnectInstance ClientConnector
+
+func init() {
+	clientConnectInstance = &executorInstance
+}
+
+func getClientConnectInstance() ClientConnector {
+	return clientConnectInstance
+}
+
 // Setup is used for the driver to report the metrics that it will generate
 func Setup(groups []metrics.Group) error {
-	clientConnect := getClientConnect()
+	clientConnect := getClientConnectInstance()
 
 	return clientConnect.Setup(groups)
 }
@@ -22,7 +32,14 @@ func Setup(groups []metrics.Group) error {
 // a. The title has never ever register before
 // b. The session is cancel but the scenario does not handle the ctx.Done signal
 func Notify(title string, value int64) error {
-	clientConnect := getClientConnect()
+	clientConnect := getClientConnectInstance()
 
 	return clientConnect.Notify(title, value)
+}
+
+// SetClientConnect setup new clientConnectInstance
+// use to support testing only
+func SetClientConnect(cc ClientConnector) error {
+	clientConnectInstance = cc
+	return nil
 }
