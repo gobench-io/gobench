@@ -37,8 +37,7 @@ func Notify(title string, value int64) error {
 	return clientConnect.Notify(title, value)
 }
 
-// SetClientConnect setup new clientConnectInstance
-// use to support testing only
+// SetClientConnect setup new clientConnectInstance. Use to support testing only
 func SetClientConnect(cc ClientConnector) error {
 	clientConnectInstance = cc
 	return nil
