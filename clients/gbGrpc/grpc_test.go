@@ -87,29 +87,6 @@ func TestGbClientConnSetupMethodError(t *testing.T) {
 	assert.EqualError(t, err, "timeout")
 }
 
-// func TestGbClientConnInvok(t *testing.T) {
-// 	me := new(mockExecutor)
-// 	executor.SetClientConnect(me)
-
-// 	me.On("Setup", mock.Anything).Return(nil)
-// 	me.On("Notify", "get.foo.latency", mock.Anything).Return(nil)
-// 	me.On("Notify", "get.foo.grpc_ok", 1).Return(nil)
-
-// 	conn := &GbClientConn{
-// 		methodGraphsMap: make(map[string][]metrics.Graph),
-// 		target:          "host.io",
-// 	}
-
-// 	_, err := conn.setupMethod("get.foo")
-// 	assert.Nil(t, err)
-
-// 	ctx := context.Background()
-// 	var in, out interface{}
-
-// 	err = conn.Invoke(ctx, "get.foo", in, out)
-// 	assert.Nil(t, err)
-// }
-
 func TestGbClientStreamSetupMethod(t *testing.T) {
 	me := new(mockExecutor)
 	executor.SetClientConnect(me)
@@ -201,4 +178,16 @@ func TestGbClientStreamSetupMethod(t *testing.T) {
 	actualGraphs, err := cs.setupMethod("host.io", "list.foo")
 	assert.Nil(t, err)
 	assert.Equal(t, expectedGroupsArg[0].Graphs, actualGraphs)
+}
+
+func TestGbClientStreamSetupMethodError(t *testing.T) {
+	me := new(mockExecutor)
+	executor.SetClientConnect(me)
+
+	me.On("Setup", mock.Anything).Return(errors.New("timeout"))
+
+	cs := &GbClientStream{}
+
+	_, err := cs.setupMethod("host.io", "list.foo")
+	assert.EqualError(t, err, "timeout")
 }
