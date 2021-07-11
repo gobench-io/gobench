@@ -1,4 +1,4 @@
-package gbGrpc
+package grpc
 
 import (
 	"testing"

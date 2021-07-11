@@ -1,4 +1,4 @@
-package gbGrpc
+package grpc
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 )
 
 type GbClientConn struct {
-	grpc.ClientConn
+	*grpc.ClientConn
 	methodGraphsMap map[string][]metrics.Graph
 	target          string
 }
@@ -28,8 +28,7 @@ func DialContext(ctx context.Context, target string, opts ...grpc.DialOption) (
 		target:          target,
 	}
 
-	c, err := grpc.DialContext(ctx, target, opts...)
-	conn.ClientConn = *c
+	conn.ClientConn, err = grpc.DialContext(ctx, target, opts...)
 
 	return
 }
