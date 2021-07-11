@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	gbGrpc "github.com/gobench-io/gobench/clients/grpc"
+	"github.com/gobench-io/gobench/clients/gbGrpc"
 	"github.com/gobench-io/gobench/executor/scenario"
 	"google.golang.org/grpc"
 	pb "google.golang.org/grpc/examples/helloworld/helloworld"

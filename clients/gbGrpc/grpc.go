@@ -1,4 +1,4 @@
-package grpc
+package gbGrpc
 
 import (
 	"context"
@@ -113,6 +113,9 @@ type GbClientStream struct {
 func (cs *GbClientStream) setupMethod(target string, method string) (
 	[]metrics.Graph, error,
 ) {
+	cs.target = target
+	cs.method = method
+
 	graphs := []metrics.Graph{
 		{
 			Title: "New Stream",
@@ -189,7 +192,7 @@ func (cs *GbClientStream) setupMethod(target string, method string) (
 	}
 
 	group := metrics.Group{
-		Name:   "gRPC stream (" + cs.target + ")",
+		Name:   "gRPC Stream (" + cs.target + ")",
 		Graphs: graphs,
 	}
 
@@ -207,10 +210,7 @@ func (cs *GbClientStream) setupMethod(target string, method string) (
 func (cc *GbClientConn) NewStream(ctx context.Context, desc *grpc.StreamDesc, method string, opts ...grpc.CallOption) (
 	grpc.ClientStream, error,
 ) {
-	gcn := &GbClientStream{
-		target: cc.target,
-		method: method,
-	}
+	gcn := &GbClientStream{}
 
 	var err error
 
