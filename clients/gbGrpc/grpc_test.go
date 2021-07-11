@@ -1,7 +1,6 @@
 package gbGrpc
 
 import (
-	"context"
 	"errors"
 	"testing"
 
@@ -9,7 +8,6 @@ import (
 	"github.com/gobench-io/gobench/executor/metrics"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"google.golang.org/grpc"
 )
 
 type mockExecutor struct {
@@ -24,34 +22,6 @@ func (m *mockExecutor) Setup(groups []metrics.Group) error {
 func (m *mockExecutor) Notify(title string, value int64) error {
 	args := m.Called(title, value)
 	return args.Error(0)
-}
-
-type mockGbClientStream struct {
-	mock.Mock
-}
-
-// func (m *mockGbClientStream) Setup(groups []metrics.Group) error {
-// 	args := m.Called(groups)
-// 	return args.Error(0)
-// }
-
-// func (m *mockGbClientStream) Notify(title string, value int64) error {
-// 	args := m.Called(title, value)
-// 	return args.Error(0)
-// }
-
-type mockClientConnect struct {
-	mock.Mock
-}
-
-func (m *mockClientConnect) Invoke(ctx context.Context, method string, args interface{}, reply interface{}, opts ...grpc.CallOption) error {
-	rets := m.Called(ctx, method, args, reply, opts)
-	return rets.Error(0)
-}
-
-func (m *mockClientConnect) NewStream(ctx context.Context, desc *grpc.StreamDesc, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-	rets := m.Called(ctx, desc, method, opts)
-	return rets.Get(0).(grpc.ClientStream), rets.Error(1)
 }
 
 func TestGbClientConnSetupMethod(t *testing.T) {
