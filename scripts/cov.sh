@@ -10,7 +10,10 @@ go test -v -failfast -covermode=atomic -coverprofile=./cov/agent.out ./agent
 go test -v -failfast -covermode=atomic -coverprofile=./cov/executor.out ./executor
 go test -v -failfast -covermode=atomic -coverprofile=./cov/logger.out ./logger
 go test -v -failfast -covermode=atomic -coverprofile=./cov/master.out ./master
-go test -v -failfast -covermode=atomic -coverprofile=./cov/smtp.out ./services/smtp
+go test -v -failfast -covermode=atomic -coverprofile=./cov/clients.gbgrpc.out ./clients/gbGrpc
+go test -v -failfast -covermode=atomic -coverprofile=./cov/clients.http.out ./clients/http
+go test -v -failfast -covermode=atomic -coverprofile=./cov/clients.mqtt.out ./clients/mqtt
+go test -v -failfast -covermode=atomic -coverprofile=./cov/clients.nats.out ./clients/nats
 go test -v -failfast -covermode=atomic -coverprofile=./cov/web.out ./web
 
 gocovmerge ./cov/*.out > acc.out
