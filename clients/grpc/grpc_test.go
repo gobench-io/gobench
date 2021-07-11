@@ -1,6 +1,7 @@
 package grpc
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/gobench-io/gobench/executor"
@@ -69,4 +70,19 @@ func TestGbClientConnSetupMethod(t *testing.T) {
 	actualGraphs, err := conn.setupMethod("get.foo")
 	assert.Nil(t, err)
 	assert.Equal(t, expectedGroupsArg[0].Graphs, actualGraphs)
+}
+
+func TestGbClientConnSetupMethodError(t *testing.T) {
+	testClientConnect := new(MockClientConnect)
+	executor.SetClientConnect(testClientConnect)
+
+	testClientConnect.On("Setup", mock.Anything).Return(errors.New("timeout"))
+
+	conn := &GbClientConn{
+		methodGraphsMap: make(map[string][]metrics.Graph),
+		target:          "host.io",
+	}
+
+	_, err := conn.setupMethod("get.foo")
+	assert.EqualError(t, err, "timeout")
 }
