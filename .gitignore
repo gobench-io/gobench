@@ -23,6 +23,8 @@ yarn-debug.log*
 yarn-error.log*
 node_modules
 
+web/ui/gobench-ui/build/
+
 # Binaries for programs and plugins
 *.exe
 *.exe~

@@ -51,7 +51,7 @@ statik:
 	statik -src=$(UI_PATH)/build -dest=./web -f
 
 build-web-ui:
-	cd $(UI_PATH) && yarn run build-noauth
+	cd $(UI_PATH) && yarn install && yarn run build-noauth
 
 update-statik: build-web-ui statik
 
