@@ -11,11 +11,6 @@
     "lint": "standard ",
     "lint-fix": "standard --fix"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "yarn run lint-fix"
-    }
-  },
   "dependencies": {
     "@ant-design/icons": "^4.1.0",
     "antd": "^4.2.0",

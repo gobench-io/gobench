@@ -7,7 +7,7 @@ GITHASH := `git rev-parse HEAD`
 GITTAG := `git describe --tags --always`
 LDFLAGS="-X github.com/gobench-io/gobench/master.gitCommit=$(GITHASH) -X github.com/gobench-io/gobench/master.gitTag=$(GITTAG)"
 
-.PHONY: lint build examples tools ent statik pb
+.PHONY: lint build examples tools ent pb
 
 pb:
 	protoc --go_out=. --go_opt=paths=source_relative \
@@ -23,14 +23,12 @@ lint-pkgs:
 	GO111MODULE=off go get -u github.com/client9/misspell/cmd/misspell
 
 build-pkgs:
-	GO111MODULE=off go get -u github.com/rakyll/statik
 	GO111MODULE=off go get -u github.com/facebook/ent/cmd/entc
 
 lint:
 	$(exit $(go fmt ./... | wc -l))
 	go vet ./...
-	# ignore statik.go file
-	find . -type f -name "*.go" ! -name "statik.go" | xargs misspell -error -locale US
+	find . -type f -name "*.go" | xargs misspell -error -locale US
 	staticcheck $(go list ./... | grep -v ent/privacy)
 
 build:
@@ -46,14 +44,8 @@ examples:
 ent:
 	entc generate ./ent/schema
 
-# generate statik file for web ui
-statik:
-	statik -src=$(UI_PATH)/build -dest=./web -f
-
 build-web-ui:
 	cd $(UI_PATH) && yarn install && yarn run build-noauth
-
-update-statik: build-web-ui statik
 
 run:
 	go run -ldflags $(LDFLAGS) .
