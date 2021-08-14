@@ -1,11 +1,10 @@
-PACKAGES := $(shell go list ./...)
 EXAMPLES := $(shell go list ./... | grep "examples")
 UI_PATH := ./web/ui/gobench-ui
 GITHASH := `git rev-parse HEAD`
 GITTAG := `git describe --tags --always`
 LDFLAGS="-X github.com/gobench-io/gobench/master.gitCommit=$(GITHASH) -X github.com/gobench-io/gobench/master.gitTag=$(GITTAG)"
 
-.PHONY: lint build examples tools ent pb
+.PHONY: lint build examples ent pb
 
 pb:
 	protoc --go_out=. --go_opt=paths=source_relative \
