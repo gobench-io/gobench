@@ -19,10 +19,10 @@ jobs:
         go-version: ^1.16
       id: go
 
-    - name: Set up Nodejs 16
+    - name: Set up Nodejs 14
       uses: actions/setup-node@v2
       with:
-        node-version: ^16.3
+        node-version: ^14.15
       id: node
 
     - name: Check out code
