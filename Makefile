@@ -1,5 +1,3 @@
-GO ?= go
-
 PACKAGES := $(shell go list ./...)
 EXAMPLES := $(shell go list ./... | grep "examples")
 UI_PATH := ./web/ui/gobench-ui
