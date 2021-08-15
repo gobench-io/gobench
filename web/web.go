@@ -1,7 +1,9 @@
 package web
 
 import (
+	"embed"
 	"fmt"
+	"io/fs"
 	"net/http"
 	"time"
 
@@ -12,8 +14,6 @@ import (
 	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/logger"
 	"github.com/gobench-io/gobench/master"
-	_ "github.com/gobench-io/gobench/web/statik"
-	"github.com/rakyll/statik/fs"
 )
 
 const adminUsername = "admin"
@@ -27,6 +27,9 @@ type handler struct {
 	adminPassword string
 	r             *chi.Mux
 }
+
+//go:embed ui/gobench-ui/build
+var staticFs embed.FS
 
 func (h *handler) db() *ent.Client {
 	return h.s.DbClient()
@@ -69,7 +72,6 @@ func newHandler(s *master.Master, adminPassword string, logger logger.Logger) *h
 	r.Use(cors.Handler)
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
-	// r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
 	r.Use(middleware.Timeout(60 * time.Second))
@@ -149,12 +151,8 @@ func newHandler(s *master.Master, adminPassword string, logger logger.Logger) *h
 		})
 	})
 
-	statikFS, err := fs.New()
-	if err != nil {
-		h.logger.Fatalw("failed read statikFS", "err", err)
-	}
-
-	r.Handle("/*", http.FileServer(statikFS))
+	fsys, _ := fs.Sub(staticFs, "ui/gobench-ui/build")
+	r.Handle("/*", http.FileServer(http.FS(fsys)))
 
 	h.r = r
 

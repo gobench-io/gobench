@@ -11,11 +11,6 @@
     "lint": "standard ",
     "lint-fix": "standard --fix"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run lint-fix"
-    }
-  },
   "dependencies": {
     "@ant-design/icons": "^4.1.0",
     "antd": "^4.2.0",
@@ -52,7 +47,7 @@
     "react-draft-wysiwyg": "^1.14.5",
     "react-helmet": "^6.0.0",
     "react-highlight-words": "^0.16.0",
-    "react-intl": "^4.5.1",
+    "react-intl": "^5.6.9",
     "react-jvectormap": "^0.0.1",
     "react-perfect-scrollbar": "^1.5.8",
     "react-redux": "^7.2.0",
@@ -85,7 +80,7 @@
     "less": "^3.11.1",
     "less-loader": "^5.0.0",
     "lint-staged": "^10.0.8",
-    "node-sass": "^4.13.1",
+    "node-sass": "^4.14.1",
     "prettier": "^1.19.1",
     "react-app-rewired": "^2.1.6",
     "standard": "^14.3.1"
