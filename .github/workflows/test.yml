@@ -30,7 +30,7 @@ jobs:
 
     - name: Build
       run: |
-        make build-web-ui
+        CI=false make build-web-ui
         make lint-pkgs
         make lint
         make examples
