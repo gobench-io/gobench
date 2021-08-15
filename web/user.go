@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/go-chi/jwtauth"
 	"github.com/go-chi/render"
+	"github.com/golang-jwt/jwt"
 )
 
 const fifteenDays = 15 * 24 * time.Hour
