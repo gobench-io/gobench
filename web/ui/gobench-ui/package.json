@@ -15,7 +15,7 @@
     "@ant-design/icons": "^4.1.0",
     "antd": "^4.2.0",
     "apexcharts": "^3.21.0",
-    "async": "^3.2.0",
+    "async": "^3.2.2",
     "axios": "^0.21.1",
     "axios-mock-adapter": "^1.18.1",
     "bootstrap": "^4.4.1",
