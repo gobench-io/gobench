@@ -32,7 +32,7 @@
     "history": "^4.10.1",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.15",
-    "moment": "2.24.0",
+    "moment": "2.29.4",
     "nprogress": "^0.2.0",
     "prismjs": "^1.21.0",
     "prop-types": "^15.7.2",
@@ -101,7 +101,7 @@
     ]
   },
   "resolutions": {
-    "moment": "2.24.0"
+    "moment": "2.29.4"
   },
   "standard": {
     "ignore": [
