@@ -291,6 +291,7 @@ func NewMqttClient(ctx context.Context, opts *ClientOptions) (MqttClient, error)
 	OnConnectionLost := opts.OnConnectionLost
 	opts.SetConnectionLostHandler(func(c paho.Client, e error) {
 		executor.Notify(conTotal, -1)
+		log.Printf("Connection lost: %+v\n", e)
 		if OnConnectionLost != nil {
 			OnConnectionLost(c, e)
 		}
