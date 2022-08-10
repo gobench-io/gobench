@@ -301,6 +301,7 @@ func NewMqttClient(ctx context.Context, opts *ClientOptions) (MqttClient, error)
 	OnReconnecting := opts.OnReconnecting
 	opts.SetReconnectingHandler(func(c paho.Client, o *paho.ClientOptions) {
 		executor.Notify(conReconnect, 1)
+		log.Printf("Reconnecting: %+v - client: %+v - options: %+v\n", conReconnect,c,o)
 		if OnReconnecting != nil {
 			OnReconnecting(c, o)
 		}
