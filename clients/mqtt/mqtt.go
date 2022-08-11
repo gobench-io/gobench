@@ -345,6 +345,8 @@ func (c *MqttClient) Connect(ctx context.Context) error {
 // to the specified topic.
 func (c *MqttClient) Publish(ctx context.Context, topic string, qos byte, data []byte) error {
 	begin := time.Now()
+	or := c.client.OptionsReader()
+	log.Printf("Pushlishing: clientId: %+v - topic: %+v\n", or.ClientID(),topic)
 	token := c.client.Publish(topic, qos, false, data)
 	token.WaitTimeout(3 * time.Second)
 	if err := token.Error(); err != nil {
@@ -373,6 +375,8 @@ func (c *MqttClient) Publish(ctx context.Context, topic string, qos byte, data [
 // and clientID. Provide a prefix, qos, and data
 func (c *MqttClient) PublishToSelf(ctx context.Context, prefix string, qos byte, data []byte) error {
 	topic := c.toSelfTopic(prefix)
+	or := c.client.OptionsReader()
+	log.Printf("PublishToSelf: clientId: %+v - topic: %+v\n", or.ClientID(),topic)
 	return c.Publish(ctx, topic, qos, data)
 }
 
