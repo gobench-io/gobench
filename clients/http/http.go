@@ -76,7 +76,7 @@ func NewHttpClient(ctx context.Context, prefix string) (HttpClient, error) {
 
 	httpClient.client = &http.Client{
 		Transport: tr,
-		Timeout:   time.Second * 10,
+		Timeout:   time.Second * 1,
 	}
 
 	if err := executor.Setup(groups); err != nil {
