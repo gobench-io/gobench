@@ -291,6 +291,7 @@ func NewMqttClient(ctx context.Context, opts *ClientOptions) (MqttClient, error)
 	OnConnectionLost := opts.OnConnectionLost
 	opts.SetConnectionLostHandler(func(c paho.Client, e error) {
 		executor.Notify(conTotal, -1)
+		log.Printf("Connection lost: clientID %+v - error: %+v \n", clientID, e)
 		if OnConnectionLost != nil {
 			OnConnectionLost(c, e)
 		}
@@ -300,6 +301,7 @@ func NewMqttClient(ctx context.Context, opts *ClientOptions) (MqttClient, error)
 	OnReconnecting := opts.OnReconnecting
 	opts.SetReconnectingHandler(func(c paho.Client, o *paho.ClientOptions) {
 		executor.Notify(conReconnect, 1)
+		log.Printf("Reconnecting: clientDefault %+v - clientID: %+v \n", clientID, o.ClientID)
 		if OnReconnecting != nil {
 			OnReconnecting(c, o)
 		}
