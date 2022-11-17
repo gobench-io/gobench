@@ -6,7 +6,7 @@ import { history } from 'index'
 const API_ENDPOINT = process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:8080/api'
 const apiClient = axios.create({
   baseURL: API_ENDPOINT,
-  timeout: 10000,
+  timeout: 5 * 60 * 1000,
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json'
