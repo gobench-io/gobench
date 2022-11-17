@@ -28,6 +28,14 @@ Requirements:
 
 Install the command line tool first
 
+For Go 1.17+
+
+```
+go install github.com/gobench-io/gobench@master
+```
+
+For Go 1.16 and below
+
 ```
 go get github.com/gobench-io/gobench
 ```
