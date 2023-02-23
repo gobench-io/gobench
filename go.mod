@@ -19,7 +19,7 @@ require (
 	github.com/rcrowley/go-metrics v0.0.0-20190826022208-cac0b30c2563
 	github.com/stretchr/testify v1.6.1
 	go.uber.org/zap v1.15.0
-	golang.org/x/text v0.3.5 // indirect
+	golang.org/x/text v0.3.8 // indirect
 	google.golang.org/genproto v0.0.0-20210121164019-fc48d45331c7 // indirect
 	google.golang.org/grpc v1.36.0
 	google.golang.org/grpc/examples v0.0.0-20210702232146-dd589923e1a1
