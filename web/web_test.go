@@ -12,9 +12,9 @@ import (
 	"time"
 
 	"github.com/go-chi/chi"
-	"github.com/gobench-io/gobench/ent"
-	"github.com/gobench-io/gobench/logger"
-	"github.com/gobench-io/gobench/master"
+	"github.com/gobench-io/gobench/v2/ent"
+	"github.com/gobench-io/gobench/v2/logger"
+	"github.com/gobench-io/gobench/v2/master"
 	"github.com/stretchr/testify/assert"
 )
 

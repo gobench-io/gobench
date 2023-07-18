@@ -9,9 +9,9 @@ import (
 
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
-	"github.com/gobench-io/gobench/ent/application"
-	"github.com/gobench-io/gobench/ent/graph"
-	"github.com/gobench-io/gobench/ent/group"
+	"github.com/gobench-io/gobench/v2/ent/application"
+	"github.com/gobench-io/gobench/v2/ent/graph"
+	"github.com/gobench-io/gobench/v2/ent/group"
 )
 
 // GroupCreate is the builder for creating a Group entity.

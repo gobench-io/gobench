@@ -3,7 +3,7 @@ package executor
 import (
 	"context"
 
-	"github.com/gobench-io/gobench/pb"
+	"github.com/gobench-io/gobench/v2/pb"
 	"google.golang.org/grpc"
 )
 

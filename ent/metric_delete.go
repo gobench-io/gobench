@@ -9,8 +9,8 @@ import (
 	"github.com/facebook/ent/dialect/sql"
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
-	"github.com/gobench-io/gobench/ent/metric"
-	"github.com/gobench-io/gobench/ent/predicate"
+	"github.com/gobench-io/gobench/v2/ent/metric"
+	"github.com/gobench-io/gobench/v2/ent/predicate"
 )
 
 // MetricDelete is the builder for deleting a Metric entity.

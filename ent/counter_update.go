@@ -9,9 +9,9 @@ import (
 	"github.com/facebook/ent/dialect/sql"
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
-	"github.com/gobench-io/gobench/ent/counter"
-	"github.com/gobench-io/gobench/ent/metric"
-	"github.com/gobench-io/gobench/ent/predicate"
+	"github.com/gobench-io/gobench/v2/ent/counter"
+	"github.com/gobench-io/gobench/v2/ent/metric"
+	"github.com/gobench-io/gobench/v2/ent/predicate"
 )
 
 // CounterUpdate is the builder for updating Counter entities.

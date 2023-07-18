@@ -9,9 +9,9 @@ import (
 	"github.com/facebook/ent/dialect/sql"
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
-	"github.com/gobench-io/gobench/ent/application"
-	"github.com/gobench-io/gobench/ent/predicate"
-	"github.com/gobench-io/gobench/ent/tag"
+	"github.com/gobench-io/gobench/v2/ent/application"
+	"github.com/gobench-io/gobench/v2/ent/predicate"
+	"github.com/gobench-io/gobench/v2/ent/tag"
 )
 
 // TagUpdate is the builder for updating Tag entities.

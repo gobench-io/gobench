@@ -5,7 +5,7 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/gobench-io/gobench/pse"
+	"github.com/gobench-io/gobench/v2/pse"
 )
 
 // Snapshot this

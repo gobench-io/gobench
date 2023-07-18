@@ -3,7 +3,7 @@ package agent
 import (
 	"context"
 
-	"github.com/gobench-io/gobench/pb"
+	"github.com/gobench-io/gobench/v2/pb"
 )
 
 // nop metric logger

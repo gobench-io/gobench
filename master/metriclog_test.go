@@ -5,12 +5,12 @@ import (
 	"testing"
 	"time"
 
-	entApplication "github.com/gobench-io/gobench/ent/application"
-	entGraph "github.com/gobench-io/gobench/ent/graph"
-	entGroup "github.com/gobench-io/gobench/ent/group"
-	entMetric "github.com/gobench-io/gobench/ent/metric"
-	"github.com/gobench-io/gobench/executor/metrics"
-	"github.com/gobench-io/gobench/pb"
+	entApplication "github.com/gobench-io/gobench/v2/ent/application"
+	entGraph "github.com/gobench-io/gobench/v2/ent/graph"
+	entGroup "github.com/gobench-io/gobench/v2/ent/group"
+	entMetric "github.com/gobench-io/gobench/v2/ent/metric"
+	"github.com/gobench-io/gobench/v2/executor/metrics"
+	"github.com/gobench-io/gobench/v2/pb"
 	"github.com/stretchr/testify/assert"
 )
 

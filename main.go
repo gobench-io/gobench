@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/gobench-io/gobench/logger"
-	"github.com/gobench-io/gobench/master"
-	"github.com/gobench-io/gobench/web"
+	"github.com/gobench-io/gobench/v2/logger"
+	"github.com/gobench-io/gobench/v2/master"
+	"github.com/gobench-io/gobench/v2/web"
 )
 
 // gobench -p 3000 -master -cluster localhost:3001

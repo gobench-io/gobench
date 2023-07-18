@@ -14,9 +14,9 @@ import (
 	"log"
 	"time"
 
-	"github.com/gobench-io/gobench/clients/mqtt"
-	"github.com/gobench-io/gobench/dis"
-	"github.com/gobench-io/gobench/executor/scenario"
+	"github.com/gobench-io/gobench/v2/clients/mqtt"
+	"github.com/gobench-io/gobench/v2/dis"
+	"github.com/gobench-io/gobench/v2/executor/scenario"
 )
 
 func export() scenario.Vus {

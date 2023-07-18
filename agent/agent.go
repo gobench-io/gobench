@@ -11,8 +11,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gobench-io/gobench/logger"
-	"github.com/gobench-io/gobench/pb"
+	"github.com/gobench-io/gobench/v2/logger"
+	"github.com/gobench-io/gobench/v2/pb"
 	"google.golang.org/grpc"
 )
 

@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/gobench-io/gobench/ent"
+	"github.com/gobench-io/gobench/v2/ent"
 )
 
 // The ApplicationFunc type is an adapter to allow the use of ordinary

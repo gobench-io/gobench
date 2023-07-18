@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gobench-io/gobench/ent"
-	"github.com/gobench-io/gobench/logger"
+	"github.com/gobench-io/gobench/v2/ent"
+	"github.com/gobench-io/gobench/v2/logger"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
 )
@@ -47,7 +47,7 @@ func localGobenchMod(t *testing.T) string {
 	mainDir, _ := exec.Command("dirname", testDir).CombinedOutput()
 	return fmt.Sprintf(`
 		module gobench.io/scenario
-		replace github.com/gobench-io/gobench => %s
+		replace github.com/gobench-io/gobench/v2 => %s
 		`, string(mainDir))
 }
 
@@ -131,7 +131,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/gobench-io/gobench/executor/scenario"
+	"github.com/gobench-io/gobench/v2/executor/scenario"
 )
 
 // export is a required function for a scenario
@@ -172,7 +172,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/gobench-io/gobench/executor/scenario"
+	"github.com/gobench-io/gobench/v2/executor/scenario"
 )
 
 // export is a required function for a scenario
@@ -216,7 +216,7 @@ package main
 import (
 	"context"
 
-	"github.com/gobench-io/gobench/executor/scenario"
+	"github.com/gobench-io/gobench/v2/executor/scenario"
 )
 
 func export() scenario.Vus {
@@ -272,8 +272,8 @@ package main
 import (
 	"context"
 
-	httpClient "github.com/gobench-io/gobench/clients/http"
-	"github.com/gobench-io/gobench/executor/scenario"
+	httpClient "github.com/gobench-io/gobench/v2/clients/http"
+	"github.com/gobench-io/gobench/v2/executor/scenario"
 )
 
 func export() scenario.Vus {

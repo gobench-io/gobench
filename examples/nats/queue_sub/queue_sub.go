@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gobench-io/gobench/clients/nats"
-	"github.com/gobench-io/gobench/dis"
-	"github.com/gobench-io/gobench/executor/scenario"
+	"github.com/gobench-io/gobench/v2/clients/nats"
+	"github.com/gobench-io/gobench/v2/dis"
+	"github.com/gobench-io/gobench/v2/executor/scenario"
 )
 
 var server = "127.0.0.1"

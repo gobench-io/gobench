@@ -7,7 +7,7 @@ import (
 
 	"github.com/facebook/ent/dialect/sql"
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/gobench-io/gobench/ent/predicate"
+	"github.com/gobench-io/gobench/v2/ent/predicate"
 )
 
 // ID filters vertices based on their identifier.

@@ -12,10 +12,10 @@ import (
 	"github.com/facebook/ent/dialect/sql"
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
-	"github.com/gobench-io/gobench/ent/graph"
-	"github.com/gobench-io/gobench/ent/group"
-	"github.com/gobench-io/gobench/ent/metric"
-	"github.com/gobench-io/gobench/ent/predicate"
+	"github.com/gobench-io/gobench/v2/ent/graph"
+	"github.com/gobench-io/gobench/v2/ent/group"
+	"github.com/gobench-io/gobench/v2/ent/metric"
+	"github.com/gobench-io/gobench/v2/ent/predicate"
 )
 
 // GraphQuery is the builder for querying Graph entities.
