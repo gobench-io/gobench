@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/render"
+
 	"github.com/gobench-io/gobench/ent"
 	"github.com/gobench-io/gobench/master"
 )
@@ -343,6 +344,6 @@ type varzResponse struct {
 	master.Varz
 }
 
-func (vr  *varzResponse) Render(w http.ResponseWriter, r *http.Request) error {
+func (vr *varzResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
