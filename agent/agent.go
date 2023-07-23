@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	api "github.com/gobench-io/gobench/v2/gen/go/pb"
 	"github.com/gobench-io/gobench/v2/logger"
 	"github.com/gobench-io/gobench/v2/pb"
 	"google.golang.org/grpc"
@@ -34,6 +35,9 @@ type Agent struct {
 	logger         logger.Logger
 	executorLogger io.WriteCloser // when running the executor, save log here
 	socket         string         // unix socket that the agent rpc server will listen at
+
+	// for v2
+	jdsClient api.JobDistributionServiceClient
 }
 
 func NewLocalAgent(ml pb.AgentServer, logger logger.Logger) (*Agent, error) {
@@ -44,6 +48,8 @@ func NewLocalAgent(ml pb.AgentServer, logger logger.Logger) (*Agent, error) {
 	return a, nil
 }
 
+// NewAgent create a new agent instance.
+// Deprecated, use NewAgentV2 instead
 func NewAgent(opts *Options, ml pb.AgentServer, logger logger.Logger) (*Agent, error) {
 	a := &Agent{
 		route:       opts.Route,
@@ -53,6 +59,33 @@ func NewAgent(opts *Options, ml pb.AgentServer, logger logger.Logger) (*Agent, e
 		ml:          ml,
 	}
 	return a, nil
+}
+
+func NewAgentV2(opts *Options, logger logger.Logger, ml pb.AgentServer, jdsClient api.JobDistributionServiceClient) (*Agent, error) {
+	a := &Agent{
+		route:       opts.Route,
+		clusterPort: opts.ClusterPort,
+		socket:      opts.Socket,
+		logger:      logger,
+		ml:          ml,
+
+		jdsClient: jdsClient,
+	}
+
+	return a, nil
+}
+
+// NewJdsClient creates a new jds client
+// masterAddr is the address of the master, ex: 123.3.5.6:8080
+func NewJdsClient(ctx context.Context, masterAddr string) (api.JobDistributionServiceClient, error) {
+	conn, err := grpc.DialContext(ctx, masterAddr,
+		grpc.WithInsecure(),
+		grpc.WithBlock())
+	if err != nil {
+		return nil, fmt.Errorf("grpc dial: %v", err)
+	}
+
+	return api.NewJobDistributionServiceClient(conn), nil
 }
 
 // SetMetricLogger sets metric logger property

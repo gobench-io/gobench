@@ -10,5 +10,6 @@ var _ api.JobDistributionServiceServer = (*Master)(nil)
 
 func (m *Master) Ping(ctx context.Context, request *api.PingRequest) (*api.PingResponse, error) {
 	//TODO implement me
+
 	return &api.PingResponse{}, nil
 }
