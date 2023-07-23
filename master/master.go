@@ -1,6 +1,7 @@
 package master
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -13,8 +14,6 @@ import (
 	"strconv"
 	"sync"
 	"time"
-
-	"context"
 
 	"github.com/gobench-io/gobench/v2/agent"
 	"github.com/gobench-io/gobench/v2/ent"
