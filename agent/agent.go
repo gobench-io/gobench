@@ -37,7 +37,9 @@ type Agent struct {
 	socket         string         // unix socket that the agent rpc server will listen at
 
 	// for v2
-	jdsClient api.JobDistributionServiceClient
+	id                string // agent id
+	jdsClient         api.JobDistributionServiceClient
+	heartbeatInterval time.Duration
 }
 
 func NewLocalAgent(ml pb.AgentServer, logger logger.Logger) (*Agent, error) {
@@ -69,7 +71,8 @@ func NewAgentV2(opts *Options, logger logger.Logger, ml pb.AgentServer, jdsClien
 		logger:      logger,
 		ml:          ml,
 
-		jdsClient: jdsClient,
+		jdsClient:         jdsClient,
+		heartbeatInterval: 30 * time.Second,
 	}
 
 	return a, nil
@@ -86,6 +89,40 @@ func NewJdsClient(ctx context.Context, masterAddr string) (api.JobDistributionSe
 	}
 
 	return api.NewJobDistributionServiceClient(conn), nil
+}
+
+func (a *Agent) Start(ctx context.Context) error {
+	// todo: start rpc server
+
+	// start heartbeat routine
+	go func() {
+		ticker := time.NewTicker(a.heartbeatInterval)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				if err := a.sendHeartbeat(ctx); err != nil {
+					a.logger.Errorw("Failed to send heartbeat", "err", err)
+				}
+			}
+		}
+	}()
+
+	return nil
+}
+
+func (a *Agent) sendHeartbeat(ctx context.Context) error {
+	_, err := a.jdsClient.Ping(ctx, &api.PingRequest{
+		ServerId: a.id,
+		Interval: uint64(a.heartbeatInterval.Seconds()),
+	})
+	if err != nil {
+		return fmt.Errorf("ping: %v", err)
+	}
+
+	return nil
 }
 
 // SetMetricLogger sets metric logger property
