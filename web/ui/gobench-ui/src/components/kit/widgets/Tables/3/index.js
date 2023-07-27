@@ -87,7 +87,7 @@ const Table3 = () => {
         <TabPane tab="History" key="1" />
         <TabPane
           tab={
-            <Dropdown overlay={dropdownMenu} placement="bottomRight">
+            <Dropdown menu={dropdownMenu} placement="bottomRight">
               <a className="nav-link dropdown-toggle" role="button">
                 Dropdown
               </a>

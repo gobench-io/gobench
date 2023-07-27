@@ -32,7 +32,7 @@ const ProjectManagement = () => {
     </Menu>
   )
   return (
-    <Dropdown overlay={menu} trigger={['click']} placement="bottomLeft">
+    <Dropdown menu={menu} trigger={['click']} placement="bottomLeft">
       <div className={styles.dropdown}>
         <i className={`${styles.icon} fe fe-database`} />
         <span className="d-none d-xl-inline">

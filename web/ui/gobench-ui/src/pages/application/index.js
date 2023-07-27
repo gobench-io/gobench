@@ -236,6 +236,7 @@ const DefaultPage = ({ list, loading, total, dispatch }) => {
               </div>
             </div>
             <Table
+              rowKey="id"
               dataSource={list}
               pagination={pagination}
               loading={loading}

@@ -131,7 +131,7 @@ const FavPages = ({ menuData = [], intl: { formatMessage } }) => {
         )
       })}
       <Tooltip placement="bottom" title="Bookmarks">
-        <Dropdown overlay={menu} trigger={['click']} placement="bottomLeft">
+        <Dropdown menu={menu} trigger={['click']} placement="bottomLeft">
           <span className={style.item}>
             <i className={`${style.icon} fe fe-star`} />
           </span>

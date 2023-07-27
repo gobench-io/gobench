@@ -32,7 +32,7 @@ const General11 = () => {
           </div>
           <div className="ml-auto d-flex flex-column justify-content-center">
             <div className="dropdown d-inline-block">
-              <Dropdown overlay={dropdownMenu} placement="bottomRight">
+              <Dropdown menu={dropdownMenu} placement="bottomRight">
                 <button
                   type="button"
                   className="btn btn-light dropdown-toggle dropdown-toggle-noarrow"
@@ -60,7 +60,7 @@ const General11 = () => {
           </TabPane>
           <TabPane
             tab={
-              <Dropdown overlay={dropdownMenu} placement="bottomRight">
+              <Dropdown menu={dropdownMenu} placement="bottomRight">
                 <a className="nav-link dropdown-toggle" role="button">
                   Dropdown
                 </a>

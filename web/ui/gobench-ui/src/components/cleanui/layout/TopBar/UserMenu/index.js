@@ -71,7 +71,7 @@ const ProfileMenu = ({ dispatch }) => {
     </Menu>
   )
   return (
-    <Dropdown overlay={menu} trigger={['click']} onVisibleChange={addCount}>
+    <Dropdown menu={menu} trigger={['click']} onOpenChange={addCount}>
       <div className={styles.dropdown}>
         {/* <Badge count={count}> */}
         <Avatar className={styles.avatar} shape='square' size='large' icon={<UserOutlined />} />

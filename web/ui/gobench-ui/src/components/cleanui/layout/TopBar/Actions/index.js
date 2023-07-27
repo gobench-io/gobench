@@ -14,7 +14,7 @@ const Actions = () => {
     </React.Fragment>
   )
   return (
-    <Dropdown overlay={menu} trigger={['click']} placement="bottomRight">
+    <Dropdown menu={menu} trigger={['click']} placement="bottomRight">
       <div className={styles.dropdown}>
         <i className={`${styles.icon} fe fe-bell`} />
       </div>

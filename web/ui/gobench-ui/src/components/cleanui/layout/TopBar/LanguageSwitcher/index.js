@@ -40,7 +40,7 @@ const LanguageSwitcher = ({ dispatch, locale }) => {
   )
 
   return (
-    <Dropdown overlay={menu} trigger={['click']} placement="bottomRight">
+    <Dropdown menu={menu} trigger={['click']} placement="bottomRight">
       <div className={styles.dropdown}>
         <span className="text-uppercase">{language}</span>
       </div>
