@@ -1,4 +1,6 @@
 // Colors
+@use "sass:math";
+
 $white: #fff;
 $black: #141322;
 $blue: var(--kit-color-primary);
@@ -55,7 +57,7 @@ $shadow-ant: 0 10px 35px -5px rgba(0, 0, 0, 0.15);
 
 // Convert value of rem() sass mixin function
 @function rem($px, $base: $base-font-size) {
-  @return #{floor(($px/$base) * 100) / 100}rem; // to REMs
+  @return #{floor(math.div($px, $base) * 100) * 0.01}rem; // to REMs
   // @return #{$px}px; // to PX's
 }
 
