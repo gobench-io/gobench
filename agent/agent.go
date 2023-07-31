@@ -52,6 +52,7 @@ func NewLocalAgent(ml pb.AgentServer, logger logger.Logger) (*Agent, error) {
 
 // NewAgent create a new agent instance.
 // Deprecated, use NewAgentV2 instead
+// todo: remove this in gobench@v2
 func NewAgent(opts *Options, ml pb.AgentServer, logger logger.Logger) (*Agent, error) {
 	a := &Agent{
 		route:       opts.Route,
