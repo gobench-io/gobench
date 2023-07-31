@@ -11,8 +11,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gobench-io/gobench/logger"
-	"github.com/gobench-io/gobench/pb"
+	api "github.com/gobench-io/gobench/v2/gen/go/pb"
+	"github.com/gobench-io/gobench/v2/logger"
+	"github.com/gobench-io/gobench/v2/pb"
 	"google.golang.org/grpc"
 )
 
@@ -34,6 +35,11 @@ type Agent struct {
 	logger         logger.Logger
 	executorLogger io.WriteCloser // when running the executor, save log here
 	socket         string         // unix socket that the agent rpc server will listen at
+
+	// for v2
+	id                string // agent id
+	jdsClient         api.JobDistributionServiceClient
+	heartbeatInterval time.Duration
 }
 
 func NewLocalAgent(ml pb.AgentServer, logger logger.Logger) (*Agent, error) {
@@ -44,6 +50,9 @@ func NewLocalAgent(ml pb.AgentServer, logger logger.Logger) (*Agent, error) {
 	return a, nil
 }
 
+// NewAgent create a new agent instance.
+// Deprecated, use NewAgentV2 instead
+// todo: remove this in gobench@v2
 func NewAgent(opts *Options, ml pb.AgentServer, logger logger.Logger) (*Agent, error) {
 	a := &Agent{
 		route:       opts.Route,
@@ -53,6 +62,68 @@ func NewAgent(opts *Options, ml pb.AgentServer, logger logger.Logger) (*Agent, e
 		ml:          ml,
 	}
 	return a, nil
+}
+
+func NewAgentV2(opts *Options, logger logger.Logger, ml pb.AgentServer, jdsClient api.JobDistributionServiceClient) (*Agent, error) {
+	a := &Agent{
+		route:       opts.Route,
+		clusterPort: opts.ClusterPort,
+		socket:      opts.Socket,
+		logger:      logger,
+		ml:          ml,
+
+		jdsClient:         jdsClient,
+		heartbeatInterval: 30 * time.Second,
+	}
+
+	return a, nil
+}
+
+// NewJdsClient creates a new jds client
+// masterAddr is the address of the master, ex: 123.3.5.6:8080
+func NewJdsClient(ctx context.Context, masterAddr string) (api.JobDistributionServiceClient, error) {
+	conn, err := grpc.DialContext(ctx, masterAddr,
+		grpc.WithInsecure(),
+		grpc.WithBlock())
+	if err != nil {
+		return nil, fmt.Errorf("grpc dial: %v", err)
+	}
+
+	return api.NewJobDistributionServiceClient(conn), nil
+}
+
+func (a *Agent) Start(ctx context.Context) error {
+	// todo: start rpc server
+
+	// start heartbeat routine
+	go func() {
+		ticker := time.NewTicker(a.heartbeatInterval)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				if err := a.sendHeartbeat(ctx); err != nil {
+					a.logger.Errorw("Failed to send heartbeat", "err", err)
+				}
+			}
+		}
+	}()
+
+	return nil
+}
+
+func (a *Agent) sendHeartbeat(ctx context.Context) error {
+	_, err := a.jdsClient.Ping(ctx, &api.PingRequest{
+		ServerId: a.id,
+		Interval: uint64(a.heartbeatInterval.Seconds()),
+	})
+	if err != nil {
+		return fmt.Errorf("ping: %v", err)
+	}
+
+	return nil
 }
 
 // SetMetricLogger sets metric logger property
