@@ -4,15 +4,7 @@ GITHASH := `git rev-parse HEAD`
 GITTAG := `git describe --tags --always`
 LDFLAGS="-X github.com/gobench-io/gobench/master.gitCommit=$(GITHASH) -X github.com/gobench-io/gobench/master.gitTag=$(GITTAG)"
 
-.PHONY: lint build examples ent pb
-
-pb:
-	protoc --go_out=. --go_opt=paths=source_relative \
-		--go-grpc_out=. --go-grpc_opt=paths=source_relative,require_unimplemented_servers=false \
-		pb/agent.proto
-	protoc --go_out=. --go_opt=paths=source_relative \
-		--go-grpc_out=. --go-grpc_opt=paths=source_relative,require_unimplemented_servers=false \
-		pb/executor.proto
+.PHONY: lint build examples ent
 
 .PHONY: gen
 gen:

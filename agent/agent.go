@@ -13,7 +13,6 @@ import (
 
 	api "github.com/gobench-io/gobench/v2/gen/go/pb"
 	"github.com/gobench-io/gobench/v2/logger"
-	"github.com/gobench-io/gobench/v2/pb"
 	"google.golang.org/grpc"
 )
 
@@ -31,7 +30,7 @@ type Agent struct {
 	route       string
 	clusterPort int
 
-	ml             pb.AgentServer
+	ml             api.AgentServer
 	logger         logger.Logger
 	executorLogger io.WriteCloser // when running the executor, save log here
 	socket         string         // unix socket that the agent rpc server will listen at
@@ -42,7 +41,7 @@ type Agent struct {
 	heartbeatInterval time.Duration
 }
 
-func NewLocalAgent(ml pb.AgentServer, logger logger.Logger) (*Agent, error) {
+func NewLocalAgent(ml api.AgentServer, logger logger.Logger) (*Agent, error) {
 	a := &Agent{
 		ml:     ml,
 		logger: logger,
@@ -53,7 +52,7 @@ func NewLocalAgent(ml pb.AgentServer, logger logger.Logger) (*Agent, error) {
 // NewAgent create a new agent instance.
 // Deprecated, use NewAgentV2 instead
 // todo: remove this in gobench@v2
-func NewAgent(opts *Options, ml pb.AgentServer, logger logger.Logger) (*Agent, error) {
+func NewAgent(opts *Options, ml api.AgentServer, logger logger.Logger) (*Agent, error) {
 	a := &Agent{
 		route:       opts.Route,
 		clusterPort: opts.ClusterPort,
@@ -64,7 +63,7 @@ func NewAgent(opts *Options, ml pb.AgentServer, logger logger.Logger) (*Agent, e
 	return a, nil
 }
 
-func NewAgentV2(opts *Options, logger logger.Logger, ml pb.AgentServer, jdsClient api.JobDistributionServiceClient) (*Agent, error) {
+func NewAgentV2(opts *Options, logger logger.Logger, ml api.AgentServer, jdsClient api.JobDistributionServiceClient) (*Agent, error) {
 	a := &Agent{
 		route:       opts.Route,
 		clusterPort: opts.ClusterPort,
@@ -127,7 +126,7 @@ func (a *Agent) sendHeartbeat(ctx context.Context) error {
 }
 
 // SetMetricLogger sets metric logger property
-func (a *Agent) SetMetricLogger(ml pb.AgentServer) {
+func (a *Agent) SetMetricLogger(ml api.AgentServer) {
 	a.mu.Lock()
 	a.ml = ml
 	a.mu.Unlock()
@@ -160,7 +159,7 @@ func (a *Agent) StartSocketServer() error {
 		return err
 	}
 	s := grpc.NewServer()
-	pb.RegisterAgentServer(s, a.ml)
+	api.RegisterAgentServer(s, a.ml)
 
 	go s.Serve(l)
 
@@ -219,7 +218,7 @@ func (a *Agent) RunJob(ctx context.Context, executorPath string, appID int) (err
 	a.logger.Infow("local executor to run driver")
 
 	// todo: handle the response
-	if _, err = client.Start(ctx, &pb.StartRequest{}); err != nil {
+	if _, err = client.Start(ctx, &api.StartRequest{}); err != nil {
 		err = fmt.Errorf("rpc start: %v", err)
 		return
 	}
@@ -227,7 +226,7 @@ func (a *Agent) RunJob(ctx context.Context, executorPath string, appID int) (err
 	a.logger.Infow("local executor is shutting down")
 
 	// ignore error, since when the executor is terminated, this rpc will fail
-	_, _ = client.Terminate(ctx, &pb.TermRequest{})
+	_, _ = client.Terminate(ctx, &api.TermRequest{})
 
 	if err = cmd.Wait(); err != nil {
 		a.logger.Errorw("executor wait", "err", err)
@@ -238,7 +237,7 @@ func (a *Agent) RunJob(ctx context.Context, executorPath string, appID int) (err
 }
 
 func waitForReady(ctx context.Context, executorSock string, expiredIn time.Duration) (
-	pb.ExecutorClient, error,
+	api.ExecutorClient, error,
 ) {
 	timeout := time.After(expiredIn)
 	sleep := 10 * time.Millisecond
@@ -256,7 +255,7 @@ func waitForReady(ctx context.Context, executorSock string, expiredIn time.Durat
 			if err != nil {
 				continue
 			}
-			client := pb.NewExecutorClient(conn)
+			client := api.NewExecutorClient(conn)
 			return client, nil
 		}
 	}
