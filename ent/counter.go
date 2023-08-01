@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/facebook/ent/dialect/sql"
-	"github.com/gobench-io/gobench/ent/counter"
-	"github.com/gobench-io/gobench/ent/metric"
+	"github.com/gobench-io/gobench/v2/ent/counter"
+	"github.com/gobench-io/gobench/v2/ent/metric"
 )
 
 // Counter is the model entity for the Counter schema.

@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "github.com/gobench-io/gobench/v2/gen/go/pb;pb";
+
+service JobDistributionService {
+  rpc Ping(PingRequest) returns (PingResponse) {}
+}
+
+message PingRequest {
+  string serverId = 1;
+  uint64 interval = 2;
+}
+
+message PingResponse {}
+

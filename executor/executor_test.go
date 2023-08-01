@@ -10,9 +10,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gobench-io/gobench/executor/scenario"
-	"github.com/gobench-io/gobench/logger"
-	"github.com/gobench-io/gobench/pb"
+	"github.com/gobench-io/gobench/v2/executor/scenario"
+	"github.com/gobench-io/gobench/v2/logger"
+	"github.com/gobench-io/gobench/v2/pb"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -65,7 +65,7 @@ package main
 import (
 	"context"
 
-	"github.com/gobench-io/gobench/executor/scenario"
+	"github.com/gobench-io/gobench/v2/executor/scenario"
 )
 
 func export() scenario.Vus {
@@ -95,7 +95,7 @@ func f1(ctx context.Context, vui int) {
 	mainDir, _ := exec.Command("dirname", testDir).CombinedOutput()
 	gomod := fmt.Sprintf(`
 		module gobench.io/scenario
-		replace github.com/gobench-io/gobench => %s
+		replace github.com/gobench-io/gobench/v2 => %s
 		`, string(mainDir))
 	gomodPath := filepath.Join(dir, "go.mod")
 	gomodFile, _ := os.OpenFile(gomodPath, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0600)

@@ -3,13 +3,13 @@ package master
 import (
 	"context"
 
-	"github.com/gobench-io/gobench/ent"
-	"github.com/gobench-io/gobench/pb"
+	"github.com/gobench-io/gobench/v2/ent"
+	"github.com/gobench-io/gobench/v2/pb"
 
-	entApp "github.com/gobench-io/gobench/ent/application"
-	entGraph "github.com/gobench-io/gobench/ent/graph"
-	entGroup "github.com/gobench-io/gobench/ent/group"
-	entMetric "github.com/gobench-io/gobench/ent/metric"
+	entApp "github.com/gobench-io/gobench/v2/ent/application"
+	entGraph "github.com/gobench-io/gobench/v2/ent/graph"
+	entGroup "github.com/gobench-io/gobench/v2/ent/group"
+	entMetric "github.com/gobench-io/gobench/v2/ent/metric"
 )
 
 func (m *Master) Counter(ctx context.Context, req *pb.CounterReq) (*pb.CounterRes, error) {

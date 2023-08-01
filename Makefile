@@ -14,6 +14,10 @@ pb:
 		--go-grpc_out=. --go-grpc_opt=paths=source_relative,require_unimplemented_servers=false \
 		pb/executor.proto
 
+.PHONY: gen
+gen:
+	buf generate
+
 # run supported packages
 lint-pkgs:
 	GO111MODULE=off go get -u honnef.co/go/tools/cmd/staticcheck

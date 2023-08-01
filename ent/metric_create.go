@@ -9,11 +9,11 @@ import (
 
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
-	"github.com/gobench-io/gobench/ent/counter"
-	"github.com/gobench-io/gobench/ent/gauge"
-	"github.com/gobench-io/gobench/ent/graph"
-	"github.com/gobench-io/gobench/ent/histogram"
-	"github.com/gobench-io/gobench/ent/metric"
+	"github.com/gobench-io/gobench/v2/ent/counter"
+	"github.com/gobench-io/gobench/v2/ent/gauge"
+	"github.com/gobench-io/gobench/v2/ent/graph"
+	"github.com/gobench-io/gobench/v2/ent/histogram"
+	"github.com/gobench-io/gobench/v2/ent/metric"
 )
 
 // MetricCreate is the builder for creating a Metric entity.

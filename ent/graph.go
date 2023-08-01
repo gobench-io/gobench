@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/facebook/ent/dialect/sql"
-	"github.com/gobench-io/gobench/ent/graph"
-	"github.com/gobench-io/gobench/ent/group"
+	"github.com/gobench-io/gobench/v2/ent/graph"
+	"github.com/gobench-io/gobench/v2/ent/group"
 )
 
 // Graph is the model entity for the Graph schema.

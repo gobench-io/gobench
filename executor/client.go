@@ -1,7 +1,7 @@
 package executor
 
 import (
-	"github.com/gobench-io/gobench/executor/metrics"
+	"github.com/gobench-io/gobench/v2/executor/metrics"
 )
 
 type ClientConnector interface {

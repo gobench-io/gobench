@@ -9,9 +9,9 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
-	"github.com/gobench-io/gobench/ent"
-	"github.com/gobench-io/gobench/ent/application"
-	"github.com/gobench-io/gobench/master"
+	"github.com/gobench-io/gobench/v2/ent"
+	"github.com/gobench-io/gobench/v2/ent/application"
+	"github.com/gobench-io/gobench/v2/master"
 )
 
 func (h *handler) applicationCtx(next http.Handler) http.Handler {

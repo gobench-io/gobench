@@ -3,7 +3,7 @@ package agent
 import (
 	"testing"
 
-	"github.com/gobench-io/gobench/logger"
+	"github.com/gobench-io/gobench/v2/logger"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -9,9 +9,9 @@ import (
 	"log"
 	"time"
 
-	httpClient "github.com/gobench-io/gobench/clients/http"
-	"github.com/gobench-io/gobench/dis"
-	"github.com/gobench-io/gobench/executor/scenario"
+	httpClient "github.com/gobench-io/gobench/v2/clients/http"
+	"github.com/gobench-io/gobench/v2/dis"
+	"github.com/gobench-io/gobench/v2/executor/scenario"
 )
 
 func export() scenario.Vus {

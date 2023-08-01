@@ -11,9 +11,9 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/jwtauth"
-	"github.com/gobench-io/gobench/ent"
-	"github.com/gobench-io/gobench/logger"
-	"github.com/gobench-io/gobench/master"
+	"github.com/gobench-io/gobench/v2/ent"
+	"github.com/gobench-io/gobench/v2/logger"
+	"github.com/gobench-io/gobench/v2/master"
 )
 
 const adminUsername = "admin"

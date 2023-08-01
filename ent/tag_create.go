@@ -9,8 +9,8 @@ import (
 
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
-	"github.com/gobench-io/gobench/ent/application"
-	"github.com/gobench-io/gobench/ent/tag"
+	"github.com/gobench-io/gobench/v2/ent/application"
+	"github.com/gobench-io/gobench/v2/ent/tag"
 )
 
 // TagCreate is the builder for creating a Tag entity.

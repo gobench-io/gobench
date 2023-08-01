@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/gobench-io/gobench/executor"
-	"github.com/gobench-io/gobench/executor/metrics"
+	"github.com/gobench-io/gobench/v2/executor"
+	"github.com/gobench-io/gobench/v2/executor/metrics"
 	"github.com/nats-io/nats.go"
 )
 

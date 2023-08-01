@@ -7,7 +7,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/gobench-io/gobench/ent"
+	"github.com/gobench-io/gobench/v2/ent"
 )
 
 var (

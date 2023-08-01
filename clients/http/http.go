@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gobench-io/gobench/executor"
-	"github.com/gobench-io/gobench/executor/metrics"
+	"github.com/gobench-io/gobench/v2/executor"
+	"github.com/gobench-io/gobench/v2/executor/metrics"
 )
 
 type HttpClient struct {

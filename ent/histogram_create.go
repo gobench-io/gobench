@@ -9,8 +9,8 @@ import (
 
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
-	"github.com/gobench-io/gobench/ent/histogram"
-	"github.com/gobench-io/gobench/ent/metric"
+	"github.com/gobench-io/gobench/v2/ent/histogram"
+	"github.com/gobench-io/gobench/v2/ent/metric"
 )
 
 // HistogramCreate is the builder for creating a Histogram entity.

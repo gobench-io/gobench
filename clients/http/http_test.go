@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/gobench-io/gobench/executor"
-	"github.com/gobench-io/gobench/executor/metrics"
+	"github.com/gobench-io/gobench/v2/executor"
+	"github.com/gobench-io/gobench/v2/executor/metrics"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

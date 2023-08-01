@@ -1,6 +1,7 @@
 package master
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -14,14 +15,12 @@ import (
 	"sync"
 	"time"
 
-	"context"
-
-	"github.com/gobench-io/gobench/agent"
-	"github.com/gobench-io/gobench/ent"
-	"github.com/gobench-io/gobench/ent/application"
-	"github.com/gobench-io/gobench/ent/tag"
-	"github.com/gobench-io/gobench/executor"
-	"github.com/gobench-io/gobench/logger"
+	"github.com/gobench-io/gobench/v2/agent"
+	"github.com/gobench-io/gobench/v2/ent"
+	"github.com/gobench-io/gobench/v2/ent/application"
+	"github.com/gobench-io/gobench/v2/ent/tag"
+	"github.com/gobench-io/gobench/v2/executor"
+	"github.com/gobench-io/gobench/v2/logger"
 
 	"github.com/facebook/ent/dialect/sql"
 	"github.com/google/uuid"
