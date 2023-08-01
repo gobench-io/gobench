@@ -12,8 +12,8 @@ import (
 	"github.com/gobench-io/gobench/v2/dis"
 	"github.com/gobench-io/gobench/v2/executor/metrics"
 	"github.com/gobench-io/gobench/v2/executor/scenario"
+	api "github.com/gobench-io/gobench/v2/gen/go/pb"
 	"github.com/gobench-io/gobench/v2/logger"
-	"github.com/gobench-io/gobench/v2/pb"
 	"google.golang.org/grpc"
 
 	gometrics "github.com/rcrowley/go-metrics"
@@ -67,7 +67,7 @@ type Executor struct {
 	vus    scenario.Vus
 	units  map[string]unit //title - gometrics
 
-	rc pb.AgentClient
+	rc api.AgentClient
 }
 
 // the singleton instance of executor
@@ -113,7 +113,7 @@ func (e *Executor) Serve() (err error) {
 	if err != nil {
 		return
 	}
-	e.rc = pb.NewAgentClient(conn)
+	e.rc = api.NewAgentClient(conn)
 
 	// executor register a rpc server at executor socket
 	l, err := net.Listen("unix", e.executorSock)
@@ -122,7 +122,7 @@ func (e *Executor) Serve() (err error) {
 	}
 
 	s := grpc.NewServer()
-	pb.RegisterExecutorServer(s, e)
+	api.RegisterExecutorServer(s, e)
 
 	err = s.Serve(l)
 	if err != nil {
@@ -219,7 +219,7 @@ func (e *Executor) logScaledOnCue(ctx context.Context, ch chan interface{}) erro
 			e.mu.Unlock()
 
 			for _, u := range units {
-				base := &pb.BasedReqMetric{
+				base := &api.BasedReqMetric{
 					AppID: int64(e.appID),
 					EID:   e.id,
 					MID:   int64(u.metricID),
@@ -228,14 +228,14 @@ func (e *Executor) logScaledOnCue(ctx context.Context, ch chan interface{}) erro
 
 				switch u.Type {
 				case metrics.Counter:
-					_, err = e.rc.Counter(ctx, &pb.CounterReq{
+					_, err = e.rc.Counter(ctx, &api.CounterReq{
 						Base:  base,
 						Count: u.c.Count(),
 					})
 				case metrics.Histogram:
 					h := u.h.Snapshot()
 					ps := h.Percentiles([]float64{0.5, 0.75, 0.95, 0.99, 0.999})
-					hv := &pb.HistogramValues{
+					hv := &api.HistogramValues{
 						Count:  h.Count(),
 						Min:    h.Min(),
 						Max:    h.Max(),
@@ -247,12 +247,12 @@ func (e *Executor) logScaledOnCue(ctx context.Context, ch chan interface{}) erro
 						P99:    ps[3],
 						P999:   ps[4],
 					}
-					_, err = e.rc.Histogram(ctx, &pb.HistogramReq{
+					_, err = e.rc.Histogram(ctx, &api.HistogramReq{
 						Base:      base,
 						Histogram: hv,
 					})
 				case metrics.Gauge:
-					_, err = e.rc.Gauge(ctx, &pb.GaugeReq{
+					_, err = e.rc.Gauge(ctx, &api.GaugeReq{
 						Base:  base,
 						Gauge: u.g.Value(),
 					})
@@ -284,7 +284,7 @@ func (e *Executor) Setup(groups []metrics.Group) error {
 
 	for _, group := range groups {
 		// create a new group if not existed
-		egroup, err := e.rc.FindCreateGroup(ctx, &pb.FCGroupReq{
+		egroup, err := e.rc.FindCreateGroup(ctx, &api.FCGroupReq{
 			AppID: int64(e.appID),
 			Name:  group.Name,
 		})
@@ -294,7 +294,7 @@ func (e *Executor) Setup(groups []metrics.Group) error {
 
 		for _, graph := range group.Graphs {
 			// create new graph if not existed
-			egraph, err := e.rc.FindCreateGraph(ctx, &pb.FCGraphReq{
+			egraph, err := e.rc.FindCreateGraph(ctx, &api.FCGraphReq{
 				AppID:   int64(e.appID),
 				Title:   graph.Title,
 				Unit:    graph.Unit,
@@ -306,7 +306,7 @@ func (e *Executor) Setup(groups []metrics.Group) error {
 
 			for _, m := range graph.Metrics {
 				// create new metric if not existed
-				emetric, err := e.rc.FindCreateMetric(ctx, &pb.FCMetricReq{
+				emetric, err := e.rc.FindCreateMetric(ctx, &api.FCMetricReq{
 					AppID:   int64(e.appID),
 					Title:   m.Title,
 					Type:    string(m.Type),

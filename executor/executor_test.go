@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/gobench-io/gobench/v2/executor/scenario"
+	api "github.com/gobench-io/gobench/v2/gen/go/pb"
 	"github.com/gobench-io/gobench/v2/logger"
-	"github.com/gobench-io/gobench/v2/pb"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -127,7 +127,7 @@ func TestStart(t *testing.T) {
 
 	ctx := context.TODO()
 
-	_, err = e.Start(ctx, &pb.StartRequest{
+	_, err = e.Start(ctx, &api.StartRequest{
 		AppID: int64(opts.AppID),
 	})
 
@@ -163,7 +163,7 @@ func TestCancel(t *testing.T) {
 	done := make(chan struct{}, 1)
 
 	go func() {
-		_, err = e.Start(ctx, &pb.StartRequest{
+		_, err = e.Start(ctx, &api.StartRequest{
 			AppID: int64(opts.AppID),
 		})
 		assert.EqualError(t, err, ErrAppCancel.Error())
