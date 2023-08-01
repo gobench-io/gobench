@@ -10,7 +10,7 @@ import (
 	entGroup "github.com/gobench-io/gobench/v2/ent/group"
 	entMetric "github.com/gobench-io/gobench/v2/ent/metric"
 	"github.com/gobench-io/gobench/v2/executor/metrics"
-	"github.com/gobench-io/gobench/v2/pb"
+	api "github.com/gobench-io/gobench/v2/gen/go/pb"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -28,7 +28,7 @@ func TestFindCreateGroup(t *testing.T) {
 
 	groupRes, err := m.FindCreateGroup(
 		ctx,
-		&pb.FCGroupReq{
+		&api.FCGroupReq{
 			Name:  groupName,
 			AppID: int64(m.job.app.ID),
 		},
@@ -50,7 +50,7 @@ func TestFindCreateGroup(t *testing.T) {
 	// call the same RPC, the result should be like before
 	groupRes2, err := m.FindCreateGroup(
 		ctx,
-		&pb.FCGroupReq{
+		&api.FCGroupReq{
 			Name:  groupName,
 			AppID: int64(m.job.app.ID),
 		},
@@ -70,13 +70,13 @@ func TestFindCreateGraph(t *testing.T) {
 	prefix := time.Now().String()
 	groupName := "HTTP (" + prefix + ")"
 
-	groupRes, err := m.FindCreateGroup(ctx, &pb.FCGroupReq{
+	groupRes, err := m.FindCreateGroup(ctx, &api.FCGroupReq{
 		Name:  groupName,
 		AppID: int64(m.job.app.ID),
 	})
 	assert.Nil(t, err)
 
-	graphReq := &pb.FCGraphReq{
+	graphReq := &api.FCGraphReq{
 		Title:   "HTTP Response",
 		Unit:    "N",
 		GroupID: int64(groupRes.Id),
@@ -115,14 +115,14 @@ func TestFindCreateMetric(t *testing.T) {
 	groupName := "HTTP (" + prefix + ")"
 
 	// create new group
-	groupRes, err := m.FindCreateGroup(ctx, &pb.FCGroupReq{
+	groupRes, err := m.FindCreateGroup(ctx, &api.FCGroupReq{
 		AppID: int64(m.job.app.ID),
 		Name:  groupName,
 	})
 	assert.Nil(t, err)
 
 	// create new graph
-	graphReq := &pb.FCGraphReq{
+	graphReq := &api.FCGraphReq{
 		AppID:   int64(m.job.app.ID),
 		Title:   "HTTP Response",
 		Unit:    "N",
@@ -132,7 +132,7 @@ func TestFindCreateMetric(t *testing.T) {
 	assert.Nil(t, err)
 
 	// create new metric
-	metricReq := &pb.FCMetricReq{
+	metricReq := &api.FCMetricReq{
 		AppID:   int64(m.job.app.ID),
 		Title:   ".http_ok",
 		Type:    string(metrics.Counter),

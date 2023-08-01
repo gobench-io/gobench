@@ -4,15 +4,14 @@ import (
 	"context"
 
 	"github.com/gobench-io/gobench/v2/ent"
-	"github.com/gobench-io/gobench/v2/pb"
-
 	entApp "github.com/gobench-io/gobench/v2/ent/application"
 	entGraph "github.com/gobench-io/gobench/v2/ent/graph"
 	entGroup "github.com/gobench-io/gobench/v2/ent/group"
 	entMetric "github.com/gobench-io/gobench/v2/ent/metric"
+	api "github.com/gobench-io/gobench/v2/gen/go/pb"
 )
 
-func (m *Master) Counter(ctx context.Context, req *pb.CounterReq) (*pb.CounterRes, error) {
+func (m *Master) Counter(ctx context.Context, req *api.CounterReq) (*api.CounterRes, error) {
 	// todo: check appID condition
 	_, err := m.db.Counter.Create().
 		SetWID(req.Base.EID).
@@ -24,12 +23,12 @@ func (m *Master) Counter(ctx context.Context, req *pb.CounterReq) (*pb.CounterRe
 		return nil, err
 	}
 
-	res := new(pb.CounterRes)
+	res := new(api.CounterRes)
 
 	return res, nil
 }
 
-func (m *Master) Histogram(ctx context.Context, req *pb.HistogramReq) (*pb.HistogramRes, error) {
+func (m *Master) Histogram(ctx context.Context, req *api.HistogramReq) (*api.HistogramRes, error) {
 	// todo: check appID condition
 	_, err := m.db.Histogram.Create().
 		SetWID(req.Base.EID).
@@ -50,12 +49,12 @@ func (m *Master) Histogram(ctx context.Context, req *pb.HistogramReq) (*pb.Histo
 		return nil, err
 	}
 
-	res := new(pb.HistogramRes)
+	res := new(api.HistogramRes)
 
 	return res, nil
 }
 
-func (m *Master) Gauge(ctx context.Context, req *pb.GaugeReq) (*pb.GaugeRes, error) {
+func (m *Master) Gauge(ctx context.Context, req *api.GaugeReq) (*api.GaugeRes, error) {
 	// todo: check appID condition
 	_, err := m.db.Gauge.Create().
 		SetWID(req.Base.EID).
@@ -67,16 +66,16 @@ func (m *Master) Gauge(ctx context.Context, req *pb.GaugeReq) (*pb.GaugeRes, err
 		return nil, err
 	}
 
-	res := new(pb.GaugeRes)
+	res := new(api.GaugeRes)
 
 	return res, nil
 }
 
 // FindCreateGroup find or create new group
 // return the existing/new group ent, is created, and error
-func (m *Master) FindCreateGroup(ctx context.Context, req *pb.FCGroupReq) (res *pb.FCGroupRes, err error) {
+func (m *Master) FindCreateGroup(ctx context.Context, req *api.FCGroupReq) (res *api.FCGroupRes, err error) {
 	var eg *ent.Group
-	res = new(pb.FCGroupRes)
+	res = new(api.FCGroupRes)
 
 	defer func() {
 		if err == nil {
@@ -112,9 +111,9 @@ func (m *Master) FindCreateGroup(ctx context.Context, req *pb.FCGroupReq) (res *
 	return
 }
 
-func (m *Master) FindCreateGraph(ctx context.Context, req *pb.FCGraphReq) (res *pb.FCGraphRes, err error) {
+func (m *Master) FindCreateGraph(ctx context.Context, req *api.FCGraphReq) (res *api.FCGraphRes, err error) {
 	var egraph *ent.Graph
-	res = new(pb.FCGraphRes)
+	res = new(api.FCGraphRes)
 
 	defer func() {
 		if err == nil {
@@ -149,9 +148,9 @@ func (m *Master) FindCreateGraph(ctx context.Context, req *pb.FCGraphReq) (res *
 	return
 }
 
-func (m *Master) FindCreateMetric(ctx context.Context, req *pb.FCMetricReq) (res *pb.FCMetricRes, err error) {
+func (m *Master) FindCreateMetric(ctx context.Context, req *api.FCMetricReq) (res *api.FCMetricRes, err error) {
 	var emetric *ent.Metric
-	res = new(pb.FCMetricRes)
+	res = new(api.FCMetricRes)
 
 	defer func() {
 		if err == nil {
