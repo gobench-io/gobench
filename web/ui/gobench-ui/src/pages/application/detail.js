@@ -7,14 +7,17 @@ import Dashboard from './dashboard'
 import Scenario from './scenario'
 import { statusColors } from 'utils/status'
 import { INTERVAL } from 'constant'
-import moment from 'moment'
 import 'css/index.css'
 import './style.scss'
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc'
+import duration from 'dayjs/plugin/duration'
+dayjs.extend(utc)
+dayjs.extend(duration)
 
 const UserLog = lazy(() => import('./user-log'))
 const SystemLog = lazy(() => import('./system-log'))
 const Tags = lazy(() => import('./tags'))
-const { TabPane } = Tabs
 
 const mapStateToProps = ({ application, dispatch }) => {
   const { detail } = application
@@ -22,21 +25,21 @@ const mapStateToProps = ({ application, dispatch }) => {
 }
 const DefaultPage = ({ detail, dispatch }) => {
   const [fetching, setFetching] = useState(false)
-  const [tab, setTab] = useState('1')
+  const [tab, setTab] = useState(1)
   const history = useHistory()
   const { id } = useParams()
   const { name, created_at: created, status, started_at: startedAt, updated_at: finishedAt } = detail
-  const start = moment(startedAt).utc()
-  let end = moment(finishedAt).utc()
+  const start = dayjs(startedAt).utc()
+  let end = dayjs(finishedAt).utc()
   if (status === 'running') {
-    end = moment.utc()
+    end = dayjs().utc()
   }
   if (['pending', 'error', 'provisioning'].includes(status)) {
     end = start
   }
   const diff = startedAt ? end.diff(start) : 0
   // execution
-  const duration = moment.utc(diff).format('HH:mm:ss.SSS')
+  const duration = dayjs.duration(diff).format('HH:mm:ss.SSS')
   useEffect(() => {
     if (!fetching) {
       dispatch({
@@ -93,20 +96,20 @@ const DefaultPage = ({ detail, dispatch }) => {
                     {(status || '').toUpperCase()}
                   </Tag>
                 </div>
-                <div className='text-muted'>Created: <strong>{moment(created).utc().format()} UTC</strong></div>
+                <div className='text-muted'>Created: <strong>{dayjs(created).utc().format()} UTC</strong></div>
                 <div className='text-muted'>Started: <strong>{start.format()} UTC</strong></div>
                 <div className='text-muted'>Ended: <strong>{['pending', 'error', 'provisioning', 'running'].includes(status) ? <i>not finish yet</i> : `${end.format()} UTC`}</strong></div>
                 <div className='text-muted'>Duration: <strong>{duration}</strong></div>
               </div>
               <div className='col-md-6'>
-                <div className='text-right'>
+                <div className='text-end'>
                   <div style={{ float: 'right' }} key={detail.id}>
                     <Button
                       style={{ marginLeft: 5 }}
                       type='default'
                       onClick={() => clone(detail)}
                     >
-              Clone
+                      Clone
                     </Button>
                     {['running', 'pending'].includes(detail.status) && (
                       <Popconfirm
@@ -120,7 +123,7 @@ const DefaultPage = ({ detail, dispatch }) => {
                           style={{ marginLeft: 5 }}
                           danger
                         >
-                  Cancel
+                          Cancel
                         </Button>
                       </Popconfirm>
                     )}
@@ -137,7 +140,7 @@ const DefaultPage = ({ detail, dispatch }) => {
                           style={{ marginLeft: 5, color: 'white', backgroundColor: '#f5222d!important' }}
                           danger
                         >
-                  Delete
+                          Delete
                         </Button>
                       </Popconfirm>
                     )}
@@ -162,19 +165,12 @@ const DefaultPage = ({ detail, dispatch }) => {
                 </div>
               </div>
             </div>
-            <Tabs defaultActiveKey='1' size='large' onChange={onChange}>
-              <TabPane tab='Dashboard' key='1'>
-                {tab === '1' && <Dashboard />}
-              </TabPane>
-              <TabPane tab='Scenario' key='2'>
-                {tab === '2' && <Scenario />}
-              </TabPane>
-              <TabPane tab='User Log' key='3'>
-                {tab === '3' && <UserLog />}
-              </TabPane>
-              <TabPane tab='System Log' key='4'>
-                {tab === '4' && <SystemLog />}
-              </TabPane>
+            <Tabs activeKey={tab} defaultActiveKey='1' size='large' onTabClick={onChange} items={[
+              { key: 1, label: 'Dashboard', children: <Dashboard />, forceRender: true },
+              { key: 2, label: 'Scenario', children: <Scenario /> },
+              { key: 3, label: 'User Log', children: <UserLog /> },
+              { key: 4, label: 'System Log', children: <SystemLog /> }
+            ]}>
             </Tabs>
           </div>
         </div>

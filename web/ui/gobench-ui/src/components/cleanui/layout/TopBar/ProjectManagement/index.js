@@ -26,7 +26,7 @@ const ProjectManagement = () => {
       <Menu.Divider />
       <Menu.Item>
         <Link to="/">
-          <i className="fe fe-settings mr-2" /> Settings
+          <i className="fe fe-settings me-2" /> Settings
         </Link>
       </Menu.Item>
     </Menu>

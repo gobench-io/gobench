@@ -20,7 +20,7 @@ const SupportChat = ({ settings: { isSupportChatOpen }, dispatch }) => {
   return (
     <div className={style.chat}>
       <button onClick={toggleSupportChat} type="button" className={style.toggleButton}>
-        <i className={`${style.icon} fe fe-message-square mr-md-2`} />
+        <i className={`${style.icon} fe fe-message-square me-md-2`} />
         <span className="d-none d-md-inline">Support Chat</span>
       </button>
       <div
@@ -29,7 +29,7 @@ const SupportChat = ({ settings: { isSupportChatOpen }, dispatch }) => {
         })}
       >
         <div className="d-flex flex-wrap mb-2">
-          <div className="text-dark font-size-18 font-weight-bold mr-auto">Support Chat</div>
+          <div className="text-dark font-size-18 font-weight-bold me-auto">Support Chat</div>
           <button onClick={toggleSupportChat} type="button" className="btn btn-link p-0 border-0">
             <i className="fe fe-x-square font-size-21 align-middle text-gray-6" />
           </button>

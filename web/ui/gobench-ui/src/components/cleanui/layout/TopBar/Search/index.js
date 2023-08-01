@@ -48,7 +48,7 @@ const Search = ({ intl: { formatMessage } }) => {
   }
 
   return (
-    <div className="d-inline-block mr-4">
+    <div className="d-inline-block me-4">
       <Input
         className={style.extInput}
         placeholder={formatMessage({ id: 'topBar.typeToSearch' })}
@@ -57,9 +57,8 @@ const Search = ({ intl: { formatMessage } }) => {
         onFocus={showLiveSearch}
       />
       <div
-        className={`${
-          showSearch ? `${style.livesearch} ${style.livesearchVisible}` : style.livesearch
-        }`}
+        className={`${showSearch ? `${style.livesearch} ${style.livesearchVisible}` : style.livesearch
+          }`}
         id="livesearch"
       >
         <button className={style.close} type="button" onClick={hideLiveSearch}>

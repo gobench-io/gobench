@@ -5,8 +5,12 @@ import { connect } from 'react-redux'
 import { withRouter, Link, useHistory } from 'react-router-dom'
 import { statusColors, formatTag } from 'utils/status'
 import { RetweetOutlined } from '@ant-design/icons'
-import moment from 'moment'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import duration from 'dayjs/plugin/duration'
 import './style.scss'
+dayjs.extend(utc)
+dayjs.extend(duration)
 
 const { Search } = Input
 const mapStateToProps = ({ application, dispatch }) => {
@@ -75,7 +79,7 @@ const DefaultPage = ({ list, loading, total, dispatch }) => {
       key: 'started_at',
       sorter: (a, b) => a.name.length - b.name.length,
       render: x => {
-        return moment(x).utc().format()
+        return dayjs(x).utc().format()
       }
     },
     {
@@ -84,18 +88,18 @@ const DefaultPage = ({ list, loading, total, dispatch }) => {
       key: 'duration',
       render: (x, item) => {
         const { started_at: startedAt, updated_at: updated } = item
-        const start = moment(startedAt).utc()
+        const start = dayjs(startedAt).utc()
         if (['provisioning', 'pending', 'error'].includes(item.status)) {
           return <span />
         }
         if (['finished', 'cancel'].includes(item.status)) {
-          const end = moment(updated).utc()
+          const end = dayjs(updated).utc()
           const diff = end.diff(start)
-          const duration = moment.utc(diff).format('HH:mm:ss.SSS')
+          const duration = dayjs.duration(diff).format('HH:mm:ss.SSS')
           return <span>{duration}</span>
         }
-        const diff = moment.utc().diff(start)
-        const duration = moment.utc(diff).format('HH:mm:ss.SSS')
+        const diff = dayjs().utc().diff(start)
+        const duration = dayjs.duration(diff).format('HH:mm:ss.SSS')
         return <span>{duration}</span>
       }
     },
@@ -210,7 +214,7 @@ const DefaultPage = ({ list, loading, total, dispatch }) => {
               <div className='text-muted'>A distributed benchmark tool with Golang</div>
             </div>
             <div className='col-md-6'>
-              <div className='text-right'>
+              <div className='text-end'>
                 <Tooltip title='Refresh'>
                   <Button
                     icon={<RetweetOutlined />}

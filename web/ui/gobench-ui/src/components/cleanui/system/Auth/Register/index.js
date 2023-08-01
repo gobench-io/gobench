@@ -66,7 +66,7 @@ const Register = ({ dispatch, user }) => {
           </Button>
         </Form>
         <div>
-          <span className="mr-1">By signing up, you agree to the</span>
+          <span className="me-1">By signing up, you agree to the</span>
           <a href="#" onClick={e => e.preventDefault()} className="kit__utils__link">
             Terms of Service
           </a>{' '}
@@ -77,7 +77,7 @@ const Register = ({ dispatch, user }) => {
         </div>
       </div>
       <div className="text-center pt-2 mb-auto">
-        <span className="mr-2">Already have an account?</span>
+        <span className="me-2">Already have an account?</span>
         <Link to="/auth/login" className="kit__utils__link font-size-16">
           Sign in
         </Link>

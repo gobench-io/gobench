@@ -29,7 +29,6 @@ export const getChartData = (type, data) => isArray(data) ? data.map(m => ({
  */
 export const hDataKeys = ['min', 'mean', 'p99', 'max']
 export const makeHistogramSeriesData = (data) => {
-  console.log('makeHis', data)
   let hData = hDataKeys.reduce((acc, key) => ({
     ...acc,
     [key]: []

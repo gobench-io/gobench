@@ -60,14 +60,14 @@ const MenuTop = ({
               <a href={url} target={item.target} rel="noopener noreferrer">
                 {icon && <span className={`${icon} ${style.icon}`} />}
                 <span className={style.title}>{title}</span>
-                {count && <span className="badge badge-success ml-2">{count}</span>}
+                {count && <span className="badge badge-success ms-2">{count}</span>}
               </a>
             )}
             {!item.target && (
               <Link to={url}>
                 {icon && <span className={`${icon} ${style.icon}`} />}
                 <span className={style.title}>{title}</span>
-                {count && <span className="badge badge-success ml-2">{count}</span>}
+                {count && <span className="badge badge-success ms-2">{count}</span>}
               </Link>
             )}
           </Menu.Item>
@@ -77,7 +77,7 @@ const MenuTop = ({
         <Menu.Item key={key} disabled={disabled}>
           {icon && <span className={`${icon} ${style.icon}`} />}
           <span className={style.title}>{title}</span>
-          {count && <span className="badge badge-success ml-2">{count}</span>}
+          {count && <span className="badge badge-success ms-2">{count}</span>}
         </Menu.Item>
       )
     }
@@ -88,7 +88,7 @@ const MenuTop = ({
             <span key={menuItem.key}>
               {menuItem.icon && <span className={`${menuItem.icon} ${style.icon}`} />}
               <span className={style.title}>{menuItem.title}</span>
-              {menuItem.count && <span className="badge badge-success ml-2">{menuItem.count}</span>}
+              {menuItem.count && <span className="badge badge-success ms-2">{menuItem.count}</span>}
             </span>
           )
           return (
@@ -108,7 +108,7 @@ const MenuTop = ({
           <span key={menuItem.key}>
             {menuItem.icon && <span className={`${menuItem.icon} ${style.icon}`} />}
             <span className={style.title}>{menuItem.title}</span>
-            {menuItem.count && <span className="badge badge-success ml-2">{menuItem.count}</span>}
+            {menuItem.count && <span className="badge badge-success ms-2">{menuItem.count}</span>}
           </span>
         )
         return (
@@ -131,7 +131,7 @@ const MenuTop = ({
     >
       <div className={style.logoContainer}>
         <div className={style.logo}>
-          <img src="resources/images/logo.svg" className="mr-2" />
+          <img src="resources/images/logo.svg" className="me-2" />
           <div className={style.name}>{logo}</div>
         </div>
       </div>

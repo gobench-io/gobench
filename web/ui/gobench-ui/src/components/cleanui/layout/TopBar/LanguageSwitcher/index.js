@@ -21,19 +21,19 @@ const LanguageSwitcher = ({ dispatch, locale }) => {
   const menu = (
     <Menu selectedKeys={[locale]} onClick={changeLanguage}>
       <Menu.Item key="en-US">
-        <span className="text-uppercase font-size-12 mr-2">EN</span>
+        <span className="text-uppercase font-size-12 me-2">EN</span>
         English
       </Menu.Item>
       <Menu.Item key="fr-FR">
-        <span className="text-uppercase font-size-12 mr-2">FR</span>
+        <span className="text-uppercase font-size-12 me-2">FR</span>
         French
       </Menu.Item>
       <Menu.Item key="ru-RU">
-        <span className="text-uppercase font-size-12 mr-2">RU</span>
+        <span className="text-uppercase font-size-12 me-2">RU</span>
         Русский
       </Menu.Item>
       <Menu.Item key="zh-CN">
-        <span className="text-uppercase font-size-12 mr-2">CN</span>
+        <span className="text-uppercase font-size-12 me-2">CN</span>
         简体中文
       </Menu.Item>
     </Menu>

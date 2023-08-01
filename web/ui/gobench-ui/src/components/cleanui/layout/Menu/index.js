@@ -73,7 +73,7 @@ const Menu = ({ dispatch, isMobileMenuOpen, isMobileView, menuLayoutType, leftMe
           </div>
           <Drawer
             closable={false}
-            visible={isMobileMenuOpen}
+            open={isMobileMenuOpen}
             placement="left"
             className={style.mobileMenu}
             onClose={toggleMobileMenu}
