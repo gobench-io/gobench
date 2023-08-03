@@ -49,7 +49,7 @@ const AuthLayout = ({
           >
             <div className={style.logoContainer}>
               <div className={style.logo}>
-                <img src='resources/images/logo.svg' className='mr-2' alt='Gobench' />
+                <img src='resources/images/logo.svg' className='me-2' alt='Gobench' />
                 <div className={style.name}>{logo}</div>
               </div>
             </div>

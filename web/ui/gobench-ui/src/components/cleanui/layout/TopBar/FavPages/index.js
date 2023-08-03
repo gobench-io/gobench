@@ -90,7 +90,7 @@ const FavPages = ({ menuData = [], intl: { formatMessage } }) => {
             <i className="fe fe-star" />
           </div>
           <span>
-            <i className={`mr-2 fe ${item.icon}`} />
+            <i className={`me-2 fe ${item.icon}`} />
             {item.title}
           </span>
         </Link>
@@ -124,14 +124,14 @@ const FavPages = ({ menuData = [], intl: { formatMessage } }) => {
       {favs.map(item => {
         return (
           <Tooltip key={item.key} placement="bottom" title={item.title}>
-            <Link to={item.url} className={`${style.item} mr-3`}>
+            <Link to={item.url} className={`${style.item} me-3`}>
               <i className={`${style.icon} fe ${item.icon}`} />
             </Link>
           </Tooltip>
         )
       })}
       <Tooltip placement="bottom" title="Bookmarks">
-        <Dropdown overlay={menu} trigger={['click']} placement="bottomLeft">
+        <Dropdown menu={menu} trigger={['click']} placement="bottomLeft">
           <span className={style.item}>
             <i className={`${style.icon} fe fe-star`} />
           </span>

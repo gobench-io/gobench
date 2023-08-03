@@ -26,13 +26,13 @@ const ProjectManagement = () => {
       <Menu.Divider />
       <Menu.Item>
         <Link to="/">
-          <i className="fe fe-settings mr-2" /> Settings
+          <i className="fe fe-settings me-2" /> Settings
         </Link>
       </Menu.Item>
     </Menu>
   )
   return (
-    <Dropdown overlay={menu} trigger={['click']} placement="bottomLeft">
+    <Dropdown menu={menu} trigger={['click']} placement="bottomLeft">
       <div className={styles.dropdown}>
         <i className={`${styles.icon} fe fe-database`} />
         <span className="d-none d-xl-inline">

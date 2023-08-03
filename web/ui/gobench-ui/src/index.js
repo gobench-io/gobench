@@ -1,10 +1,11 @@
-import 'antd/lib/style/index.less' // antd core styles
-import './components/kit/vendors/antd/themes/default.less' // default theme antd components
-import './components/kit/vendors/antd/themes/dark.less' // dark theme antd components
-import './global.scss' // app & third-party component styles
+
+// Bootstrap CSS 
+import 'bootstrap/dist/css/bootstrap.min.css'
+import 'antd/dist/reset.css'
+import './global.scss' // app & third-party component styles 
 
 import React from 'react'
-import ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client'
 import { createHashHistory } from 'history'
 import { createStore, applyMiddleware, compose } from 'redux'
 import { Provider } from 'react-redux'
@@ -18,9 +19,7 @@ import Localization from './localization'
 import Router from './router'
 import * as serviceWorker from './serviceWorker'
 import './polifill'
-
-// mocking api
-import 'services/axios/fakeApi'
+import { ConfigProvider } from 'antd'
 
 // middlewared
 const history = createHashHistory()
@@ -35,13 +34,26 @@ const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose
 const store = createStore(reducers(history), composeEnhancers(applyMiddleware(...middlewares)))
 sagaMiddleware.run(sagas)
 
-ReactDOM.render(
-  <Provider store={store}>
-    <Localization>
-      <Router history={history} />
-    </Localization>
-  </Provider>,
+const root = createRoot(
   document.getElementById('root')
+)
+
+root.render(
+  <ConfigProvider
+    theme={{
+      token: {
+        colorPrimary: '#1677ff',
+        borderRadius: 2,
+        fontFamily: 'Mukta'
+      },
+    }}
+  >
+    <Provider store={store}>
+      <Localization>
+        <Router history={history} />
+      </Localization>
+    </Provider>
+  </ConfigProvider>
 )
 
 // If you want your app to work offline and load faster, you can change

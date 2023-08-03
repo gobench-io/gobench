@@ -16,10 +16,12 @@ const DefaultPage = ({ tags, dispatch }) => {
   const [newTag, setNewTag] = useState('')
 
   useEffect(() => {
-    dispatch({
-      type: 'application/TAGS',
-      payload: { id }
-    })
+    if (id) {
+      dispatch({
+        type: 'application/TAGS',
+        payload: { id }
+      })
+    }
   }, [id])
 
   const removeTag = tagId => {

@@ -1,8 +1,3 @@
-@import '~bootstrap/dist/css/bootstrap.min.css';
-@import '~react-perfect-scrollbar/dist/css/styles.css';
-@import '~c3/c3.min.css';
-@import '~react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
-
 @import 'components/kit/vendors/antd/style';
 @import 'components/kit/vendors/bootstrap/style';
 @import 'components/kit/vendors/perfect-scrollbar/style';
@@ -16,7 +11,7 @@
 @import 'components/kit/core/style'; //  KIT styles
 @import 'components/cleanui/styles/style'; //  styles
 
-.delete-button{
-    background-color:#fa773c !important;
+.delete-button {
+    background-color: #fa773c !important;
     border-color: #fa773c !important;
 }

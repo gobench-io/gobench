@@ -36,7 +36,7 @@ const ForgotPassword = () => {
           </Button>
         </Form>
         <Link to="/auth/login" className="kit__utils__link font-size-16">
-          <i className="fe fe-arrow-left mr-1 align-middle" />
+          <i className="fe fe-arrow-left me-1 align-middle" />
           Go to Sign in
         </Link>
       </div>

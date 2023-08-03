@@ -91,14 +91,14 @@ const MenuLeft = ({
             {item.target && (
               <a href={url} target={item.target} rel="noopener noreferrer">
                 <span className={style.title}>{title}</span>
-                {count && <span className="badge badge-success ml-2">{count}</span>}
+                {count && <span className="badge badge-success ms-2">{count}</span>}
                 {icon && <span className={`${icon} ${style.icon} icon-collapsed-hidden`} />}
               </a>
             )}
             {!item.target && (
               <Link to={url}>
                 <span className={style.title}>{title}</span>
-                {count && <span className="badge badge-success ml-2">{count}</span>}
+                {count && <span className="badge badge-success ms-2">{count}</span>}
                 {icon && <span className={`${icon} ${style.icon} icon-collapsed-hidden`} />}
               </Link>
             )}
@@ -108,7 +108,7 @@ const MenuLeft = ({
       return (
         <Menu.Item key={key} disabled={disabled}>
           <span className={style.title}>{title}</span>
-          {count && <span className="badge badge-success ml-2">{count}</span>}
+          {count && <span className="badge badge-success ms-2">{count}</span>}
           {icon && <span className={`${icon} ${style.icon} icon-collapsed-hidden`} />}
         </Menu.Item>
       )
@@ -120,7 +120,7 @@ const MenuLeft = ({
           const subMenuTitle = (
             <span key={menuItem.key}>
               <span className={style.title}>{menuItem.title}</span>
-              {menuItem.count && <span className="badge badge-success ml-2">{menuItem.count}</span>}
+              {menuItem.count && <span className="badge badge-success ms-2">{menuItem.count}</span>}
               {menuItem.icon && <span className={`${menuItem.icon} ${style.icon}`} />}
             </span>
           )
@@ -141,7 +141,7 @@ const MenuLeft = ({
         const subMenuTitle = (
           <span key={menuItem.key}>
             <span className={style.title}>{menuItem.title}</span>
-            {menuItem.count && <span className="badge badge-success ml-2">{menuItem.count}</span>}
+            {menuItem.count && <span className="badge badge-success ms-2">{menuItem.count}</span>}
             {menuItem.icon && <span className={`${menuItem.icon} ${style.icon}`} />}
           </span>
         )
@@ -157,18 +157,18 @@ const MenuLeft = ({
 
   const menuSettings = isMobileView
     ? {
-        width: leftMenuWidth,
-        collapsible: false,
-        collapsed: false,
-        onCollapse,
-      }
+      width: leftMenuWidth,
+      collapsible: false,
+      collapsed: false,
+      onCollapse,
+    }
     : {
-        width: leftMenuWidth,
-        collapsible: true,
-        collapsed: isMenuCollapsed,
-        onCollapse,
-        breakpoint: 'lg',
-      }
+      width: leftMenuWidth,
+      collapsible: true,
+      collapsed: isMenuCollapsed,
+      onCollapse,
+      breakpoint: 'lg',
+    }
 
   return (
     <Layout.Sider
@@ -190,7 +190,7 @@ const MenuLeft = ({
       >
         <div className={style.logoContainer}>
           <div className={style.logo}>
-            <img src="resources/images/logo.svg" className="mr-2" alt="gobench" />
+            <img src="resources/images/logo.svg" className="me-2" alt="gobench" />
             <div className={style.name}>{logo}</div>
           </div>
         </div>

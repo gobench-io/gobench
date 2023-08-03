@@ -93,7 +93,7 @@ const DefaultPage = ({ loading, clone, dispatch }) => {
                 <div className='text-muted'>Tips: You can clone another application and run again!</div>
               </div>
               <div className='col-md-6'>
-                <div className='text-right'>
+                <div className='text-end'>
                   <Button
                     type='primary'
                     size='large'
@@ -114,85 +114,79 @@ const DefaultPage = ({ loading, clone, dispatch }) => {
               </div>
             </div>
             <div className='card-body'>
-
               <Item
                 name='name'
+                label={<h4 className='mb-2'>
+                  <strong>Application Name</strong>
+                </h4>}
                 rules={[{ required: true, message: 'Application name is required' }]}
               >
-                <h4 className='mb-2'>
-                  <strong>Application Name</strong>
-                </h4>
                 <Input value={name} onChange={e => onChange('name', e.target.value)} placeholder='Please input the application name.' />
               </Item>
               <Item
                 name='scenario'
+                label={
+                  <h4 className='mb-2'>
+                    <strong>Scenario</strong>
+                  </h4>}
                 rules={[{ required: true, message: 'Scenario is required' }]}
               >
-                <h4 className='mb-2'>
-                  <strong>Scenario</strong>
-                </h4>
-                <div className='editor-container'>
-                  <Editor
-                    value={scenario}
-                    onValueChange={c => onChange('scenario', c)}
-                    highlight={code => highlight((code || ''), languages.go, 'go')}
-                    padding={16}
-                    tabSize={4}
-                    insertSpaces
-                    className='editor'
-                    autoFocus
-                    style={{
-                      fontFamily: '"Arial", "Open Sans", monospace',
-                      fontSize: 14
-                    }}
-                  />
-                </div>
+                <Editor
+                  value={scenario}
+                  onValueChange={c => onChange('scenario', c)}
+                  highlight={code => highlight((code || ''), languages.go, 'go')}
+                  padding={16}
+                  tabSize={4}
+                  insertSpaces
+                  className='editor editor-container'
+                  autoFocus
+                  style={{
+                    fontFamily: '"Arial", "Open Sans", monospace',
+                    fontSize: 14
+                  }}
+                />
               </Item>
               <Item
                 name='gomod'
+                label={<h4 className='mb-2'>
+                  <strong>gomod</strong>
+                </h4>}
                 rules={[{ required: false }]}
               >
-                <h4 className='mb-2'>
-                  <strong>gomod</strong>
-                </h4>
-                <div className='editor-container'>
-                  <Editor
-                    value={gomod}
-                    onValueChange={c => onChange('gomod', c)}
-                    highlight={code => highlight((code || ''), languages.go, 'go')}
-                    padding={16}
-                    tabSize={4}
-                    insertSpaces
-                    className='editor'
-                    style={{
-                      fontFamily: '"Arial", "Open Sans", monospace',
-                      fontSize: 14
-                    }}
-                  />
-                </div>
+                <Editor
+                  value={gomod}
+                  onValueChange={c => onChange('gomod', c)}
+                  highlight={code => highlight((code || ''), languages.go, 'go')}
+                  padding={16}
+                  tabSize={4}
+                  insertSpaces
+                  className='editor editor-container'
+                  style={{
+                    fontFamily: '"Arial", "Open Sans", monospace',
+                    fontSize: 14
+                  }}
+                />
               </Item>
               <Item
                 name='gosum'
+                label={<h4 className='mb-2'>
+                  <strong>gosum</strong>
+                </h4>}
                 rules={[{ required: false }]}
               >
-                <h4 className='mb-2'>
-                  <strong>gosum</strong>
-                </h4>
-                <div className='editor-container'>
-                  <Editor
-                    value={gosum}
-                    onValueChange={c => onChange('gosum', c)}
-                    highlight={code => highlight((code || ''), languages.go, 'go')}
-                    padding={16}
-                    tabSize={4}
-                    insertSpaces
-                    className='editor'
-                    style={{
-                      fontFamily: '"Arial", "Open Sans", monospace',
-                      fontSize: 14
-                    }}
-                  />
-                </div>
+                <Editor
+                  value={gosum}
+                  onValueChange={c => onChange('gosum', c)}
+                  highlight={code => highlight((code || ''), languages.go, 'go')}
+                  padding={16}
+                  tabSize={4}
+                  insertSpaces
+                  className='editor editor-container'
+                  style={{
+                    fontFamily: '"Arial", "Open Sans", monospace',
+                    fontSize: 14
+                  }}
+                />
               </Item>
             </div>
           </Form>

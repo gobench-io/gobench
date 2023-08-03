@@ -37,7 +37,7 @@ const General15 = () => {
               <div>Few seconds ago</div>
             </div>
             <div className="nav-item dropdown">
-              <Dropdown overlay={dropdownMenu} placement="bottomRight">
+              <Dropdown menu={dropdownMenu} placement="bottomRight">
                 <a className="nav-link dropdown-toggle pt-sm-0">Actions</a>
               </Dropdown>
             </div>
@@ -69,7 +69,7 @@ const General15 = () => {
                   <div>Few seconds ago</div>
                 </div>
                 <div className="nav-item dropdown">
-                  <Dropdown overlay={dropdownMenu} placement="bottomRight">
+                  <Dropdown menu={dropdownMenu} placement="bottomRight">
                     <a className="nav-link dropdown-toggle pt-sm-0">Actions</a>
                   </Dropdown>
                 </div>
@@ -103,7 +103,7 @@ const General15 = () => {
                   <div>Few seconds ago</div>
                 </div>
                 <div className="nav-item dropdown">
-                  <Dropdown overlay={dropdownMenu} placement="bottomRight">
+                  <Dropdown menu={dropdownMenu} placement="bottomRight">
                     <a className="nav-link dropdown-toggle pt-sm-0">Actions</a>
                   </Dropdown>
                 </div>
