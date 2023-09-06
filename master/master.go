@@ -15,6 +15,7 @@ import (
 	"sync"
 	"time"
 
+	"entgo.io/ent/dialect"
 	"github.com/gobench-io/gobench/v2/agent"
 	"github.com/gobench-io/gobench/v2/ent"
 	"github.com/gobench-io/gobench/v2/ent/application"
@@ -363,7 +364,11 @@ func (m *Master) setupDb() error {
 	if err != nil {
 		return fmt.Errorf("failed opening sqlite3 connection: %v", err)
 	}
-	client := ent.NewClient(ent.Driver(drv))
+
+	client, err := ent.Open(dialect.SQLite, "file:ent?mode=memory&cache=shared&_fk=1")
+    if err != nil {
+        return fmt.Errorf("failed creating ent client: %v", err)
+    }
 
 	if err = client.Schema.Create(context.Background()); err != nil {
 		return fmt.Errorf("failed creating schema resources: %v", err)
