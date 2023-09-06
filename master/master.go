@@ -365,10 +365,10 @@ func (m *Master) setupDb() error {
 		return fmt.Errorf("failed opening sqlite3 connection: %v", err)
 	}
 
-	client, err := ent.Open(dialect.SQLite, "file:ent?mode=memory&cache=shared&_fk=1")
-    if err != nil {
-        return fmt.Errorf("failed creating ent client: %v", err)
-    }
+	client, err := ent.Open(dialect.SQLite, m.dbFilename+"?mode=rwc&cache=shared&&_busy_timeout=9999999&_fk=1")
+	if err != nil {
+		return fmt.Errorf("failed creating ent client: %v", err)
+	}
 
 	if err = client.Schema.Create(context.Background()); err != nil {
 		return fmt.Errorf("failed creating schema resources: %v", err)
