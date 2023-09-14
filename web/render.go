@@ -99,7 +99,6 @@ func (a *applicationRequest) Bind(r *http.Request) (err error) {
 
 type applicationResponse struct {
 	*ent.Application
-	Edges *struct{} `json:"edges,omitempty"`
 }
 
 type countApplicationResponse struct {
@@ -123,7 +122,6 @@ func newCountApplicationResponse(count int) *countApplicationResponse {
 func newApplicationResponse(a *ent.Application) *applicationResponse {
 	return &applicationResponse{
 		a,
-		nil,
 	}
 }
 
