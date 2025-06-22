@@ -11,5 +11,17 @@ export default history =>
     user,
     menu,
     settings,
-    application
+    application,
+    system: (state = {}, action) => {
+      switch (action.type) {
+        case 'system/API_CALL_FAILURE':
+          window.location.href = '#/auth/login'
+          return state
+        case 'system/API_ERROR':
+          console.log('TODO: handle error')
+          return state
+        default:
+          return state
+      }
+    }
   })

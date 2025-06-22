@@ -10,14 +10,23 @@ import {
   logs, addTag, removeTag, getTags
 } from 'services/application'
 
-export function * LIST ({ payload }) {
+export function* LIST({ payload }) {
+  console.log('LIST')
   let { keyword, limit, offset, sorter, order, isAsc } = payload
   if (sorter && sorter.field) {
     order = sorter.field
     isAsc = sorter.order === 'ascend'
   }
   yield loading(true)
-  const response = yield call(list, limit, offset, order, isAsc, keyword)
+  let response
+  try {
+    response = yield call(list, limit, offset, order, isAsc, keyword)
+  } catch (error) {
+    yield put({
+      type: 'system/API_CALL_FAILURE',
+      payload: error
+    })
+  }
   if (response) {
     yield put({
       type: 'application/SET_STATE',
@@ -26,7 +35,7 @@ export function * LIST ({ payload }) {
   }
   yield loading(false)
 }
-export function * DETAIL ({ payload }) {
+export function* DETAIL({ payload }) {
   const { id } = payload
   yield loading(true)
   const response = yield call(detail, id)
@@ -40,7 +49,7 @@ export function * DETAIL ({ payload }) {
   }
   yield loading(false)
 }
-export function * CREATE ({ payload }) {
+export function* CREATE({ payload }) {
   const { name, scenario, gomod, gosum } = payload
   yield loading(true)
   const response = yield call(create, {
@@ -72,7 +81,7 @@ export function * CREATE ({ payload }) {
 
   yield loading(false)
 }
-export function * CLONE ({ payload }) {
+export function* CLONE({ payload }) {
   const { data } = payload
   yield put({
     type: 'application/SET_STATE',
@@ -82,7 +91,7 @@ export function * CLONE ({ payload }) {
   })
   history.push('/applications/create')
 }
-export function * UPDATE ({ payload }) {
+export function* UPDATE({ payload }) {
   const { id, data } = payload
   yield loading(true)
   const response = yield call(update, id, data)
@@ -100,7 +109,7 @@ export function * UPDATE ({ payload }) {
   })
   yield loading(false)
 }
-export function * CANCEL ({ payload }) {
+export function* CANCEL({ payload }) {
   const { id, data } = payload
   const state = yield select()
   const { list } = state.application
@@ -126,7 +135,7 @@ export function * CANCEL ({ payload }) {
   }
   yield loading(false)
 }
-export function * DELETE ({ payload }) {
+export function* DELETE({ payload }) {
   const { id, redirect } = payload
   const state = yield select()
   const { list, total } = state.application
@@ -146,7 +155,7 @@ export function * DELETE ({ payload }) {
   }
   yield loading(false)
 }
-export function * GROUPS ({ payload }) {
+export function* GROUPS({ payload }) {
   const { id } = payload
 
   yield loading(true)
@@ -162,7 +171,7 @@ export function * GROUPS ({ payload }) {
   yield loading(false)
 }
 
-export function * COUNTERS ({ payload }) {
+export function* COUNTERS({ payload }) {
   const { id, from, end } = payload
   yield loading(true)
   const response = yield call(getCounters, id, from, end)
@@ -176,7 +185,7 @@ export function * COUNTERS ({ payload }) {
   }
   yield loading(false)
 }
-export function * HISTOGRAMS ({ payload }) {
+export function* HISTOGRAMS({ payload }) {
   const { id, from, end } = payload
   yield loading(true)
   const response = yield call(getHistograms, id, from, end)
@@ -190,7 +199,7 @@ export function * HISTOGRAMS ({ payload }) {
   }
   yield loading(false)
 }
-export function * GAUGES ({ payload }) {
+export function* GAUGES({ payload }) {
   const { id, from, end } = payload
   yield loading(true)
   const response = yield call(getGauges, id, from, end)
@@ -204,7 +213,7 @@ export function * GAUGES ({ payload }) {
   }
   yield loading(false)
 }
-export function * METRICS ({ payload }) {
+export function* METRICS({ payload }) {
   const { id, from, end } = payload
   yield loading(true)
   const response = yield call(getMetrics, id, from, end)
@@ -218,7 +227,7 @@ export function * METRICS ({ payload }) {
   }
   yield loading(false)
 }
-export function * METRIC_DATA ({ payload }) {
+export function* METRIC_DATA({ payload }) {
   const { id, type, fromTime, toTime } = payload
   yield loading(true)
   const response = yield call(getMetricData, id, type, fromTime, toTime)
@@ -232,7 +241,7 @@ export function * METRIC_DATA ({ payload }) {
   }
   yield loading(false)
 }
-export function * GRAPHS ({ payload }) {
+export function* GRAPHS({ payload }) {
   const { id } = payload
   yield loading(true)
   const response = yield call(getGraphs, id)
@@ -266,7 +275,7 @@ export function * GRAPH_METRICS ({ payload }) {
   }
   yield loading(false)
 }
-export function * GRAPH_METRIC_DATA ({ payload }) {
+export function* GRAPH_METRIC_DATA({ payload }) {
   const { id, metrics, timeRange, timestamp, isRealtime } = payload
   yield loading(true)
   const response = yield call(getOfflineMetricData, metrics, timeRange, timestamp, isRealtime)
@@ -281,7 +290,7 @@ export function * GRAPH_METRIC_DATA ({ payload }) {
   }
   yield loading(false)
 }
-export function * METRIC_DATA_POLLING ({ payload }) {
+export function* METRIC_DATA_POLLING({ payload }) {
   const { id, metrics, data } = payload
   yield loading(true)
   const response = yield call(getMetricDataPolling, metrics, data)
@@ -296,7 +305,7 @@ export function * METRIC_DATA_POLLING ({ payload }) {
   }
   yield loading(false)
 }
-export function * SYSLOG ({ payload }) {
+export function* SYSLOG({ payload }) {
   const { id } = payload
   yield loading(true)
   const response = yield call(logs, id, 'system')
@@ -310,7 +319,7 @@ export function * SYSLOG ({ payload }) {
   }
   yield loading(false)
 }
-export function * LOG ({ payload }) {
+export function* LOG({ payload }) {
   const { id } = payload
   yield loading(true)
   const response = yield call(logs, id, 'user')
@@ -324,7 +333,7 @@ export function * LOG ({ payload }) {
   }
   yield loading(false)
 }
-export function * TAGS ({ payload }) {
+export function* TAGS({ payload }) {
   const { id } = payload
   yield loading(true)
   const response = yield call(getTags, id)
@@ -338,7 +347,7 @@ export function * TAGS ({ payload }) {
   }
   yield loading(false)
 }
-export function * TAG_ADD ({ payload }) {
+export function* TAG_ADD({ payload }) {
   const { id, name } = payload
   yield loading(true)
   const response = yield call(addTag, id, name)
@@ -352,7 +361,7 @@ export function * TAG_ADD ({ payload }) {
   }
   yield loading(false)
 }
-export function * TAG_REMOVE ({ payload }) {
+export function* TAG_REMOVE({ payload }) {
   const { id, tagId } = payload
   yield loading(true)
   const response = yield call(removeTag, id, tagId)
@@ -370,7 +379,7 @@ export function * TAG_REMOVE ({ payload }) {
   })
   yield loading(false)
 }
-function * loading (isLoading = false) {
+function* loading(isLoading = false) {
   yield put({
     type: 'application/SET_STATE',
     payload: {
@@ -378,7 +387,7 @@ function * loading (isLoading = false) {
     }
   })
 }
-export default function * rootSaga () {
+export default function* rootSaga() {
   yield all([
     takeEvery(actions.LIST, LIST),
     takeEvery(actions.DETAIL, DETAIL),
